@@ -25,6 +25,8 @@ import mindustry.world.blocks.payloads.*;
 import mindustry.world.consumers.*;
 import mindustry.world.meta.*;
 
+import static mindustry.Vars.*;
+
 public class UnitFactory extends UnitBlock{
     public int[] capacities = {};
 
@@ -79,7 +81,8 @@ public class UnitFactory extends UnitBlock{
     @Override
     public void setBars(){
         super.setBars();
-        addBar("progress", (UnitFactoryBuild e) -> new Bar("bar.progress", Pal.ammo, e::fraction));
+        //bars.add("progress", (UnitFactoryBuild e) -> new Bar("bar.progress", Pal.ammo, e::fraction));
+        addBar("progress", (UnitFactoryBuild e) -> new Bar(() -> Core.bundle.format("bar.unitprogress", Strings.fixed(e.progress * 100f / plans.get(e.currentPlan).time, 0), Strings.fixed((plans.get(e.currentPlan).time - e.progress) / (60f * Vars.state.rules.unitBuildSpeedMultiplier * e.timeScale()), 0)), () -> Pal.ammo, e::fraction));
 
         addBar("units", (UnitFactoryBuild e) ->
         new Bar(
@@ -213,6 +216,22 @@ public class UnitFactory extends UnitBlock{
         public Object config(){
             return currentPlan;
         }
+
+        @Override
+        public void drawBars(){
+            super.drawBars();
+            Draw.color(Color.black, 0.3f);
+            Lines.stroke(4f);
+            Lines.line(x - block.size * tilesize / 2f * 0.6f, y + block.size * tilesize / 2.5f,
+                x + block.size * tilesize / 2f * 0.6f, y + block.size * tilesize / 2.5f);
+            Draw.color(Pal.accent, 1f);
+            Lines.stroke(2f);
+            Lines.line(x - block.size * tilesize / 2f * 0.6f, y + block.size * tilesize / 2.5f,
+                x + 0.6f * (Mathf.clamp(fraction(), 0f, 1f) - 0.5f) * block.size * tilesize, y + block.size * tilesize / 2.5f);
+            Draw.color();
+            this.block.drawText((int)(Mathf.clamp(fraction(), 0f, 1f) * 100) + "% | " + (currentPlan == -1 ? "@none" : Strings.fixed((plans.get(currentPlan).time - progress) / (60f * Vars.state.rules.unitBuildSpeed(team) * timeScale), 0)), x, y + block.size * tilesize / 2.5f - 5f, true, 0.9f);
+        }
+
 
         @Override
         public void draw(){

@@ -280,6 +280,7 @@ public class BlockRenderer{
     }
 
     public void drawShadows(){
+        if (Core.settings.getInt("blockrenderlevel") == 0) return;
         if(!shadowEvents.isEmpty()){
             Draw.flush();
 
@@ -410,7 +411,7 @@ public class BlockRenderer{
 
             //comment wasVisible part for hiding?
             if(block != Blocks.air && (visible || build.wasVisible)){
-                block.drawBase(tile);
+                if (settings.getInt("blockrenderlevel") > 1) block.drawBase(tile);
                 Draw.reset();
                 Draw.z(Layer.block);
 
@@ -436,6 +437,11 @@ public class BlockRenderer{
                         Draw.z(Layer.block);
                     }
 
+                    if(renderer.drawBars){
+                        build.drawBars();
+                        Draw.z(Layer.block);
+                    }
+
                     if(build.team != player.team()){
                         build.drawTeam();
                         Draw.z(Layer.block);
@@ -444,6 +450,11 @@ public class BlockRenderer{
                     if(build.team == player.team() && renderer.drawStatus && block.hasConsumers){
                         build.drawStatus();
                     }
+
+                    if(Core.settings.getBool("blockdisabled")&& !build.enabled()){
+                        build.drawDisabled();
+                    }
+
                 }
                 Draw.reset();
             }else if(!visible){

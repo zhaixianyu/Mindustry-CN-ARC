@@ -451,7 +451,7 @@ public class BulletType extends Content implements Cloneable{
     }
 
     public void draw(Bullet b){
-        drawTrail(b);
+        if (Core.settings.getBool("bulletShow")){drawTrail(b);}
     }
 
     public void drawTrail(Bullet b){
@@ -465,7 +465,7 @@ public class BulletType extends Content implements Cloneable{
     }
 
     public void drawLight(Bullet b){
-        if(lightOpacity <= 0f || lightRadius <= 0f) return;
+        if(lightOpacity <= 0f || lightRadius <= 0f|| !Core.settings.getBool("bulletShow") ) return;
         Drawf.light(b, lightRadius, lightColor, lightOpacity);
     }
 

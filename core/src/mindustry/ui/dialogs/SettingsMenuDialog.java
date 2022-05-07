@@ -477,11 +477,6 @@ public class SettingsMenuDialog extends BaseDialog{
             Core.settings.put("swapdiagonal", false);
         }
 
-
-        // custom settings
-        // 如果你看到这段代码，说明具有密码破解能力（当然我也懒得写反破解程序），请自己珍藏好使用即可。
-        // 其中作弊项会大幅影响游戏平衡，请务必不要泄露分享
-        // 欢迎加入PVP交流群一起改端
         arc.addCategory("arcHudToolbox");
         arc.checkPref("showFloatingSettings",false);
         arc.checkPref("showMI2toolbox", true);
@@ -655,17 +650,21 @@ public class SettingsMenuDialog extends BaseDialog{
         specmode.addCategory("catdevelopmode");
         specmode.checkPref("developmode", false);
         //////////cheating
-        cheating.addCategory("arcCCheatCommon");
+        cheating.addCategory("arcWeakCheat");
+        cheating.checkPref("allBlocksReveal",false);
+        cheating.checkPref("DisableLightRender", false);
+        cheating.checkPref("overrideSkipWave", false);
+        cheating.addCategory("arcStrongCheat");
         cheating.checkPref("showOtherTeamResource", false);
         cheating.checkPref("showOtherTeamState", false);
         cheating.checkPref("selectTeam",false);
         cheating.checkPref("overridebuild", false);
         cheating.checkPref("logicoverrangelink", false);
         cheating.checkPref("playerNeedShooting", false);
-        cheating.checkPref("buildsandboxblock", false);
         cheating.checkPref("buildCoreOverride", false);
-        cheating.checkPref("DisableLightRender", false);
-        cheating.checkPref("overrideSkipWave", false);
+
+
+
         if(false){
             cheating.addCategory("arcCCheatRed");
             cheating.checkPref("cheating_mode", false);
@@ -676,13 +675,6 @@ public class SettingsMenuDialog extends BaseDialog{
             cheating.checkPref("dropzonenotblockunit", false);
 
         }
-
-        cheating.stringInput( "uuidchangepassword" , Core.settings.getString("uuid"));
-		String uuidchangepassword = Core.settings.getString(("uuidchangepassword"));
-		if ( uuidchangepassword.hashCode() == -1643793632){
-		    cheating.stringInput( "uuid" , Core.settings.getString("uuid"));
-        }
-
         }
 
     }

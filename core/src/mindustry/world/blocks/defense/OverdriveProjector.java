@@ -54,6 +54,12 @@ public class OverdriveProjector extends Block{
         super.drawPlace(x, y, rotation, valid);
 
         Drawf.dashCircle(x * tilesize + offset, y * tilesize + offset, range, baseColor);
+        if (hasBoost){
+            Drawf.dashCircle(x * tilesize + offset, y * tilesize + offset, range + phaseRangeBoost, phaseColor);
+
+            indexer.eachBlock(player.team(), x * tilesize + offset, y * tilesize + offset, range + phaseRangeBoost, other -> other.block.canOverdrive, other -> Drawf.selected(other, Tmp.c1.set(phaseColor).a(Mathf.absin(4f, 1f))));
+        }
+
 
         indexer.eachBlock(player.team(), x * tilesize + offset, y * tilesize + offset, range, other -> other.block.canOverdrive, other -> Drawf.selected(other, Tmp.c1.set(baseColor).a(Mathf.absin(4f, 1f))));
     }
@@ -133,6 +139,29 @@ public class OverdriveProjector extends Block{
         @Override
         public void draw(){
             super.draw();
+
+            float realRange = range + phaseHeat * phaseRangeBoost;
+            float pro_Transparency = (float)Core.settings.getInt("overdrive_zone") / 100f;
+            if(status() == BlockStatus.active&& pro_Transparency > 0.02f){
+                //Draw.z(Layer.overdrive - 1f);
+                if (phaseHeat>0.2){
+                    Draw.color(Color.valueOf("FFA500"), pro_Transparency);
+                    //Draw.color(baseColor, pro_Transparency);
+                    //Draw.reset();
+                    Lines.stroke(1f);
+                    Lines.circle(x, y, realRange);
+                    Draw.alpha(pro_Transparency * 0.1f);
+                    Fill.circle(x, y, realRange);
+                }
+                else {
+                    Draw.color(Color.valueOf("FF8C00"),pro_Transparency);
+                    //Draw.color(phaseColor,pro_Transparency);
+                    Lines.stroke(1f);
+                    Lines.circle(x, y, realRange);
+                    Draw.alpha(pro_Transparency * 0.1f);
+                    Fill.circle(x, y, realRange);
+                }
+            }
 
             float f = 1f - (Time.time / 100f) % 1f;
 

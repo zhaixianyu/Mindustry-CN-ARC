@@ -78,7 +78,7 @@ public class ForceProjector extends Block{
     @Override
     public void setBars(){
         super.setBars();
-        addBar("shield", (ForceBuild entity) -> new Bar("stat.shieldhealth", Pal.accent, () -> entity.broken ? 0f : 1f - entity.buildup / (shieldHealth + phaseShieldBoost * entity.phaseHeat)).blink(Color.white));
+        addBar("shield", (ForceBuild entity) -> new Bar(() -> "护盾: " + (shieldHealth + phaseShieldBoost * entity.phaseHeat - (float)((int)(entity.buildup * 100) / 100)) + " / " + (int)(shieldHealth + phaseShieldBoost * entity.phaseHeat), () -> Pal.accent, () -> entity.broken ? 0f : 1f - entity.buildup / (shieldHealth + phaseShieldBoost * entity.phaseHeat)).blink(Color.white));
     }
 
     @Override
@@ -105,12 +105,12 @@ public class ForceProjector extends Block{
     public void drawPlace(int x, int y, int rotation, boolean valid){
         super.drawPlace(x, y, rotation, valid);
 
-        Draw.color(Pal.gray);
-        Lines.stroke(3f);
-        Lines.poly(x * tilesize + offset, y * tilesize + offset, 6, radius);
         Draw.color(player.team().color);
         Lines.stroke(1f);
         Lines.poly(x * tilesize + offset, y * tilesize + offset, 6, radius);
+        Draw.color(player.team().color);
+        Lines.stroke(1f);
+        Lines.poly(x * tilesize + offset, y * tilesize + offset, 6, radius+phaseRadiusBoost);
         Draw.color();
     }
 

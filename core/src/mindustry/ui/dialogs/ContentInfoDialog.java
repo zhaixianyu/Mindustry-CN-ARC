@@ -87,9 +87,12 @@ public class ContentInfoDialog extends BaseDialog{
             table.row();
         }
 
+
+
         content.displayExtra(table);
 
         table.table(t -> {
+            t.row();
             t.button(Icon.copy, Styles.clearNonei, () -> {
                 Core.app.setClipboardText((char) Fonts.getUnicode(content.name) + "");
             });

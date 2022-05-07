@@ -142,13 +142,17 @@ public class Weapon implements Cloneable{
     }
 
     public void addStats(UnitType u, Table t){
+
+        if(reload > 0) {
+            t.row();
+            t.add("[lightgray]" + Stat.reload.localized() + ": " + (mirror ? "2x " : "") + "[stat]" + Strings.autoFixed(60f / reload, 2) + " [white]" + StatUnit.perSecond.localized());
+        }
+        t.row();
+        t.add("[lightgray]武器范围: [stat]" + String.format("%.1f", bullet.range/8f) + " [white]格");
+
         if(inaccuracy > 0){
             t.row();
             t.add("[lightgray]" + Stat.inaccuracy.localized() + ": [white]" + (int)inaccuracy + " " + StatUnit.degrees.localized());
-        }
-        if(reload > 0){
-            t.row();
-            t.add("[lightgray]" + Stat.reload.localized() + ": " + (mirror ? "2x " : "") + "[white]" + Strings.autoFixed(60f / reload * shoot.shots, 2) + " " + StatUnit.perSecond.localized());
         }
 
         StatValues.ammo(ObjectMap.of(u, bullet)).display(t);

@@ -628,9 +628,12 @@ public class UnitType extends UnlockableContent{
         stats.add(Stat.health, health);
         stats.add(Stat.armor, armor);
         stats.add(Stat.speed, speed * 60f / tilesize, StatUnit.tilesSecond);
+        stats.add(Stat.rotateSpeed,rotateSpeed);
         stats.add(Stat.size, hitSize / tilesize, StatUnit.blocksSquared);
-        stats.add(Stat.itemCapacity, itemCapacity);
-        stats.add(Stat.range, (int)(maxRange / tilesize), StatUnit.blocks);
+        stats.add(Stat.unitItemCapacity, itemCapacity);
+        stats.add(Stat.unitrange, (int)(maxRange / tilesize), StatUnit.blocks);
+        stats.add(Stat.ammoType, ammoType.icon());
+        stats.add(Stat.ammoCapacity, ammoCapacity);
 
         if(abilities.any()){
             var unique = new ObjectSet<String>();
@@ -646,6 +649,12 @@ public class UnitType extends UnlockableContent{
 
         if(!flying){
             stats.add(Stat.canBoost, canBoost);
+            if(canBoost){
+                stats.add(Stat.boostMultiplier, boostMultiplier);
+            }
+        }
+        if(drownTimeMultiplier != 1){
+            stats.add(Stat.drownTimeMultiplier, drownTimeMultiplier);
         }
 
         if(mineTier >= 1){
@@ -693,6 +702,8 @@ public class UnitType extends UnlockableContent{
         Unit example = constructor.get();
 
         allowLegStep = example instanceof Legsc;
+
+        stats.useCategories = true;
 
         //water preset
         if(example instanceof WaterMovec){
