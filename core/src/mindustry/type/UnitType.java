@@ -1287,7 +1287,7 @@ public class UnitType extends UnlockableContent{
         //TODO how/where do I draw under?
         if(parts.size > 0){
             for(int i = 0; i < parts.size; i++){
-                var part = parts.items[i];
+                var part = parts.get(i);
 
                 WeaponMount first = unit.mounts.length > part.weaponIndex ? unit.mounts[part.weaponIndex] : null;
                 if(first != null){
