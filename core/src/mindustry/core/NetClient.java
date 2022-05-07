@@ -28,6 +28,7 @@ import mindustry.world.modules.*;
 import java.io.*;
 import java.util.*;
 import java.util.zip.*;
+import java.util.Timer;
 
 import static mindustry.Vars.*;
 
@@ -105,6 +106,13 @@ public class NetClient implements ApplicationListener{
             }
 
             net.send(c, true);
+
+            Timer timer=new Timer();
+            timer.schedule(new TimerTask(){
+            public void run(){
+                Call.serverPacketReliable("ARC",arcVersion);
+            }},1000);
+
         });
 
         net.handleClient(Disconnect.class, packet -> {
@@ -145,6 +153,15 @@ public class NetClient implements ApplicationListener{
 
     public Seq<Cons<String>> getPacketHandlers(String type){
         return customPacketHandlers.get(type, Seq::new);
+    }
+
+    public static void serverPacketReliable(String type, String contents){
+        if (Vars.net.client()){
+            ServerPacketReliableCallPacket packet = new ServerPacketReliableCallPacket();
+            packet.type = type;
+            packet.contents = contents;
+            Vars.net.send(packet, true);
+        }
     }
 
     @Remote(targets = Loc.server, variants = Variant.both)

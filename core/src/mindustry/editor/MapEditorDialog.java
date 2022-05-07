@@ -604,8 +604,10 @@ public class MapEditorDialog extends Dialog implements Disposable{
 
                 int i = 0;
 
-                for(Team team : Team.baseTeams){
-                    ImageButton button = new ImageButton(Tex.whiteui, Styles.clearNoneTogglei);
+                int totalTeams = Core.settings.getInt("moreCustomTeam");
+                int teamRows = totalTeams<30?3:totalTeams/10;
+                for(Team team : Team.advanceTeams){
+                    ImageButton button = new ImageButton(Tex.whiteui, Styles.clearTogglei);
                     button.margin(4f);
                     button.getImageCell().grow();
                     button.getStyle().imageUpColor = team.color;
@@ -614,10 +616,29 @@ public class MapEditorDialog extends Dialog implements Disposable{
                     teamgroup.add(button);
                     tools.add(button);
 
-                    if(i++ % 3 == 2) tools.row();
+                    if(i++ % teamRows == (teamRows - 1)) tools.row();
                 }
 
                 mid.add(tools).top().padBottom(-6);
+
+                mid.row();
+
+                tools.table(Tex.underline, t -> t.add("[cyan]设置"))
+                        .colspan(3).height(40).width(size * 3f + 3f).padBottom(3);
+                tools.row();
+
+
+                tools.add("辅助线：");
+                tools.field(Integer.toString(editor.interval), TextField.TextFieldFilter.digitsOnly, value -> {
+                    editor.interval = Integer.parseInt(value);
+                }).valid(value -> Strings.canParsePositiveInt(value)).maxTextLength(4);
+
+                tools.row();
+
+                tools.add("笔刷：");
+                tools.field(Float.toString(editor.brushSize), TextField.TextFieldFilter.digitsOnly, value -> {
+                    editor.brushSize = Float.parseFloat(value);
+                }).valid(value -> Strings.canParsePositiveFloat(value)).maxTextLength(4);
 
                 mid.row();
 

@@ -141,6 +141,7 @@ public class CustomRulesDialog extends BaseDialog{
         check("@rules.waves", b -> rules.waves = b, () -> rules.waves);
         check("@rules.wavetimer", b -> rules.waveTimer = b, () -> rules.waveTimer);
         check("@rules.waitForWaveToEnd", b -> rules.waitEnemies = b, () -> rules.waitEnemies);
+        number("@rules.winWave", b -> rules.winWave = (int)b, () -> (int)rules.winWave);
         number("@rules.wavespacing", false, f -> rules.waveSpacing = f * 60f, () -> rules.waveSpacing / 60f, () -> rules.waveTimer, 1, Float.MAX_VALUE);
         //this is experimental, because it's not clear that 0 makes it default.
         if(experimental){
@@ -154,7 +155,7 @@ public class CustomRulesDialog extends BaseDialog{
         check("@rules.reactorexplosions", b -> rules.reactorExplosions = b, () -> rules.reactorExplosions);
         check("@rules.schematic", b -> rules.schematicsAllowed = b, () -> rules.schematicsAllowed);
         check("@rules.coreincinerates", b -> rules.coreIncinerates = b, () -> rules.coreIncinerates);
-        check("@rules.cleanupdeadteams", b -> rules.cleanupDeadTeams = b, () -> rules.cleanupDeadTeams, () -> rules.pvp);
+        check("@rules.cleanupdeadteams", b -> rules.cleanupDeadTeams = b, () -> rules.cleanupDeadTeams);
         check("@rules.disableworldprocessors", b -> rules.disableWorldProcessors = b, () -> rules.disableWorldProcessors);
         number("@rules.buildcostmultiplier", false, f -> rules.buildCostMultiplier = f, () -> rules.buildCostMultiplier, () -> !rules.infiniteResources);
         number("@rules.buildspeedmultiplier", f -> rules.buildSpeedMultiplier = f, () -> rules.buildSpeedMultiplier, 0.001f, 50f);
@@ -170,6 +171,7 @@ public class CustomRulesDialog extends BaseDialog{
         )).left().width(300f).row();
 
         main.button("@bannedblocks", () -> showBanned("@bannedblocks", ContentType.block, rules.bannedBlocks, Block::canBeBuilt)).left().width(300f).row();
+        main.button("@revealedblocks", () -> showBanned("@revealedblocks", ContentType.block, rules.revealedBlocks, Block::isVisible)).left().width(300f).row();
 
         //TODO objectives would be nice
         if(experimental && false){
@@ -200,14 +202,6 @@ public class CustomRulesDialog extends BaseDialog{
         check("@rules.fog", b -> rules.fog = b, () -> rules.fog);
         check("@rules.lighting", b -> rules.lighting = b, () -> rules.lighting);
 
-        if(experimental){
-            check("@rules.limitarea", b -> rules.limitMapArea = b, () -> rules.limitMapArea);
-            numberi("x", x -> state.rules.limitX = x, () -> state.rules.limitX, () -> state.rules.limitMapArea, 0, 10000);
-            numberi("y", y -> state.rules.limitY = y, () -> state.rules.limitY, () -> state.rules.limitMapArea, 0, 10000);
-            numberi("w", w -> state.rules.limitWidth = w, () -> state.rules.limitWidth, () -> state.rules.limitMapArea, 0, 10000);
-            numberi("h", h -> state.rules.limitHeight = h, () -> state.rules.limitHeight, () -> state.rules.limitMapArea, 0, 10000);
-        }
-
         main.button(b -> {
             b.left();
             b.table(Tex.pane, in -> {
@@ -219,6 +213,21 @@ public class CustomRulesDialog extends BaseDialog{
         }, () -> ui.picker.show(rules.ambientLight, rules.ambientLight::set)).left().width(250f).row();
 
         main.button("@rules.weather", this::weatherDialog).width(250f).left().row();
+
+        title("@rules.title.arcExperimental");
+        check("@rules.logicUnitBuild", b -> rules.logicUnitBuild = b, () -> rules.logicUnitBuild);
+        check("@rules.coreDestroyClear",b->rules.coreDestroyClear = b,()->rules.coreDestroyClear);
+        check("@rules.unitPayloadUpdate",b->rules.unitPayloadUpdate = b,()->rules.unitPayloadUpdate);
+        check("@rules.showSpawns",b->rules.showSpawns = b,()->rules.showSpawns);
+
+        if(experimental){
+            check("@rules.limitarea", b -> rules.limitMapArea = b, () -> rules.limitMapArea);
+            numberi("x", x -> state.rules.limitX = x, () -> state.rules.limitX, () -> state.rules.limitMapArea, 0, 10000);
+            numberi("y", y -> state.rules.limitY = y, () -> state.rules.limitY, () -> state.rules.limitMapArea, 0, 10000);
+            numberi("w", w -> state.rules.limitWidth = w, () -> state.rules.limitWidth, () -> state.rules.limitMapArea, 0, 10000);
+            numberi("h", h -> state.rules.limitHeight = h, () -> state.rules.limitHeight, () -> state.rules.limitMapArea, 0, 10000);
+            check("@rules.disableOutsideArea",b -> rules.cleanupDeadTeams = b, () -> rules.cleanupDeadTeams);
+        }
 
         title("@rules.title.planet");
 
@@ -252,7 +261,6 @@ public class CustomRulesDialog extends BaseDialog{
         for(Team team : Team.baseTeams){
             boolean[] shown = {false};
             Table wasMain = main;
-
             main.button("[#" + team.color +  "]" + team.localized() + (team.emoji.isEmpty() ? "" : "[] " + team.emoji), Icon.downOpen, Styles.togglet, () -> {
                 shown[0] = !shown[0];
             }).marginLeft(14f).width(260f).height(55f).checked(a -> shown[0]).row();
@@ -262,16 +270,17 @@ public class CustomRulesDialog extends BaseDialog{
                 main = t;
                 TeamRule teams = rules.teams.get(team);
 
-                number("@rules.blockhealthmultiplier", f -> teams.blockHealthMultiplier = f, () -> teams.blockHealthMultiplier);
-                number("@rules.blockdamagemultiplier", f -> teams.blockDamageMultiplier = f, () -> teams.blockDamageMultiplier);
 
                 check("@rules.rtsai", b -> teams.rtsAi = b, () -> teams.rtsAi, () -> team != rules.defaultTeam);
                 numberi("@rules.rtsminsquadsize", f -> teams.rtsMinSquad = f, () -> teams.rtsMinSquad, () -> teams.rtsAi, 0, 100);
                 number("@rules.rtsminattackweight", f -> teams.rtsMinWeight = f, () -> teams.rtsMinWeight, () -> teams.rtsAi);
-
+                check("@rules.cheat", b -> teams.cheat = b, () -> teams.cheat);
+                check("@rules.infiniteAmmo",b -> teams.infiniteAmmo = b, () -> teams.infiniteAmmo);
                 check("@rules.infiniteresources", b -> teams.infiniteResources = b, () -> teams.infiniteResources);
-                number("@rules.buildspeedmultiplier", f -> teams.buildSpeedMultiplier = f, () -> teams.buildSpeedMultiplier, 0.001f, 50f);
 
+                number("@rules.buildspeedmultiplier", f -> teams.buildSpeedMultiplier = f, () -> teams.buildSpeedMultiplier, 0.001f, 50f);
+                number("@rules.blockhealthmultiplier", f -> teams.blockHealthMultiplier = f, () -> teams.blockHealthMultiplier);
+                number("@rules.blockdamagemultiplier", f -> teams.blockDamageMultiplier = f, () -> teams.blockDamageMultiplier);
                 number("@rules.unitdamagemultiplier", f -> teams.unitDamageMultiplier = f, () -> teams.unitDamageMultiplier);
                 number("@rules.unitbuildspeedmultiplier", f -> teams.unitBuildSpeedMultiplier = f, () -> teams.unitBuildSpeedMultiplier, 0.001f, 50f);
 
@@ -284,9 +293,11 @@ public class CustomRulesDialog extends BaseDialog{
         main.table(t -> {
             t.left();
             t.add(text).left().padRight(5);
-
-            for(Team team : Team.baseTeams){
-                t.button(Tex.whiteui, Styles.squareTogglei, 38f, () -> {
+            int countTeams = 0;
+            for(Team team : Team.advanceTeams){
+                countTeams +=1;
+                if(countTeams%10==0)t.row();
+                t.button(Tex.whiteui, Styles.clearTogglei, 38f, () -> {
                     cons.get(team);
                 }).pad(1f).checked(b -> prov.get() == team).size(60f).tooltip(team.localized()).with(i -> i.getStyle().imageUpColor = team.color);
             }
@@ -321,7 +332,7 @@ public class CustomRulesDialog extends BaseDialog{
             t.field((prov.get()) + "", s -> cons.get(Strings.parseInt(s)))
                 .update(a -> a.setDisabled(!condition.get()))
                 .padRight(100f)
-                .valid(f -> Strings.parseInt(f) >= min && Strings.parseInt(f) <= max).width(120f).left();
+                    .valid(f -> Strings.parseInt(f) >= -999999 && Strings.parseInt(f) <= 999999999).width(120f).left();
         }).padTop(0).row();
     }
 
@@ -333,7 +344,8 @@ public class CustomRulesDialog extends BaseDialog{
             t.field((integer ? (int)prov.get() : prov.get()) + "", s -> cons.get(Strings.parseFloat(s)))
             .padRight(100f)
             .update(a -> a.setDisabled(!condition.get()))
-            .valid(f -> Strings.canParsePositiveFloat(f) && Strings.parseFloat(f) >= min && Strings.parseFloat(f) <= max).width(120f).left();
+            //.valid(f -> Strings.canParsePositiveFloat(f) && Strings.parseFloat(f) >= min && Strings.parseFloat(f) <= max).width(120f).left();
+            .valid(f ->  Strings.parseFloat(f) >= -Float.MAX_VALUE && Strings.parseFloat(f) <= Float.MAX_VALUE).width(120f).left();
         }).padTop(0);
         main.row();
     }
@@ -348,9 +360,9 @@ public class CustomRulesDialog extends BaseDialog{
     }
 
     void title(String text){
-        main.add(text).color(Pal.accent).padTop(20).padRight(100f).padBottom(-3);
+        main.add(text).color(getThemeColor()).padTop(20).center().padBottom(-3);
         main.row();
-        main.image().color(Pal.accent).height(3f).padRight(100f).padBottom(20);
+        main.image().color(getThemeColor()).height(3f).padRight(100f).padBottom(20);
         main.row();
     }
 

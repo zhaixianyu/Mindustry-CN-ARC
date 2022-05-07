@@ -337,7 +337,7 @@ public class SettingsMenuDialog extends BaseDialog{
             game.checkPref("crashreport", true);
         }
 
-        game.sliderPref("morecustomteam", 6, 6, 255, 1, i -> i + "");
+        game.sliderPref("moreCustomTeam", 6, 6, 255, 1, i -> i + "");
         game.sliderPref("maxSchematicSize",32,32,500,1, String::valueOf);
         game.checkPref("savecreate", true);
         game.checkPref("blockreplace", true);

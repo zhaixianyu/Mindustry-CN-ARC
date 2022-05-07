@@ -29,6 +29,7 @@ public class MapEditor{
     private boolean loading;
 
     public float brushSize = 1;
+    public int interval = 25;
     public int rotation;
     public Block drawBlock = Blocks.stone;
     public Team drawTeam = Team.sharded;
