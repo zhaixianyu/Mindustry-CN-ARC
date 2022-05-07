@@ -198,7 +198,7 @@ public class OverlayRenderer{
 
         if(state.hasSpawns()){
             for(Tile tile : spawner.getSpawns()){
-                if(tile.within(player.x, player.y, state.rules.dropZoneRadius + spawnerMargin)){
+                if(true){
                     Draw.alpha(Mathf.clamp(1f - (player.dst(tile) - state.rules.dropZoneRadius) / spawnerMargin));
                     Lines.dashCircle(tile.worldx(), tile.worldy(), state.rules.dropZoneRadius);
                 }
@@ -229,12 +229,21 @@ public class OverlayRenderer{
 
         input.drawOverSelect();
 
+        //单位射程
+        if(ui.hudfrag.blockfrag.hover() instanceof Unit unit){
+            Draw.color(unit.team.color);
+            Lines.dashCircle(unit.x, unit.y, unit.type.maxRange);
+        }
+
         if(ui.hudfrag.blockfrag.hover() instanceof Unit unit && unit.controller() instanceof LogicAI ai && ai.controller != null && ai.controller.isValid()){
             var build = ai.controller;
             Drawf.square(build.x, build.y, build.block.size * tilesize/2f + 2f);
             if(!unit.within(build, unit.hitSize * 2f)){
                 Drawf.arrow(unit.x, unit.y, build.x, build.y, unit.hitSize *2f, 4f);
             }
+			Draw.color(Pal.accent);
+            Lines.line(unit.x, unit.y, build.x, build.y);
+            Draw.color();
         }
 
         //draw selection overlay when dropping item

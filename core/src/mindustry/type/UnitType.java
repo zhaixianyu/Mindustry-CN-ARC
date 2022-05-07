@@ -44,6 +44,10 @@ public class UnitType extends UnlockableContent{
     public static final float shadowTX = -12, shadowTY = -13;
     private static final Vec2 legOffset = new Vec2();
 
+    //MI2 unit transparency
+    private static float legTrans = 1f, unitTrans = 1f;
+
+
     /** Environmental flags that are *all* required for this unit to function. 0 = any environment */
     public int envRequired = 0;
     /** The environment flags that this unit can function in. If the env matches any of these, it will be enabled. */
@@ -221,6 +225,11 @@ public class UnitType extends UnlockableContent{
     drawShields = true,
     /** if false, the unit body is not drawn. */
     drawBody = true;
+
+    /** If `flying` and this is true, the unit can appear on the title screen */
+    public boolean onTitleScreen = true;
+    /** The default AI controller to assign on creation. */
+    public Prov<? extends UnitController> defaultController = () -> !flying ? new GroundAI() : new FlyingAI();
 
     /** The default AI controller to assign on creation. */
     public Prov<? extends UnitController> aiController = () -> !flying ? new GroundAI() : new FlyingAI();
@@ -466,32 +475,92 @@ public class UnitType extends UnlockableContent{
 
     public void landed(Unit unit){}
 
+    private String getStatustext(Unit unit){
+        String statustext = "";
+        int count = 0;
+        if(unit.damageMultiplier() != 1f){
+            statustext += " [red]伤[white]：" + String.format("%.1f", unit.damageMultiplier());
+            count += 1;
+        }
+        if(unit.reloadMultiplier() != 1f){
+            statustext += " [violet]攻速[white]：" + String.format("%.1f", unit.reloadMultiplier());
+            count += 1;
+        }
+        if(unit.speedMultiplier() != 1f){
+            statustext += " [cyan]移[white]：" + String.format("%.1f", unit.speedMultiplier());
+            count += 1;
+        }
+        if(unit.healthMultiplier() != 1f){
+            statustext += " [acid]血[white]：" + ((unit.healthMultiplier() == Float.POSITIVE_INFINITY) ? "Inf" : String.format("%.1f", unit.healthMultiplier()));
+        }
+        return statustext;
+    }
+
+    private String getInfStatusEffect(Unit unit){
+        StringBuilder builder = new StringBuilder();
+        for(StatusEffect eff : Vars.content.statusEffects()){
+            if(unit.hasEffect(eff)){
+                if(unit.getEffectTime(eff) <= 0f || unit.getEffectTime(eff) >= 100000f){
+                    builder.append(eff.emoji()).append(" ");
+                }
+            }
+        }
+        return builder.toString();
+    }
+
+    private void arcdisplayStatus(Unit unit, Table bars){
+        if(!getStatustext(unit).equals("")){
+            bars.add(new Bar(() -> getStatustext(unit), () -> Pal.accent, () -> 1f));
+            bars.row();
+        }
+        if(!getInfStatusEffect(unit).equals("")){
+            bars.add(new Bar(() -> "[orange]永久[white]：" + getInfStatusEffect(unit), () -> Pal.accent, () -> 1f));
+            bars.row();
+        }
+
+        for(StatusEffect eff : Vars.content.statusEffects()){
+            if(unit.hasEffect(eff)){
+                if(unit.getEffectTime(eff) > 0f && unit.getEffectTime(eff) < 100000f){
+                    bars.add(new Bar(() -> eff.emoji() + eff.localizedName + ": " + UI.formatTime(unit.getEffectTime(eff)), () -> Pal.accent, () -> 1f));
+                    bars.row();
+                }
+            }
+        }
+    }
+
     public void display(Unit unit, Table table){
         table.table(t -> {
-            t.left();
-            t.add(new Image(uiIcon)).size(iconMed).scaling(Scaling.fit);
-            t.labelWrap(localizedName).left().width(190f).padLeft(5);
-        }).growX().left();
+        t.left();
+        t.add(new Image(uiIcon)).size(iconMed).scaling(Scaling.fit);
+        if(unit.team.id < 6){
+            t.labelWrap("[#" + unit.team.color + "]" + localizedName).left().width(190f).padLeft(5);
+        }else{
+            t.labelWrap("[#" + unit.team.color + "]" + localizedName + "[" + unit.team.id + "]").left().width(190f).padLeft(5);
+        }
+    }).growX().left();
         table.row();
 
         table.table(bars -> {
             bars.defaults().growX().height(20f).pad(4);
 
-            //TODO overlay shields
-            bars.add(new Bar("stat.health", Pal.health, unit::healthf).blink(Color.white));
+            bars.add(new Bar(() -> {
+                //"[yellow]盾[white]：" + UI.formatAmount((long)unit.shield()) +
+                if(unit.shield() > 0){
+                    return UI.formatAmount((long)unit.health) + "[gray]+[white]" + UI.formatAmount((long)unit.shield);
+                }else if(unit.maxHealth == unit.health){
+                    return UI.formatAmount((long)unit.health);
+                }else{
+                    return UI.formatAmount((long)unit.health) + "/" + UI.formatAmount((long)unit.maxHealth) + " (" + (int)(100 * unit.health / unit.maxHealth) + "%)";
+                }
+            }, () -> Pal.health, unit::healthf).blink(Color.white));
             bars.row();
 
             if(state.rules.unitAmmo){
-                bars.add(new Bar(ammoType.icon() + " " + Core.bundle.get("stat.ammo"), ammoType.barColor(), () -> unit.ammo / ammoCapacity));
+                bars.add(new Bar(() -> ammoType.icon() + " " + Core.bundle.format("stat.ammoDetail", unit.ammo, ammoCapacity), () -> ammoType.barColor(), () -> unit.ammo / ammoCapacity));
                 bars.row();
             }
-
-            for(Ability ability : unit.abilities){
-                ability.displayBars(unit, bars);
-            }
-
-            if(payloadCapacity > 0 && unit instanceof Payloadc payload){
-                bars.add(new Bar("stat.payloadcapacity", Pal.items, () -> payload.payloadUsed() / unit.type().payloadCapacity));
+            if(unit instanceof Payloadc payload && payload.payloadUsed() > 0){
+                bars.add(new Bar("装载：" + String.format("%.2f", payload.payloadUsed() / 9) + "/" + String.format("%.2f", unit.type().payloadCapacity / 9), Pal.items, () -> payload.payloadUsed() / unit.type().payloadCapacity));
                 bars.row();
 
                 var count = new float[]{-1};
@@ -501,16 +570,22 @@ public class UnitType extends UnlockableContent{
                         count[0] = payload.payloadUsed();
                     }
                 }).growX().left().height(0f).pad(0f);
+                bars.row();
             }
+            arcdisplayStatus(unit, bars);
         }).growX();
 
-        if(unit.controller() instanceof LogicAI){
+        UnitController controller = unit.controller();
+        if(controller instanceof LogicAI control && control.controller != null){
             table.row();
-            table.add(Blocks.microProcessor.emoji() + " " + Core.bundle.get("units.processorcontrol")).growX().wrap().left();
-            table.row();
-            table.label(() -> Iconc.settings + " " + (long)unit.flag + "").color(Color.lightGray).growX().wrap().left();
+            table.add(Blocks.microProcessor.emoji() + " (" + control.controller.x / tilesize + ", " + control.controller.y / tilesize + ")").growX().wrap().left();
         }
-        
+
+        table.row();
+        table.table(t -> {
+            t.add(Iconc.settings + " " + (long)unit.flag + "").color(Color.lightGray).growX();
+            t.add(Fonts.getUnicodeStr(unit.type().name) + unit.team.data().countType(unit.type()) + "/" + Units.getStringCap(unit.team)).color(Color.lightGray).growX();
+        }).growX();
         table.row();
     }
 
@@ -549,10 +624,11 @@ public class UnitType extends UnlockableContent{
 
     @Override
     public void setStats(){
+
         stats.add(Stat.health, health);
         stats.add(Stat.armor, armor);
         stats.add(Stat.speed, speed * 60f / tilesize, StatUnit.tilesSecond);
-        stats.add(Stat.size, StatValues.squared(hitSize / tilesize, StatUnit.blocksSquared));
+        stats.add(Stat.size, hitSize / tilesize, StatUnit.blocksSquared);
         stats.add(Stat.itemCapacity, itemCapacity);
         stats.add(Stat.range, (int)(maxRange / tilesize), StatUnit.blocks);
 
@@ -1020,8 +1096,115 @@ public class UnitType extends UnlockableContent{
 
         boolean isPayload = !unit.isAdded();
 
+        //透明度
+        initUnitTransp();
+        initLegTransp();
+
+        unitTrans = (float)Core.settings.getInt("unitTransparency") / 100f;
+        legTrans = unitTrans;
+
         Mechc mech = unit instanceof Mechc ? (Mechc)unit : null;
-        float z = isPayload ? Draw.z() : unit.elevation > 0.5f ? (lowAltitude ? Layer.flyingUnitLow : Layer.flyingUnit) : groundLayer + Mathf.clamp(hitSize / 4000f, 0, 0.01f);
+        float z = unit.elevation > 0.5f ? (lowAltitude ? Layer.flyingUnitLow : Layer.flyingUnit) : groundLayer + Mathf.clamp(hitSize / 4000f, 0, 0.01f);
+
+        boolean draw_unit = (unit.maxHealth + unit.shield) > (float)Core.settings.getInt("minhealth_unitshown");
+        boolean draw_minunithealthbar = (unit.maxHealth + unit.shield) > (float)Core.settings.getInt("minhealth_unithealthbarshown");
+
+        if(!draw_unit){
+            unitTrans = 0f;
+            draw_minunithealthbar = false;
+        }
+
+        //玩家操控的单位具有炫酷特效
+        if(Core.settings.getInt("superUnitEffect") != 0 && unit.controller() == Vars.player){
+            unitTrans = 100f;
+            draw_minunithealthbar = true;
+
+            float blinkScl = 20f;
+            float curStroke = (float)Core.settings.getInt("playerEffectCurStroke") / 10f;
+            //Color effectcolor = getThemeColor();
+            Color effectcolor = getPlayerEffectColor();
+
+            float effectRadius = 5f, sectorRad = 0.14f, rotateSpeed = 0.5f;
+            int sectors = 5;
+            float orbRadius = unit.hitSize / 6f;
+            float effectalpha = (Time.time % 11) / 22f + 0.3f;
+
+            Lines.stroke(Lines.getStroke() * curStroke);
+
+            Draw.z(Layer.shields + 6.5f);
+            Draw.color(effectcolor);
+
+            Tmp.v1.trns(unit.rotation - 90, unit.x, unit.y).add(unit.x, unit.y);
+            float rx = Tmp.v1.x, ry = Tmp.v1.y;
+
+            if(curStroke > 0){
+                for(int i = 0; i < sectors; i++){
+                    float rot = unit.rotation + i * 360f / sectors + Time.time * rotateSpeed;
+                    Lines.arc(unit.x, unit.y, maxRange, sectorRad, rot);
+                }
+            }
+
+            Drawf.light(unit.x, unit.y, range * 1.5f, effectcolor, curStroke * 0.8f);
+
+            Draw.reset();
+
+        }else if(Core.settings.getInt("superUnitEffect") == 2 && unit.controller() instanceof Player){
+            unitTrans = 100f;
+            draw_minunithealthbar = true;
+
+            float blinkScl = 20f;
+            float curStroke = (float)Core.settings.getInt("playerEffectCurStroke") / 10f;
+            //Color effectcolor = getThemeColor();
+            Color effectcolor = unit.team.color;
+
+            float effectRadius = 5f, sectorRad = 0.14f, rotateSpeed = 0.5f;
+            int sectors = 5;
+            float orbRadius = unit.hitSize / 6f;
+            float effectalpha = (Time.time % 11) / 22f + 0.3f;
+
+            Lines.stroke(Lines.getStroke() * curStroke);
+
+            Draw.z(Layer.shields + 6.5f);
+            Draw.color(effectcolor);
+
+            Tmp.v1.trns(unit.rotation - 90, unit.x, unit.y).add(unit.x, unit.y);
+            float rx = Tmp.v1.x, ry = Tmp.v1.y;
+
+            if(curStroke > 0){
+                for(int i = 0; i < sectors; i++){
+                    float rot = unit.rotation + i * 360f / sectors + Time.time * rotateSpeed;
+                    Lines.arc(unit.x, unit.y, maxRange, sectorRad, rot);
+                }
+            }
+
+            //Drawf.light(unit.x, unit.y, range * 1.5f, effectcolor, curStroke * 0.8f);
+
+            Draw.reset();
+
+        }else if(Core.settings.getBool("alwaysShowPlayerUnit") && (unit.controller() instanceof Player || unit.controller().isBeingControlled(player.unit()))){
+            unitTrans = 100f;
+            draw_minunithealthbar = true;
+            Draw.color(unit.team.color);
+            Draw.alpha((float)Core.settings.getInt("unitweapon_range") / 100f);
+            Lines.dashCircle(unit.x, unit.y, maxRange);
+        }else if(draw_minunithealthbar){
+            boolean canHit = player.unit().isFlying() ? targetAir : targetGround;
+            float dst = player.unit().dst(unit.x,unit.y) ;
+            if ((float)Core.settings.getInt("unitAlertRange") >= 30f ||
+                    (unit.team != player.team() && canHit && !(dst > (range+ (float)Core.settings.getInt("unitAlertRange") * tilesize))&& player.unit().health>0f)){
+                //show unit weapon by LC
+                Draw.color(unit.team.color);
+                Draw.alpha(1f);
+                Lines.dashCircle(unit.x, unit.y, maxRange);
+            }
+            else{
+                Draw.color(unit.team.color);
+                Draw.alpha((float) Core.settings.getInt("unitweapon_range") / 100f);
+                Lines.dashCircle(unit.x, unit.y, maxRange);
+            }
+        }
+
+
 
         if(unit.controller().isBeingControlled(player.unit())){
             drawControl(unit);
@@ -1035,7 +1218,7 @@ public class UnitType extends UnlockableContent{
         Draw.z(z - 0.02f);
 
         if(mech != null){
-            drawMech(mech);
+            if(unitTrans > 0f) drawMech(mech);
 
             //side
             legOffset.trns(mech.baseRotation(), 0f, Mathf.lerp(Mathf.sin(mech.walkExtend(true), 2f/Mathf.PI, 1) * mechSideSway, 0f, unit.elevation));
@@ -1118,7 +1301,108 @@ public class UnitType extends UnlockableContent{
         }
 
         Draw.reset();
+
+        //display healthbar by MI2
+        Draw.z(Layer.shields + 6f);
+        float y_corr = 0f ;
+        if (unit.hitSize<30f && unit.hitSize>20f && unit.controller().isBeingControlled(player.unit())) y_corr = 2f;
+        if(Core.settings.getBool("unitHealthBar")){
+            if(draw_minunithealthbar && (unit.health < unit.maxHealth || unit.shield > 0)){
+                Draw.reset();
+                Lines.stroke(4f);
+                Draw.color(unit.team.color, 0.5f);
+                Lines.line(unit.x - unit.hitSize() * 0.6f, unit.y + (unit.hitSize() / 2f) + y_corr, unit.x + unit.hitSize() * 0.6f, unit.y + (unit.hitSize() / 2f) + y_corr);
+                Lines.stroke(2f);
+                Draw.color(Pal.health, 0.8f);
+                Lines.line(
+                        unit.x - unit.hitSize() * 0.6f, unit.y + (unit.hitSize() / 2f) + y_corr,
+                        unit.x + unit.hitSize() * (Math.min(Mathf.maxZero(unit.health), unit.maxHealth) * 1.2f / unit.maxHealth - 0.6f), unit.y + (unit.hitSize() / 2f) + y_corr);
+                Lines.stroke(2f);
+                if(unit.shield > 0){
+                    for(int didgt = 1; didgt <= Mathf.digits((int)(unit.shield / unit.maxHealth)) + 1; didgt++){
+                        Draw.color(Pal.shield, 0.8f);
+                        float shieldAmountScale = unit.shield / (unit.maxHealth * Mathf.pow(10f, (float)didgt - 1f));
+                        if(didgt > 1){
+                            Lines.line(unit.x - unit.hitSize() * 0.6f,
+                                    unit.y + (unit.hitSize() / 2f) + (float)didgt * 2f + y_corr,
+                                    unit.x + unit.hitSize() * ((Mathf.ceil((shieldAmountScale - Mathf.floor(shieldAmountScale)) * 10f) - 1f + 0.0001f) * 1.2f * (1f / 9f) - 0.6f),
+                                    unit.y + (unit.hitSize() / 2f) + (float)didgt * 2f + y_corr);
+                            //(s-1)*(1/9)because line(0) will draw length of 1
+                        }else{
+                            Lines.line(unit.x - unit.hitSize() * 0.6f,
+                                    unit.y + (unit.hitSize() / 2f) + (float)didgt * 2f + y_corr,
+                                    unit.x + unit.hitSize() * ((shieldAmountScale - Mathf.floor(shieldAmountScale) - 0.001f) * 1.2f - 0.6f),
+                                    unit.y + (unit.hitSize() / 2f) + (float)didgt * 2f + y_corr);
+                        }
+                    }
+                }
+                Draw.reset();
+            }
+
+            float index = 0f;
+            float iconSize = Mathf.ceil(unit.hitSize() / 4f);
+            for(StatusEffect eff : Vars.content.statusEffects()){
+                if(unit.hasEffect(eff)){
+                    Draw.rect(eff.uiIcon,
+                            unit.x - unit.hitSize() * 0.6f + 0.5f * iconSize * Mathf.mod(index, 4f),
+                            unit.y + (unit.hitSize() / 2f) + 3f + 4f * Mathf.floor(index / 4f),
+                            4f, 4f);
+                    index++;
+                }
+            }
+
+            index = 0f;
+            if(unit instanceof Payloadc payload && payload.payloads().any()){
+                for(Payload p : payload.payloads()){
+                    Draw.rect(p.icon(),
+                            unit.x - unit.hitSize() * 0.6f + 0.5f * iconSize * index,
+                            unit.y + (unit.hitSize() / 2f) - 4f,
+                            4f, 4f);
+                    index++;
+                }
+                Draw.reset();
+            }
+
+        }
+
+        //display logicAI info by MI2
+        if(unit.controller() instanceof LogicAI logicai){
+            Draw.reset();
+            if(Core.settings.getBool("unitLogicMoveLine") && Mathf.len(logicai.moveX - unit.x, logicai.moveY - unit.y) <= 1200f){
+                Lines.stroke(1f);
+                Draw.color(0.2f, 0.2f, 1f, 0.9f);
+                Lines.dashLine(unit.x, unit.y, logicai.moveX, logicai.moveY, (int)(Mathf.len(logicai.moveX - unit.x, logicai.moveY - unit.y) / 8));
+                Lines.dashCircle(logicai.moveX, logicai.moveY, logicai.moveRad);
+                Draw.reset();
+            }
+
+            //logicai timers
+            if(Core.settings.getBool("unitLogicTimerBars")){
+
+                Lines.stroke(2f);
+                Draw.color(Pal.heal);
+                Lines.line(unit.x - (unit.hitSize() / 2f), unit.y - (unit.hitSize() / 2f), unit.x - (unit.hitSize() / 2f), unit.y + unit.hitSize() * (logicai.controlTimer / logicai.logicControlTimeout - 0.5f));
+
+                Lines.stroke(2f);
+                Draw.color(Pal.items);
+                Lines.line(unit.x - (unit.hitSize() / 2f) - 1f, unit.y - (unit.hitSize() / 2f), unit.x - (unit.hitSize() / 2f) - 1f, unit.y + unit.hitSize() * (logicai.itemTimer / logicai.transferDelay - 0.5f));
+
+                Lines.stroke(2f);
+                Draw.color(Pal.items);
+                Lines.line(unit.x - (unit.hitSize() / 2f) - 1.5f, unit.y - (unit.hitSize() / 2f), unit.x - (unit.hitSize() / 2f) - 1.5f, unit.y + unit.hitSize() * (logicai.payTimer / logicai.transferDelay - 0.5f));
+
+                Draw.reset();
+            }
+        }
+
+        if(Core.settings.getBool("unithitbox")){
+            Draw.color(unit.team.color, Color.black, Mathf.absin(Time.time, 4f, 1f));
+            Lines.poly(unit.x, unit.y, 6, unit.hitSize());
+        }
+
     }
+
+
 
     public <T extends Unit & Payloadc> void drawPayload(T unit){
         if(unit.hasPayload()){
@@ -1184,11 +1468,13 @@ public class UnitType extends UnlockableContent{
             float size = (itemSize + Mathf.absin(Time.time, 5f, 1f)) * unit.itemTime;
 
             Draw.mixcol(Pal.accent, Mathf.absin(Time.time, 5f, 0.1f));
+            Draw.alpha(unitTrans);
             Draw.rect(unit.item().fullIcon,
             unit.x + Angles.trnsx(unit.rotation + 180f, itemOffsetY),
             unit.y + Angles.trnsy(unit.rotation + 180f, itemOffsetY),
             size, size, unit.rotation);
             Draw.mixcol();
+            Draw.alpha(unitTrans);
 
             size = (3f + Mathf.absin(Time.time, 5f, 1f)) * unit.itemTime + 0.5f;
             Draw.color(Pal.accent);
@@ -1196,7 +1482,7 @@ public class UnitType extends UnlockableContent{
             unit.x + Angles.trnsx(unit.rotation + 180f, itemOffsetY),
             unit.y + Angles.trnsy(unit.rotation + 180f, itemOffsetY), size * 2, size * 2);
 
-            if(unit.isLocal() && !renderer.pixelator.enabled()){
+            if(Core.settings.getBool("unitItemCarried") || (unit.isLocal() && !renderer.pixelator.enabled())){
                 Fonts.outline.draw(unit.stack.amount + "",
                 unit.x + Angles.trnsx(unit.rotation + 180f, itemOffsetY),
                 unit.y + Angles.trnsy(unit.rotation + 180f, itemOffsetY) - 3,
@@ -1257,10 +1543,12 @@ public class UnitType extends UnlockableContent{
 
     public void drawOutline(Unit unit){
         Draw.reset();
+        Draw.alpha(unitTrans); //
 
         if(Core.atlas.isFound(outlineRegion)){
             applyColor(unit);
             applyOutlineColor(unit);
+            Draw.alpha(unitTrans);
             Draw.rect(outlineRegion, unit.x, unit.y, unit.rotation - 90);
             Draw.reset();
         }
@@ -1268,6 +1556,8 @@ public class UnitType extends UnlockableContent{
 
     public void drawBody(Unit unit){
         applyColor(unit);
+
+        Draw.alpha(unitTrans); //
 
         Draw.rect(region, unit.x, unit.y, unit.rotation - 90);
 
@@ -1360,12 +1650,14 @@ public class UnitType extends UnlockableContent{
             Lines.line(legBaseRegion, leg.joint.x + Tmp.v1.x, leg.joint.y + Tmp.v1.y, leg.base.x, leg.base.y, false);
 
             if(jointRegion.found()){
+                Draw.alpha(unitTrans);
                 Draw.rect(jointRegion, leg.joint.x, leg.joint.y);
             }
         }
 
         //base joints are drawn after everything else
         if(baseJointRegion.found()){
+            Draw.alpha(unitTrans);
             for(int j = legs.length - 1; j >= 0; j--){
                 //TODO does the index / draw order really matter?
                 Vec2 position = unit.legOffset(legOffset, (j % 2 == 0 ? j/2 : legs.length - 1 - j/2)).add(unit);
@@ -1374,6 +1666,7 @@ public class UnitType extends UnlockableContent{
         }
 
         if(baseRegion.found()){
+            Draw.alpha(unitTrans);
             Draw.rect(baseRegion, unit.x, unit.y, rotation - 90);
         }
 
@@ -1427,7 +1720,7 @@ public class UnitType extends UnlockableContent{
 
         for(int i : Mathf.signs){
             Draw.mixcol(Tmp.c1.set(mechLegColor).lerp(Color.white, Mathf.clamp(unit.hitTime)), Math.max(Math.max(0, i * extension / mechStride), unit.hitTime));
-
+            Draw.alpha(unitTrans); //
             Draw.rect(legRegion,
             unit.x + Angles.trnsx(mech.baseRotation(), extension * i - boostTrns, -boostTrns*i),
             unit.y + Angles.trnsy(mech.baseRotation(), extension * i - boostTrns, -boostTrns*i),
@@ -1443,6 +1736,8 @@ public class UnitType extends UnlockableContent{
         }else{
             Draw.color(Color.white);
         }
+
+        Draw.alpha(unitTrans); //
 
         Draw.rect(baseRegion, unit, mech.baseRotation() - 90);
 
@@ -1467,6 +1762,13 @@ public class UnitType extends UnlockableContent{
         }
     }
 
+    public static void initUnitTransp(){
+        unitTrans = (float)Core.settings.getInt("unitTransparency") / 100f;
+    }
+
+    public static void initLegTransp(){
+        legTrans = (float)Core.settings.getInt("unitTransparency") / 100f;
+    }
     //endregion
 
     public static class UnitEngine implements Cloneable{

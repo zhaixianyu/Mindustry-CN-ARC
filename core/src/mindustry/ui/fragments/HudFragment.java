@@ -14,6 +14,7 @@ import arc.scene.ui.ImageButton.*;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
+import mindustry.Vars;
 import mindustry.annotations.Annotations.*;
 import mindustry.content.*;
 import mindustry.core.GameState.*;
@@ -39,6 +40,13 @@ public class HudFragment{
 
     private ImageButton flip;
     private CoreItemsDisplay coreItems = new CoreItemsDisplay();
+    //shugen002/MI2's display
+    //private OtherCoreItemDisplay otherCoreItemDisplay = new OtherCoreItemDisplay();
+    // MI2 table
+    private MI2ToolsTable mi2ToolsTable = new MI2ToolsTable();
+    //private HudSettingsTable hudSettingsTable = new HudSettingsTable();
+
+    private boolean editorMainShow = true;
 
     private String hudText = "";
     private boolean showHudText;
@@ -85,6 +93,13 @@ public class HudFragment{
         Events.on(ResetEvent.class, e -> {
             coreItems.resetUsed();
             coreItems.clear();
+        });
+
+        Events.on(WorldLoadEvent.class,e->{
+            //otherCoreItemDisplay.updateTeamList();
+            mi2ToolsTable.rebuild();
+            //startTime = Time.timeSinceMillis(0);
+
         });
 
         //paused table
@@ -200,39 +215,70 @@ public class HudFragment{
             Table wavesMain, editorMain;
 
             cont.stack(wavesMain = new Table(), editorMain = new Table()).height(wavesMain.getPrefHeight())
-            .name("waves/editor");
+            .name("waves/editor").growY().left().top();
 
             wavesMain.visible(() -> shown && !state.isEditor());
             wavesMain.top().left().name = "waves";
 
-            wavesMain.table(s -> {
-                //wave info button with text
-                s.add(makeStatusTable()).grow().name("status");
+            var rightStyle = new ImageButtonStyle(){{
+                over = buttonRightOver;
+                down = buttonRightDown;
+                up = buttonRight;
+                disabled = buttonRightDisabled;
+                imageDisabledColor = Color.clear;
+                imageUpColor = Color.white;
+            }};
 
-                var rightStyle = new ImageButtonStyle(){{
-                    over = buttonRightOver;
-                    down = buttonRightDown;
-                    up = buttonRight;
-                    disabled = buttonRightDisabled;
-                    imageDisabledColor = Color.clear;
-                    imageUpColor = Color.white;
-                }};
+            if(Core.settings.getBool("arcSpecificTable")){
+                wavesMain.table(s -> {
+                    //wave info button with text
+                    s.add(makeStatusTableArc()).grow().name("status");
 
-                //table with button to skip wave
-                s.button(Icon.play, rightStyle, 30f, () -> {
-                    if(net.client() && player.admin){
-                        Call.adminRequest(player, AdminAction.wave);
-                    }else{
-                        logic.skipWave();
+                    //table with button to skip wave
+                    s.button(Icon.play, rightStyle, 30f, () -> {
+                        if(net.client() && player.admin){
+                            Call.adminRequest(player, AdminAction.wave);
+                        }else{
+                            logic.skipWave();
+                        }
+                    }).growY().fillX().right().width(40f).disabled(b -> !Core.settings.getBool("overrideSkipWave") && !canSkipWave()).name("skip");
+                }).width(dsize * 5 + 4f).name("statustable");
+            }
+            else{
+                wavesMain.table(s -> {
+                    //wave info button with text
+                    s.add(makeStatusTable()).grow().name("status");
+
+                    //table with button to skip wave
+                    s.button(Icon.play, rightStyle, 30f, () -> {
+                        if(net.client() && player.admin){
+                            Call.adminRequest(player, AdminAction.wave);
+                        }else{
+                            logic.skipWave();
+                        }
+                    }).growY().fillX().right().width(40f).disabled(b -> !Core.settings.getBool("overrideSkipWave") && !canSkipWave()).name("skip");
+                    // Power bar display
+                    if (Core.settings.getBool("powerStatistic")){
+                        s.row();
+                        s.add(PowerInfo.getBars()).growX().colspan(s.getColumns());
                     }
-                }).growY().fillX().right().width(40f).disabled(b -> !canSkipWave()).name("skip").get().toBack();
-            }).width(dsize * 5 + 4f).name("statustable");
+
+
+                }).width(dsize * 5 + 4f).name("statustable");
+            }
+
+
 
             wavesMain.row();
 
             addInfoTable(wavesMain.table().width(dsize * 5f + 4f).left().get());
 
             editorMain.name = "editor";
+            editorMain.button("[green]队", () -> {
+                editorMainShow = !editorMainShow;
+            }).left().width(40f).padBottom(40f);
+            editorMain.row();
+
             editorMain.table(Tex.buttonEdge4, t -> {
                 //t.margin(0f);
                 t.name = "teams";
@@ -253,8 +299,18 @@ public class HudFragment{
                         }
                     }
                 }).left();
+                t.visible(() -> editorMainShow);
             }).width(dsize * 5 + 4f);
-            editorMain.visible(() -> shown && state.isEditor());
+            editorMain.visible(() -> shown && (state.isEditor() || Core.settings.getBool("selectTeam")));
+
+            //map info/nextwave display
+            if(Core.settings.getBool("showMI2toolbox")){
+                cont.table(infoWave -> {
+                    infoWave.name = "map/wave";
+                    infoWave.left().top().visible(() -> shown);
+                    infoWave.add(mi2ToolsTable);
+                }).left().top();
+            }
 
             //fps display
             cont.table(info -> {
@@ -275,6 +331,10 @@ public class HudFragment{
                 }else{
                     info.label(() -> mem.get((int)(Core.app.getJavaHeap() / 1024 / 1024))).left().style(Styles.outlineLabel).name("memory");
                 }
+                info.row();
+                info.label(() -> "缩放: " + String.format("%.2f", Vars.renderer.getScale())).left().style(Styles.outlineLabel);
+                info.row();
+                info.add("ARC-Client   "+arcVersion).left();
                 info.row();
 
                 info.label(() -> ping.get(netClient.getPing())).visible(net::client).left().style(Styles.outlineLabel).name("ping").row();
@@ -831,16 +891,89 @@ public class HudFragment{
 
         table.row();
 
-        table.clicked(() -> {
-            if(state.rules.objectives.size > 0){
-                var first = state.rules.objectives.first();
-                var details = first.details();
-                if(details != null){
-                    //TODO this could be much better.
-                    ui.showInfo(details);
+        return table;
+    }
+
+
+    private Table makeStatusTableArc(){
+        Table table = new Table(Tex.wavepane);
+
+        table.touchable = Touchable.enabled;
+
+        table.name = "waves";
+
+        table.marginTop(0).marginBottom(4).marginLeft(4);
+
+        table.table(t -> {
+            t.margin(0);
+            t.clicked(() -> {
+                if(!player.dead() && mobile){
+                    Call.unitClear(player);
+                    control.input.recentRespawnTimer = 1f;
+                    control.input.controlledType = null;
                 }
-            }
-        });
+            });
+            //t.image(() -> player.icon()).scaling(Scaling.bounded).grow().maxWidth(20f);
+            t.image(() -> player.icon()).size(iconMed);
+            t.row();
+            t.add(new Bar(
+                () -> {
+                    if(player.unit().shield > 0){
+                        return UI.formatAmount((long)player.unit().health) + "[gray]+[white]" + UI.formatAmount((long)player.unit().shield);
+                    }else{
+                        return UI.formatAmount((long)player.unit().health);
+                    }
+                },
+                () -> Pal.health,
+                () -> Math.min(player.unit().health / player.unit().maxHealth, 1))).height(18).growX();
+            t.row();
+            //if(state.rules.unitAmmo){}
+            t.add(new Bar(
+                () -> {
+                if(state.rules.unitAmmo) return player.unit().type.ammoType.icon() + (int)player.unit().ammo + "/" + (int)player.unit().type.ammoCapacity;
+                else return player.unit().type.ammoType.icon();
+                },
+                () -> player.unit().type.ammoType.barColor(),
+                () -> {
+                    if(state.rules.unitAmmo) return player.unit().ammo / player.unit().type.ammoCapacity;
+                    else return 1;
+                })).height(18).growX();//.visible(state.rules.unitAmmo)
+            t.row();
+            //
+
+        }).size(120f, 80).padRight(4);
+
+        table.table(t -> {
+            t.add(new Bar(
+                () -> Calwaveshower(),
+                () -> Color.valueOf("ccffcc"),
+                () -> {
+                    if (CalWinWave() >= 1 && CalWinWave() >= state.wave) return state.wave / (float)CalWinWave();
+                    else return 1f;
+                })).height(18).growX().row();
+            t.add(new Bar(
+                () -> Calwavetimeremain(),
+                () -> Color.valueOf("F5DEB3"),
+                () -> state.wavetime / state.rules.waveSpacing)).height(18).growX().row();
+            t.add(new Bar(
+                () -> {
+                    if(Vars.spawner.countSpawns() <= 1 || state.rules.mode() == Gamemode.pvp){
+                        return "[orange]"+state.enemies + "[gray](+"+CalwaveEnemy(state.wave - 1) + ")";
+                    }else if (CalwaveEnemy(state.wave - 1) > 0){
+                        return "[orange]"+state.enemies + "[gray](+"+CalwaveEnemy(state.wave - 1) + "×"+Vars.spawner.countSpawns() + ")";
+                    }else{
+                        return "[orange]"+state.enemies+"[gray](+0)";
+                    }
+                },
+                () -> Color.valueOf("F4A460"),
+                () -> state.enemies / ((float)CalwaveEnemy(state.wave-2) * Vars.spawner.countSpawns()))).height(18).growX();
+        }).growX().pad(8f);
+
+        // Power bar display
+        if (Core.settings.getBool("powerStatistic")){
+            table.row();
+            table.add(PowerInfo.getBars()).growX().colspan(table.getColumns());
+        }
 
         return table;
     }
@@ -890,4 +1023,71 @@ public class HudFragment{
         return state.rules.waves && ((net.server() || player.admin) || !net.active()) && state.enemies == 0 && !spawner.isSpawning();
     }
 
+    private String Calwaveshower(){
+        StringBuilder builder = new StringBuilder();
+        IntFormat enemiesf = new IntFormat("wave.enemies");
+        IntFormat enemycf = new IntFormat("wave.enemycore");
+        IntFormat enemycsf = new IntFormat("wave.enemycores");
+        IntFormat wavef = new IntFormat("wave");
+        IntFormat wavefc = new IntFormat("wave.cap");
+        IntFormat enemyf = new IntFormat("wave.enemy");
+
+
+        if(!state.rules.waves && state.rules.attackMode){
+            int sum = Math.max(state.teams.present.sum(t -> t.team != player.team() ? t.cores.size : 0), 1);
+            builder.append("敌人核心：[orange]").append(sum);
+            return builder.toString();
+        }
+
+        if(!state.rules.waves && state.isCampaign()){
+            builder.append("[lightgray]").append(Core.bundle.get("sector.curcapture"));
+        }
+
+        if(!state.rules.waves){
+            return builder.toString();
+        }
+
+        if(CalWinWave() > 1 && CalWinWave() >= state.wave){
+            builder.append("[orange]" + state.wave).append("[white]/[yellow]" + CalWinWave());
+        }else{
+            builder.append("波次：[orange]").append(state.wave);
+        }
+        return builder.toString();
+    }
+
+    private String Calwavetimeremain(){
+        StringBuilder wavetimeremain = new StringBuilder();
+        wavetimeremain.append("[orange]");
+        int m = ((int)state.wavetime / 60) / 60;
+        int s = ((int)state.wavetime / 60) % 60;
+        int ms = (int)state.wavetime % 60;
+        if(m > 0){
+            wavetimeremain.append(String.valueOf(m)).append("[white]: [orange]");
+            if(s < 10){
+                wavetimeremain.append("0");
+            }
+            wavetimeremain.append(String.valueOf(s)).append("[white]min");
+        }else{
+            wavetimeremain.append(String.valueOf(s)).append("[white].[orange]").append(String.valueOf(ms)).append("[white]s");
+        }
+        return wavetimeremain.toString();
+    }
+
+    private int CalwaveEnemy(int wave){
+        int waveEnemy = 0;
+        for(SpawnGroup group : state.rules.spawns){
+            waveEnemy += group.getSpawned(Math.max(0, wave));
+        }
+        return waveEnemy;
+    }
+
+    private int CalWinWave(){
+        if (state.rules.winWave >= 1) return state.rules.winWave;
+        int maxwave = 0;
+        for(SpawnGroup group : state.rules.spawns){
+            maxwave = Math.max(maxwave ,group.end);
+        }
+        if (maxwave > 10000) return 0;
+        return maxwave + 1;
+    }
 }

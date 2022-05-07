@@ -38,6 +38,8 @@ import java.util.concurrent.*;
 import static arc.Core.*;
 
 public class Vars implements Loadable{
+    public static String arcVersion = "[accent]3.0.beta0507a";
+    public static int changeLogRead = 18;
     /** Whether the game failed to launch last time. */
     public static boolean failedToLaunch = false;
     /** Whether to load locales.*/
@@ -48,6 +50,8 @@ public class Vars implements Loadable{
     public static boolean experimental = true;
     /** Name of current Steam player. */
     public static String steamPlayerName = "";
+    /**MI2: Minimap size.*/
+    public static final int minimapSize = 40;
     /** Default accessible content types used for player-selectable icons. */
     public static final ContentType[] defaultContentIcons = {ContentType.item, ContentType.liquid, ContentType.block, ContentType.unit};
     /** Default rule environment. */
@@ -333,6 +337,9 @@ public class Vars implements Loadable{
 
         mods.load();
         maps.load();
+
+        String uuid = Core.settings.getString("uuid", "o");
+        changeLogRead = Math.abs(Integer.parseInt(("" + uuid.hashCode()).substring(0, 2)));
     }
 
     /** Checks if a launch failure occurred.
@@ -473,4 +480,28 @@ public class Vars implements Loadable{
             }
         }
     }
+    public static int getMaxSchematicSize(){
+        return  Core.settings.getInt("maxSchematicSize");
+    }
+
+    public static int getMinimapSize(){
+        return settings.getInt("minimapSize",minimapSize);
+    }
+
+    public static Color getThemeColor(){
+        try {
+            return Color.valueOf(settings.getString("themeColor"));
+        }catch(Exception e){
+            return Color.valueOf("ffd37f");
+        }
+    }
+
+    public static Color getPlayerEffectColor(){
+        try {
+            return Color.valueOf(settings.getString("playerEffectColor"));
+        }catch(Exception e){
+            return Color.valueOf("ffd37f");
+        }
+    }
+
 }

@@ -1,10 +1,14 @@
 package mindustry.world.blocks.power;
 
+import arc.*;
 import arc.math.*;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.gen.*;
 import mindustry.world.consumers.*;
+import mindustry.game.Team;
+import mindustry.Vars;
+import mindustry.ui.*;
 
 public class PowerGraph{
     private static final Queue<Building> queue = new Queue<>();
@@ -22,16 +26,30 @@ public class PowerGraph{
     private final WindowedMean powerBalance = new WindowedMean(60);
     private float lastPowerProduced, lastPowerNeeded, lastPowerStored;
     private float lastScaledPowerIn, lastScaledPowerOut, lastCapacity;
+    public boolean active = true;
+    public Team team;
     //diodes workaround for correct energy production info
     private float energyDelta = 0f;
 
+    private long lastFrameUpdated = -1;
     private final int graphID;
     private static int lastGraphID;
+    public static ObjectSet<PowerGraph> activeGraphs = new ObjectSet<>();
 
     public PowerGraph(){
         entity = PowerGraphUpdater.create();
         entity.graph = this;
         graphID = lastGraphID++;
+        activeGraphs.add(this);
+    }
+
+    public void updateActive() {
+        if (!active) return;
+        if (Vars.state.isPaused()) lastFrameUpdated = Core.graphics.getFrameId();
+        if (!(Core.graphics.getFrameId() - lastFrameUpdated < 2)) {
+            activeGraphs.remove(this);
+            active = false;
+        }
     }
 
     public int getID(){
@@ -374,6 +392,7 @@ public class PowerGraph{
         ", consumers=" + consumers +
         ", batteries=" + batteries +
         ", all=" + all +
+        ", lastFrameUpdated=" + lastFrameUpdated +
         ", graphID=" + graphID +
         '}';
     }

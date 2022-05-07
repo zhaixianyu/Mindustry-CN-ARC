@@ -105,6 +105,9 @@ public class Drill extends Block{
 
         addBar("drillspeed", (DrillBuild e) ->
              new Bar(() -> Core.bundle.format("bar.drillspeed", Strings.fixed(e.lastDrillSpeed * 60 * e.timeScale(), 2)), () -> Pal.ammo, () -> e.warmup));
+        addBar("progress", (DrillBuild e) ->
+                new Bar(() -> "挖掘进度：" + Math.round(e.progress / (drillTime + hardnessDrillMultiplier * returnItem.hardness) * 100) + " %" , () -> Pal.ammo, () -> returnItem == null ? 0 : e.progress / (drillTime + hardnessDrillMultiplier * returnItem.hardness)));
+
     }
 
     public Item getDrop(Tile tile){
@@ -343,6 +346,14 @@ public class Drill extends Block{
                 Draw.color(dominantItem.color);
                 Draw.rect(itemRegion, x, y);
                 Draw.color();
+            }
+            if(Core.settings.getBool("arcdrillmode") && dominantItem != null){
+                float dx = x - size * tilesize/2f, dy = y - size * tilesize/2f;
+                float dms = iconSmall / 4f;
+                Draw.mixcol(Color.darkGray, 1f);
+                Draw.rect(dominantItem.fullIcon, dx+4, dy+3, dms, dms);
+                Draw.reset();
+                Draw.rect(dominantItem.fullIcon, dx+4, dy+4, dms, dms);
             }
         }
 

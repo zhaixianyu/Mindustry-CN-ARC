@@ -30,6 +30,11 @@ public class MenuFragment{
     public void build(Group parent){
         renderer = new MenuRenderer();
 
+        if (!Core.settings.getBool("arcDisableModWarning")){
+            ui.showInfo("@arcmoload.warning");
+            ui.aboutcn_arc.show();
+        }
+
         Group group = new WidgetGroup();
         group.setFillParent(true);
         group.visible(() -> !ui.editor.isShown());
@@ -79,7 +84,9 @@ public class MenuFragment{
             }));
         }
 
-        String versionText = ((Version.build == -1) ? "[#fc8140aa]" : "[#ffffffba]") + Version.combined();
+        //String versionText = ((Version.build == -1) ? "[#fc8140aa]" : "[#ffffffba]") + Version.combined();
+        String versionText = ((Version.build == -1) ? "[#fc8140aa]" : "[cyan]") + Version.combined();
+        String arcversionText = "\n[orange]ARC version "+arcVersion;
         parent.fill((x, y, w, h) -> {
             TextureRegion logo = Core.atlas.find("logo");
             float width = Core.graphics.getWidth(), height = Core.graphics.getHeight() - Core.scene.marginTop;
@@ -94,7 +101,7 @@ public class MenuFragment{
             Draw.rect(logo, fx, fy, logow, logoh);
 
             Fonts.outline.setColor(Color.white);
-            Fonts.outline.draw(versionText, fx, fy - logoh/2f - Scl.scl(2f), Align.center);
+            Fonts.outline.draw(versionText+arcversionText, fx, fy - logoh/2f - Scl.scl(2f), Align.center);
         }).touchable = Touchable.disabled;
     }
 
@@ -114,7 +121,11 @@ public class MenuFragment{
             editor = new MobileButton(Icon.terrain, "@editor", () -> checkPlay(ui.maps::show)),
             tools = new MobileButton(Icon.settings, "@settings", ui.settings::show),
             mods = new MobileButton(Icon.book, "@mods", ui.mods::show),
-            exit = new MobileButton(Icon.exit, "@quit", () -> Core.app.exit());
+            exit = new MobileButton(Icon.exit, "@quit", () -> Core.app.exit()),
+            cn_arc = new MobileButton(Icon.info,"@aboutcn_arc.button",  ui.aboutcn_arc::show),
+            //mindustrywiki = new MobileButton(Icon.book, "@mindustrywiki.button", ui.mindustrywiki::show),
+            //updatedialog = new MobileButton(Icon.info,"@updatedialog.button",  ui.updatedialog::show),
+            database = new MobileButton(Icon.book, "@database",  ui.database::show);
 
         if(!Core.graphics.isPortrait()){
             container.marginTop(60f);
@@ -133,6 +144,11 @@ public class MenuFragment{
                 table.add(mods);
                 if(!ios) table.add(exit);
             }).colspan(4);
+            container.row();
+            container.add(cn_arc);
+            //container.add(updatedialog);
+            container.add(database);
+            //container.add(mindustrywiki);
         }else{
             container.marginTop(0f);
             container.add(play);
@@ -151,6 +167,12 @@ public class MenuFragment{
                 table.add(mods);
                 if(!ios) table.add(exit);
             }).colspan(2);
+            container.row();
+            container.add(cn_arc);
+            container.add(database);
+            container.row();
+            //container.add(updatedialog);
+            //container.add(mindustrywiki);
         }
     }
 
@@ -177,11 +199,14 @@ public class MenuFragment{
                 new Buttoni("@database.button", Icon.menu,
                     new Buttoni("@schematics", Icon.paste, ui.schematics::show),
                     new Buttoni("@database", Icon.book, ui.database::show),
-                    new Buttoni("@about.button", Icon.info, ui.about::show)
+                    new Buttoni("@about.button", Icon.link, ui.about::show)
+                    //new Buttoni("@updatedialog.button", Icon.distribution, ui.updatedialog::show),
+                    //new Buttoni("@mindustrywiki.button", Icon.info, ui.mindustrywiki::show)
                 ),
                 new Buttoni("@editor", Icon.terrain, () -> checkPlay(ui.maps::show)), steam ? new Buttoni("@workshop", Icon.steam, platform::openWorkshop) : null,
                 new Buttoni("@mods", Icon.book, ui.mods::show),
                 new Buttoni("@settings", Icon.settings, ui.settings::show),
+                new Buttoni("@aboutcn_arc.button", Icon.info, ui.aboutcn_arc::show),
                 new Buttoni("@quit", Icon.exit, Core.app::exit)
             );
 

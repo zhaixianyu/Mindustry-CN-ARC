@@ -536,7 +536,7 @@ public class Block extends UnlockableContent implements Senseable{
 
     public void addLiquidBar(Liquid liq){
         addBar("liquid-" + liq.name, entity -> !liq.unlocked() ? null : new Bar(
-            () -> liq.localizedName,
+                () -> entity.liquids.get(liq) <= 0.001f ? Core.bundle.get("bar.liquid") : liq.localizedName + " " + (entity == null || entity.liquids == null ? 0f : (int)(entity.liquids.get(liq) * 100f) / 100f + "/" + liquidCapacity),
             liq::barColor,
             () -> entity.liquids.get(liq) / liquidCapacity
         ));
@@ -552,15 +552,22 @@ public class Block extends UnlockableContent implements Senseable{
     }
 
     public void setBars(){
-        addBar("health", entity -> new Bar("stat.health", Pal.health, entity::healthf).blink(Color.white));
+        addBar("health", entity -> new Bar(() -> {
+            if (entity.maxHealth == entity.health) {return entity.maxHealth+"";}
+            else {return entity.health + " / " + entity.maxHealth + " (" + (int)(100 * entity.health / entity.maxHealth) + "%)";}
+        }, () -> Pal.health, entity::healthf).blink(Color.white));
 
         if(consPower != null){
+
             boolean buffered = consPower.buffered;
             float capacity = consPower.capacity;
 
             addBar("power", entity -> new Bar(
                 () -> buffered ? Core.bundle.format("bar.poweramount", Float.isNaN(entity.power.status * capacity) ? "<ERROR>" : UI.formatAmount((int)(entity.power.status * capacity))) :
-                Core.bundle.get("bar.power"),
+                        entity.power.status > 0 ?
+                                Core.bundle.format("bar.powerconsume", UI.formatFloat(entity.power.status * consPower.usage * 60 * entity.timeScale()))
+                                :
+                                Core.bundle.get("bar.power"),
                 () -> Pal.powerBar,
                 () -> Mathf.zero(consPower.requestedPower(entity)) && entity.power.graph.getPowerProduced() + entity.power.graph.getBatteryStored() > 0f ? 1f : entity.power.status)
             );

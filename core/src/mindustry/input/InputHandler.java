@@ -52,6 +52,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
     final static int maxLength = 100;
     final static Rect r1 = new Rect(), r2 = new Rect();
     final static Seq<Unit> tmpUnits = new Seq<>(false);
+    public static Player follow;
 
     /** If true, there is a cutscene currently occurring in logic. */
     public boolean logicCutscene;
@@ -631,6 +632,10 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
                     Call.unitControl(player, unit);
                 }
             }
+        }
+
+        if(follow != null && !follow.dead()){
+            Core.camera.position.lerpDelta(follow, 0.08f);
         }
     }
 
