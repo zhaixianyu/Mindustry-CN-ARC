@@ -94,6 +94,10 @@ public class DesktopInput extends InputHandler{
                 b.table(a -> {
                     a.button("@schematic.add", Icon.save, this::showSchematicSave).colspan(2).size(250f, 50f).disabled(f -> lastSchematic == null || lastSchematic.file != null);
                 });
+                b.row();
+                b.table(a -> {
+                    a.button("@schematic.preview", Icon.info, this::showSchematicPreview).colspan(2).size(250f, 50f).disabled(f -> lastSchematic == null || lastSchematic.file != null);
+                });
             }).margin(6f);
         });
     }
@@ -106,11 +110,11 @@ public class DesktopInput extends InputHandler{
 
         //draw break selection
         if(mode == breaking){
-            drawBreakSelection(selectX, selectY, cursorX, cursorY, !Core.input.keyDown(Binding.schematic_select) ? maxLength : Vars.maxSchematicSize);
+            drawBreakSelection(selectX, selectY, cursorX, cursorY, !Core.input.keyDown(Binding.schematic_select) ? maxLength : Vars.getMaxSchematicSize());
         }
 
         if(Core.input.keyDown(Binding.schematic_select) && !Core.scene.hasKeyboard() && mode != breaking){
-            drawSelection(schemX, schemY, cursorX, cursorY, Vars.maxSchematicSize);
+            drawSelection(schemX, schemY, cursorX, cursorY, Vars.getMaxSchematicSize());
         }
 
         drawCommanded();
@@ -606,7 +610,7 @@ public class DesktopInput extends InputHandler{
                 linePlans.clear();
                 Events.fire(new LineConfirmEvent());
             }else if(mode == breaking){ //touch up while breaking, break everything in selection
-                removeSelection(selectX, selectY, cursorX, cursorY, !Core.input.keyDown(Binding.schematic_select) ? maxLength : Vars.maxSchematicSize);
+                removeSelection(selectX, selectY, cursorX, cursorY, !Core.input.keyDown(Binding.schematic_select) ? maxLength : Vars.getMaxSchematicSize());
                 if(lastSchematic != null){
                     useSchematic(lastSchematic);
                     lastSchematic = null;

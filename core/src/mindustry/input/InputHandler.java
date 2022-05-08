@@ -38,6 +38,8 @@ import mindustry.world.blocks.payloads.*;
 import mindustry.world.blocks.storage.*;
 import mindustry.world.blocks.storage.CoreBlock.*;
 import mindustry.world.meta.*;
+import mindustry.ui.*;
+import arc.util.pooling.*;
 
 import java.util.*;
 
@@ -897,6 +899,10 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
                 Events.fire(new SchematicCreateEvent(last));
             }
         });
+    }
+    protected void showSchematicPreview() {
+        if (lastSchematic == null) return;
+        ui.schematics.showInfo(lastSchematic);
     }
 
     public void rotatePlans(Seq<BuildPlan> plans, int direction){

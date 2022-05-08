@@ -1,0 +1,297 @@
+package mindustry.ui;
+
+import arc.struct.Seq;
+import arc.Core;
+import arc.func.Boolc;
+import arc.scene.Element;
+import arc.scene.ui.*;
+import arc.scene.ui.layout.*;
+import arc.scene.event.*;
+
+import arc.*;
+import arc.graphics.*;
+import arc.graphics.g2d.*;
+import arc.scene.*;
+import arc.scene.ui.ImageButton.*;
+import arc.struct.*;
+import arc.util.*;
+import mindustry.input.*;
+import mindustry.entities.Lightning;
+import mindustry.gen.*;
+import mindustry.graphics.*;
+
+import static mindustry.Vars.*;
+import static arc.Core.bundle;
+import static arc.Core.settings;
+
+public class HudSettingsTable extends Table{
+    protected Seq<Setting> list = new Seq<>();
+    private boolean expandList = false;
+    private int unitTransparency = Core.settings.getInt("unitTransparency");
+
+    public HudSettingsTable(){
+        rebuild();
+        right();
+    }
+
+    void rebuild(){
+
+        var ustyle = new ImageButtonStyle(){{
+            down = Styles.none;
+            up = Styles.none;
+            imageDownColor = Pal.accent;
+            imageUpColor = Color.white;
+            imageOverColor = Color.lightGray;
+        }};
+
+        clearChildren();
+
+        if(expandList){
+            unitTransparency = Core.settings.getInt("unitTransparency");
+
+            list.clear();
+
+            Table sets = new Table();
+            sliderPref("turretShowRange", 0, 0, 3, 1, s -> {
+                if(s==0){return "关闭";}
+                else if(s==1){return "仅对地";}
+                else if(s==2){return "仅对空";}
+                else if(s==3){return "全部";}
+                else{return s+"";}
+            });
+            sliderPref("chatValidType", 0, 0, 3, 1, s -> {
+                if(s==0){return "原版模式";}
+                else if(s==1){return "纯净聊天";}
+                else if(s==2){return "服务器记录";}
+                else if(s==3){return "全部记录";}
+                else{return s+"";}
+            });
+            checkPref("unitHealthBar", false);
+            sliderPref("unitTransparency",100,0,100,5, i -> i > 0 ? i + "%" : "关闭");
+            sliderPref("minhealth_unitshown", 0, 0, 2500, 50, i -> i + "[red]HP");
+            sliderPref("minhealth_unithealthbarshown", 0, 0, 2500, 100, i -> i + "[red]HP");
+            sliderPref("unitweapon_range", 0, 0, 100, 1, i -> i > 0 ? i + "%" : "关闭");
+
+            checkPref("unitPathLine", false);
+            checkPref("unitLogicMoveLine", true);
+            checkPref("unitWeaponTargetLine", true);
+
+            checkPref("blockWeaponTargetLine", true);
+
+
+            for(Setting setting : list){
+                setting.add(sets);
+            }
+
+            ScrollPane pane = pane(sp -> {
+                sp.background(Styles.black6);
+                sp.table(t -> {
+                    t.button("[cyan]S", () ->{
+                        Call.sendChatMessage("/sync");
+                    }).size(30,30).name("sync").tooltip("sync");
+                    t.button("[cyan]观", () -> {
+                        Call.sendChatMessage("/ob");
+                    }).size(30,30).name("ob").tooltip("观察者模式");
+                    t.button("[cyan]版", () -> {
+                        Call.sendChatMessage("/broad");
+                    }).size(30,30).name("ob").tooltip("服务器信息版");
+                    t.button("[red]版", () -> {
+                        Core.settings.put("ShowInfoPopup", !Core.settings.getBool("ShowInfoPopup"));
+                    }).size(30,30).name("ob").tooltip("关闭所有信息版");
+                }).left();
+                sp.row();
+                sp.table(t -> {
+                    t.button("[cyan]块", () ->{
+                        int blockrenderlevel = Core.settings.getInt("blockrenderlevel");
+                        Core.settings.put("blockrenderlevel", (blockrenderlevel+1) % 3);
+                    }).size(30,30).tooltip("建筑显示");
+                    t.button("[cyan]兵", () ->{
+                        boolean hideUnitTransparency = Core.settings.getInt("unitTransparency") > 0;
+                        Core.settings.put("unitTransparency", hideUnitTransparency? 0:unitTransparency);
+                    }).size(30,30).tooltip("兵种显示");
+                    t.button("[cyan]箱", () ->{
+                        Core.settings.put("unithitbox", !Core.settings.getBool("unithitbox"));
+                    }).size(30,30).tooltip("碰撞箱显示");
+                    t.button("[cyan]弹", () ->{
+                        Core.settings.put("bulletShow", !Core.settings.getBool("bulletShow"));
+                    }).size(30,30).tooltip("子弹显示");
+                    t.button("[cyan]雾", () ->{
+                        state.rules.fog = !state.rules.fog;
+                    }).size(30,30).tooltip("子弹显示").visible(!state.rules.pvp || player.team().id == 255);
+                }).left();
+                sp.row();
+                sp.table(t -> {
+                    t.button("[red]灯", () -> {
+                        Core.settings.put("DisableLightRender", !Core.settings.getBool("DisableLightRender"));
+                    }).size(30,30).name("灯光").tooltip("[cyan]开灯啊！");
+                    t.button("[acid]效", () ->{
+                        Core.settings.put("effects", !Core.settings.getBool("effects"));
+                    }).size(30,30).tooltip("特效显示");
+                    t.button("[acid]光", () ->{
+                        Core.settings.put("bloom", !Core.settings.getBool("bloom"));
+                    }).size(30,30).tooltip("光效显示");
+                    t.button("[acid]阴", () ->{
+                        Core.settings.put("forceEnableDarkness", !Core.settings.getBool("forceEnableDarkness"));
+                    }).size(30,30).tooltip("墙体阴影显示");
+                    t.button("[acid]天", () ->{
+                        Core.settings.put("showweather", !Core.settings.getBool("showweather"));
+                    }).size(30,30).tooltip("天气显示");
+                }).left();
+                sp.row();
+                sp.add(sets);
+                return;
+            }).maxSize(800f,300f).get();
+
+            pane.update(() -> {
+                Element e = Core.scene.hit(Core.input.mouseX(), Core.input.mouseY(), true);
+                if(e != null && e.isDescendantOf(pane)){
+                    pane.requestScroll();
+                }else if(pane.hasScroll()){
+                    Core.scene.setScrollFocus(null);
+                }
+            });
+        }
+
+        button("[cyan]控", () -> {
+            expandList = !expandList;
+            rebuild();
+        }).width(32f).fillY();
+    }
+
+    public interface StringProcessor{
+        String get(int i);
+    }
+
+    public Seq<Setting> getSettings(){
+        return list;
+    }
+
+    public void pref(Setting setting){
+        list.add(setting);
+        rebuild();
+    }
+
+    public SliderSettingF sliderPref(String name, String title, int def, int min, int max, StringProcessor s){
+        return sliderPref(name, title, def, min, max, 1, s);
+    }
+
+    public SliderSettingF sliderPref(String name, String title, int def, int min, int max, int step, StringProcessor s){
+        SliderSettingF res;
+        list.add(res = new SliderSettingF(name, title, def, min, max, step, s));
+        settings.defaults(name, def);
+        return res;
+    }
+
+    public SliderSettingF sliderPref(String name, int def, int min, int max, StringProcessor s){
+        return sliderPref(name, def, min, max, 1, s);
+    }
+
+    public SliderSettingF sliderPref(String name, int def, int min, int max, int step, StringProcessor s){
+        SliderSettingF res;
+        list.add(res = new SliderSettingF(name, bundle.get("setting." + name + ".name"), def, min, max, step, s));
+        settings.defaults(name, def);
+        return res;
+    }
+
+    public void checkPref(String name, String title, boolean def){
+        list.add(new CheckSettingF(name, title, def, null));
+        settings.defaults(name, def);
+    }
+
+    public void checkPref(String name, String title, boolean def, Boolc changed){
+        list.add(new CheckSettingF(name, title, def, changed));
+        settings.defaults(name, def);
+    }
+
+    /** Localized title. */
+    public void checkPref(String name, boolean def){
+        list.add(new CheckSettingF(name, bundle.get("setting." + name + ".name"), def, null));
+        settings.defaults(name, def);
+    }
+
+    /** Localized title. */
+    public void checkPref(String name, boolean def, Boolc changed){
+        list.add(new CheckSettingF(name, bundle.get("setting." + name + ".name"), def, changed));
+        settings.defaults(name, def);
+    }
+
+    public abstract static class Setting{
+        public String name;
+        public String title;
+
+        public abstract void add(Table table);
+    }
+
+    public static class CheckSettingF extends Setting{
+        boolean def;
+        Boolc changed;
+
+        CheckSettingF(String name, String title, boolean def, Boolc changed){
+            this.name = name;
+            this.title = title;
+            this.def = def;
+            this.changed = changed;
+        }
+
+        @Override
+        public void add(Table table){
+            CheckBox box = new CheckBox(title);
+            box.update(() -> box.setChecked(settings.getBool(name)));
+
+            box.changed(() -> {
+                settings.put(name, box.isChecked());
+                if(changed != null){
+                    changed.get(box.isChecked());
+                }
+            });
+
+            box.left();
+            table.add(box).left().padTop(0.5f);
+            table.row();
+        }
+    }
+
+    public static class SliderSettingF extends Setting{
+        int def;
+        int min;
+        int max;
+        int step;
+        StringProcessor sp;
+        float[] values = null;
+
+        SliderSettingF(String name, String title, int def, int min, int max, int step, StringProcessor s){
+            this.name = name;
+            this.title = title;
+            this.def = def;
+            this.min = min;
+            this.max = max;
+            this.step = step;
+            this.sp = s;
+        }
+
+        @Override
+        public void add(Table table){
+                Slider slider = new Slider(min, max, step, false);
+
+                slider.setValue(settings.getInt(name));
+
+                Label value = new Label("", Styles.outlineLabel);
+                Table content = new Table();
+                content.add(title, Styles.outlineLabel).left().growX().wrap();
+                content.add(value).padLeft(10f).right();
+                content.margin(3f, 33f, 3f, 33f);
+                content.touchable = Touchable.disabled;
+
+                slider.changed(() -> {
+                    settings.put(name, (int)slider.getValue());
+                    value.setText(sp.get((int)slider.getValue()));
+                });
+
+                slider.change();
+
+                table.stack(slider, content).width(Math.min(Core.graphics.getWidth() / 1.2f, 300f)).left().padTop(4f).get();
+                table.row();
+        }
+    }
+
+}

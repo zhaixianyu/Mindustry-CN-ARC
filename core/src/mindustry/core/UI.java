@@ -77,7 +77,7 @@ public class UI implements ApplicationListener, Loadable{
     public Cursor drillCursor, unloadCursor, targetCursor;
 
     public AboutCN_ARCDialog aboutcn_arc;
-    //public UpdateDialog updatedialog;
+    public UpdateDialog updatedialog;
     public CustomRulesDialog customrules;
     //public MindustryWikiDialog mindustrywiki;
 
@@ -205,7 +205,7 @@ public class UI implements ApplicationListener, Loadable{
         logic = new LogicDialog();
         fullText = new FullTextDialog();
         aboutcn_arc = new AboutCN_ARCDialog();
-        //updatedialog = new UpdateDialog();
+        updatedialog = new UpdateDialog();
         customrules = new CustomRulesDialog();
         //mindustrywiki = new MindustryWikiDialog();
 

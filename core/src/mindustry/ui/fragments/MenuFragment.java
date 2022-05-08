@@ -124,7 +124,7 @@ public class MenuFragment{
             exit = new MobileButton(Icon.exit, "@quit", () -> Core.app.exit()),
             cn_arc = new MobileButton(Icon.info,"@aboutcn_arc.button",  ui.aboutcn_arc::show),
             //mindustrywiki = new MobileButton(Icon.book, "@mindustrywiki.button", ui.mindustrywiki::show),
-            //updatedialog = new MobileButton(Icon.info,"@updatedialog.button",  ui.updatedialog::show),
+            updatedialog = new MobileButton(Icon.info,"@updatedialog.button",  ui.updatedialog::show),
             database = new MobileButton(Icon.book, "@database",  ui.database::show);
 
         if(!Core.graphics.isPortrait()){
@@ -146,7 +146,7 @@ public class MenuFragment{
             }).colspan(4);
             container.row();
             container.add(cn_arc);
-            //container.add(updatedialog);
+            container.add(updatedialog);
             container.add(database);
             //container.add(mindustrywiki);
         }else{
@@ -171,7 +171,7 @@ public class MenuFragment{
             container.add(cn_arc);
             container.add(database);
             container.row();
-            //container.add(updatedialog);
+            container.add(updatedialog);
             //container.add(mindustrywiki);
         }
     }
@@ -199,8 +199,8 @@ public class MenuFragment{
                 new Buttoni("@database.button", Icon.menu,
                     new Buttoni("@schematics", Icon.paste, ui.schematics::show),
                     new Buttoni("@database", Icon.book, ui.database::show),
-                    new Buttoni("@about.button", Icon.link, ui.about::show)
-                    //new Buttoni("@updatedialog.button", Icon.distribution, ui.updatedialog::show),
+                    new Buttoni("@about.button", Icon.link, ui.about::show),
+                    new Buttoni("@updatedialog.button", Icon.distribution, ui.updatedialog::show)
                     //new Buttoni("@mindustrywiki.button", Icon.info, ui.mindustrywiki::show)
                 ),
                 new Buttoni("@editor", Icon.terrain, () -> checkPlay(ui.maps::show)), steam ? new Buttoni("@workshop", Icon.steam, platform::openWorkshop) : null,

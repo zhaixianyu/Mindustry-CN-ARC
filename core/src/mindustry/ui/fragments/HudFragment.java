@@ -44,7 +44,7 @@ public class HudFragment{
     //private OtherCoreItemDisplay otherCoreItemDisplay = new OtherCoreItemDisplay();
     // MI2 table
     private MI2ToolsTable mi2ToolsTable = new MI2ToolsTable();
-    //private HudSettingsTable hudSettingsTable = new HudSettingsTable();
+    private HudSettingsTable hudSettingsTable = new HudSettingsTable();
 
     private boolean editorMainShow = true;
 
@@ -158,6 +158,9 @@ public class HudFragment{
                     select.button(Icon.paste, style, ui.schematics::show)
                     .name("schematics");
 
+                    select.button(Icon.book, style, ui.database::show)
+                    .name("database");
+
                     select.button(Icon.pause, style, () -> {
                         if(net.active()){
                             ui.listfrag.toggle();
@@ -229,7 +232,7 @@ public class HudFragment{
                 imageUpColor = Color.white;
             }};
 
-            if(Core.settings.getBool("arcSpecificTable")){
+            if(Core.settings.getBool("arcSpecificTable") || state.isCampaign()){
                 wavesMain.table(s -> {
                     //wave info button with text
                     s.add(makeStatusTableArc()).grow().name("status");
@@ -287,8 +290,10 @@ public class HudFragment{
                 t.table(teams -> {
                     teams.left();
                     int i = 0;
-                    for(Team team : Team.baseTeams){
-                        ImageButton button = teams.button(Tex.whiteui, Styles.clearNoneTogglei, 40f, () -> Call.setPlayerTeamEditor(player, team))
+                    int totalTeams = Core.settings.getInt("morecustomteam");
+                    int teamRows = totalTeams<30?3:totalTeams/10;
+                    for(Team team : Team.advanceTeams){
+                        ImageButton button = teams.button(Tex.whiteui, Styles.clearTogglei, 40f, () -> Call.setPlayerTeamEditor(player, team))
                         .size(50f).margin(6f).get();
                         button.getImageCell().grow();
                         button.getStyle().imageUpColor = team.color;
@@ -334,7 +339,7 @@ public class HudFragment{
                 info.row();
                 info.label(() -> "缩放: " + String.format("%.2f", Vars.renderer.getScale())).left().style(Styles.outlineLabel);
                 info.row();
-                info.add("ARC-Client   "+arcVersion).left();
+                info.add("ARC-Client   "+arcVersion).color(getThemeColor()).left();
                 info.row();
 
                 info.label(() -> ping.get(netClient.getPing())).visible(net::client).left().style(Styles.outlineLabel).name("ping").row();
@@ -354,7 +359,7 @@ public class HudFragment{
 
             t.table(c -> {
                 //core items
-                c.top().collapser(coreItems, () -> Core.settings.getBool("coreitems") && !mobile && shown).fillX().row();
+                c.top().collapser(coreItems, () -> Core.settings.getInt("arccoreitems")>0  && shown).fillX().row();
 
                 float notifDuration = 240f;
                 float[] coreAttackTime = {0};
@@ -377,32 +382,36 @@ public class HudFragment{
                 .fillX().row();
             }).row();
 
-            var bossb = new StringBuilder();
-            var bossText = Core.bundle.get("guardian");
-            int maxBosses = 6;
 
-            t.table(v -> v.margin(10f)
-            .add(new Bar(() -> {
-                bossb.setLength(0);
-                for(int i = 0; i < Math.min(state.teams.bosses.size, maxBosses); i++){
-                    bossb.append(state.teams.bosses.get(i).type.emoji());
-                }
-                if(state.teams.bosses.size > maxBosses){
-                    bossb.append("[accent]+[]");
-                }
-                bossb.append(" ");
-                bossb.append(bossText);
-                return bossb;
-            }, () -> Pal.health, () -> {
-                if(state.boss() == null) return 0f;
-                float max = 0f, val = 0f;
-                for(var boss : state.teams.bosses){
-                    max += boss.maxHealth;
-                    val += boss.health;
-                }
-                return max == 0f ? 0f : val / max;
-            }).blink(Color.white).outline(new Color(0, 0, 0, 0.6f), 7f)).grow())
-            .fillX().width(320f).height(60f).name("boss").visible(() -> state.rules.waves && state.boss() != null && !(mobile && Core.graphics.isPortrait())).padTop(7).row();
+            if (Core.settings.getBool("override_boss_shown")){
+                var bossb = new StringBuilder();
+                var bossText = Core.bundle.get("guardian");
+                int maxBosses = 6;
+
+                t.table(v -> v.margin(10f)
+                .add(new Bar(() -> {
+                    bossb.setLength(0);
+                    for(int i = 0; i < Math.min(state.teams.bosses.size, maxBosses); i++){
+                        bossb.append(state.teams.bosses.get(i).type.emoji());
+                    }
+                    if(state.teams.bosses.size > maxBosses){
+                        bossb.append("[accent]+[]");
+                    }
+                    bossb.append(" ");
+                    bossb.append(bossText);
+                    return bossb;
+                }, () -> Pal.health, () -> {
+                    if(state.boss() == null) return 0f;
+                    float max = 0f, val = 0f;
+                    for(var boss : state.teams.bosses){
+                        max += boss.maxHealth;
+                        val += boss.health;
+                    }
+                    return max == 0f ? 0f : val / max;
+                }).blink(Color.white).outline(new Color(0, 0, 0, 0.6f), 7f)).grow())
+                .fillX().width(320f).height(60f).name("boss").visible(() -> state.rules.waves && state.boss() != null && !(mobile && Core.graphics.isPortrait())).padTop(7).row();
+            }
+
 
             t.table(Styles.black3, p -> p.margin(4).label(() -> hudText).style(Styles.outlineLabel)).touchable(Touchable.disabled).with(p -> p.visible(() -> {
                 p.color.a = Mathf.lerpDelta(p.color.a, Mathf.num(showHudText), 0.2f);
@@ -413,6 +422,22 @@ public class HudFragment{
 
                 return p.color.a >= 0.001f;
             }));
+        });
+
+        //other core items by shugen002
+        /*
+        parent.fill(t -> {
+            t.name = "otherCore";
+            t.left().add(otherCoreItemDisplay);
+            t.visible(() -> Core.settings.getBool("showOtherTeamResource") && ( player.team().id == 255 ||Core.settings.getBool("cheating_mode") || state.rules.mode() != Gamemode.pvp)
+            && shown
+            );
+        });*/
+
+        parent.fill(t -> {
+            t.name = "FloatingSettings";
+            t.right().add(hudSettingsTable);
+            t.visible(() -> Core.settings.getBool("showFloatingSettings") && shown);
         });
 
         //spawner warning
@@ -472,7 +497,7 @@ public class HudFragment{
 
     @Remote(targets = Loc.both, forward = true, called = Loc.both)
     public static void setPlayerTeamEditor(Player player, Team team){
-        if(state.isEditor() && player != null){
+        if((state.isEditor() || Core.settings.getBool("selectTeam")) && player != null){
             player.team(team);
         }
     }

@@ -584,7 +584,8 @@ public class PlacementFragment{
         Unit unit = Units.closestOverlap(player.team(), Core.input.mouseWorldX(), Core.input.mouseWorldY(), 5f, u -> true);
         //if cursor has a unit, display it
         if(unit != null) return unit;
-
+        unit = Units.closestEnemy(player.team(), Core.input.mouseWorldX(), Core.input.mouseWorldY(), 5f, u -> true);
+        if(unit != null && !state.rules.pvp) return unit;
         //check tile being hovered over
         Tile hoverTile = world.tileWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
         if(hoverTile != null){

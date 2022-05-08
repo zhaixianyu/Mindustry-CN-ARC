@@ -97,12 +97,12 @@ public class Schematics implements Loadable{
         all.sort();
 
         if(shadowBuffer == null){
-            Core.app.post(() -> shadowBuffer = new FrameBuffer(maxSchematicSize + padding + 8, maxSchematicSize + padding + 8));
+            Core.app.post(() -> shadowBuffer = new FrameBuffer(getMaxSchematicSize() + padding + 8, getMaxSchematicSize() + padding + 8));
         }
     }
 
     private void loadLoadouts(){
-        Seq.with(Loadouts.basicShard, Loadouts.basicFoundation, Loadouts.basicNucleus, Loadouts.basicBastion).each(s -> checkLoadout(s, false));
+        Seq.with(Loadouts.basicShard, Loadouts.basicFoundation, Loadouts.basicNucleus).each(s -> checkLoadout(s, false));
     }
 
     public void overwrite(Schematic target, Schematic newSchematic){
@@ -348,7 +348,7 @@ public class Schematics implements Loadable{
 
     /** Creates a schematic from a world selection. */
     public Schematic create(int x, int y, int x2, int y2){
-        NormalizeResult result = Placement.normalizeArea(x, y, x2, y2, 0, false, maxSchematicSize);
+        NormalizeResult result = Placement.normalizeArea(x, y, x2, y2, 0, false, getMaxSchematicSize());
         x = result.x;
         y = result.y;
         x2 = result.x2;

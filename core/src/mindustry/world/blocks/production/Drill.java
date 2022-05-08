@@ -105,9 +105,10 @@ public class Drill extends Block{
 
         addBar("drillspeed", (DrillBuild e) ->
              new Bar(() -> Core.bundle.format("bar.drillspeed", Strings.fixed(e.lastDrillSpeed * 60 * e.timeScale(), 2)), () -> Pal.ammo, () -> e.warmup));
-        addBar("progress", (DrillBuild e) ->
-                new Bar(() -> "挖掘进度：" + Math.round(e.progress / (drillTime + hardnessDrillMultiplier * returnItem.hardness) * 100) + " %" , () -> Pal.ammo, () -> returnItem == null ? 0 : e.progress / (drillTime + hardnessDrillMultiplier * returnItem.hardness)));
-
+        if(returnItem != null) {
+            addBar("progress", (DrillBuild e) ->
+                    new Bar(() -> "挖掘进度：" + Math.round(e.progress / (drillTime + hardnessDrillMultiplier * returnItem.hardness) * 100) + " %", () -> Pal.ammo, () -> returnItem == null ? 0 : e.progress / (drillTime + hardnessDrillMultiplier * returnItem.hardness)));
+        }
     }
 
     public Item getDrop(Tile tile){
