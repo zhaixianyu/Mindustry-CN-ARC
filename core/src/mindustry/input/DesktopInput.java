@@ -9,19 +9,26 @@ import arc.input.*;
 import arc.math.*;
 import arc.math.geom.*;
 import arc.scene.*;
+import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
 import arc.util.*;
 import mindustry.*;
+import mindustry.content.*;
 import mindustry.core.*;
+import mindustry.entities.*;
 import mindustry.entities.units.*;
 import mindustry.game.EventType.*;
 import mindustry.game.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
+import mindustry.type.*;
 import mindustry.ui.*;
 import mindustry.world.*;
+import mindustry.world.Block.*;
+import mindustry.world.blocks.*;
 
 import static arc.Core.*;
+import static mindustry.Vars.net;
 import static mindustry.Vars.*;
 import static mindustry.input.PlaceMode.*;
 
@@ -513,6 +520,10 @@ public class DesktopInput extends InputHandler{
             }
         }
 
+        if(Core.input.keyTap(Binding.point)){
+			Call.sendChatMessage("[ARC"+arcVersion+"]"+"标记了一处地点[red]("+cursorX+","+cursorY+")");
+        }
+
         if((cursorX != lastLineX || cursorY != lastLineY) && isPlacing() && mode == placing){
             updateLine(selectX, selectY);
             lastLineX = cursorX;
@@ -643,6 +654,15 @@ public class DesktopInput extends InputHandler{
                 Core.settings.put("lasersopacity", 0);
             }
         }
+        if (input.keyTap(Binding.toggle_block_render)) {
+            settings.put("blockrenderlevel", (settings.getInt("blockrenderlevel") + 1) % 3);
+        }
+
+        if (input.keyTap(Binding.superUnitEffect)) {
+            int level = settings.getInt("superUnitEffect");
+            settings.put("superUnitEffect", (level + 1) % 3);
+        }
+
     }
 
     @Override
