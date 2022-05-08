@@ -47,7 +47,7 @@ public class Renderer implements ApplicationListener{
     public @Nullable FrameBuffer backgroundBuffer;
     public FrameBuffer effectBuffer = new FrameBuffer();
     public boolean animateShields, drawWeather = true, drawStatus, enableEffects, drawDisplays = true;
-    public boolean drawBars = false;
+    public boolean drawBars = true;
     public float weatherAlpha;
     /** minZoom = zooming out, maxZoom = zooming in */
     public float minZoom = 0.25f, maxZoom = 20f;

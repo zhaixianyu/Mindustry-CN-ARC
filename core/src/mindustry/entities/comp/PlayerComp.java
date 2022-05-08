@@ -340,18 +340,18 @@ abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Dra
             Call.sendMessage(con, text, unformatted, from);
         }
     }
-
+    /*
     public void buildDestroyedBlocks() {
         if (unit.canBuild() && state.rules.mode() != Gamemode.pvp) {
             int count = 0;
-            for (Teams.BlockPlan plan : player.team().data().blocks) {
+            for (Teams.BlockPlan plan : player.team().data().) {
                 if (within(plan.x * tilesize, plan.y * tilesize, buildingRange)) {
                     unit.addBuild(new BuildPlan(plan.x, plan.y, plan.rotation, content.block(plan.block), plan.config));
                     if (++count >= 255) break;
                 }
             }
         }
-    }
+    }*/
 
     public void dropItems(){
         if(state.rules.mode() == Gamemode.pvp && player.unit() == null || player.unit().stack.amount <= 0){

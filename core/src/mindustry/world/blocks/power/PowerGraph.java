@@ -224,7 +224,9 @@ public class PowerGraph{
     }
 
     public void update(){
-        if(!consumers.isEmpty() && consumers.first().cheating()){
+        if(Core.graphics.getFrameId() == lastFrameUpdated){
+            return;
+        }else if(!consumers.isEmpty() && consumers.first().cheating()){
             //when cheating, just set status to 1
             for(Building tile : consumers){
                 tile.power.status = 1f;
@@ -233,6 +235,8 @@ public class PowerGraph{
             lastPowerNeeded = lastPowerProduced = 1f;
             return;
         }
+
+        lastFrameUpdated = Core.graphics.getFrameId();
 
         float powerNeeded = getPowerNeeded();
         float powerProduced = getPowerProduced();
@@ -285,6 +289,7 @@ public class PowerGraph{
                 build.power.graph.entity.remove();
             }
 
+            team = build.team;
             build.power.graph = this;
             build.power.init = true;
             all.add(build);
