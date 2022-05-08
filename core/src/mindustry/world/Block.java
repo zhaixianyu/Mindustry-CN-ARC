@@ -880,7 +880,7 @@ public class Block extends UnlockableContent implements Senseable{
     }
 
     public boolean isPlaceable(){
-        return isVisible() && (!state.rules.bannedBlocks.contains(this) || state.rules.editor) && supportsEnv(state.rules.env);
+        return Core.settings.getBool("allBlocksReveal") || isVisible() && (!state.rules.bannedBlocks.contains(this) || state.rules.editor) && supportsEnv(state.rules.env);
     }
 
     /** @return whether this block supports a specific environment. */

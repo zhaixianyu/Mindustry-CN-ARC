@@ -247,13 +247,13 @@ public class PlacementFragment{
                     group.setMinCheckCount(0);
 
                     for(Block block : getUnlockedByCategory(currentCategory)){
-                        if(!unlocked(block)) continue;
+                        if(!unlocked(block) && !Core.settings.getBool("allBlocksReveal")) continue;
                         if(index++ % rowWidth == 0){
                             blockTable.row();
                         }
 
                         ImageButton button = blockTable.button(new TextureRegionDrawable(block.uiIcon), Styles.selecti, () -> {
-                            if(unlocked(block)){
+                            if(unlocked(block) || Core.settings.getBool("allBlocksReveal")){
                                 if((Core.input.keyDown(KeyCode.shiftLeft) || Core.input.keyDown(KeyCode.controlLeft)) && Fonts.getUnicode(block.name) != 0){
                                     Core.app.setClipboardText((char)Fonts.getUnicode(block.name) + "");
                                     ui.showInfoFade("@copied");
@@ -340,7 +340,7 @@ public class PlacementFragment{
                                 final String keyComboFinal = keyCombo;
                                 header.left();
                                 header.add(new Image(displayBlock.uiIcon)).size(8 * 4);
-                                header.labelWrap(() -> !unlocked(displayBlock) ? Core.bundle.get("block.unknown") : displayBlock.localizedName + keyComboFinal)
+                                header.labelWrap(() -> !unlocked(displayBlock) && !Core.settings.getBool("allBlocksReveal") ? Core.bundle.get("block.unknown") : displayBlock.localizedName + keyComboFinal)
                                 .left().width(190f).padLeft(5);
                                 header.add().growX();
                                 if(unlocked(displayBlock)){
@@ -554,7 +554,7 @@ public class PlacementFragment{
     }
 
     Seq<Block> getUnlockedByCategory(Category cat){
-        return returnArray2.selectFrom(content.blocks(), block -> block.category == cat && block.isVisible() && unlocked(block)).sort((b1, b2) -> Boolean.compare(!b1.isPlaceable(), !b2.isPlaceable()));
+        return returnArray2.selectFrom(content.blocks(), block -> block.category == cat &&(Core.settings.getBool("allBlocksReveal")||block.isVisible() && unlocked(block)) ).sort((b1, b2) -> Boolean.compare(!b1.isPlaceable(), !b2.isPlaceable()));
     }
 
     Block getSelectedBlock(Category cat){
