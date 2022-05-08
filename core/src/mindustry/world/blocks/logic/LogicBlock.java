@@ -1,5 +1,6 @@
 package mindustry.world.blocks.logic;
 
+import arc.Core;
 import arc.Graphics.*;
 import arc.Graphics.Cursor.*;
 import arc.func.*;
@@ -82,7 +83,7 @@ public class LogicBlock extends Block{
     }
 
     public boolean accessible(){
-        return !privileged || state.rules.editor;
+        return Core.settings.getBool("showOtherTeamState") || !privileged || state.rules.editor;
     }
 
     @Override
