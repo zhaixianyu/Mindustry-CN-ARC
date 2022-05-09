@@ -1,5 +1,8 @@
 package mindustry.world.blocks.production;
 
+
+import arc.*;
+import arc.scene.ui.layout.*;
 import arc.graphics.g2d.*;
 import arc.math.*;
 import arc.struct.*;
@@ -11,6 +14,8 @@ import mindustry.entities.units.*;
 import mindustry.gen.*;
 import mindustry.logic.*;
 import mindustry.type.*;
+import mindustry.graphics.*;
+import mindustry.ui.*;
 import mindustry.world.*;
 import mindustry.world.draw.*;
 import mindustry.world.meta.*;
@@ -200,7 +205,7 @@ public class GenericCrafter extends Block{
                     }
                 }
 
-                if(wasVisible && Mathf.chanceDelta(updateEffectChance)){
+                if(Core.settings.getInt("blockrenderlevel") >1 && wasVisible && Mathf.chanceDelta(updateEffectChance)){
                     updateEffect.at(x + Mathf.range(size * 4f), y + Mathf.range(size * 4));
                 }
             }else{
@@ -245,6 +250,8 @@ public class GenericCrafter extends Block{
             if(wasVisible){
                 craftEffect.at(x, y);
             }
+
+            if (Core.settings.getInt("blockrenderlevel") > 1) craftEffect.at(x, y);
             progress %= 1f;
         }
 
@@ -302,5 +309,28 @@ public class GenericCrafter extends Block{
             warmup = read.f();
             if(legacyReadWarmup) read.f();
         }
+
+        @Override
+        public void displayBars(Table bars){
+            super.displayBars(bars);
+            //bar for shoot cd
+            bars.add(new Bar(() -> Core.bundle.format("bar.craftprogress", Strings.fixed(progress * 100f, 0))+Calwavetimeremain(progress,getProgressIncrease(craftTime)*timeScale*60), () -> Pal.ammo, () -> progress));
+            bars.row();
+        }
+    }
+    private String Calwavetimeremain(float progress,float ProgressIncrease){
+        if (ProgressIncrease==0f ||1/ProgressIncrease<240f|| !Core.settings.getBool("modMode")){
+            return "";
+        }
+        float time = (1-progress)/ProgressIncrease;
+
+        String wavetimeremain = " [orange]~";
+        int m = ((int)time) / 60;
+        if (m==0){
+            return "";
+        }
+        wavetimeremain += String.valueOf(m) ;
+        wavetimeremain += "min";
+        return wavetimeremain;
     }
 }

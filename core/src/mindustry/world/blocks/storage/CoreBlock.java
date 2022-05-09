@@ -137,6 +137,8 @@ public class CoreBlock extends StorageBlock{
         }
 
         CoreBuild core = team.core();
+
+        if (Core.settings.getBool("buildCoreOverride")) return true;    //LC: force build core
         //must have all requirements
         if(core == null || (!state.rules.infiniteResources && !core.items.has(requirements, state.rules.buildCostMultiplier))) return false;
         return tile.block() instanceof CoreBlock && size > tile.block().size;

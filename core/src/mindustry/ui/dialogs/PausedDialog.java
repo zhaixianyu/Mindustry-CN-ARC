@@ -40,7 +40,7 @@ public class PausedDialog extends BaseDialog{
             cont.button("@back", Icon.left, this::hide).name("back");
             cont.button("@settings", Icon.settings, ui.settings::show).name("settings");
 
-            if(!state.isCampaign() && !state.isEditor()){
+            if(Core.settings.getBool("save_more_map") || (!state.isCampaign() && !state.isEditor())){
                 cont.row();
                 cont.button("@savegame", Icon.save, save::show);
                 cont.button("@loadgame", Icon.upload, load::show).disabled(b -> net.active());

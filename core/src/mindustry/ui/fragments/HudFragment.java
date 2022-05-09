@@ -969,29 +969,29 @@ public class HudFragment{
         }).size(120f, 80).padRight(4);
 
         table.table(t -> {
-            t.add(new Bar(
-                () -> Calwaveshower(),
-                () -> Color.valueOf("ccffcc"),
-                () -> {
-                    if (CalWinWave() >= 1 && CalWinWave() >= state.wave) return state.wave / (float)CalWinWave();
-                    else return 1f;
-                })).height(18).growX().row();
-            t.add(new Bar(
-                () -> Calwavetimeremain(),
-                () -> Color.valueOf("F5DEB3"),
-                () -> state.wavetime / state.rules.waveSpacing)).height(18).growX().row();
-            t.add(new Bar(
-                () -> {
-                    if(Vars.spawner.countSpawns() <= 1 || state.rules.mode() == Gamemode.pvp){
-                        return "[orange]"+state.enemies + "[gray](+"+CalwaveEnemy(state.wave - 1) + ")";
-                    }else if (CalwaveEnemy(state.wave - 1) > 0){
-                        return "[orange]"+state.enemies + "[gray](+"+CalwaveEnemy(state.wave - 1) + "×"+Vars.spawner.countSpawns() + ")";
-                    }else{
-                        return "[orange]"+state.enemies+"[gray](+0)";
-                    }
-                },
-                () -> Color.valueOf("F4A460"),
-                () -> state.enemies / ((float)CalwaveEnemy(state.wave-2) * Vars.spawner.countSpawns()))).height(18).growX();
+                t.add(new Bar(
+                        () -> Calwaveshower(),
+                        () -> Color.valueOf("ccffcc"),
+                        () -> {
+                            if (CalWinWave() >= 1 && CalWinWave() >= state.wave) return state.wave / (float)CalWinWave();
+                            else return 1f;
+                        })).height(18).growX().row();
+                t.add(new Bar(
+                        () -> Calwavetimeremain(),
+                        () -> Color.valueOf("F5DEB3"),
+                        () -> state.wavetime / state.rules.waveSpacing)).height(18).growX().row();
+                t.add(new Bar(
+                        () -> {
+                            if(Vars.spawner.countSpawns() <= 1 || state.rules.mode() == Gamemode.pvp){
+                                return "[orange]"+state.enemies + "[gray](+"+CalwaveEnemy(state.wave - 1) + ")";
+                            }else if (CalwaveEnemy(state.wave - 1) > 0){
+                                return "[orange]"+state.enemies + "[gray](+"+CalwaveEnemy(state.wave - 1) + "×"+Vars.spawner.countSpawns() + ")";
+                            }else{
+                                return "[orange]"+state.enemies+"[gray](+0)";
+                            }
+                        },
+                        () -> Color.valueOf("F4A460"),
+                        () -> state.enemies / ((float)CalwaveEnemy(state.wave-2) * Vars.spawner.countSpawns()))).height(18).growX();
         }).growX().pad(8f);
 
         // Power bar display

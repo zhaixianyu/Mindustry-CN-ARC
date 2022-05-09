@@ -1253,31 +1253,32 @@ public class UnitType extends UnlockableContent{
 
         Draw.z(Math.min(z - 0.01f, Layer.bullet - 1f));
 
-        if(unit instanceof Payloadc){
+        if(unit instanceof Payloadc && unitTrans > 0f){
             drawPayload((Unit & Payloadc)unit);
         }
+        if(unitTrans > 0f){
+            drawSoftShadow(unit);
 
-        drawSoftShadow(unit);
+            Draw.z(z);
 
-        Draw.z(z);
+            if(unit instanceof Crawlc c){
+                drawCrawl(c);
+            }
 
-        if(unit instanceof Crawlc c){
-            drawCrawl(c);
+            if(drawBody) drawOutline(unit);
+            drawWeaponOutlines(unit);
+            if(engineLayer > 0) Draw.z(engineLayer);
+            if(trailLength > 0 && !naval && (unit.isFlying() || !useEngineElevation)){
+                drawTrail(unit);
+            }
+            if(engines.size > 0) drawEngines(unit);
+            Draw.z(z);
+            if(drawBody) drawBody(unit);
+            if(drawCell) drawCell(unit);
+            drawWeapons(unit);
+            if(drawItems) drawItems(unit);
+            drawLight(unit);
         }
-
-        if(drawBody) drawOutline(unit);
-        drawWeaponOutlines(unit);
-        if(engineLayer > 0) Draw.z(engineLayer);
-        if(trailLength > 0 && !naval && (unit.isFlying() || !useEngineElevation)){
-            drawTrail(unit);
-        }
-        if(engines.size > 0) drawEngines(unit);
-        Draw.z(z);
-        if(drawBody) drawBody(unit);
-        if(drawCell) drawCell(unit);
-        drawWeapons(unit);
-        if(drawItems) drawItems(unit);
-        drawLight(unit);
 
         if(unit.shieldAlpha > 0 && drawShields){
             drawShield(unit);
@@ -1582,6 +1583,9 @@ public class UnitType extends UnlockableContent{
         applyColor(unit);
 
         Draw.color(cellColor(unit));
+
+        Draw.alpha(unitTrans); //
+
         Draw.rect(cellRegion, unit.x, unit.y, unit.rotation - 90);
         Draw.reset();
     }
@@ -1647,9 +1651,11 @@ public class UnitType extends UnlockableContent{
                 float scl = shadowElevation * invDrown;
                 float elev = Mathf.slope(1f - leg.stage) * scl;
                 Draw.color(Pal.shadow);
+                Draw.alpha(legTrans); //
                 Draw.rect(footRegion, leg.base.x + shadowTX * elev, leg.base.y + shadowTY * elev, position.angleTo(leg.base));
                 Draw.color();
             }
+            Draw.alpha(legTrans); //
 
             Draw.mixcol(Tmp.c3, Tmp.c3.a);
 
@@ -1811,12 +1817,14 @@ public class UnitType extends UnlockableContent{
             float ex = Tmp.v1.x, ey = Tmp.v1.y;
 
             Draw.color(color);
+            Draw.alpha(unitTrans);
             Fill.circle(
             unit.x + ex,
             unit.y + ey,
             (radius + Mathf.absin(Time.time, 2f, radius / 4f)) * scale
             );
             Draw.color(type.engineColorInner);
+            Draw.alpha(unitTrans);
             Fill.circle(
             unit.x + ex - Angles.trnsx(rot + rotation, 1f),
             unit.y + ey - Angles.trnsy(rot + rotation, 1f),

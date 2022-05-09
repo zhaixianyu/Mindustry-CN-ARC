@@ -541,10 +541,12 @@ public class LogicBlock extends Block{
             }
 
             //draw top text on separate layer
+            //draw link order
+            int i = 0;
             for(LogicLink l : links){
                 Building build = world.build(l.x, l.y);
                 if(l.active && validLink(build)){
-                    build.block.drawPlaceText(l.name, build.tileX(), build.tileY(), true);
+                    build.block.drawPlaceText(l.name + "[" + i++ + "]", build.tileX(), build.tileY(), true);
                 }
             }
         }

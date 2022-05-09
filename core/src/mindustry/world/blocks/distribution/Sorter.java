@@ -11,6 +11,7 @@ import mindustry.type.*;
 import mindustry.world.*;
 import mindustry.world.blocks.*;
 import mindustry.world.meta.*;
+import arc.*;
 
 import static mindustry.Vars.*;
 
@@ -71,6 +72,7 @@ public class Sorter extends Block{
                 Draw.color(sortItem.color);
                 Draw.rect("center", x, y);
                 Draw.color();
+                if(Core.settings.getBool("arcchoiceuiIcon"))    Draw.rect(sortItem.uiIcon, x, y,4f,4f);
             }
         }
 

@@ -33,15 +33,12 @@ public class UpdateDialog extends BaseDialog{
 
         cont.add("[cyan]CN-ARC Client by PVP学术交流群").row();
         cont.add("[acid]游戏版本更新日志及解读").row();
-        //cont.add("主题颜色：").padRight(10);
-
         for(String log : updatelog){
             about.add(log).left();
             about.row();
         }
         cont.add(pane).growX();
         cont.row();
-
 
         addCloseButton();
     }

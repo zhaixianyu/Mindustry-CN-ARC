@@ -335,7 +335,7 @@ public class Renderer implements ApplicationListener{
             Draw.draw(Layer.light, lights::draw);
         }
 
-        if(enableDarkness){
+        if(Core.settings.getBool("forceEnableDarkness")&&enableDarkness){
             Draw.draw(Layer.darkness, blocks::drawDarkness);
         }
 
