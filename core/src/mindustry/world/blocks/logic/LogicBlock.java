@@ -83,7 +83,7 @@ public class LogicBlock extends Block{
     }
 
     public boolean accessible(){
-        return Core.settings.getBool("showOtherTeamState") || !privileged || state.rules.editor;
+        return Core.settings.getBool("showOtherTeamState") || !privileged || state.rules.editor|| state.playtestingMap != null;
     }
 
     @Override
