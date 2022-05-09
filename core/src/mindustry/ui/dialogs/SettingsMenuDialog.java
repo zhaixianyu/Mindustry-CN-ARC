@@ -348,6 +348,7 @@ public class SettingsMenuDialog extends BaseDialog{
         game.checkPref("buildautopause", false);
 
         game.checkPref("doubletapmine", false);
+        game.checkPref("commandmodehold", false);
 
         if(!ios){
             game.checkPref("modcrashdisable", true);

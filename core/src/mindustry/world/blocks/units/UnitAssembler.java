@@ -55,6 +55,7 @@ public class UnitAssembler extends PayloadBlock{
         sync = true;
         group = BlockGroup.units;
         commandable = true;
+        quickRotate = false;
     }
 
     public Rect getRect(Rect rect, float x, float y, int rotation){
