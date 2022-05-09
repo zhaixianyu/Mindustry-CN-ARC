@@ -209,6 +209,24 @@ public class CustomRulesDialog extends BaseDialog{
             }).margin(4).size(50f).padRight(10);
             b.add("@rules.ambientlight");
         }, () -> ui.picker.show(rules.ambientLight, rules.ambientLight::set)).left().width(250f).row();
+        main.button(b -> {
+            b.left();
+            b.table(Tex.pane, in -> {
+                in.stack(new Image(Tex.alphaBg), new Image(Tex.whiteui){{
+                    update(() -> setColor(rules.staticColor));
+                }}).grow();
+            }).margin(4).size(50f).padRight(10);
+            b.add("@rules.staticColor");
+        }, () -> ui.picker.show(rules.staticColor, rules.staticColor::set)).left().width(250f).row();
+        main.button(b -> {
+            b.left();
+            b.table(Tex.pane, in -> {
+                in.stack(new Image(Tex.alphaBg), new Image(Tex.whiteui){{
+                    update(() -> setColor(rules.dynamicColor));
+                }}).grow();
+            }).margin(4).size(50f).padRight(10);
+            b.add("@rules.dynamicColor");
+        }, () -> ui.picker.show(rules.dynamicColor, rules.dynamicColor::set)).left().width(250f).row();
 
         main.button("@rules.weather", this::weatherDialog).width(250f).left().row();
 
@@ -218,17 +236,15 @@ public class CustomRulesDialog extends BaseDialog{
         check("@rules.unitPayloadUpdate",b->rules.unitPayloadUpdate = b,()->rules.unitPayloadUpdate);
         check("@rules.showSpawns",b->rules.showSpawns = b,()->rules.showSpawns);
         check("@rules.canGameOver", b -> rules.canGameOver = b, () -> rules.canGameOver);
-        main.button("@hiddenBuildItems", () -> showBanned("@hiddenBuildItems", ContentType.item, rules.hiddenBuildItems, Item::showUnlock)).left().width(300f);
+        main.button("@hiddenBuildItems", () -> showBanned("@hiddenBuildItems", ContentType.item, rules.hiddenBuildItems, Item::showUnlock)).left().width(300f).row();
 
-        if(experimental){
-            check("@rules.limitarea", b -> rules.limitMapArea = b, () -> rules.limitMapArea);
-            numberi("x", x -> state.rules.limitX = x, () -> state.rules.limitX, () -> state.rules.limitMapArea, 0, 10000);
-            numberi("y", y -> state.rules.limitY = y, () -> state.rules.limitY, () -> state.rules.limitMapArea, 0, 10000);
-            numberi("w", w -> state.rules.limitWidth = w, () -> state.rules.limitWidth, () -> state.rules.limitMapArea, 0, 10000);
-            numberi("h", h -> state.rules.limitHeight = h, () -> state.rules.limitHeight, () -> state.rules.limitMapArea, 0, 10000);
-            check("@rules.disableOutsideArea",b -> rules.disableOutsideArea = b, () -> rules.disableOutsideArea);
-        }
-
+        check("@rules.limitarea", b -> rules.limitMapArea = b, () -> rules.limitMapArea);
+        numberi("x", x -> state.rules.limitX = x, () -> state.rules.limitX, () -> state.rules.limitMapArea, 0, 10000);
+        numberi("y", y -> state.rules.limitY = y, () -> state.rules.limitY, () -> state.rules.limitMapArea, 0, 10000);
+        numberi("w", w -> state.rules.limitWidth = w, () -> state.rules.limitWidth, () -> state.rules.limitMapArea, 0, 10000);
+        numberi("h", h -> state.rules.limitHeight = h, () -> state.rules.limitHeight, () -> state.rules.limitMapArea, 0, 10000);
+        check("@rules.disableOutsideArea",b -> rules.disableOutsideArea = b, () -> rules.disableOutsideArea);
+    
         title("@rules.title.planet");
 
         main.table(Tex.button, t -> {
