@@ -197,11 +197,19 @@ public class OverlayRenderer{
         Draw.color(Color.gray, Color.lightGray, Mathf.absin(Time.time, 8f, 1f));
 
         if(state.hasSpawns()){
+            if(Core.settings.getBool("alwaysshowdropzone")){
+                for(Tile tile : spawner.getSpawns()){
+                    Draw.alpha(0.8f);
+                    Lines.dashCircle(tile.worldx(), tile.worldy(), state.rules.dropZoneRadius);
+                }
+            }
+            else{
             for(Tile tile : spawner.getSpawns()){
                 if(true){
                     Draw.alpha(Mathf.clamp(1f - (player.dst(tile) - state.rules.dropZoneRadius) / spawnerMargin));
                     Lines.dashCircle(tile.worldx(), tile.worldy(), state.rules.dropZoneRadius);
                 }
+            }
             }
         }
 
@@ -212,12 +220,14 @@ public class OverlayRenderer{
             Vec2 vec = Core.input.mouseWorld(input.getMouseX(), input.getMouseY());
             Building build = world.buildWorld(vec.x, vec.y);
 
-            if(build != null && build.team == player.team()){
+            //if(build != null && build.team == player.team()){
+            if(build != null){
                 build.drawSelect();
                 if(!build.enabled && build.block.drawDisabled){
                    build.drawDisabled();
                 }
-
+            }
+            if(build != null && build.team == player.team()){
                 if(Core.input.keyDown(Binding.rotateplaced) && build.block.rotate && build.block.quickRotate && build.interactable(player.team())){
                     control.input.drawArrow(build.block, build.tileX(), build.tileY(), build.rotation, true);
                     Draw.color(Pal.accent, 0.3f + Mathf.absin(4f, 0.2f));

@@ -38,7 +38,7 @@ import java.util.concurrent.*;
 import static arc.Core.*;
 
 public class Vars implements Loadable{
-    public static String arcVersion = "3.0.6";
+    public static String arcVersion = "3.0.7";
     public static int changeLogRead = 18;
     /** Whether the game failed to launch last time. */
     public static boolean failedToLaunch = false;
