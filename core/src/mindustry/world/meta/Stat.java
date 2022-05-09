@@ -29,6 +29,7 @@ public class Stat implements Comparable<Stat>{
     heatCapacity = new Stat("heatCapacity"),
     viscosity = new Stat("viscosity"),
     temperature = new Stat("temperature"),
+    boilPoint = new Stat("boilPoint"),
     baseDeflectChance = new Stat("baseDeflectChance"),
     lightningChance = new Stat("lightningChance"),
     lightningDamage = new Stat("lightningDamage"),

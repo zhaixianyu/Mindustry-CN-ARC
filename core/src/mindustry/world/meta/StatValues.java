@@ -160,11 +160,11 @@ public class StatValues{
             rebuild[0] = () -> {
                 c.clearChildren();
                 c.left();
-                if(Core.settings.getBool("showAllBlockAttributes")){
 
+                if(state.isGame()){
                     var blocks = Vars.content.blocks()
-                    .select(block ->  block.attributes.get(attr) != 0 && !((block instanceof Floor f && f.isDeep()) && !floating))
-                    .<Floor>as().with(s -> s.sort(f -> f.attributes.get(attr)));
+                    .select(block -> (!checkFloors || block instanceof Floor) && block.attributes.get(attr) != 0 && !((block instanceof Floor f && f.isDeep()) && !floating))
+                    .with(s -> s.sort(f -> f.attributes.get(attr)));
 
                     if(blocks.any()){
                         int i = 0;
@@ -178,28 +178,8 @@ public class StatValues{
                     }else{
                         c.add("@none.inmap");
                     }
-                }
-                else{
-                    if(state.isGame()){
-                        var blocks = Vars.content.blocks()
-                        .select(block -> (!checkFloors || block instanceof Floor) && indexer.isBlockPresent(block) && block.attributes.get(attr) != 0 && !((block instanceof Floor f && f.isDeep()) && !floating))
-                        .<Floor>as().with(s -> s.sort(f -> f.attributes.get(attr)));
-
-                        if(blocks.any()){
-                            int i = 0;
-                            for(var block : blocks){
-
-                                blockEfficiency(block, block.attributes.get(attr) * scale, startZero).display(c);
-                                if(++i % 5 == 0){
-                                    c.row();
-                                }
-                            }
-                        }else{
-                            c.add("@none.inmap");
-                        }
-                    }else{
-                        c.add("@stat.showinmap");
-                    }
+                }else{
+                    c.add("@stat.showinmap");
                 }
             };
 
