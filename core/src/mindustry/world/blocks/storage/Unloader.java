@@ -15,6 +15,7 @@ import mindustry.world.blocks.*;
 import mindustry.world.meta.*;
 
 import java.util.*;
+import arc.*;
 
 import static mindustry.Vars.*;
 
@@ -223,10 +224,12 @@ public class Unloader extends Block{
         @Override
         public void draw(){
             super.draw();
-
-            Draw.color(sortItem == null ? Color.clear : sortItem.color);
-            Draw.rect(centerRegion, x, y);
-            Draw.color();
+            if(Core.settings.getBool("arcchoiceuiIcon") && sortItem != null)    Draw.rect(sortItem.uiIcon, x, y,4f,4f);
+            else{
+                Draw.color(sortItem == null ? Color.clear : sortItem.color);
+                Draw.rect(centerRegion, x, y);
+                Draw.color();
+            }
         }
 
         @Override

@@ -40,6 +40,8 @@ import static arc.Core.*;
 public class Vars implements Loadable{
     public static String arcVersion = "3.0.7";
     public static int changeLogRead = 18;
+    /** pr-5921  Used in blocks with selection menus such sorters for how large the menu should be */
+    public static int blockSelectionRows = 5,blockSelectionColumns = 6;
     /** Whether the game failed to launch last time. */
     public static boolean failedToLaunch = false;
     /** Whether to load locales.*/
