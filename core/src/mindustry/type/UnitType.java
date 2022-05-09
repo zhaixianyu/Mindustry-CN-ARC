@@ -1203,8 +1203,9 @@ public class UnitType extends UnlockableContent{
         }else if(draw_minunithealthbar){
             boolean canHit = player.unit().isFlying() ? targetAir : targetGround;
             float dst = player.unit().dst(unit.x,unit.y) ;
-            if ((float)Core.settings.getInt("unitAlertRange") >= 30f ||
-                    (unit.team != player.team() && canHit && !(dst > (range+ (float)Core.settings.getInt("unitAlertRange") * tilesize))&& player.unit().health>0f)){
+            float alertRange = (float)Core.settings.getInt("unitAlertRange");
+            if (  alertRange > 0 && (alertRange >= 30f ||
+                    (unit.team != player.team() && canHit && !(dst > (range+ alertRange * tilesize))&& player.unit().health>0f))){
                 //show unit weapon by LC
                 Draw.color(unit.team.color);
                 Draw.alpha(1f);
