@@ -144,9 +144,7 @@ public class CustomRulesDialog extends BaseDialog{
         number("@rules.winWave", b -> rules.winWave = (int)b, () -> (int)rules.winWave);
         number("@rules.wavespacing", false, f -> rules.waveSpacing = f * 60f, () -> rules.waveSpacing / 60f, () -> rules.waveTimer, 1, Float.MAX_VALUE);
         //this is experimental, because it's not clear that 0 makes it default.
-        if(experimental){
-            number("@rules.initialwavespacing", false, f -> rules.initialWaveSpacing = f * 60f, () -> rules.initialWaveSpacing / 60f, () -> true, 0, Float.MAX_VALUE);
-        }
+        number("@rules.initialwavespacing", false, f -> rules.initialWaveSpacing = f * 60f, () -> rules.initialWaveSpacing / 60f, () -> true, 0, Float.MAX_VALUE);
         number("@rules.dropzoneradius", false, f -> rules.dropZoneRadius = f * tilesize, () -> rules.dropZoneRadius / tilesize, () -> true);
 
         title("@rules.title.resourcesbuilding");
@@ -170,8 +168,8 @@ public class CustomRulesDialog extends BaseDialog{
                 () -> {}, () -> {}
         )).left().width(300f).row();
 
-        main.button("@bannedblocks", () -> showBanned("@bannedblocks", ContentType.block, rules.bannedBlocks, Block::canBeBuilt)).left().width(300f).row();
-        main.button("@revealedblocks", () -> showBanned("@revealedblocks", ContentType.block, rules.revealedBlocks, Block::isVisible)).left().width(300f).row();
+        main.button("@bannedblocks", () -> showBanned("@bannedblocks", ContentType.block, rules.bannedBlocks, Block::showUnlock)).left().width(300f).row();
+        main.button("@revealedblocks", () -> showBanned("@revealedblocks", ContentType.block, rules.revealedBlocks, Block::showUnlock)).left().width(300f).row();
 
         //TODO objectives would be nice
         if(experimental && false){
@@ -219,6 +217,8 @@ public class CustomRulesDialog extends BaseDialog{
         check("@rules.coreDestroyClear",b->rules.coreDestroyClear = b,()->rules.coreDestroyClear);
         check("@rules.unitPayloadUpdate",b->rules.unitPayloadUpdate = b,()->rules.unitPayloadUpdate);
         check("@rules.showSpawns",b->rules.showSpawns = b,()->rules.showSpawns);
+        check("@rules.canGameOver", b -> rules.canGameOver = b, () -> rules.canGameOver);
+        main.button("@hiddenBuildItems", () -> showBanned("@hiddenBuildItems", ContentType.item, rules.hiddenBuildItems, Item::showUnlock)).left().width(300f);
 
         if(experimental){
             check("@rules.limitarea", b -> rules.limitMapArea = b, () -> rules.limitMapArea);
@@ -226,7 +226,7 @@ public class CustomRulesDialog extends BaseDialog{
             numberi("y", y -> state.rules.limitY = y, () -> state.rules.limitY, () -> state.rules.limitMapArea, 0, 10000);
             numberi("w", w -> state.rules.limitWidth = w, () -> state.rules.limitWidth, () -> state.rules.limitMapArea, 0, 10000);
             numberi("h", h -> state.rules.limitHeight = h, () -> state.rules.limitHeight, () -> state.rules.limitMapArea, 0, 10000);
-            check("@rules.disableOutsideArea",b -> rules.cleanupDeadTeams = b, () -> rules.cleanupDeadTeams);
+            check("@rules.disableOutsideArea",b -> rules.disableOutsideArea = b, () -> rules.disableOutsideArea);
         }
 
         title("@rules.title.planet");
