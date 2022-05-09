@@ -7,7 +7,6 @@ import arc.struct.*;
 import arc.util.*;
 import mindustry.ctype.*;
 import mindustry.gen.*;
-import mindustry.graphics.*;
 import mindustry.ui.Fonts;
 import mindustry.ui.Styles;
 import mindustry.world.meta.*;
@@ -33,7 +32,7 @@ public class ContentInfoDialog extends BaseDialog{
 
         table.table(title1 -> {
             title1.image(content.uiIcon).size(iconXLarge).scaling(Scaling.fit).get().clicked(() -> Core.app.setClipboardText(content.emoji()));
-            title1.add("[accent]" + content.localizedName + "\n[gray]" + content.name + (constants.lookupLogicId(content) != -1 ? " <#" + constants.lookupLogicId(content) +">": "")).padLeft(5);
+            title1.add("[accent]" + content.localizedName + "\n[gray]" + content.name + (logicVars.lookupLogicId(content) != -1 ? " <#" + logicVars.lookupLogicId(content) +">": "")).padLeft(5);
         });
 
         table.row();
