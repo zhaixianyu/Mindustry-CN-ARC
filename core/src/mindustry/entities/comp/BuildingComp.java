@@ -1653,10 +1653,7 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
 
             if(other == null || !(other.tile.interactable(team))) continue;
 
-            //add this tile to proximity of nearby tiles
-            if(!other.proximity.contains(self(), true)){
-                other.proximity.add(self());
-            }
+            other.proximity.addUnique(self());
 
             tmpTiles.add(other);
         }

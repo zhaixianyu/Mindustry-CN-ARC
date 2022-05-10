@@ -283,7 +283,7 @@ public class Vars implements Loadable{
             }
 
             Arrays.sort(locales, Structs.comparing(LanguageDialog::getDisplayName, String.CASE_INSENSITIVE_ORDER));
-            locales = Seq.with(locales).and(new Locale("router")).toArray(Locale.class);
+            locales = Seq.with(locales).add(new Locale("router")).toArray(Locale.class);
         }
 
         Version.init();
