@@ -396,6 +396,7 @@ public class Block extends UnlockableContent implements Senseable{
     /** Drawn when you are placing a block. */
     public void drawPlace(int x, int y, int rotation, boolean valid){
         drawPotentialLinks(x, y);
+        drawOverlay(x * tilesize + offset, y * tilesize + offset, rotation);
     }
 
     public void drawPotentialLinks(int x, int y){
@@ -442,6 +443,9 @@ public class Block extends UnlockableContent implements Senseable{
         Pools.free(layout);
 
         return width;
+    }
+    /** Drawn when placing and when hovering over. */
+    public void drawOverlay(float x, float y, int rotation){
     }
 
     public float drawText(String text, float x, float y, boolean valid, float scl){

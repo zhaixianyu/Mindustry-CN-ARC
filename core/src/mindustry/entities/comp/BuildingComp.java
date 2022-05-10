@@ -63,7 +63,7 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
     transient Tile tile;
     transient Block block;
     transient Seq<Building> proximity = new Seq<>(6);
-    transient byte cdump;
+    transient int cdump;
     transient int rotation;
     transient float payloadRotation;
     transient String lastAccessed;
@@ -992,7 +992,7 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
     }
 
     public void incrementDump(int prox){
-        cdump = (byte)((cdump + 1) % prox);
+        cdump = ((cdump + 1) % prox);
     }
 
     /** Used for dumping items. */
@@ -1133,6 +1133,7 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
 
     /** Draw the block overlay that is shown when a cursor is over the block. */
     public void drawSelect(){
+        block.drawOverlay(x, y, rotation);
     }
 
     public void drawDisabled(){
