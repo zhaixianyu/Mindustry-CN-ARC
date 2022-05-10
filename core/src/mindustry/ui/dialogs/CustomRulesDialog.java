@@ -273,21 +273,23 @@ public class CustomRulesDialog extends BaseDialog{
 
         team("@rules.playerteam", t -> rules.defaultTeam = t, () -> rules.defaultTeam);
         team("@rules.enemyteam", t -> rules.waveTeam = t, () -> rules.waveTeam);
-
-        for(Team team : Team.baseTeams){
+        Team team;
+        for(int teamId =0;teamId<Core.settings.getInt("moreCustomTeam");teamId+=1){
+            team = Team.get(teamId);
             boolean[] shown = {false};
             Table wasMain = main;
             main.button("[#" + team.color +  "]" + team.localized() + (team.emoji.isEmpty() ? "" : "[] " + team.emoji), Icon.downOpen, Styles.togglet, () -> {
                 shown[0] = !shown[0];
             }).marginLeft(14f).width(260f).height(55f).checked(a -> shown[0]).row();
 
+            Team finalTeam = team;
             main.collapser(t -> {
                 t.left().defaults().fillX().left().pad(5);
                 main = t;
-                TeamRule teams = rules.teams.get(team);
+                TeamRule teams = rules.teams.get(finalTeam);
 
 
-                check("@rules.rtsai", b -> teams.rtsAi = b, () -> teams.rtsAi, () -> team != rules.defaultTeam);
+                check("@rules.rtsai", b -> teams.rtsAi = b, () -> teams.rtsAi, () -> finalTeam != rules.defaultTeam);
                 numberi("@rules.rtsminsquadsize", f -> teams.rtsMinSquad = f, () -> teams.rtsMinSquad, () -> teams.rtsAi, 0, 100);
                 number("@rules.rtsminattackweight", f -> teams.rtsMinWeight = f, () -> teams.rtsMinWeight, () -> teams.rtsAi);
                 check("@rules.cheat", b -> teams.cheat = b, () -> teams.cheat);
@@ -310,12 +312,15 @@ public class CustomRulesDialog extends BaseDialog{
             t.left();
             t.add(text).left().padRight(5);
             int countTeams = 0;
-            for(Team team : Team.advanceTeams){
+            Team team;
+            for(int teamId =0;teamId<Core.settings.getInt("moreCustomTeam");teamId+=1){
+                team = Team.get(teamId);
                 countTeams +=1;
                 if(countTeams%10==0)t.row();
+                Team finalTeam = team;
                 t.button(Tex.whiteui, Styles.clearTogglei, 38f, () -> {
-                    cons.get(team);
-                }).pad(1f).checked(b -> prov.get() == team).size(60f).tooltip(team.localized()).with(i -> i.getStyle().imageUpColor = team.color);
+                    cons.get(finalTeam);
+                }).pad(1f).checked(b -> prov.get() == finalTeam).size(60f).tooltip(team.localized()).with(i -> i.getStyle().imageUpColor = finalTeam.color);
             }
         }).padTop(0).row();
     }

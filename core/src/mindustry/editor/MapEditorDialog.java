@@ -595,50 +595,61 @@ public class MapEditorDialog extends Dialog implements Disposable{
 
                 tools.row();
 
-                tools.table(Tex.underline, t -> t.add("@editor.teams"))
-                .colspan(3).height(40).width(size * 3f + 3f).padBottom(3);
+                mid.add(tools).top().padBottom(-6);
+                mid.row();
+
+                mid.button("队伍选择", () -> {
+                    BaseDialog dialog = new BaseDialog("队伍选择器");
+                    Table selectTeam = new Table().top();
+
+                    dialog.cont.pane(td->{
+                        int i = 0;
+                        for(Team team : Team.all){
+                            ImageButton button = new ImageButton(Tex.whiteui, Styles.clearTogglei);
+                            button.getStyle().imageUpColor = team.color;
+                            button.margin(10f);
+                            button.resizeImage(40f);
+                            button.clicked(() -> {editor.drawTeam = team;dialog.hide();});
+                            button.update(() -> button.setChecked(editor.drawTeam == team));
+                            td.add(button);
+                            i++;
+                            if(i==5) {td.row();td.add("队伍："+i+"~"+(i+10));}
+                            else if((i-5)%10==0) {td.row();td.add("队伍："+i+"~"+(i+10));}
+                        }
+                    }
+                    );
+
+                    dialog.add(selectTeam).center();
+                    dialog.row();
+
+                    dialog.addCloseButton();
+
+                    dialog.show();
+                }).center().width(size * 3f+3).row();
 
                 tools.row();
-
-                ButtonGroup<ImageButton> teamgroup = new ButtonGroup<>();
-
-                int i = 0;
-
-                int totalTeams = Core.settings.getInt("moreCustomTeam");
-                int teamRows = totalTeams<30?3:totalTeams/10;
-                for(Team team : Team.advanceTeams){
-                    ImageButton button = new ImageButton(Tex.whiteui, Styles.clearTogglei);
-                    button.margin(4f);
-                    button.getImageCell().grow();
-                    button.getStyle().imageUpColor = team.color;
-                    button.clicked(() -> editor.drawTeam = team);
-                    button.update(() -> button.setChecked(editor.drawTeam == team));
-                    teamgroup.add(button);
-                    tools.add(button);
-
-                    if(i++ % teamRows == (teamRows - 1)) tools.row();
-                }
-
-                mid.add(tools).top().padBottom(-6);
-
-                mid.row();
 
                 tools.table(Tex.underline, t -> t.add("[cyan]设置"))
                         .colspan(3).height(40).width(size * 3f + 3f).padBottom(3);
                 tools.row();
 
+                tools.add("设置队伍：");
+                tools.field(Integer.toString(editor.drawTeam.id), TextField.TextFieldFilter.digitsOnly, value -> {
+                    editor.drawTeam = Team.get(Integer.parseInt(value));
+                }).valid(value -> (Strings.canParsePositiveInt(value) && Integer.parseInt(value)<256)).maxTextLength(3).right().padLeft(20);
+                tools.row();
 
                 tools.add("辅助线：");
                 tools.field(Integer.toString(editor.interval), TextField.TextFieldFilter.digitsOnly, value -> {
                     editor.interval = Integer.parseInt(value);
-                }).valid(value -> Strings.canParsePositiveInt(value)).maxTextLength(4);
+                }).valid(value -> Strings.canParsePositiveInt(value)).maxTextLength(4).right();
 
                 tools.row();
 
                 tools.add("笔刷：");
                 tools.field(Float.toString(editor.brushSize), TextField.TextFieldFilter.digitsOnly, value -> {
                     editor.brushSize = Float.parseFloat(value);
-                }).valid(value -> Strings.canParsePositiveFloat(value)).maxTextLength(4);
+                }).valid(value -> Strings.canParsePositiveFloat(value)).maxTextLength(4).right();
 
                 mid.row();
 

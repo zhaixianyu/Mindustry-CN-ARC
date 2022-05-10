@@ -28,6 +28,7 @@ import mindustry.input.*;
 import mindustry.net.Packets.*;
 import mindustry.type.*;
 import mindustry.ui.*;
+import mindustry.ui.dialogs.BaseDialog;
 
 import static mindustry.Vars.*;
 import static mindustry.gen.Tex.*;
@@ -290,9 +291,7 @@ public class HudFragment{
                 t.table(teams -> {
                     teams.left();
                     int i = 0;
-                    int totalTeams = Core.settings.getInt("morecustomteam");
-                    int teamRows = totalTeams<30?3:totalTeams/10;
-                    for(Team team : Team.advanceTeams){
+                    for(Team team : Team.baseTeams){
                         ImageButton button = teams.button(Tex.whiteui, Styles.clearTogglei, 40f, () -> Call.setPlayerTeamEditor(player, team))
                         .size(50f).margin(6f).get();
                         button.getImageCell().grow();
@@ -303,7 +302,36 @@ public class HudFragment{
                             teams.row();
                         }
                     }
+                    teams.button("更多", () -> {
+                        BaseDialog dialog = new BaseDialog("队伍选择器");
+                        Table selectTeam = new Table().top();
+
+                        dialog.cont.pane(td->{
+                                int j = 0;
+                                for(Team team : Team.all){
+                                    ImageButton button = new ImageButton(Tex.whiteui, Styles.clearTogglei);
+                                    button.getStyle().imageUpColor = team.color;
+                                    button.margin(10f);
+                                    button.resizeImage(40f);
+                                    button.clicked(() -> {Call.setPlayerTeamEditor(player, team);dialog.hide();});
+                                    button.update(() -> button.setChecked(player.team() == team));
+                                    td.add(button);
+                                    j++;
+                                    if(j==5) {td.row();td.add("队伍："+j+"~"+(j+10));}
+                                    else if((j-5)%10==0) {td.row();td.add("队伍："+j+"~"+(j+10));}
+                                }
+                            }
+                        );
+
+                        dialog.add(selectTeam).center();
+                        dialog.row();
+
+                        dialog.addCloseButton();
+
+                        dialog.show();
+                    }).center().row();
                 }).left();
+
                 t.visible(() -> editorMainShow);
             }).width(dsize * 5 + 4f);
             editorMain.visible(() -> shown && (state.isEditor() || Core.settings.getBool("selectTeam")));
