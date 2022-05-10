@@ -1112,6 +1112,10 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
     protected void drawSelection(int x1, int y1, int x2, int y2, int maxLength){
         NormalizeDrawResult result = Placement.normalizeDrawArea(Blocks.air, x1, y1, x2, y2, false, maxLength, 1f);
 
+        String arcmsg_BluerintSize = "";
+        arcmsg_BluerintSize = Math.abs(x2 - x1) + 1 + "×" + (Math.abs(y1 - y2) + 1);
+
+        arcDrawText(arcmsg_BluerintSize,(x1+x2)/2, Math.max(y1,y2)+1);
         Lines.stroke(2f);
 
         Draw.color(Pal.accentBack);
@@ -1300,7 +1304,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
         if(build.block.commandable && commandMode){
             //TODO handled in tap.
             consumed = true;
-        }else if(build.block.configurable && build.interactable(player.team())){ //check if tapped block is configurable
+        }else if(build.block.configurable && (Core.settings.getBool("showOtherTeamState") && (player.team().id == 255|| !state.rules.pvp) || build.interactable(player.team()))) { //check if tapped block is configurable
             consumed = true;
             if((!config.isShown() && build.shouldShowConfigure(player)) //if the config fragment is hidden, show
             //alternatively, the current selected block can 'agree' to switch config tiles
@@ -1541,8 +1545,13 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
     }
 
     public boolean canShoot(){
-        return block == null && !onConfigurable() && !isDroppingItem() && !player.unit().activelyBuilding() &&
-            !(player.unit() instanceof Mechc && player.unit().isFlying()) && !player.unit().mining() && !commandMode;
+        if (Core.settings.getBool("playerNeedShooting")){
+            return block == null && !onConfigurable() && !isDroppingItem();
+        }
+        else{
+            return block == null && !onConfigurable() && !isDroppingItem() && !player.unit().activelyBuilding() &&
+            !(player.unit() instanceof Mechc && player.unit().isFlying()) && !player.unit().mining();
+        }
     }
 
     public boolean onConfigurable(){
@@ -1717,6 +1726,34 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
         }
     }
 
+
+    private void arcDrawText(String text, int x, int y){
+
+        Color color = getThemeColor();
+        Font font = Fonts.outline;
+        GlyphLayout layout = Pools.obtain(GlyphLayout.class, GlyphLayout::new);
+        boolean ints = font.usesIntegerPositions();
+        font.setUseIntegerPositions(false);
+        font.getData().setScale(1f / 3f / Scl.scl(1f));
+        layout.setText(font, text);
+
+        float width = layout.width;
+
+        font.setColor(color);
+        float dx = x * tilesize, dy = y * tilesize;
+        font.draw(text, dx, dy + layout.height + 1, Align.center);
+        dy -= 1f;
+        Lines.stroke(2f, Color.darkGray);
+        Lines.line(dx - layout.width / 2f - 2f, dy, dx + layout.width / 2f + 1.5f, dy);
+        Lines.stroke(1f, color);
+        Lines.line(dx - layout.width / 2f - 2f, dy, dx + layout.width / 2f + 1.5f, dy);
+
+        font.setUseIntegerPositions(ints);
+        font.setColor(Color.white);
+        font.getData().setScale(1f);
+        Draw.reset();
+        Pools.free(layout);
+    }
     static class PlaceLine{
         public int x, y, rotation;
         public boolean last;

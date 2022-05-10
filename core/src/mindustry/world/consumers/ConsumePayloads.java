@@ -42,7 +42,7 @@ public class ConsumePayloads extends Consume{
         table.table(c -> {
             int i = 0;
             for(var stack : payloads){
-                c.add(new ReqImage(new ItemImage(stack.item.uiIcon, stack.amount),
+                c.add(new ReqImage(new ItemImage(stack.item.uiIcon, stack.amount,build.items.get((Item) stack.item)),
                 () -> inv.contains(stack.item, stack.amount))).padRight(8);
                 if(++i % 4 == 0) c.row();
             }

@@ -445,11 +445,13 @@ public class BlockRenderer{
                     if(build.team != pteam){
                         build.drawTeam();
                         Draw.z(Layer.block);
-                    }else if(renderer.drawStatus && block.hasConsumers){
+                    }
+
+                    if((build.team == player.team()|| (Core.settings.getBool("showOtherTeamState") && (Core.settings.getBool("cheating_mode") || player.team().id == 255|| state.rules.mode() != Gamemode.pvp))) && renderer.drawStatus && block.hasConsumers){
                         build.drawStatus();
                     }
 
-                    if(Core.settings.getBool("blockdisabled")&& !build.enabled()){
+                    if(Core.settings.getBool("blockdisabled") && (build.team == player.team()|| Core.settings.getBool("showOtherTeamState")) && !build.enabled() && (Core.settings.getBool("cheating_mode") || player.team().id == 255|| state.rules.mode() != Gamemode.pvp) ){
                         build.drawDisabled();
                     }
 

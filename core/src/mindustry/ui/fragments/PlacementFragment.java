@@ -312,7 +312,7 @@ public class PlacementFragment{
 
                         //don't refresh unnecessarily
                         //refresh only when the hover state changes, or the displayed block changes
-                        if(wasHovered == isHovered && lastDisplayState == displayState && lastTeam == player.team()) return;
+                        if(wasHovered == isHovered && lastDisplayState == displayState && Core.settings.getBool("showOtherTeamState")) return;
 
                         topTable.clear();
                         topTable.top().left().margin(5);

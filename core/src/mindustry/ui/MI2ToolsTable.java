@@ -263,11 +263,11 @@ public class MI2ToolsTable extends Table{
                 t.button(Icon.map, imgStyle, imgSize, () -> {
                     customrules.show();
                 }).height(buttonSize).growX();
-                /*
+
                 t.button(new TextureRegionDrawable(poly.uiIcon), imgStyle, imgSize, () -> {
                     player.buildDestroyedBlocks();
                 }).height(buttonSize).growX();
-
+/*
                 t.button(new TextureRegionDrawable(copper.uiIcon), imgStyle, imgSize, () -> {
                     player.dropItems();
                 }).height(buttonSize).growX();
