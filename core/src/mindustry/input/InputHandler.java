@@ -1546,11 +1546,11 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
 
     public boolean canShoot(){
         if (Core.settings.getBool("playerNeedShooting")){
-            return block == null && !onConfigurable() && !isDroppingItem();
+            return block == null && !onConfigurable() && !isDroppingItem() && !commandMode;
         }
         else{
             return block == null && !onConfigurable() && !isDroppingItem() && !player.unit().activelyBuilding() &&
-            !(player.unit() instanceof Mechc && player.unit().isFlying()) && !player.unit().mining();
+            !(player.unit() instanceof Mechc && player.unit().isFlying()) && !player.unit().mining() && !commandMode;
         }
     }
 
@@ -1754,8 +1754,12 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
         Draw.reset();
         Pools.free(layout);
     }
+
+
+
     static class PlaceLine{
         public int x, y, rotation;
         public boolean last;
     }
+
 }

@@ -555,9 +555,8 @@ public class SettingsMenuDialog extends BaseDialog{
 
         arc.checkPref("unitItemCarried",false);
         arc.checkPref("unithitbox", false);
-        arc.checkPref("unitPathLine", false);
-        arc.sliderPref("unitPathLineLength", 0, 0, 512, 1, i -> i + "格");
-        arc.sliderPref("unitPathLineStroke", 0, 1, 10, 1, i -> i + "Pixel(s)");
+
+        arc.checkPref("alwaysShowUnitRTSAi",false);
 
         arc.checkPref("unitLogicMoveLine", false);
         arc.checkPref("unitLogicTimerBars", false);

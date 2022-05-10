@@ -73,6 +73,7 @@ public enum Binding implements KeyBind{
     chat_scroll(new Axis(KeyCode.scroll)),
     chat_mode(KeyCode.tab),
     point(KeyCode.j),
+    showRTSAi(KeyCode.l),
     console(KeyCode.f8),
     ;
 

@@ -28,6 +28,7 @@ import mindustry.game.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.graphics.MultiPacker.*;
+import mindustry.input.InputHandler;
 import mindustry.type.ammo.*;
 import mindustry.ui.*;
 import mindustry.world.*;
@@ -36,6 +37,7 @@ import mindustry.world.blocks.payloads.*;
 import mindustry.world.blocks.units.*;
 import mindustry.world.consumers.*;
 import mindustry.world.meta.*;
+import mindustry.input.*;
 
 import static arc.graphics.g2d.Draw.*;
 import static mindustry.Vars.*;
@@ -1217,8 +1219,25 @@ public class UnitType extends UnlockableContent{
                 Lines.dashCircle(unit.x, unit.y, maxRange);
             }
         }
+        if(!control.input.commandMode && Core.settings.getBool("alwaysShowUnitRTSAi") && unit.isCommandable() && (unit.team() == player.team() || !state.rules.pvp ) ){
 
+            CommandAI ai = unit.command();
+            //draw target line
+            if(ai.targetPos != null){
+                Position lineDest = ai.attackTarget != null ? ai.attackTarget : ai.targetPos;
+                Drawf.limitLine(unit, lineDest, unit.hitSize / 2f, 3.5f);
 
+                if(ai.attackTarget == null){
+                    Drawf.square(lineDest.getX(), lineDest.getY(), 3.5f);
+                }
+            }
+
+            //Drawf.square(unit.x, unit.y, unit.hitSize / 1.4f + 1f);
+
+            if(ai.attackTarget != null){
+                Drawf.target(ai.attackTarget.getX(), ai.attackTarget.getY(), 6f, Pal.remove);
+            }
+        }
 
         if(unit.controller().isBeingControlled(player.unit())){
             drawControl(unit);

@@ -123,7 +123,6 @@ public class DesktopInput extends InputHandler{
         if(Core.input.keyDown(Binding.schematic_select) && !Core.scene.hasKeyboard() && mode != breaking){
             drawSelection(schemX, schemY, cursorX, cursorY, Vars.getMaxSchematicSize());
         }
-
         drawCommanded();
 
         Draw.reset();
@@ -529,6 +528,10 @@ public class DesktopInput extends InputHandler{
 
         if(Core.input.keyTap(Binding.point)){
 			Call.sendChatMessage("[ARC"+arcVersion+"]"+"标记了一处地点[red]("+cursorX+","+cursorY+")");
+        }
+
+        if(Core.input.keyTap(Binding.showRTSAi)){
+            settings.put("alwaysShowUnitRTSAi",!settings.getBool("alwaysShowUnitRTSAi"));
         }
 
         if((cursorX != lastLineX || cursorY != lastLineY) && isPlacing() && mode == placing){
