@@ -284,13 +284,13 @@ public class SettingsMenuDialog extends BaseDialog{
             menu.row();
             menu.button("@settings.sound", Icon.filters, style, isize, () -> visible(2)).marginLeft(marg).row();
             menu.row();
-            menu.button("@settings.arc", Icon.settings,style,isize, () -> visible(3)).marginLeft(marg).row();
+            menu.button("@settings.arc", Icon.star,style,isize, () -> visible(3)).marginLeft(marg).row();
             menu.row();
-            menu.button("@settings.forcehide", Icon.settings,style,isize, () -> visible(4)).marginLeft(marg).row();
+            menu.button("@settings.forcehide", Icon.eyeSmall,style,isize, () -> visible(4)).marginLeft(marg).row();
             menu.row();
-            menu.button("@settings.specmode", Icon.settings,style,isize, () -> visible(5)).marginLeft(marg).row();
+            menu.button("@settings.specmode", Icon.info,style,isize, () -> visible(5)).marginLeft(marg).row();
             menu.row();
-            menu.button("@settings.cheating", Icon.settings,style,isize, () -> visible(6)).marginLeft(marg).row();
+            menu.button("@settings.cheating", Icon.lock,style,isize, () -> visible(6)).marginLeft(marg).row();
             menu.row();
             menu.button("@settings.language", Icon.chat, style, isize, ui.language::show).marginLeft(marg).row();
             if(!mobile || Core.settings.getBool("keyboard")){
@@ -412,17 +412,7 @@ public class SettingsMenuDialog extends BaseDialog{
             return s + "%";
         });
 
-        graphics.sliderPref("screenshake", 4, 0, 8, i -> (i / 4f) + "x");
-
-        graphics.sliderPref("fpscap", 240, 10, 245, 5, s -> (s > 240 ? Core.bundle.get("setting.fpscap.none") : Core.bundle.format("setting.fpscap.text", s)));
         graphics.sliderPref("chatopacity", 100, 0, 100, 5, s -> s + "%");
-        graphics.sliderPref("lasersopacity", 100, 0, 100, 5, s -> {
-            if(ui.settings != null){
-                Core.settings.put("preferredlaseropacity", s);
-            }
-            return s + "%";
-        });
-        graphics.sliderPref("bridgeopacity", 100, 0, 100, 5, s -> s + "%");
 
         if(!mobile){
             graphics.checkPref("vsync", true, b -> Core.graphics.setVSync(b));
