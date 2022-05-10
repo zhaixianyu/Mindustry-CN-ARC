@@ -680,19 +680,6 @@ public class SettingsMenuDialog extends BaseDialog{
         cheating.checkPref("logicoverrangelink", false);
         cheating.checkPref("playerNeedShooting", false);
         cheating.checkPref("buildCoreOverride", false);
-
-
-
-        if(false){
-            cheating.addCategory("arcCCheatRed");
-            cheating.checkPref("cheating_mode", false);
-            cheating.checkPref("extraarcsetting", false);
-            cheating.checkPref("forceuseSchematic", false);
-            cheating.checkPref("removewatermark", false);
-            cheating.checkPref("instantturning", false);
-            cheating.checkPref("dropzonenotblockunit", false);
-
-        }
         }
 
     }

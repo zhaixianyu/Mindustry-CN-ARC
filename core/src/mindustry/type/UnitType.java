@@ -1139,10 +1139,6 @@ public class UnitType extends UnlockableContent{
 
             float sectorRad = 0.14f, rotateSpeed = 0.5f;
             int sectors = 5;
-            if(Core.settings.getBool("superUnitTarget")){
-                Drawf.target(unit.aimX, unit.aimY, 6f, effectcolor);
-                Drawf.line(effectcolor,unit.x,unit.y,unit.aimX, unit.aimY);
-            }
 
             Lines.stroke(Lines.getStroke() * curStroke);
 
@@ -1169,10 +1165,6 @@ public class UnitType extends UnlockableContent{
 
             float curStroke = (float)Core.settings.getInt("playerEffectCurStroke") / 10f;
             Color effectcolor = unit.team.color;
-            if(Core.settings.getBool("superUnitTarget")){
-                Drawf.target(unit.aimX, unit.aimY, 6f, effectcolor);
-                Drawf.line(effectcolor,unit.x,unit.y,unit.aimX, unit.aimY);
-            }
 
             float sectorRad = 0.14f, rotateSpeed = 0.5f;
             int sectors = 5;
@@ -1219,6 +1211,13 @@ public class UnitType extends UnlockableContent{
                 Lines.dashCircle(unit.x, unit.y, maxRange);
             }
         }
+
+        if(Core.settings.getBool("superUnitTarget") && unit.controller() instanceof Player && Core.settings.getBool("cheating_mode")){
+            Color effectcolor = unit.controller() == Vars.player? getPlayerEffectColor(): unit.team.color;
+            Drawf.target(unit.aimX, unit.aimY, 6f, effectcolor);
+            Drawf.line(effectcolor,unit.x,unit.y,unit.aimX, unit.aimY);
+        }
+
         if(!control.input.commandMode && Core.settings.getBool("alwaysShowUnitRTSAi") && unit.isCommandable() && (unit.team() == player.team() || !state.rules.pvp ) ){
 
             CommandAI ai = unit.command();

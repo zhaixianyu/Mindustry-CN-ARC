@@ -72,7 +72,7 @@ public class HudSettingsTable extends Table{
             sliderPref("minhealth_unithealthbarshown", 0, 0, 2500, 100, i -> i + "[red]HP");
             sliderPref("unitweapon_range", 0, 0, 100, 1, i -> i > 0 ? i + "%" : "关闭");
 
-            checkPref("unitPathLine", false);
+            checkPref("alwaysShowUnitRTSAi", false);
             checkPref("unitLogicMoveLine", true);
             checkPref("unitWeaponTargetLine", true);
 
@@ -94,10 +94,13 @@ public class HudSettingsTable extends Table{
                     }).size(30,30).name("ob").tooltip("观察者模式");
                     t.button("[cyan]版", () -> {
                         Call.sendChatMessage("/broad");
-                    }).size(30,30).name("ob").tooltip("服务器信息版");
+                    }).size(30,30).tooltip("服务器信息版");
                     t.button("[red]版", () -> {
                         Core.settings.put("ShowInfoPopup", !Core.settings.getBool("ShowInfoPopup"));
-                    }).size(30,30).name("ob").tooltip("关闭所有信息版");
+                    }).size(30,30).tooltip("关闭所有信息版");
+                    t.button("[cyan]指", () -> {
+                        control.input.commandMode = !control.input.commandMode;
+                    }).size(30,30).tooltip("指挥模式");
                 }).left();
                 sp.row();
                 sp.table(t -> {
