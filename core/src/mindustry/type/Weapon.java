@@ -260,7 +260,7 @@ public class Weapon implements Cloneable{
         Draw.xscl = 1f;
 
         //display target line for every weaponmount by MI2
-        if (draw_minunithealthbar && Core.settings.getBool("unitWeaponTargetLine")){
+        if (draw_minunithealthbar && Core.settings.getBool("unitWeaponTargetLine") && !(Core.settings.getInt("superUnitEffect")>0 && unit.controller() instanceof Player) && !Core.settings.getBool("superUnitTarget")){
             if(mount.aimX !=0 && mount.aimY != 0  && Mathf.len(mount.aimX - wx, mount.aimY - wy) <= 1200f){
                 Lines.stroke(1f);
                 if(mount.shoot){

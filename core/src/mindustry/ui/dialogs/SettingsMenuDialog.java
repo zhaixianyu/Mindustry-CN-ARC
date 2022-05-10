@@ -576,6 +576,7 @@ public class SettingsMenuDialog extends BaseDialog{
 
         arc.addCategory("arcCPlayerEffect");
         arc.stringInput("playerEffectColor", "ffd37f");
+        arc.checkPref("superUnitTarget",false);
         arc.sliderPref("superUnitEffect", 0, 0, 2, 1, s -> {
             if(s==0){return "关闭";}
             else if(s==1){return "独一无二";}

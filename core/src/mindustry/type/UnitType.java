@@ -1134,15 +1134,15 @@ public class UnitType extends UnlockableContent{
             unitTrans = 100f;
             draw_minunithealthbar = true;
 
-            float blinkScl = 20f;
             float curStroke = (float)Core.settings.getInt("playerEffectCurStroke") / 10f;
-            //Color effectcolor = getThemeColor();
             Color effectcolor = getPlayerEffectColor();
 
-            float effectRadius = 5f, sectorRad = 0.14f, rotateSpeed = 0.5f;
+            float sectorRad = 0.14f, rotateSpeed = 0.5f;
             int sectors = 5;
-            float orbRadius = unit.hitSize / 6f;
-            float effectalpha = (Time.time % 11) / 22f + 0.3f;
+            if(Core.settings.getBool("superUnitTarget")){
+                Drawf.target(unit.aimX, unit.aimY, 6f, effectcolor);
+                Drawf.line(effectcolor,unit.x,unit.y,unit.aimX, unit.aimY);
+            }
 
             Lines.stroke(Lines.getStroke() * curStroke);
 
@@ -1167,15 +1167,16 @@ public class UnitType extends UnlockableContent{
             unitTrans = 100f;
             draw_minunithealthbar = true;
 
-            float blinkScl = 20f;
             float curStroke = (float)Core.settings.getInt("playerEffectCurStroke") / 10f;
-            //Color effectcolor = getThemeColor();
             Color effectcolor = unit.team.color;
+            if(Core.settings.getBool("superUnitTarget")){
+                Drawf.target(unit.aimX, unit.aimY, 6f, effectcolor);
+                Drawf.line(effectcolor,unit.x,unit.y,unit.aimX, unit.aimY);
+            }
 
-            float effectRadius = 5f, sectorRad = 0.14f, rotateSpeed = 0.5f;
+            float sectorRad = 0.14f, rotateSpeed = 0.5f;
             int sectors = 5;
-            float orbRadius = unit.hitSize / 6f;
-            float effectalpha = (Time.time % 11) / 22f + 0.3f;
+
 
             Lines.stroke(Lines.getStroke() * curStroke);
 
@@ -1192,7 +1193,6 @@ public class UnitType extends UnlockableContent{
                 }
             }
 
-            //Drawf.light(unit.x, unit.y, range * 1.5f, effectcolor, curStroke * 0.8f);
 
             Draw.reset();
 
