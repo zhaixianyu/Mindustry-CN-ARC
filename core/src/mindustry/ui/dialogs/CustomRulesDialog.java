@@ -288,7 +288,7 @@ public class CustomRulesDialog extends BaseDialog{
                 main = t;
                 TeamRule teams = rules.teams.get(finalTeam);
 
-
+                check("@rules.aiCoreSpawn", b -> teams.aiCoreSpawn = b, () -> teams.aiCoreSpawn);
                 check("@rules.rtsai", b -> teams.rtsAi = b, () -> teams.rtsAi, () -> finalTeam != rules.defaultTeam);
                 numberi("@rules.rtsminsquadsize", f -> teams.rtsMinSquad = f, () -> teams.rtsMinSquad, () -> teams.rtsAi, 0, 100);
                 number("@rules.rtsminattackweight", f -> teams.rtsMinWeight = f, () -> teams.rtsMinWeight, () -> teams.rtsAi);
