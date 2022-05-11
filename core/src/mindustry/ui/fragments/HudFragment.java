@@ -233,7 +233,8 @@ public class HudFragment{
                 imageUpColor = Color.white;
             }};
 
-            if(Core.settings.getBool("arcSpecificTable") && !state.isCampaign() && state.rules.objectives.size==0 ){
+            //if(Core.settings.getBool("arcSpecificTable") && !state.isCampaign() && state.rules.objectives.size==0 ){
+            if(false){
                 wavesMain.table(s -> {
                     //wave info button with text
                     s.add(makeStatusTableArc()).grow().name("status");

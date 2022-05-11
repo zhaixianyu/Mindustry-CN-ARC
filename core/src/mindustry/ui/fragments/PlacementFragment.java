@@ -430,21 +430,50 @@ public class PlacementFragment{
                             u.clearChildren();
                             var units = control.input.selectedUnits;
                             if(units.size > 0){
-                                int[] counts = new int[content.units().size];
+                                int[] counts_Full = new int[content.units().size];
+                                int[] counts_Wound = new int[content.units().size];
+                                float wound = (float)Core.settings.getInt("rtsWoundUnit")/100f;
                                 for(var unit : units){
-                                    counts[unit.type.id] ++;
+                                    if (unit.health > unit.maxHealth * wound) counts_Full[unit.type.id] ++;
+                                    else counts_Wound[unit.type.id] ++;
                                 }
                                 int col = 0;
-                                for(int i = 0; i < counts.length; i++){
-                                    if(counts[i] > 0){
+                                u.add("残").color(Color.red);
+                                u.add("("+Core.keybinds.get(Binding.rtsSelectWound).key.toString()+")").color(getThemeColor()).visible(!android);
+                                for(int i = 0; i < counts_Wound.length; i++){
+                                    if(counts_Wound[i] > 0){
                                         var type = content.unit(i);
-                                        u.add(new ItemImage(type.uiIcon, counts[i])).tooltip(type.localizedName).pad(4).with(b -> {
+                                        u.add(new ItemImage(type.uiIcon, counts_Wound[i])).color(Color.red).tooltip(type.localizedName).pad(4).with(b -> {
+                                            ClickListener listener = new ClickListener();
+                                            //left click -> select
+                                            b.clicked(KeyCode.mouseLeft, () -> control.input.selectedUnits.removeAll(unit -> unit.type != type || unit.health >= unit.maxHealth * wound)   );
+                                            //right click -> remove
+                                            b.clicked(KeyCode.mouseRight, () -> control.input.selectedUnits.removeAll(unit -> unit.type == type && unit.health < unit.maxHealth * wound));
+
+                                            b.addListener(listener);
+                                            b.addListener(new HandCursorListener());
+                                            //gray on hover
+                                            b.update(() -> ((Group)b.getChildren().first()).getChildren().first().setColor(listener.isOver() ? Color.lightGray : Color.white));
+                                        });
+
+                                        if(++col % 7 == 0){
+                                            u.row();
+                                        }
+                                    }
+                                }
+                                u.row();
+                                u.add("满").color(Color.green);
+                                u.add("("+Core.keybinds.get(Binding.rtsSelectHealth).key.toString()+")").color(getThemeColor()).visible(!android);
+                                for(int i = 0; i < counts_Full.length; i++){
+                                    if(counts_Full[i] > 0){
+                                        var type = content.unit(i);
+                                        u.add(new ItemImage(type.uiIcon, counts_Full[i])).tooltip(type.localizedName).pad(4).with(b -> {
                                             ClickListener listener = new ClickListener();
 
                                             //left click -> select
-                                            b.clicked(KeyCode.mouseLeft, () -> control.input.selectedUnits.removeAll(unit -> unit.type != type));
+                                            b.clicked(KeyCode.mouseLeft, () -> control.input.selectedUnits.removeAll(unit -> unit.type != type || unit.health <= unit.maxHealth * wound)   );
                                             //right click -> remove
-                                            b.clicked(KeyCode.mouseRight, () -> control.input.selectedUnits.removeAll(unit -> unit.type == type));
+                                            b.clicked(KeyCode.mouseRight, () -> control.input.selectedUnits.removeAll(unit -> unit.type == type && unit.health >= unit.maxHealth * wound));
 
                                             b.addListener(listener);
                                             b.addListener(new HandCursorListener());

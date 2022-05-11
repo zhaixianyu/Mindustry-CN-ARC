@@ -556,10 +556,13 @@ public class SettingsMenuDialog extends BaseDialog{
         arc.checkPref("unitItemCarried",false);
         arc.checkPref("unithitbox", false);
 
-        arc.checkPref("alwaysShowUnitRTSAi",false);
 
         arc.checkPref("unitLogicMoveLine", false);
         arc.checkPref("unitLogicTimerBars", false);
+
+        arc.addCategory("arcRTSSupporter");
+        arc.checkPref("alwaysShowUnitRTSAi",false);
+        arc.sliderPref("rtsWoundUnit",0, 0, 100, 2, s -> s+ "%");
 
         arc.addCategory("arcShareinfo");
         arc.sliderPref("chatValidType", 0, 0, 3, 1, s -> {

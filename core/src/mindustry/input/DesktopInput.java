@@ -530,6 +530,15 @@ public class DesktopInput extends InputHandler{
 			Call.sendChatMessage("[ARC"+arcVersion+"]"+"标记了一处地点[red]("+cursorX+","+cursorY+")");
         }
 
+        if(Core.input.keyTap(Binding.rtsSelectHealth)){
+            control.input.selectedUnits.removeAll(unit -> unit.health <= unit.maxHealth * (float)Core.settings.getInt("rtsWoundUnit")/100f);
+        }
+
+        if(Core.input.keyTap(Binding.rtsSelectWound)){
+            control.input.selectedUnits.removeAll(unit -> unit.health > unit.maxHealth * (float)Core.settings.getInt("rtsWoundUnit")/100f);
+
+        }
+
         if(Core.input.keyTap(Binding.showRTSAi)){
             settings.put("alwaysShowUnitRTSAi",!settings.getBool("alwaysShowUnitRTSAi"));
         }
