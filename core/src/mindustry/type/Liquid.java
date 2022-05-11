@@ -152,6 +152,7 @@ public class Liquid extends UnlockableContent implements Senseable{
         stats.addPercent(Stat.temperature, temperature);
         stats.addPercent(Stat.heatCapacity, heatCapacity);
         stats.addPercent(Stat.viscosity, viscosity);
+        stats.add(Stat.boilPoint,boilPoint);
     }
 
     @Override

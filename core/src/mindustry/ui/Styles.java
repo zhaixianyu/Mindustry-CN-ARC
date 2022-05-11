@@ -20,6 +20,7 @@ import mindustry.gen.*;
 import mindustry.graphics.*;
 
 import static mindustry.gen.Tex.*;
+import static mindustry.Vars.*;
 
 @StyleDefaults
 public class Styles{
@@ -50,6 +51,7 @@ public class Styles{
     fullTogglet,
     /** Toggle-able version of flatBorder. */
     squareTogglet,
+
     /** Special square button for logic dialogs. */
     logict;
 
@@ -104,7 +106,7 @@ public class Styles{
         none = whiteui.tint(0f, 0f, 0f, 0f);
         flatDown = createFlatDown();
         flatOver = whiteui.tint(Color.valueOf("454545"));
-        accentDrawable = whiteui.tint(Pal.accent);
+        accentDrawable = whiteui.tint(getThemeColor());
 
         defaultb = new ButtonStyle(){{
             down = buttonDown;

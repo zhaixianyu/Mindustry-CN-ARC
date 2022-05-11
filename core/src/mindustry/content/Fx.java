@@ -2321,6 +2321,23 @@ public class Fx{
         Lines.endLine();
     }).followParent(false).rotWithParent(false),
 
+    arcMarker = new Effect(600, e -> {
+        color(Pal.command);
+        stroke(e.fout() * 2f);
+        Lines.circle(e.x, e.y, 4f + e.finpow() * 120f);
+        Drawf.circles(e.x, e.y,1f*tilesize);
+        Drawf.dashLine(Color.orange,player.x, player.y, e.x, e.y);
+        Drawf.arrow(player.x, player.y, e.x, e.y, 5f * tilesize, 4f, Pal.command);
+    }),
+
+    arcGatherMarker = new Effect(1800, e -> {
+        color(Color.red);
+        stroke(e.fout() * 2f);
+        Drawf.circles(e.x, e.y,5f*tilesize,Color.red);
+        Drawf.dashLine(Color.red,player.x, player.y, e.x, e.y);
+        Drawf.arrow(player.x, player.y, e.x, e.y,5f * tilesize, 4f, Color.red);
+    }),
+
     chainEmp = new Effect(30f, 300f, e -> {
         if(!(e.data instanceof Position p)) return;
         float tx = p.getX(), ty = p.getY(), dst = Mathf.dst(e.x, e.y, tx, ty);

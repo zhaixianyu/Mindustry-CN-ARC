@@ -1107,6 +1107,20 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
         }
     }
 
+    public void drawBars(){
+        Draw.z(Layer.shields + 4f);
+        if(maxHealth < Core.settings.getInt("blockbarminhealth") || (health / maxHealth > 0.9f )) return;
+        Draw.color(team.color, 0.3f);
+        Lines.stroke(4f);
+        Lines.line(x - block.size * tilesize / 2f * 0.6f, y + block.size * tilesize / 2.5f,
+            x + block.size * tilesize / 2f * 0.6f, y + block.size * tilesize / 2.5f);
+        Draw.color(Pal.health ,0.6f);
+        Lines.stroke(2f);
+        Lines.line(x - block.size * tilesize / 2f * 0.6f, y + block.size * tilesize / 2.5f,
+            x + 0.6f * (Mathf.clamp(health / maxHealth, 0f, 1f) - 0.5f) * block.size * tilesize, y + block.size * tilesize / 2.5f);
+        Draw.color();
+    }
+
     public void drawCracks(){
         if(!damaged() || block.size > BlockRenderer.maxCrackSize) return;
         int id = pos();
@@ -1359,8 +1373,8 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
 
         table.row();
 
-        //only display everything else if the team is the same
-        if(team == player.team()){
+        //only display everything else if the team is the same LC modified
+        if(team == player.team() || (Core.settings.getBool("showOtherTeamState") || player.team().id == 255 || (Core.settings.getBool("cheating_mode") || !state.rules.pvp))){
             table.table(bars -> {
                 bars.defaults().growX().height(18f).pad(4);
 
@@ -1476,7 +1490,12 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
 
     /** Returns whether a hand cursor should be shown over this block. */
     public Cursor getCursor(){
-        return block.configurable && interactable(player.team()) ? SystemCursor.hand : SystemCursor.arrow;
+        if (Core.settings.getBool("showOtherTeamState") && ((Core.settings.getBool("cheating_mode") ||player.team().id == 255 || state.rules.mode() != Gamemode.pvp) )){
+            return block.configurable  ? SystemCursor.hand : SystemCursor.arrow;
+        }
+        else{
+            return block.configurable && interactable(player.team()) ? SystemCursor.hand : SystemCursor.arrow;
+        }
     }
 
     /**

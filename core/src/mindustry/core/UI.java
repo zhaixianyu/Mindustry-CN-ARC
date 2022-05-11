@@ -76,6 +76,11 @@ public class UI implements ApplicationListener, Loadable{
 
     public Cursor drillCursor, unloadCursor, targetCursor;
 
+    public AboutCN_ARCDialog aboutcn_arc;
+    public UpdateDialog updatedialog;
+    public CustomRulesDialog customrules;
+    //public MindustryWikiDialog mindustrywiki;
+
     private @Nullable Element lastAnnouncement;
 
     public UI(){
@@ -122,9 +127,9 @@ public class UI implements ApplicationListener, Loadable{
 
         ClickListener.clicked = () -> Sounds.press.play();
 
-        Colors.put("accent", Pal.accent);
+        Colors.put("accent", getThemeColor());
         Colors.put("unlaunched", Color.valueOf("8982ed"));
-        Colors.put("highlight", Pal.accent.cpy().lerp(Color.white, 0.3f));
+        Colors.put("highlight", getThemeColor().cpy().lerp(Color.white, 0.3f));
         Colors.put("stat", Pal.stat);
 
         drillCursor = Core.graphics.newCursor("drill", Fonts.cursorScale());
@@ -199,6 +204,10 @@ public class UI implements ApplicationListener, Loadable{
         schematics = new SchematicsDialog();
         logic = new LogicDialog();
         fullText = new FullTextDialog();
+        aboutcn_arc = new AboutCN_ARCDialog();
+        updatedialog = new UpdateDialog();
+        customrules = new CustomRulesDialog();
+        //mindustrywiki = new MindustryWikiDialog();
 
         Group group = Core.scene.root;
 
@@ -317,6 +326,7 @@ public class UI implements ApplicationListener, Loadable{
 
     /** Shows a fading label at the top of the screen. */
     public void showInfoToast(String info, float duration){
+        ui.chatfrag.addMessage("[acid][公屏][white]"+info);
         var cinfo = Core.scene.find("coreinfo");
         Table table = new Table();
         table.touchable = Touchable.disabled;
@@ -333,6 +343,7 @@ public class UI implements ApplicationListener, Loadable{
 
     /** Shows a label at some position on the screen. Does not fade. */
     public void showInfoPopup(String info, float duration, int align, int top, int left, int bottom, int right){
+        if (!Core.settings.getBool("ShowInfoPopup")) return;
         Table table = new Table();
         table.setFillParent(true);
         table.touchable = Touchable.disabled;
@@ -442,7 +453,7 @@ public class UI implements ApplicationListener, Loadable{
     public void showText(String titleText, String text, int align){
         new Dialog(titleText){{
             cont.row();
-            cont.image().width(400f).pad(2).colspan(2).height(4f).color(Pal.accent);
+            cont.image().width(400f).pad(2).colspan(2).height(4f).color(getThemeColor());
             cont.row();
             cont.add(text).width(400f).wrap().get().setAlignment(align, align);
             cont.row();
@@ -463,7 +474,7 @@ public class UI implements ApplicationListener, Loadable{
         new Dialog(titleText){{
             cont.margin(10).add(text);
             titleTable.row();
-            titleTable.image().color(Pal.accent).height(3f).growX().pad(2f);
+            titleTable.image().color(getThemeColor()).height(3f).growX().pad(2f);
             buttons.button("@ok", this::hide).size(110, 50).pad(4);
             closeOnBack();
         }}.show();
@@ -559,7 +570,7 @@ public class UI implements ApplicationListener, Loadable{
     public void showMenu(String title, String message, String[][] options, Intc callback){
         new Dialog(title){{
             cont.row();
-            cont.image().width(400f).pad(2).colspan(2).height(4f).color(Pal.accent);
+            cont.image().width(400f).pad(2).colspan(2).height(4f).color(getThemeColor());
             cont.row();
             cont.add(message).width(400f).wrap().get().setAlignment(Align.center);
             cont.row();
@@ -603,11 +614,30 @@ public class UI implements ApplicationListener, Loadable{
         if(mag >= 1_000_000_000){
             return sign + Strings.fixed(mag / 1_000_000_000f, 1) + "[gray]" + billions+ "[]";
         }else if(mag >= 1_000_000){
-            return sign + Strings.fixed(mag / 1_000_000f, 1) + "[gray]" + millions + "[]";
-        }else if(mag >= 10_000){
+            return sign + Strings.fixed(mag / 1_000_000f, 1) + "[gray]" +millions + "[]";
+        }else if(mag >= 25_000){
             return number / 1000 + "[gray]" + thousands + "[]";
-        }else if(mag >= 1000){
+        }else if(mag >= 2500){
             return sign + Strings.fixed(mag / 1000f, 1) + "[gray]" + thousands + "[]";
+        }else{
+            return number + "";
+        }
+    }
+
+    public static String whiteformatAmount(long number){
+        //prevent overflow
+        if(number == Long.MIN_VALUE) number ++;
+
+        long mag = Math.abs(number);
+        String sign = number < 0 ? "-" : "";
+        if(mag >= 1_000_000_000){
+            return sign + Strings.fixed(mag / 1_000_000_000f, 1) + billions+ "";
+        }else if(mag >= 1_000_000){
+            return sign + Strings.fixed(mag / 1_000_000f, 1) + millions + "";
+        }else if(mag >= 25_000){
+            return number / 1000 + thousands + "";
+        }else if(mag >= 2500){
+            return sign + Strings.fixed(mag / 1000f, 1) + thousands + "";
         }else{
             return number + "";
         }
@@ -629,5 +659,11 @@ public class UI implements ApplicationListener, Loadable{
         }else{
             return number;
         }
+
+    }
+
+    public static String formatFloat(float number){
+        if (Math.abs(number - Math.round(number)) < 0.01) return String.format("%.0f", number);
+        return String.format("%.2f", number);
     }
 }

@@ -367,18 +367,18 @@ public class Block extends UnlockableContent implements Senseable{
             tile.build.draw();
         }else{
             Draw.rect(
-                variants == 0 ? region :
-                variantRegions[Mathf.randomSeed(tile.pos(), 0, Math.max(0, variantRegions.length - 1))],
-            tile.drawx(), tile.drawy());
+                    variants == 0 ? region :
+                            variantRegions[Mathf.randomSeed(tile.pos(), 0, Math.max(0, variantRegions.length - 1))],
+                    tile.drawx(), tile.drawy());
         }
     }
 
     public void drawShadow(Tile tile){
         Draw.color(0f, 0f, 0f, BlockRenderer.shadowColor.a);
         Draw.rect(
-            variants == 0 ? customShadowRegion :
-            variantShadowRegions[Mathf.randomSeed(tile.pos(), 0, Math.max(0, variantShadowRegions.length - 1))],
-        tile.drawx(), tile.drawy(), tile.build == null ? 0f : tile.build.drawrot());
+                variants == 0 ? customShadowRegion :
+                        variantShadowRegions[Mathf.randomSeed(tile.pos(), 0, Math.max(0, variantShadowRegions.length - 1))],
+                tile.drawx(), tile.drawy(), tile.build == null ? 0f : tile.build.drawrot());
         Draw.color();
     }
 
@@ -386,7 +386,7 @@ public class Block extends UnlockableContent implements Senseable{
         Tile tile = world.tile(x, y);
         if(tile == null) return 0;
         return tile.getLinkedTilesAs(this, tempTiles)
-            .sumf(other -> !other.floor().isLiquid ? 1f : 0f) / size / size;
+                .sumf(other -> !other.floor().isLiquid ? 1f : 0f) / size / size;
     }
 
     public void drawEnvironmentLight(Tile tile){
@@ -444,9 +444,35 @@ public class Block extends UnlockableContent implements Senseable{
 
         return width;
     }
-
     /** Drawn when placing and when hovering over. */
     public void drawOverlay(float x, float y, int rotation){
+    }
+
+    public float drawText(String text, float x, float y, boolean valid, float scl){
+        if(renderer.pixelator.enabled()) return 0;
+
+        Color color = valid ? Pal.accent : Pal.remove;
+        Font font = Fonts.outline;
+        GlyphLayout layout = Pools.obtain(GlyphLayout.class, GlyphLayout::new);
+        boolean ints = font.usesIntegerPositions();
+        font.setUseIntegerPositions(false);
+        font.getData().setScale(1f / 4f / Scl.scl(1f) * scl);
+        layout.setText(font, text);
+
+        float width = layout.width;
+
+        font.setColor(color);
+        float dx = x, dy = y;
+        font.draw(text, dx, dy + layout.height + 1, Align.center);
+        dy -= 1f;
+
+        font.setUseIntegerPositions(ints);
+        font.setColor(Color.white);
+        font.getData().setScale(1f);
+        Draw.reset();
+        Pools.free(layout);
+
+        return width;
     }
 
     public float sumAttribute(@Nullable Attribute attr, int x, int y){
@@ -454,7 +480,7 @@ public class Block extends UnlockableContent implements Senseable{
         Tile tile = world.tile(x, y);
         if(tile == null) return 0;
         return tile.getLinkedTilesAs(this, tempTiles)
-            .sumf(other -> !floating && other.floor().isDeep() ? 0 : other.floor().attributes.get(attr));
+                .sumf(other -> !floating && other.floor().isDeep() ? 0 : other.floor().attributes.get(attr));
     }
 
     public TextureRegion getDisplayIcon(Tile tile){
@@ -483,7 +509,7 @@ public class Block extends UnlockableContent implements Senseable{
     public boolean canPlaceOn(Tile tile, Team team){
         return true;
     }
-    
+
     public boolean canBreak(Tile tile){
         return true;
     }
@@ -541,41 +567,48 @@ public class Block extends UnlockableContent implements Senseable{
 
     public void addLiquidBar(Liquid liq){
         addBar("liquid-" + liq.name, entity -> !liq.unlocked() ? null : new Bar(
-            () -> liq.localizedName,
-            liq::barColor,
-            () -> entity.liquids.get(liq) / liquidCapacity
+                () -> entity.liquids.get(liq) <= 0.001f ? Core.bundle.get("bar.liquid") : liq.localizedName + " " + (entity == null || entity.liquids == null ? 0f : (int)(entity.liquids.get(liq) * 100f) / 100f + "/" + liquidCapacity),
+                liq::barColor,
+                () -> entity.liquids.get(liq) / liquidCapacity
         ));
     }
 
     /** Adds a liquid bar that dynamically displays a liquid type. */
     public <T extends Building> void addLiquidBar(Func<T, Liquid> current){
         addBar("liquid", entity -> new Bar(
-            () -> current.get((T)entity) == null || entity.liquids.get(current.get((T)entity)) <= 0.001f ? Core.bundle.get("bar.liquid") : current.get((T)entity).localizedName,
-            () -> current.get((T)entity) == null ? Color.clear : current.get((T)entity).barColor(),
-            () -> current.get((T)entity) == null ? 0f : entity.liquids.get(current.get((T)entity)) / liquidCapacity)
+                () -> current.get((T)entity) == null || entity.liquids.get(current.get((T)entity)) <= 0.001f ? Core.bundle.get("bar.liquid") : current.get((T)entity).localizedName,
+                () -> current.get((T)entity) == null ? Color.clear : current.get((T)entity).barColor(),
+                () -> current.get((T)entity) == null ? 0f : entity.liquids.get(current.get((T)entity)) / liquidCapacity)
         );
     }
 
     public void setBars(){
-        addBar("health", entity -> new Bar("stat.health", Pal.health, entity::healthf).blink(Color.white));
+        addBar("health", entity -> new Bar(() -> {
+            if (entity.maxHealth == entity.health) {return entity.maxHealth+"";}
+            else {return entity.health + " / " + entity.maxHealth + " (" + (int)(100 * entity.health / entity.maxHealth) + "%)";}
+        }, () -> Pal.health, entity::healthf).blink(Color.white));
 
         if(consPower != null){
+
             boolean buffered = consPower.buffered;
             float capacity = consPower.capacity;
 
             addBar("power", entity -> new Bar(
-                () -> buffered ? Core.bundle.format("bar.poweramount", Float.isNaN(entity.power.status * capacity) ? "<ERROR>" : UI.formatAmount((int)(entity.power.status * capacity))) :
-                Core.bundle.get("bar.power"),
-                () -> Pal.powerBar,
-                () -> Mathf.zero(consPower.requestedPower(entity)) && entity.power.graph.getPowerProduced() + entity.power.graph.getBatteryStored() > 0f ? 1f : entity.power.status)
+                    () -> buffered ? Core.bundle.format("bar.poweramount", Float.isNaN(entity.power.status * capacity) ? "<ERROR>" : UI.formatAmount((int)(entity.power.status * capacity))) :
+                            entity.power.status > 0 ?
+                                    Core.bundle.format("bar.powerconsume", UI.formatFloat(entity.power.status * consPower.usage * 60 * entity.timeScale()))
+                                    :
+                                    Core.bundle.get("bar.power"),
+                    () -> Pal.powerBar,
+                    () -> Mathf.zero(consPower.requestedPower(entity)) && entity.power.graph.getPowerProduced() + entity.power.graph.getBatteryStored() > 0f ? 1f : entity.power.status)
             );
         }
 
         if(hasItems && configurable){
             addBar("items", entity -> new Bar(
-                () -> Core.bundle.format("bar.items", entity.items.total()),
-                () -> Pal.items,
-                () -> (float)entity.items.total() / itemCapacity)
+                    () -> Core.bundle.format("bar.items", entity.items.total()),
+                    () -> Pal.items,
+                    () -> (float)entity.items.total() / itemCapacity)
             );
         }
 
@@ -628,7 +661,7 @@ public class Block extends UnlockableContent implements Senseable{
         if(other.alwaysReplace) return true;
         if(other.privileged) return false;
         return other.replaceable && (other != this || (rotate && quickRotate)) && this.group != BlockGroup.none && other.group == this.group &&
-            (size == other.size || (size >= other.size && ((subclass != null && subclass == other.subclass) || group.anyReplace)));
+                (size == other.size || (size >= other.size && ((subclass != null && subclass == other.subclass) || group.anyReplace)));
     }
 
     /** @return a possible replacement for this block when placed in a line by the player. */
@@ -852,7 +885,7 @@ public class Block extends UnlockableContent implements Senseable{
     }
 
     public boolean isPlaceable(){
-        return isVisible() && (!state.rules.bannedBlocks.contains(this) || state.rules.editor) && supportsEnv(state.rules.env);
+        return Core.settings.getBool("allBlocksReveal") || isVisible() && (!state.rules.bannedBlocks.contains(this) || state.rules.editor) && supportsEnv(state.rules.env);
     }
 
     /** @return whether this block supports a specific environment. */
@@ -1113,8 +1146,8 @@ public class Block extends UnlockableContent implements Senseable{
             }
 
             health = round ?
-                Mathf.round(size * size * scaledHealth, 5) :
-                (int)(size * size * scaledHealth);
+                    Mathf.round(size * size * scaledHealth, 5) :
+                    (int)(size * size * scaledHealth);
         }
 
         clipSize = Math.max(clipSize, size * tilesize);

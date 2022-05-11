@@ -21,11 +21,15 @@ public class Team implements Comparable<Team>{
     public String emoji = "";
     public boolean hasPalette;
     public String name;
+    public static int moreCustomTeam = Math.max(Core.settings.getInt("moreCustomTeam"),6);
 
     /** All 256 registered teams. */
     public static final Team[] all = new Team[256];
     /** The 6 base teams used in the editor. */
     public static final Team[] baseTeams = new Team[6];
+    /** The 30 advance teams used in the editor. */
+    public static final Team[] advanceTeams = new Team[moreCustomTeam];
+
 
     public final static Team
         derelict = new Team(0, "derelict", Color.valueOf("4d4e58")),
@@ -56,6 +60,7 @@ public class Team implements Comparable<Team>{
         this.id = id;
 
         if(id < 6) baseTeams[id] = this;
+        if(id < moreCustomTeam) advanceTeams[id] = this;
         all[id] = this;
 
         palette = new Color[3];

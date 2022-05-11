@@ -280,6 +280,7 @@ public class BlockRenderer{
     }
 
     public void drawShadows(){
+        if (Core.settings.getInt("blockrenderlevel") == 0) return;
         if(!shadowEvents.isEmpty()){
             Draw.flush();
 
@@ -410,7 +411,7 @@ public class BlockRenderer{
 
             //comment wasVisible part for hiding?
             if(block != Blocks.air && (visible || build.wasVisible)){
-                block.drawBase(tile);
+                if (settings.getInt("blockrenderlevel") > 1) block.drawBase(tile);
                 Draw.reset();
                 Draw.z(Layer.block);
 
@@ -436,12 +437,24 @@ public class BlockRenderer{
                         Draw.z(Layer.block);
                     }
 
+                    if(renderer.drawBars){
+                        build.drawBars();
+                        Draw.z(Layer.block);
+                    }
+
                     if(build.team != pteam){
                         build.drawTeam();
                         Draw.z(Layer.block);
-                    }else if(renderer.drawStatus && block.hasConsumers){
+                    }
+
+                    if((build.team == player.team()|| (Core.settings.getBool("showOtherTeamState") && (Core.settings.getBool("cheating_mode") || player.team().id == 255|| state.rules.mode() != Gamemode.pvp))) && renderer.drawStatus && block.hasConsumers){
                         build.drawStatus();
                     }
+
+                    if(Core.settings.getBool("blockdisabled") && (build.team == player.team()|| Core.settings.getBool("showOtherTeamState")) && !build.enabled() && (Core.settings.getBool("cheating_mode") || player.team().id == 255|| state.rules.mode() != Gamemode.pvp) ){
+                        build.drawDisabled();
+                    }
+
                 }
                 Draw.reset();
             }else if(!visible){

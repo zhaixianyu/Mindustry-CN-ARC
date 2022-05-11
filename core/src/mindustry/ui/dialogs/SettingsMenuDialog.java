@@ -36,6 +36,10 @@ public class SettingsMenuDialog extends BaseDialog{
     public SettingsTable graphics;
     public SettingsTable game;
     public SettingsTable sound;
+    public SettingsTable arc;
+    public SettingsTable forcehide;
+    public SettingsTable specmode;
+    public SettingsTable cheating;
     public SettingsTable main;
 
     private Table prefs;
@@ -71,6 +75,10 @@ public class SettingsMenuDialog extends BaseDialog{
         game = new SettingsTable();
         graphics = new SettingsTable();
         sound = new SettingsTable();
+        arc = new SettingsTable();
+        forcehide = new SettingsTable();
+        specmode = new SettingsTable();
+        cheating = new SettingsTable();
 
         prefs = new Table();
         prefs.top();
@@ -269,13 +277,25 @@ public class SettingsMenuDialog extends BaseDialog{
         float marg = 8f, isize = iconMed;
 
         menu.defaults().size(300f, 60f);
-        menu.button("@settings.game", Icon.settings, style, isize, () -> visible(0)).marginLeft(marg).row();
-        menu.button("@settings.graphics", Icon.image, style, isize, () -> visible(1)).marginLeft(marg).row();
-        menu.button("@settings.sound", Icon.filters, style, isize, () -> visible(2)).marginLeft(marg).row();
-        menu.button("@settings.language", Icon.chat, style, isize, ui.language::show).marginLeft(marg).row();
-        if(!mobile || Core.settings.getBool("keyboard")){
+        if(Core.settings.getInt("changelogreaded") == changeLogRead){
+            menu.button("@settings.game", Icon.settings, style, isize, () -> visible(0)).marginLeft(marg).row();
+            menu.row();
+            menu.button("@settings.graphics", Icon.image, style, isize, () -> visible(1)).marginLeft(marg).row();
+            menu.row();
+            menu.button("@settings.sound", Icon.filters, style, isize, () -> visible(2)).marginLeft(marg).row();
+            menu.row();
+            menu.button("@settings.arc", Icon.star,style,isize, () -> visible(3)).marginLeft(marg).row();
+            menu.row();
+            menu.button("@settings.forcehide", Icon.eyeSmall,style,isize, () -> visible(4)).marginLeft(marg).row();
+            menu.row();
+            menu.button("@settings.specmode", Icon.info,style,isize, () -> visible(5)).marginLeft(marg).row();
+            menu.row();
+            menu.button("@settings.cheating", Icon.lock,style,isize, () -> visible(6)).marginLeft(marg).row();
+            menu.row();
+            menu.button("@settings.language", Icon.chat, style, isize, ui.language::show).marginLeft(marg).row();
+            if(!mobile || Core.settings.getBool("keyboard")){
             menu.button("@settings.controls", Icon.move, style, isize, ui.controls::show).marginLeft(marg).row();
-        }
+            }
 
         menu.button("@settings.data", Icon.save, style, isize, () -> dataDialog.show()).marginLeft(marg).row();
 
@@ -289,17 +309,34 @@ public class SettingsMenuDialog extends BaseDialog{
             }
             i++;
         }
+        }
+        else{
+            menu.button("@settings.arc", style, () -> visible(0));
+            menu.row();
+            menu.button("@settings.language", style, ui.language::show);
+        }
+
     }
 
     void addSettings(){
+
+        if(Core.settings.getInt("changelogreaded") != changeLogRead){
+            arc.sliderPref("changelogreaded", 0, 0, 150, 1, i -> i + "");
+            arc.checkPref("changelogexplain", false);
+        }else{
+
         sound.sliderPref("musicvol", 100, 0, 100, 1, i -> i + "%");
         sound.sliderPref("sfxvol", 100, 0, 100, 1, i -> i + "%");
         sound.sliderPref("ambientvol", 100, 0, 100, 1, i -> i + "%");
 
+        game.addCategory("arcCSave");
+        game.checkPref("savecreate", true);
+        game.checkPref("save_more_map", false);
         game.sliderPref("saveinterval", 60, 10, 5 * 120, 10, i -> Core.bundle.format("setting.seconds", i));
 
+        game.addCategory("arcCAssist");
+        game.checkPref("autotarget", true);
         if(mobile){
-            game.checkPref("autotarget", true);
             if(!ios){
                 game.checkPref("keyboard", false, val -> {
                     control.setInput(val ? new DesktopInput() : new MobileInput());
@@ -327,20 +364,19 @@ public class SettingsMenuDialog extends BaseDialog{
             game.checkPref("crashreport", true);
         }
 
+        game.sliderPref("moreCustomTeam", 6, 6, 255, 1, i -> i + "");
+        game.sliderPref("maxSchematicSize",32,32,500,1, String::valueOf);
         game.checkPref("savecreate", true);
         game.checkPref("blockreplace", true);
         game.checkPref("conveyorpathfinding", true);
-        game.checkPref("hints", true);
-        game.checkPref("logichints", true);
+        game.checkPref("shiftCopyIcon",true);
 
-        if(!mobile){
-            game.checkPref("backgroundpause", true);
-            game.checkPref("buildautopause", false);
-        }
+        game.checkPref("backgroundpause", true);
+        game.checkPref("buildautopause", false);
 
         game.checkPref("doubletapmine", false);
         game.checkPref("commandmodehold", true);
-      
+
         if(!ios){
             game.checkPref("modcrashdisable", true);
         }
@@ -358,28 +394,25 @@ public class SettingsMenuDialog extends BaseDialog{
             }
         }
 
+        game.checkPref("showAllBlockAttributes", false);
+
+        game.addCategory("arcCHint");
+        game.checkPref("hints", true);
+        game.checkPref("logichints", true);
+
+        graphics.addCategory("arcCOverview");
+        graphics.stringInput("themeColor", "ffd37f");
+
+        graphics.sliderPref("fpscap", 240, 10, 245, 5, s -> (s > 240 ? Core.bundle.get("setting.fpscap.none") : Core.bundle.format("setting.fpscap.text", s)));
         int[] lastUiScale = {settings.getInt("uiscale", 100)};
 
-        graphics.sliderPref("uiscale", 100, 25, 300, 25, s -> {
+        graphics.sliderPref("uiscale", 100, 5, 300, 5, s -> {
             //if the user changed their UI scale, but then put it back, don't consider it 'changed'
             Core.settings.put("uiscalechanged", s != lastUiScale[0]);
             return s + "%";
         });
 
-        graphics.sliderPref("screenshake", 4, 0, 8, i -> (i / 4f) + "x");
-
-        graphics.sliderPref("bloomintensity", 6, 0, 16, i -> (int)(i/4f * 100f) + "%");
-        graphics.sliderPref("bloomblur", 2, 1, 16, i -> i + "x");
-
-        graphics.sliderPref("fpscap", 240, 10, 245, 5, s -> (s > 240 ? Core.bundle.get("setting.fpscap.none") : Core.bundle.format("setting.fpscap.text", s)));
         graphics.sliderPref("chatopacity", 100, 0, 100, 5, s -> s + "%");
-        graphics.sliderPref("lasersopacity", 100, 0, 100, 5, s -> {
-            if(ui.settings != null){
-                Core.settings.put("preferredlaseropacity", s);
-            }
-            return s + "%";
-        });
-        graphics.sliderPref("bridgeopacity", 100, 0, 100, 5, s -> s + "%");
 
         if(!mobile){
             graphics.checkPref("vsync", true, b -> Core.graphics.setVSync(b));
@@ -429,37 +462,173 @@ public class SettingsMenuDialog extends BaseDialog{
             }
         }
 
-        graphics.checkPref("effects", true);
-        graphics.checkPref("atmosphere", !mobile);
-        graphics.checkPref("destroyedblocks", true);
+        graphics.addCategory("arcCgamewindow");
+        //graphics.checkPref("fps", false);
+        graphics.checkPref("more_info_shown", true);
+        graphics.checkPref("override_boss_shown", false);
+
+        graphics.checkPref("minimap", !mobile);
+        graphics.sliderPref("minimapSize", 140, 40, 400, 10, i -> i + "");
+        graphics.checkPref("position", false);
+        graphics.sliderPref("chatopacity", 100, 0, 100, 5, i -> i > 0 ? i + "%" : "关闭");
+
+        graphics.addCategory("arcCgameview");
         graphics.checkPref("blockstatus", false);
         graphics.checkPref("playerchat", true);
-        if(!mobile){
-            graphics.checkPref("coreitems", true);
-        }
-        graphics.checkPref("minimap", !mobile);
-        graphics.checkPref("smoothcamera", true);
-        graphics.checkPref("position", false);
-        if(!mobile){
-            graphics.checkPref("mouseposition", false);
-        }
-        graphics.checkPref("fps", false);
+        graphics.checkPref("alwaysshowdropzone", false);
+        graphics.sliderPref("lasersopacity", 100, 0, 100, 5, s -> {
+            if(ui.settings != null){
+                Core.settings.put("preferredlaseropacity", s);
+            }
+            return s + "%";
+        });
+        graphics.sliderPref("bridgeopacity", 100, 0, 100, 5, i -> i > 0 ? i + "%" : "关闭");
+        graphics.sliderPref("HiddleItemTransparency",0,0,100,2, i -> i > 0 ? i + "%" : "关闭");
         graphics.checkPref("playerindicators", true);
         graphics.checkPref("indicators", true);
-        graphics.checkPref("showweather", true);
-        graphics.checkPref("animatedwater", true);
 
-        if(Shaders.shield != null){
-            graphics.checkPref("animatedshields", !mobile);
+        graphics.addCategory("arcCGraphicsOther");
+        graphics.checkPref("smoothcamera", true);
+        graphics.sliderPref("screenshake", 4, 0, 8, i -> (i / 4f) + "x");
+        graphics.checkPref("skipcoreanimation", false);
+        if(!mobile){
+            Core.settings.put("swapdiagonal", false);
         }
 
-        graphics.checkPref("bloom", true, val -> renderer.toggleBloom(val));
-
-        graphics.checkPref("pixelate", false, val -> {
-            if(val){
-                Events.fire(Trigger.enablePixelation);
-            }
+        arc.addCategory("arcHudToolbox");
+        arc.checkPref("showFloatingSettings",false);
+        arc.checkPref("showMI2toolbox", true);
+        arc.checkPref("arcSpecificTable",true);
+        arc.checkPref("powerStatistic", true);
+        arc.sliderPref("arccoreitems", 3, 0, 3, 1, s -> {
+            if(s==0){return "不显示";}
+            else if(s==1){return "资源状态";}
+            else if(s==2){return "兵种状态";}
+            else{return "显示资源和兵种";}
         });
+        arc.sliderPref("arcDetailInfo", 1, 0, 1, 1, s -> {
+            if(s==0){return "详细模式";}
+            else if(s==1){return "简略模式";}
+            else{return s+"";}
+        });
+
+        arc.addCategory("arcAddBlockInfo");
+        arc.sliderPref("overdrive_zone",0,0,100,2, i -> i > 0 ? i + "%" : "关闭");
+        arc.sliderPref("mend_zone",0,0,100,2, i -> i > 0 ? i + "%" : "关闭");
+        arc.checkPref("blockdisabled", false);
+        arc.checkPref("blockBars", false);
+        arc.sliderPref("blockbarminhealth",0,0,4000,50, i -> i + "[red]HP");
+        arc.checkPref("blockBars_mend", false);
+        arc.checkPref("arcdrillmode", false);
+        arc.checkPref("arcchoiceuiIcon", false);
+        arc.checkPref("arclogicbordershow", true);
+        arc.checkPref("oneBlockProperty",false);
+
+        arc.addCategory("arcMassDriverInfo");
+        arc.sliderPref("mass_driver_line_alpha",100,0,100,1, i -> i > 0 ? i + "%" : "关闭");
+        arc.sliderPref("mass_driver_line_interval", 40, 8, 400, 4, i -> i/8f + "格");
+        arc.stringInput("mass_driver_line_color", "ff8c66");
+
+        arc.addCategory("arcAddTurretInfo");
+        arc.checkPref("showTurretAmmo", false);
+        arc.checkPref("showTurretAmmoAmount", false);
+        arc.sliderPref("turretShowRange", 0, 0, 3, 1, s -> {
+            if(s==0){return "关闭";}
+            else if(s==1){return "仅对地";}
+            else if(s==2){return "仅对空";}
+            else if(s==3){return "全部";}
+            else{return "";}
+        });
+        arc.checkPref("turretForceShowRange", false);
+        arc.sliderPref("turretAlertRange",0,0,30,1, i -> i > 0 ? i + "格" : "关闭");
+        arc.checkPref("blockWeaponTargetLine", false);
+        arc.checkPref("blockWeaponTargetLineWhenIdle", false);
+
+        arc.addCategory("arcAddUnitInfo");
+        arc.sliderPref("unitweapon_range", 0, 0, 100, 1, i -> i > 0 ? i + "%" : "关闭");
+        arc.sliderPref("unitAlertRange",0, 0, 30, 1, s -> {
+            if(s==0){return "关闭";}
+            else if(s==30){return "一直开启";}
+            else{return s+"格";}
+        });
+        arc.checkPref("unitWeaponTargetLine", false);
+
+        arc.checkPref("unitItemCarried",false);
+        arc.checkPref("unithitbox", false);
+
+        arc.checkPref("alwaysShowUnitRTSAi",false);
+
+        arc.checkPref("unitLogicMoveLine", false);
+        arc.checkPref("unitLogicTimerBars", false);
+
+        arc.addCategory("arcShareinfo");
+        arc.sliderPref("chatValidType", 0, 0, 3, 1, s -> {
+            if(s==0){return "原版模式";}
+            else if(s==1){return "纯净聊天";}
+            else if(s==2){return "服务器记录";}
+            else if(s==3){return "全部记录";}
+            else{return s+"";}
+        });
+        arc.checkPref("arcWayzerServerMode",true);
+        arc.checkPref("ShowInfoPopup",true);
+        arc.checkPref("arcShareWaveInfo", false);
+        arc.checkPref("arcAlwaysTeamColor",false);
+
+        arc.addCategory("arcCPlayerEffect");
+        arc.stringInput("playerEffectColor", "ffd37f");
+        arc.checkPref("superUnitTarget",false);
+        arc.sliderPref("superUnitEffect", 0, 0, 2, 1, s -> {
+            if(s==0){return "关闭";}
+            else if(s==1){return "独一无二";}
+            else if(s==2){return "全部玩家";}
+            else{return s+"";}
+        });
+        arc.sliderPref("playerEffectCurStroke", 0, 1, 30, 1, i -> (float)i/10f + "Pixel(s)");
+
+        arc.addCategory("developerMode");
+        arc.checkPref("arcDisableModWarning",false);
+        arc.sliderPref("menuFlyersCount", 0, -15, 50, 5, i -> i + "");
+        arc.checkPref("menuFlyersRange",false);
+        arc.checkPref("menuFlyersFollower",false);
+        arc.stringInput("arcSpecificLanguage", "Lucky!");
+
+        //////////forcehide
+        forcehide.addCategory("arcCDisplayBlock");
+        forcehide.sliderPref("blockrenderlevel", 2, 0, 2, 1, s -> {
+            if(s==0){return "隐藏全部建筑";}
+            else if(s==1){return "只显示建筑状态";}
+            else if(s==2){return "全部显示";}
+            else{return s+"";}
+        });
+        forcehide.checkPref("displayblock", true);
+        forcehide.addCategory("arcCDisplayUnit");
+        forcehide.checkPref("unitHealthBar", false);
+        forcehide.checkPref("alwaysShowPlayerUnit", false);
+        forcehide.checkPref("showminebeam", true);
+        forcehide.sliderPref("unitTransparency",100,0,100,5, i -> i > 0 ? i + "%" : "关闭");
+        forcehide.sliderPref("minhealth_unitshown", 0, 0, 2500, 50, i -> i + "[red]HP");
+        forcehide.sliderPref("minhealth_unithealthbarshown", 0, 0, 2500, 100, i -> i + "[red]HP");
+        forcehide.addCategory("arcCDisplayEffect");
+        forcehide.checkPref("bulletShow", true);
+        forcehide.checkPref("effects", true);
+        forcehide.checkPref("bloom", true, val -> renderer.toggleBloom(val));
+        forcehide.sliderPref("bloomintensity", 6, 0, 16, i -> (int)(i/4f * 100f) + "%");
+        forcehide.sliderPref("bloomblur", 2, 1, 16, i -> i + "x");
+        forcehide.checkPref("forceEnableDarkness", true);
+        forcehide.checkPref("destroyedblocks", true);
+        forcehide.checkPref("showweather", true);
+        forcehide.checkPref("animatedwater", true);
+
+        if(Shaders.shield != null){
+            forcehide.checkPref("animatedshields", !mobile);
+        }
+
+        forcehide.checkPref("atmosphere", !mobile);
+
+        if (!mobile){
+            forcehide.checkPref("vsync", true, b -> Core.graphics.setVSync(b));
+        }
+        Core.graphics.setVSync(Core.settings.getBool("vsync"));
 
         //iOS (and possibly Android) devices do not support linear filtering well, so disable it
         if(!ios){
@@ -480,12 +649,40 @@ public class SettingsMenuDialog extends BaseDialog{
             }
         }
 
-        graphics.checkPref("skipcoreanimation", false);
-        graphics.checkPref("hidedisplays", false);
+        forcehide.checkPref("pixelate", false, val -> {
+            if(val){
+                Events.fire(Trigger.enablePixelation);
+            }
+        });
 
-        if(!mobile){
-            Core.settings.put("swapdiagonal", false);
+        //////////specmode
+        specmode.addCategory("Specgamemode");
+        specmode.checkPref("banLogicImport",false);
+        specmode.addCategory("modSupportor");
+        specmode.checkPref("modMode", false);
+        specmode.checkPref("researchViewer",false);
+        specmode.addCategory("ModEnhancement");
+        specmode.checkPref("TUUI",false);
+        specmode.checkPref("TUstartfolded",true);
+        specmode.checkPref("TUinstakill",true);
+        specmode.addCategory("catdevelopmode");
+        specmode.checkPref("developmode", false);
+        //////////cheating
+        cheating.addCategory("arcWeakCheat");
+        cheating.checkPref("allBlocksReveal",false);
+        cheating.checkPref("DisableLightRender", false);
+        cheating.checkPref("overrideSkipWave", false);
+        cheating.checkPref("overridePickUpPayload",false);
+        cheating.addCategory("arcStrongCheat");
+        cheating.checkPref("showOtherTeamResource", false);
+        cheating.checkPref("showOtherTeamState", false);
+        cheating.checkPref("selectTeam",false);
+        cheating.checkPref("overridebuild", false);
+        cheating.checkPref("logicoverrangelink", false);
+        cheating.checkPref("playerNeedShooting", false);
+        cheating.checkPref("buildCoreOverride", false);
         }
+
     }
 
     public void exportData(Fi file) throws IOException{
@@ -555,13 +752,24 @@ public class SettingsMenuDialog extends BaseDialog{
     private void visible(int index){
         prefs.clearChildren();
 
+
         Seq<Table> tables = new Seq<>();
-        tables.addAll(game, graphics, sound);
+
+        if(Core.settings.getInt("changelogreaded") == changeLogRead){
+            tables.addAll(game, graphics, sound, arc,forcehide,specmode, cheating);
+        }
+        else{
+            tables.addAll(arc);
+        }
         for(var custom : categories){
             tables.add(custom.table);
         }
 
         prefs.add(tables.get(index));
+
+
+
+
     }
 
     @Override
@@ -641,6 +849,17 @@ public class SettingsMenuDialog extends BaseDialog{
 
         public void checkPref(String name, boolean def, Boolc changed){
             list.add(new CheckSetting(name, def, changed));
+            settings.defaults(name, def);
+            rebuild();
+        }
+
+        public void addCategory(String name){
+            list.add(new Divider(name, bundle.get("category." + name + ".name")));
+            rebuild();
+        }
+
+        public void stringInput(String name, String def){
+            list.add(new StringSetting(name, def, def));
             settings.defaults(name, def);
             rebuild();
         }
@@ -784,7 +1003,43 @@ public class SettingsMenuDialog extends BaseDialog{
                 table.row();
             }
         }
-        
+
+        public static class Divider extends Setting {
+
+            Divider(String name, String title) {
+                super(name);
+                this.title = title;
+            }
+
+            @Override
+            public void add(SettingsTable table) {
+                table.add(title).color(getThemeColor()).colspan(4).pad(10).padTop(15).padBottom(4).row();
+                table.image().color(getThemeColor()).fillX().height(3).colspan(4).padTop(0).padBottom(10).row();
+            }
+        }
+
+        public static class StringSetting extends Setting {
+            String def, value;
+
+            StringSetting(String name, String def, String value) {
+                super(name);
+                this.def = def;
+                this.value = value;
+            }
+
+            @Override
+            public void add(SettingsTable table) {
+                value = settings.getString(name);
+                Table field = new Table();
+                field.add(bundle.get("setting."+name+".name"));
+                field.field(value, text -> {
+                    settings.put(name, text);
+                    value = text;
+                }).padLeft(30);
+                table.add(field).left().pad(10).padTop(15).padBottom(4).row();
+            }
+        }
+
         public static class TextSetting extends Setting{
             String def;
             Cons<String> changed;

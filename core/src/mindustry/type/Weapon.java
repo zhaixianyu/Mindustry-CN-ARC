@@ -143,13 +143,17 @@ public class Weapon implements Cloneable{
     }
 
     public void addStats(UnitType u, Table t){
+
+        if(reload > 0) {
+            t.row();
+            t.add("[lightgray]" + Stat.reload.localized() + ": " + (mirror ? "2x " : "") + "[stat]" + Strings.autoFixed(60f / reload, 2) + " [white]" + StatUnit.perSecond.localized());
+        }
+        t.row();
+        t.add("[lightgray]武器范围: [stat]" + String.format("%.1f", bullet.range/8f) + " [white]格");
+
         if(inaccuracy > 0){
             t.row();
             t.add("[lightgray]" + Stat.inaccuracy.localized() + ": [white]" + (int)inaccuracy + " " + StatUnit.degrees.localized());
-        }
-        if(reload > 0){
-            t.row();
-            t.add("[lightgray]" + Stat.reload.localized() + ": " + (mirror ? "2x " : "") + "[white]" + Strings.autoFixed(60f / reload * shoot.shots, 2) + " " + StatUnit.perSecond.localized());
         }
 
         StatValues.ammo(ObjectMap.of(u, bullet)).display(t);
@@ -182,6 +186,20 @@ public class Weapon implements Cloneable{
         float z = Draw.z();
         Draw.z(z + layerOffset);
 
+        float unitTrans = (float)Core.settings.getInt("unitTransparency") / 100f;
+        boolean draw_unit = (unit.maxHealth+unit.shield ) > (float)Core.settings.getInt("minhealth_unitshown");
+        boolean draw_minunithealthbar = (unit.maxHealth+unit.shield ) > (float)Core.settings.getInt("minhealth_unithealthbarshown");
+
+        if(draw_unit==false){
+            draw_minunithealthbar = false;
+            unitTrans = 0f;
+        }
+
+        if(Core.settings.getBool("alwaysShowPlayerUnit") && (unit.controller() instanceof Player ||  unit.controller().isBeingControlled(player.unit()))){
+            unitTrans = 100f;
+            draw_minunithealthbar = true;
+        }
+
         float
         rotation = unit.rotation - 90,
         realRecoil = Mathf.pow(mount.recoil, recoilPow) * recoil,
@@ -190,7 +208,7 @@ public class Weapon implements Cloneable{
         wy = unit.y + Angles.trnsy(rotation, x, y) + Angles.trnsy(weaponRotation, 0, -realRecoil);
 
         if(shadow > 0){
-            Drawf.shadow(wx, wy, shadow);
+            Drawf.shadow(wx, wy, shadow,unitTrans);
         }
 
         if(top){
@@ -209,6 +227,7 @@ public class Weapon implements Cloneable{
             }
         }
 
+        Draw.alpha(unitTrans);
         Draw.xscl = -Mathf.sign(flipSprite);
 
         Draw.rect(region, wx, wy, weaponRotation);
@@ -220,6 +239,7 @@ public class Weapon implements Cloneable{
         }
 
         if(heatRegion.found() && mount.heat > 0){
+            Draw.alpha(unitTrans);
             Draw.color(heatColor, mount.heat);
             Draw.blend(Blending.additive);
             Draw.rect(heatRegion, wx, wy, weaponRotation);
@@ -238,6 +258,23 @@ public class Weapon implements Cloneable{
         }
 
         Draw.xscl = 1f;
+
+        //display target line for every weaponmount by MI2
+        if (draw_minunithealthbar && Core.settings.getBool("unitWeaponTargetLine") && !(Core.settings.getInt("superUnitEffect")>0 && unit.controller() instanceof Player) && !Core.settings.getBool("superUnitTarget")){
+            if(mount.aimX !=0 && mount.aimY != 0  && Mathf.len(mount.aimX - wx, mount.aimY - wy) <= 1200f){
+                Lines.stroke(1f);
+                if(mount.shoot){
+                    Draw.color(1f, 0.2f, 0.2f, 0.8f);
+                    Lines.line(wx, wy, mount.aimX, mount.aimY);
+                } else {
+                    Draw.color(1f, 1f, 1f, 0.3f);
+                    Lines.line(wx, wy, mount.aimX, mount.aimY);
+                }
+                Lines.dashCircle(mount.aimX, mount.aimY, 8);
+                Draw.reset();
+
+            }
+        }
 
         Draw.z(z);
     }

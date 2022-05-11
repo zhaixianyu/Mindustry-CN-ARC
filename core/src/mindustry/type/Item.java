@@ -102,6 +102,10 @@ public class Item extends UnlockableContent implements Senseable{
         stats.addPercent(Stat.flammability, flammability);
         stats.addPercent(Stat.radioactivity, radioactivity);
         stats.addPercent(Stat.charge, charge);
+        stats.add(Stat.cost, cost);
+        stats.add(Stat.hardness, hardness);
+        stats.add(Stat.healthScaling,healthScaling);
+        stats.add(Stat.buildable,buildable);
     }
 
     @Override

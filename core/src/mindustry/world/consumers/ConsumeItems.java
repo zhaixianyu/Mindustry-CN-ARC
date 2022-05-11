@@ -33,7 +33,7 @@ public class ConsumeItems extends Consume{
         table.table(c -> {
             int i = 0;
             for(var stack : items){
-                c.add(new ReqImage(new ItemImage(stack.item.uiIcon, stack.amount),
+                c.add(new ReqImage(new ItemImage(stack.item.uiIcon, stack.amount,build.items.get(stack.item)),
                 () -> build.items.has(stack.item, stack.amount))).padRight(8);
                 if(++i % 4 == 0) c.row();
             }

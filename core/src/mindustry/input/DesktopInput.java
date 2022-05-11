@@ -9,19 +9,26 @@ import arc.input.*;
 import arc.math.*;
 import arc.math.geom.*;
 import arc.scene.*;
+import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
 import arc.util.*;
 import mindustry.*;
+import mindustry.content.*;
 import mindustry.core.*;
+import mindustry.entities.*;
 import mindustry.entities.units.*;
 import mindustry.game.EventType.*;
 import mindustry.game.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
+import mindustry.type.*;
 import mindustry.ui.*;
 import mindustry.world.*;
+import mindustry.world.Block.*;
+import mindustry.world.blocks.*;
 
 import static arc.Core.*;
+import static mindustry.Vars.net;
 import static mindustry.Vars.*;
 import static mindustry.input.PlaceMode.*;
 
@@ -94,6 +101,10 @@ public class DesktopInput extends InputHandler{
                 b.table(a -> {
                     a.button("@schematic.add", Icon.save, this::showSchematicSave).colspan(2).size(250f, 50f).disabled(f -> lastSchematic == null || lastSchematic.file != null);
                 });
+                b.row();
+                b.table(a -> {
+                    a.button("@schematic.preview", Icon.info, this::showSchematicPreview).colspan(2).size(250f, 50f).disabled(f -> lastSchematic == null || lastSchematic.file != null);
+                });
             }).margin(6f);
         });
     }
@@ -106,13 +117,12 @@ public class DesktopInput extends InputHandler{
 
         //draw break selection
         if(mode == breaking){
-            drawBreakSelection(selectX, selectY, cursorX, cursorY, !Core.input.keyDown(Binding.schematic_select) ? maxLength : Vars.maxSchematicSize);
+            drawBreakSelection(selectX, selectY, cursorX, cursorY, !Core.input.keyDown(Binding.schematic_select) ? maxLength : Vars.getMaxSchematicSize());
         }
 
         if(Core.input.keyDown(Binding.schematic_select) && !Core.scene.hasKeyboard() && mode != breaking){
-            drawSelection(schemX, schemY, cursorX, cursorY, Vars.maxSchematicSize);
+            drawSelection(schemX, schemY, cursorX, cursorY, Vars.getMaxSchematicSize());
         }
-
         drawCommanded();
 
         Draw.reset();
@@ -516,6 +526,14 @@ public class DesktopInput extends InputHandler{
             }
         }
 
+        if(Core.input.keyTap(Binding.point)){
+			Call.sendChatMessage("[ARC"+arcVersion+"]"+"标记了一处地点[red]("+cursorX+","+cursorY+")");
+        }
+
+        if(Core.input.keyTap(Binding.showRTSAi)){
+            settings.put("alwaysShowUnitRTSAi",!settings.getBool("alwaysShowUnitRTSAi"));
+        }
+
         if((cursorX != lastLineX || cursorY != lastLineY) && isPlacing() && mode == placing){
             updateLine(selectX, selectY);
             lastLineX = cursorX;
@@ -613,7 +631,7 @@ public class DesktopInput extends InputHandler{
                 linePlans.clear();
                 Events.fire(new LineConfirmEvent());
             }else if(mode == breaking){ //touch up while breaking, break everything in selection
-                removeSelection(selectX, selectY, cursorX, cursorY, !Core.input.keyDown(Binding.schematic_select) ? maxLength : Vars.maxSchematicSize);
+                removeSelection(selectX, selectY, cursorX, cursorY, !Core.input.keyDown(Binding.schematic_select) ? maxLength : Vars.getMaxSchematicSize());
                 if(lastSchematic != null){
                     useSchematic(lastSchematic);
                     lastSchematic = null;
@@ -646,6 +664,15 @@ public class DesktopInput extends InputHandler{
                 Core.settings.put("lasersopacity", 0);
             }
         }
+        if (input.keyTap(Binding.toggle_block_render)) {
+            settings.put("blockrenderlevel", (settings.getInt("blockrenderlevel") + 1) % 3);
+        }
+
+        if (input.keyTap(Binding.superUnitEffect)) {
+            int level = settings.getInt("superUnitEffect");
+            settings.put("superUnitEffect", (level + 1) % 3);
+        }
+
     }
 
     @Override

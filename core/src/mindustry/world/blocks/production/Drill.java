@@ -105,6 +105,10 @@ public class Drill extends Block{
 
         addBar("drillspeed", (DrillBuild e) ->
              new Bar(() -> Core.bundle.format("bar.drillspeed", Strings.fixed(e.lastDrillSpeed * 60 * e.timeScale(), 2)), () -> Pal.ammo, () -> e.warmup));
+        if(returnItem != null) {
+            addBar("progress", (DrillBuild e) ->
+                    new Bar(() -> "挖掘进度：" + Math.round(e.progress / (drillTime + hardnessDrillMultiplier * returnItem.hardness) * 100) + " %", () -> Pal.ammo, () -> returnItem == null ? 0 : e.progress / (drillTime + hardnessDrillMultiplier * returnItem.hardness)));
+        }
     }
 
     public Item getDrop(Tile tile){
@@ -238,7 +242,7 @@ public class Drill extends Block{
 
         @Override
         public void drawSelect(){
-            if(dominantItem != null){
+            if(!Core.settings.getBool("arcdrillmode") && dominantItem != null){
                 float dx = x - size * tilesize/2f, dy = y + size * tilesize/2f, s = iconSmall / 4f;
                 Draw.mixcol(Color.darkGray, 1f);
                 Draw.rect(dominantItem.fullIcon, dx, dy - 1, s, s);
@@ -280,7 +284,7 @@ public class Drill extends Block{
                 warmup = Mathf.approachDelta(warmup, speed, warmupSpeed);
                 progress += delta() * dominantItems * speed * warmup;
 
-                if(Mathf.chanceDelta(updateEffectChance * warmup))
+                if(Core.settings.getInt("blockrenderlevel") > 1 && Mathf.chanceDelta(updateEffectChance * warmup))
                     updateEffect.at(x + Mathf.range(size * 2f), y + Mathf.range(size * 2f));
             }else{
                 lastDrillSpeed = 0f;
@@ -295,7 +299,7 @@ public class Drill extends Block{
 
                 progress %= delay;
 
-                if(wasVisible) drillEffect.at(x + Mathf.range(drillEffectRnd), y + Mathf.range(drillEffectRnd), dominantItem.color);
+                if(Core.settings.getInt("blockrenderlevel")>1 && wasVisible) drillEffect.at(x + Mathf.range(drillEffectRnd), y + Mathf.range(drillEffectRnd), dominantItem.color);
             }
         }
 
@@ -343,6 +347,14 @@ public class Drill extends Block{
                 Draw.color(dominantItem.color);
                 Draw.rect(itemRegion, x, y);
                 Draw.color();
+            }
+            if(Core.settings.getBool("arcdrillmode") && dominantItem != null){
+                float dx = x - size * tilesize/2f, dy = y - size * tilesize/2f;
+                float dms = iconSmall / 4f;
+                Draw.mixcol(Color.darkGray, 1f);
+                Draw.rect(dominantItem.fullIcon, dx+4, dy+3, dms, dms);
+                Draw.reset();
+                Draw.rect(dominantItem.fullIcon, dx+4, dy+4, dms, dms);
             }
         }
 

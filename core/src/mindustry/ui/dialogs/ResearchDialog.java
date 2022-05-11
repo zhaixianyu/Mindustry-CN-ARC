@@ -394,7 +394,7 @@ public class ResearchDialog extends BaseDialog{
 
             for(TechTreeNode node : nodes){
                 ImageButton button = new ImageButton(node.node.content.uiIcon, Styles.nodei);
-                button.visible(() -> node.visible);
+                if(!Core.settings.getBool("researchViewer")) button.visible(() -> node.visible);
                 button.clicked(() -> {
                     if(moved) return;
 
@@ -421,7 +421,7 @@ public class ResearchDialog extends BaseDialog{
                     }
                 });
                 button.hovered(() -> {
-                    if(!mobile && hoverNode != button && node.visible){
+                    if(!mobile && hoverNode != button && (node.visible||Core.settings.getBool("researchViewer"))){
                         hoverNode = button;
                         rebuild();
                     }
@@ -432,7 +432,7 @@ public class ResearchDialog extends BaseDialog{
                         rebuild();
                     }
                 });
-                button.touchable(() -> !node.visible ? Touchable.disabled : Touchable.enabled);
+                button.touchable(() -> !node.visible ? (Core.settings.getBool("researchViewer")?Touchable.enabled : Touchable.disabled) : Touchable.enabled);
                 button.userObject = node.node;
                 button.setSize(nodeSize);
                 button.update(() -> {
@@ -440,7 +440,7 @@ public class ResearchDialog extends BaseDialog{
                     button.setPosition(node.x + panX + width / 2f, node.y + panY + height / 2f + offset, Align.center);
                     button.getStyle().up = !locked(node.node) ? Tex.buttonOver : !selectable(node.node) || !canSpend(node.node) ? Tex.buttonRed : Tex.button;
 
-                    ((TextureRegionDrawable)button.getStyle().imageUp).setRegion(node.selectable ? node.node.content.uiIcon : Icon.lock.getRegion());
+                    ((TextureRegionDrawable)button.getStyle().imageUp).setRegion(node.selectable||Core.settings.getBool("researchViewer") ? node.node.content.uiIcon : Icon.lock.getRegion());
                     button.getImage().setColor(!locked(node.node) ? Color.white : node.selectable ? Color.gray : Pal.gray);
                     button.getImage().setScaling(Scaling.bounded);
                 });
@@ -580,13 +580,13 @@ public class ResearchDialog extends BaseDialog{
             infoTable.table(b -> {
                 b.margin(0).left().defaults().left();
 
-                if(selectable && (node.content.description != null || node.content.stats.toMap().size > 0)){
-                    b.button(Icon.info, Styles.flati, () -> ui.content.show(node.content)).growY().width(50f);
+                if((selectable||Core.settings.getBool("researchViewer")) && (node.content.description != null || node.content.stats.toMap().size > 0)){
+                    b.button(Icon.info, Styles.cleari, () -> ui.content.show(node.content)).growY().width(50f);
                 }
                 b.add().grow();
                 b.table(desc -> {
                     desc.left().defaults().left();
-                    desc.add(selectable ? node.content.localizedName : "[accent]???");
+                    desc.add(selectable ? node.content.localizedName : (Core.settings.getBool("researchViewer") ? node.content.localizedName+"\n[red]未满足前置科技":"[accent]???"));
                     desc.row();
                     if(locked(node) || debugShowRequirements){
 
@@ -698,9 +698,9 @@ public class ResearchDialog extends BaseDialog{
             Draw.sort(true);
 
             for(TechTreeNode node : nodes){
-                if(!node.visible) continue;
+                if(!node.visible && !Core.settings.getBool("researchViewer")) continue;
                 for(TechTreeNode child : node.children){
-                    if(!child.visible) continue;
+                    if(!child.visible && !Core.settings.getBool("researchViewer")) continue;
                     boolean lock = locked(node.node) || locked(child.node);
                     Draw.z(lock ? 1f : 2f);
 

@@ -38,7 +38,7 @@ public class PlacementFragment{
     ObjectMap<Category,Block> selectedBlocks = new ObjectMap<>();
     ObjectFloatMap<Category> scrollPositions = new ObjectFloatMap<>();
     @Nullable Block menuHoverBlock;
-    @Nullable Displayable hover;
+    @Nullable Displayable hover,hover2;
     @Nullable Building lastFlowBuild, nextFlowBuild;
     @Nullable Object lastDisplayState;
     @Nullable Team lastTeam;
@@ -247,13 +247,13 @@ public class PlacementFragment{
                     group.setMinCheckCount(0);
 
                     for(Block block : getUnlockedByCategory(currentCategory)){
-                        if(!unlocked(block)) continue;
+                        if(!unlocked(block) && !Core.settings.getBool("allBlocksReveal")) continue;
                         if(index++ % rowWidth == 0){
                             blockTable.row();
                         }
 
                         ImageButton button = blockTable.button(new TextureRegionDrawable(block.uiIcon), Styles.selecti, () -> {
-                            if(unlocked(block)){
+                            if(unlocked(block) || Core.settings.getBool("allBlocksReveal")){
                                 if((Core.input.keyDown(KeyCode.shiftLeft) || Core.input.keyDown(KeyCode.controlLeft)) && Fonts.getUnicode(block.name) != 0){
                                     Core.app.setClipboardText((char)Fonts.getUnicode(block.name) + "");
                                     ui.showInfoFade("@copied");
@@ -305,13 +305,14 @@ public class PlacementFragment{
 
                         //find current hovered thing
                         Displayable hovered = hover;
+                        Displayable hovered2 = hover2;
                         Block displayBlock = menuHoverBlock != null ? menuHoverBlock : control.input.block;
                         Object displayState = displayBlock != null ? displayBlock : hovered;
                         boolean isHovered = displayBlock == null; //use hovered thing if displayblock is null
 
                         //don't refresh unnecessarily
                         //refresh only when the hover state changes, or the displayed block changes
-                        if(wasHovered == isHovered && lastDisplayState == displayState && lastTeam == player.team()) return;
+                        if(wasHovered == isHovered && lastDisplayState == displayState && Core.settings.getBool("showOtherTeamState")) return;
 
                         topTable.clear();
                         topTable.top().left().margin(5);
@@ -339,7 +340,7 @@ public class PlacementFragment{
                                 final String keyComboFinal = keyCombo;
                                 header.left();
                                 header.add(new Image(displayBlock.uiIcon)).size(8 * 4);
-                                header.labelWrap(() -> !unlocked(displayBlock) ? Core.bundle.get("block.unknown") : displayBlock.localizedName + keyComboFinal)
+                                header.labelWrap(() -> !unlocked(displayBlock) && !Core.settings.getBool("allBlocksReveal") ? Core.bundle.get("block.unknown") : displayBlock.localizedName + keyComboFinal)
                                 .left().width(190f).padLeft(5);
                                 header.add().growX();
                                 if(unlocked(displayBlock)){
@@ -386,6 +387,11 @@ public class PlacementFragment{
                         }else if(hovered != null){
                             //show hovered item, whatever that may be
                             hovered.display(topTable);
+                            if(hovered2 != hovered && hovered2 != null){
+                                topTable.row();
+                                topTable.row();
+                                hovered2.display(topTable);
+                            }
                         }
                     });
                 }).colspan(3).fillX().visible(this::hasInfoBox).touchable(Touchable.enabled).row();
@@ -414,7 +420,7 @@ public class PlacementFragment{
                 //commandTable: commanded units
                 {
                     commandTable.touchable = Touchable.enabled;
-                    commandTable.add("[accent]Command Mode").fill().center().labelAlign(Align.center).row();
+                    commandTable.add("[accent]指挥模式").fill().center().labelAlign(Align.center).row();
                     commandTable.image().color(Pal.accent).growX().pad(20f).padTop(0f).padBottom(4f).row();
                     commandTable.table(u -> {
                         u.left();
@@ -452,7 +458,7 @@ public class PlacementFragment{
                                     }
                                 }
                             }else{
-                                u.add("[no units]").color(Color.lightGray).growX().center().labelAlign(Align.center).pad(6);
+                                u.add("[未选中单位]").color(Color.lightGray).growX().center().labelAlign(Align.center).pad(6);
                             }
                         };
 
@@ -548,7 +554,7 @@ public class PlacementFragment{
     }
 
     Seq<Block> getUnlockedByCategory(Category cat){
-        return returnArray2.selectFrom(content.blocks(), block -> block.category == cat && block.isVisible() && unlocked(block)).sort((b1, b2) -> Boolean.compare(!b1.isPlaceable(), !b2.isPlaceable()));
+        return returnArray2.selectFrom(content.blocks(), block -> block.category == cat &&(Core.settings.getBool("allBlocksReveal")||block.isVisible() && unlocked(block)) ).sort((b1, b2) -> Boolean.compare(!b1.isPlaceable(), !b2.isPlaceable()));
     }
 
     Block getSelectedBlock(Category cat){
@@ -562,6 +568,7 @@ public class PlacementFragment{
 
     boolean hasInfoBox(){
         hover = hovered();
+        hover2 = hoveredblock();
         return control.input.block != null || menuHoverBlock != null || hover != null;
     }
 
@@ -574,10 +581,11 @@ public class PlacementFragment{
         if(Core.scene.hasMouse() || topTable.hit(v.x, v.y, false) != null) return null;
 
         //check for a unit
-        Unit unit = Units.closestOverlap(player.team(), Core.input.mouseWorldX(), Core.input.mouseWorldY(), 5f, u -> !u.isLocal());
+        Unit unit = Units.closestOverlap(player.team(), Core.input.mouseWorldX(), Core.input.mouseWorldY(), 5f, u -> true);
         //if cursor has a unit, display it
         if(unit != null) return unit;
-
+        unit = Units.closestEnemy(player.team(), Core.input.mouseWorldX(), Core.input.mouseWorldY(), 5f, u -> true);
+        if(unit != null && !state.rules.pvp) return unit;
         //check tile being hovered over
         Tile hoverTile = world.tileWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
         if(hoverTile != null){
@@ -588,6 +596,31 @@ public class PlacementFragment{
 
             //if the tile has a drop, display the drop
             if((hoverTile.drop() != null && hoverTile.block() == Blocks.air) || hoverTile.wallDrop() != null || hoverTile.floor().liquidDrop != null){
+                return hoverTile;
+            }
+        }
+
+        return null;
+
+
+    }
+    @Nullable
+    Displayable hoveredblock(){
+        Vec2 v = topTable.stageToLocalCoordinates(Core.input.mouse());
+
+        //if the mouse intersects the table or the UI has the mouse, no hovering can occur
+        if(Core.scene.hasMouse() || topTable.hit(v.x, v.y, false) != null) return null;
+
+        //check tile being hovered over
+        Tile hoverTile = world.tileWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
+        if(hoverTile != null){
+            //if the tile has a building, display it
+            if(hoverTile.build != null && hoverTile.build.displayable() && !hoverTile.build.inFogTo(player.team())){
+                return nextFlowBuild = hoverTile.build;
+            }
+
+            //if the tile has a drop, display the drop
+            if(hoverTile.drop() != null){
                 return hoverTile;
             }
         }
