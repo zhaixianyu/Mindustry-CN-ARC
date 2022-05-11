@@ -72,8 +72,16 @@ public class UI implements ApplicationListener, Loadable{
     public ModsDialog mods;
     public ColorPicker picker;
     public LogicDialog logic;
+    public FullTextDialog fullText;
 
-    public Cursor drillCursor, unloadCursor;
+    public Cursor drillCursor, unloadCursor, targetCursor;
+
+    public AboutCN_ARCDialog aboutcn_arc;
+    public UpdateDialog updatedialog;
+    public CustomRulesDialog customrules;
+    //public MindustryWikiDialog mindustrywiki;
+
+    private @Nullable Element lastAnnouncement;
 
     public UI(){
         Fonts.loadFonts();
@@ -119,13 +127,14 @@ public class UI implements ApplicationListener, Loadable{
 
         ClickListener.clicked = () -> Sounds.press.play();
 
-        Colors.put("accent", Pal.accent);
+        Colors.put("accent", getThemeColor());
         Colors.put("unlaunched", Color.valueOf("8982ed"));
-        Colors.put("highlight", Pal.accent.cpy().lerp(Color.white, 0.3f));
+        Colors.put("highlight", getThemeColor().cpy().lerp(Color.white, 0.3f));
         Colors.put("stat", Pal.stat);
 
         drillCursor = Core.graphics.newCursor("drill", Fonts.cursorScale());
         unloadCursor = Core.graphics.newCursor("unload", Fonts.cursorScale());
+        targetCursor = Core.graphics.newCursor("target", Fonts.cursorScale());
     }
 
     @Override
@@ -142,7 +151,7 @@ public class UI implements ApplicationListener, Loadable{
         Core.scene.act();
         Core.scene.draw();
 
-        if(Core.input.keyTap(KeyCode.mouseLeft) && Core.scene.getKeyboardFocus() instanceof TextField){
+        if(Core.input.keyTap(KeyCode.mouseLeft) && Core.scene.hasField()){
             Element e = Core.scene.hit(Core.input.mouseX(), Core.input.mouseY(), true);
             if(!(e instanceof TextField)){
                 Core.scene.setKeyboardFocus(null);
@@ -194,6 +203,11 @@ public class UI implements ApplicationListener, Loadable{
         mods = new ModsDialog();
         schematics = new SchematicsDialog();
         logic = new LogicDialog();
+        fullText = new FullTextDialog();
+        aboutcn_arc = new AboutCN_ARCDialog();
+        updatedialog = new UpdateDialog();
+        customrules = new CustomRulesDialog();
+        //mindustrywiki = new MindustryWikiDialog();
 
         Group group = Core.scene.root;
 
@@ -209,10 +223,10 @@ public class UI implements ApplicationListener, Loadable{
 
         hudfrag.build(hudGroup);
         menufrag.build(menuGroup);
-        chatfrag.container().build(hudGroup);
+        chatfrag.build(hudGroup);
         minimapfrag.build(hudGroup);
         listfrag.build(hudGroup);
-        scriptfrag.container().build(hudGroup);
+        scriptfrag.build(hudGroup);
         loadfrag.build(group);
         new FadeInFragment().build(group);
     }
@@ -300,10 +314,11 @@ public class UI implements ApplicationListener, Loadable{
     }
 
     public void showInfoFade(String info){
+        var cinfo = Core.scene.find("coreinfo");
         Table table = new Table();
         table.touchable = Touchable.disabled;
         table.setFillParent(true);
-        table.marginTop(Core.scene.find("coreinfo").getPrefHeight() / Scl.scl() / 2);
+        if(cinfo.visible && !state.isMenu()) table.marginTop(cinfo.getPrefHeight() / Scl.scl() / 2);
         table.actions(Actions.fadeOut(7f, Interp.fade), Actions.remove());
         table.top().add(info).style(Styles.outlineLabel).padTop(10);
         Core.scene.add(table);
@@ -311,20 +326,24 @@ public class UI implements ApplicationListener, Loadable{
 
     /** Shows a fading label at the top of the screen. */
     public void showInfoToast(String info, float duration){
+        ui.chatfrag.addMessage("[acid][公屏][white]"+info);
+        var cinfo = Core.scene.find("coreinfo");
         Table table = new Table();
         table.touchable = Touchable.disabled;
         table.setFillParent(true);
-        table.marginTop(Core.scene.find("coreinfo").getPrefHeight() / Scl.scl() / 2);
+        if(cinfo.visible && !state.isMenu()) table.marginTop(cinfo.getPrefHeight() / Scl.scl() / 2);
         table.update(() -> {
             if(state.isMenu()) table.remove();
         });
         table.actions(Actions.delay(duration * 0.9f), Actions.fadeOut(duration * 0.1f, Interp.fade), Actions.remove());
         table.top().table(Styles.black3, t -> t.margin(4).add(info).style(Styles.outlineLabel)).padTop(10);
         Core.scene.add(table);
+        lastAnnouncement = table;
     }
 
     /** Shows a label at some position on the screen. Does not fade. */
     public void showInfoPopup(String info, float duration, int align, int top, int left, int bottom, int right){
+        if (!Core.settings.getBool("ShowInfoPopup")) return;
         Table table = new Table();
         table.setFillParent(true);
         table.touchable = Touchable.disabled;
@@ -434,7 +453,7 @@ public class UI implements ApplicationListener, Loadable{
     public void showText(String titleText, String text, int align){
         new Dialog(titleText){{
             cont.row();
-            cont.image().width(400f).pad(2).colspan(2).height(4f).color(Pal.accent);
+            cont.image().width(400f).pad(2).colspan(2).height(4f).color(getThemeColor());
             cont.row();
             cont.add(text).width(400f).wrap().get().setAlignment(align, align);
             cont.row();
@@ -455,7 +474,7 @@ public class UI implements ApplicationListener, Loadable{
         new Dialog(titleText){{
             cont.margin(10).add(text);
             titleTable.row();
-            titleTable.image().color(Pal.accent).height(3f).growX().pad(2f);
+            titleTable.image().color(getThemeColor()).height(3f).growX().pad(2f);
             buttons.button("@ok", this::hide).size(110, 50).pad(4);
             closeOnBack();
         }}.show();
@@ -474,8 +493,8 @@ public class UI implements ApplicationListener, Loadable{
         dialog.cont.add(text).width(mobile ? 400f : 500f).wrap().pad(4f).get().setAlignment(Align.center, Align.center);
         dialog.buttons.defaults().size(200f, 54f).pad(2f);
         dialog.setFillParent(false);
-        dialog.buttons.button("@cancel", dialog::hide);
-        dialog.buttons.button("@ok", () -> {
+        dialog.buttons.button("@cancel", Icon.cancel, dialog::hide);
+        dialog.buttons.button("@ok", Icon.ok, () -> {
             dialog.hide();
             confirmed.run();
         });
@@ -513,6 +532,10 @@ public class UI implements ApplicationListener, Loadable{
         dialog.show();
     }
 
+    public boolean hasAnnouncement(){
+        return lastAnnouncement != null && lastAnnouncement.parent != null;
+    }
+
     /** Display text in the middle of the screen, then fade out. */
     public void announce(String text){
         announce(text, 3);
@@ -528,6 +551,7 @@ public class UI implements ApplicationListener, Loadable{
         t.pack();
         t.act(0.1f);
         Core.scene.add(t);
+        lastAnnouncement = t;
     }
 
     public void showOkText(String title, String text, Runnable confirmed){
@@ -546,7 +570,7 @@ public class UI implements ApplicationListener, Loadable{
     public void showMenu(String title, String message, String[][] options, Intc callback){
         new Dialog(title){{
             cont.row();
-            cont.image().width(400f).pad(2).colspan(2).height(4f).color(Pal.accent);
+            cont.image().width(400f).pad(2).colspan(2).height(4f).color(getThemeColor());
             cont.row();
             cont.add(message).width(400f).wrap().get().setAlignment(Align.center);
             cont.row();
@@ -590,11 +614,30 @@ public class UI implements ApplicationListener, Loadable{
         if(mag >= 1_000_000_000){
             return sign + Strings.fixed(mag / 1_000_000_000f, 1) + "[gray]" + billions+ "[]";
         }else if(mag >= 1_000_000){
-            return sign + Strings.fixed(mag / 1_000_000f, 1) + "[gray]" + millions + "[]";
-        }else if(mag >= 10_000){
+            return sign + Strings.fixed(mag / 1_000_000f, 1) + "[gray]" +millions + "[]";
+        }else if(mag >= 25_000){
             return number / 1000 + "[gray]" + thousands + "[]";
-        }else if(mag >= 1000){
+        }else if(mag >= 2500){
             return sign + Strings.fixed(mag / 1000f, 1) + "[gray]" + thousands + "[]";
+        }else{
+            return number + "";
+        }
+    }
+
+    public static String whiteformatAmount(long number){
+        //prevent overflow
+        if(number == Long.MIN_VALUE) number ++;
+
+        long mag = Math.abs(number);
+        String sign = number < 0 ? "-" : "";
+        if(mag >= 1_000_000_000){
+            return sign + Strings.fixed(mag / 1_000_000_000f, 1) + billions+ "";
+        }else if(mag >= 1_000_000){
+            return sign + Strings.fixed(mag / 1_000_000f, 1) + millions + "";
+        }else if(mag >= 25_000){
+            return number / 1000 + thousands + "";
+        }else if(mag >= 2500){
+            return sign + Strings.fixed(mag / 1000f, 1) + thousands + "";
         }else{
             return number + "";
         }
@@ -616,5 +659,11 @@ public class UI implements ApplicationListener, Loadable{
         }else{
             return number;
         }
+
+    }
+
+    public static String formatFloat(float number){
+        if (Math.abs(number - Math.round(number)) < 0.01) return String.format("%.0f", number);
+        return String.format("%.2f", number);
     }
 }

@@ -21,6 +21,27 @@ public class DirectionalItemBuffer{
         return indexes[buffer] < buffers[buffer].length;
     }
 
+    public Item[][] getItems(){
+        Item[][] items = new Item[4][buffers[0].length];
+            for(int i = 0; i < 4; i++){
+                for(int ii = 0; ii < buffers[i].length; ii++){
+                    items[i][ii] = (ii < indexes[i])? content.item(BufferItem.item(buffers[i][ii])) : null;
+                }
+            }
+        return items;
+    }
+
+    public float[][] getTimes(){
+        float[][] times = new float[4][buffers[0].length];
+            for(int i = 0; i < 4; i++){
+                for(int ii = 0; ii < buffers[i].length; ii++){
+                    times[i][ii] = (ii < indexes[i])? BufferItem.time(buffers[i][ii]) : 9999999999999f;
+                }
+            }
+        return times;
+    }
+
+
     public void accept(int buffer, Item item){
         if(!accepts(buffer)) return;
         buffers[buffer][indexes[buffer]++] = BufferItem.get((byte)item.id, Time.time);

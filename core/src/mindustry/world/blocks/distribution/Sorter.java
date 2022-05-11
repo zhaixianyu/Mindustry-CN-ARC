@@ -11,6 +11,7 @@ import mindustry.type.*;
 import mindustry.world.*;
 import mindustry.world.blocks.*;
 import mindustry.world.meta.*;
+import arc.*;
 
 import static mindustry.Vars.*;
 
@@ -19,21 +20,23 @@ public class Sorter extends Block{
 
     public Sorter(String name){
         super(name);
-        update = true;
-        solid = true;
+        update = false;
+        destructible = true;
+        underBullets = true;
         instantTransfer = true;
         group = BlockGroup.transportation;
         configurable = true;
         unloadable = false;
         saveConfig = true;
+        clearOnDoubleTap = true;
 
         config(Item.class, (SorterBuild tile, Item item) -> tile.sortItem = item);
         configClear((SorterBuild tile) -> tile.sortItem = null);
     }
 
     @Override
-    public void drawRequestConfig(BuildPlan req, Eachable<BuildPlan> list){
-        drawRequestConfigCenter(req, req.config, "center", true);
+    public void drawPlanConfig(BuildPlan plan, Eachable<BuildPlan> list){
+        drawPlanConfigCenter(plan, plan.config, "center", true);
     }
 
     @Override
@@ -69,6 +72,7 @@ public class Sorter extends Block{
                 Draw.color(sortItem.color);
                 Draw.rect("center", x, y);
                 Draw.color();
+                if(Core.settings.getBool("arcchoiceuiIcon"))    Draw.rect(sortItem.uiIcon, x, y,4f,4f);
             }
         }
 
@@ -125,17 +129,6 @@ public class Sorter extends Block{
         @Override
         public void buildConfiguration(Table table){
             ItemSelection.buildTable(Sorter.this, table, content.items(), () -> sortItem, this::configure);
-        }
-
-        @Override
-        public boolean onConfigureTileTapped(Building other){
-            if(this == other){
-                deselect();
-                configure(null);
-                return false;
-            }
-
-            return true;
         }
 
         @Override

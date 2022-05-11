@@ -29,6 +29,7 @@ public class MapEditor{
     private boolean loading;
 
     public float brushSize = 1;
+    public int interval = 25;
     public int rotation;
     public Block drawBlock = Blocks.stone;
     public Team drawTeam = Team.sharded;
@@ -64,6 +65,26 @@ public class MapEditor{
 
         createTiles(pixmap.width, pixmap.height);
         load(() -> MapIO.readImage(pixmap, tiles()));
+        renderer.resize(width(), height());
+    }
+
+    public void updateRenderer(){
+        Tiles tiles = world.tiles;
+        Seq<Building> builds = new Seq<>();
+
+        for(int i = 0; i < tiles.width * tiles.height; i++){
+            Tile tile = tiles.geti(i);
+            var build = tile.build;
+            if(build != null){
+                builds.add(build);
+            }
+            tiles.seti(i, new EditorTile(tile.x, tile.y, tile.floorID(), tile.overlayID(), build == null ? tile.blockID() : 0));
+        }
+
+        for(var build : builds){
+            tiles.get(build.tileX(), build.tileY()).setBlock(build.block, build.team, build.rotation, () -> build);
+        }
+
         renderer.resize(width(), height());
     }
 
@@ -116,14 +137,14 @@ public class MapEditor{
     }
 
     public void drawBlocks(int x, int y){
-        drawBlocks(x, y, false, tile -> true);
+        drawBlocks(x, y, false, false, tile -> true);
     }
 
     public void drawBlocks(int x, int y, Boolf<Tile> tester){
-        drawBlocks(x, y, false, tester);
+        drawBlocks(x, y, false, false, tester);
     }
 
-    public void drawBlocks(int x, int y, boolean square, Boolf<Tile> tester){
+    public void drawBlocks(int x, int y, boolean square, boolean forceOverlay, Boolf<Tile> tester){
         if(drawBlock.isMultiblock()){
             x = Mathf.clamp(x, (drawBlock.size - 1) / 2, width() - drawBlock.size / 2 - 1);
             y = Mathf.clamp(y, (drawBlock.size - 1) / 2, height() - drawBlock.size / 2 - 1);
@@ -137,7 +158,13 @@ public class MapEditor{
                 if(!tester.get(tile)) return;
 
                 if(isFloor){
-                    tile.setFloor(drawBlock.asFloor());
+                    if(forceOverlay){
+                        tile.setOverlay(drawBlock.asFloor());
+                    }else{
+                        if(!(drawBlock.asFloor().wallOre && !tile.block().solid)){
+                            tile.setFloor(drawBlock.asFloor());
+                        }
+                    }
                 }else if(!(tile.block().isMultiblock() && !drawBlock.isMultiblock())){
                     if(drawBlock.rotate && tile.build != null && tile.build.rotation != rotation){
                         addTileOp(TileOp.get(tile.x, tile.y, (byte)OpType.rotation.ordinal(), (byte)rotation));
@@ -244,9 +271,9 @@ public class MapEditor{
     }
 
     public void drawSquare(int x, int y, Cons<Tile> drawer){
-        int clamped = (int)brushSize;
-        for(int rx = -clamped; rx <= clamped; rx++){
-            for(int ry = -clamped; ry <= clamped; ry++){
+        int clamped = (int)brushSize - 1;
+        for(int rx = -clamped/2; rx <= clamped - clamped/2; rx++){
+            for(int ry = -clamped/2; ry <= clamped - clamped/2; ry++){
                 int wx = x + rx, wy = y + ry;
 
                 if(wx < 0 || wy < 0 || wx >= width() || wy >= height()){

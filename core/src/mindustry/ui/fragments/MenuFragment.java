@@ -9,6 +9,8 @@ import arc.scene.actions.*;
 import arc.scene.event.*;
 import arc.scene.style.*;
 import arc.scene.ui.*;
+import arc.scene.ui.ImageButton.*;
+import arc.scene.ui.TextButton.*;
 import arc.scene.ui.layout.*;
 import arc.util.*;
 import mindustry.core.*;
@@ -18,15 +20,20 @@ import mindustry.graphics.*;
 import mindustry.ui.*;
 
 import static mindustry.Vars.*;
+import static mindustry.gen.Tex.*;
 
-public class MenuFragment extends Fragment{
+public class MenuFragment{
     private Table container, submenu;
     private Button currentMenu;
     private MenuRenderer renderer;
 
-    @Override
     public void build(Group parent){
         renderer = new MenuRenderer();
+
+        if (!Core.settings.getBool("arcDisableModWarning")){
+            ui.showInfo("@arcmoload.warning");
+            ui.aboutcn_arc.show();
+        }
 
         Group group = new WidgetGroup();
         group.setFillParent(true);
@@ -50,10 +57,19 @@ public class MenuFragment extends Fragment{
             }
         });
 
+        parent.fill(c -> c.bottom().right().button(Icon.discord, new ImageButtonStyle(){{
+            up = discordBanner;
+        }}, ui.discord::show).marginTop(9f).marginLeft(10f).tooltip("@discord").size(84, 45).name("discord"));
+
         //info icon
         if(mobile){
-            parent.fill(c -> c.bottom().left().button("", Styles.infot, ui.about::show).size(84, 45).name("info"));
-            parent.fill(c -> c.bottom().right().button("", Styles.discordt, ui.discord::show).size(84, 45).name("discord"));
+            parent.fill(c -> c.bottom().left().button("", new TextButtonStyle(){{
+                font = Fonts.def;
+                fontColor = Color.white;
+                up = infoBanner;
+            }}, ui.about::show).size(84, 45).name("info"));
+
+
         }else if(becontrol.active()){
             parent.fill(c -> c.bottom().right().button("@be.check", Icon.refresh, () -> {
                 ui.loadfrag.show();
@@ -68,7 +84,9 @@ public class MenuFragment extends Fragment{
             }));
         }
 
-        String versionText = ((Version.build == -1) ? "[#fc8140aa]" : "[#ffffffba]") + Version.combined();
+        //String versionText = ((Version.build == -1) ? "[#fc8140aa]" : "[#ffffffba]") + Version.combined();
+        String versionText = ((Version.build == -1) ? "[#fc8140aa]" : "[cyan]") + Version.combined();
+        String arcversionText = "\n[orange]ARC version "+arcVersion;
         parent.fill((x, y, w, h) -> {
             TextureRegion logo = Core.atlas.find("logo");
             float width = Core.graphics.getWidth(), height = Core.graphics.getHeight() - Core.scene.marginTop;
@@ -82,8 +100,8 @@ public class MenuFragment extends Fragment{
             Draw.color();
             Draw.rect(logo, fx, fy, logow, logoh);
 
-            Fonts.def.setColor(Color.white);
-            Fonts.def.draw(versionText, fx, fy - logoh/2f, Align.center);
+            Fonts.outline.setColor(Color.white);
+            Fonts.outline.draw(versionText+arcversionText, fx, fy - logoh/2f - Scl.scl(2f), Align.center);
         }).touchable = Touchable.disabled;
     }
 
@@ -103,7 +121,11 @@ public class MenuFragment extends Fragment{
             editor = new MobileButton(Icon.terrain, "@editor", () -> checkPlay(ui.maps::show)),
             tools = new MobileButton(Icon.settings, "@settings", ui.settings::show),
             mods = new MobileButton(Icon.book, "@mods", ui.mods::show),
-            exit = new MobileButton(Icon.exit, "@quit", () -> Core.app.exit());
+            exit = new MobileButton(Icon.exit, "@quit", () -> Core.app.exit()),
+            cn_arc = new MobileButton(Icon.info,"@aboutcn_arc.button",  ui.aboutcn_arc::show),
+            //mindustrywiki = new MobileButton(Icon.book, "@mindustrywiki.button", ui.mindustrywiki::show),
+            updatedialog = new MobileButton(Icon.info,"@updatedialog.button",  ui.updatedialog::show),
+            database = new MobileButton(Icon.book, "@database",  ui.database::show);
 
         if(!Core.graphics.isPortrait()){
             container.marginTop(60f);
@@ -122,6 +144,11 @@ public class MenuFragment extends Fragment{
                 table.add(mods);
                 if(!ios) table.add(exit);
             }).colspan(4);
+            container.row();
+            container.add(cn_arc);
+            container.add(updatedialog);
+            container.add(database);
+            //container.add(mindustrywiki);
         }else{
             container.marginTop(0f);
             container.add(play);
@@ -140,6 +167,12 @@ public class MenuFragment extends Fragment{
                 table.add(mods);
                 if(!ios) table.add(exit);
             }).colspan(2);
+            container.row();
+            container.add(cn_arc);
+            container.add(database);
+            container.row();
+            container.add(updatedialog);
+            //container.add(mindustrywiki);
         }
     }
 
@@ -166,11 +199,14 @@ public class MenuFragment extends Fragment{
                 new Buttoni("@database.button", Icon.menu,
                     new Buttoni("@schematics", Icon.paste, ui.schematics::show),
                     new Buttoni("@database", Icon.book, ui.database::show),
-                    new Buttoni("@about.button", Icon.info, ui.about::show)
+                    new Buttoni("@about.button", Icon.link, ui.about::show),
+                    new Buttoni("@updatedialog.button", Icon.distribution, ui.updatedialog::show)
+                    //new Buttoni("@mindustrywiki.button", Icon.info, ui.mindustrywiki::show)
                 ),
                 new Buttoni("@editor", Icon.terrain, () -> checkPlay(ui.maps::show)), steam ? new Buttoni("@workshop", Icon.steam, platform::openWorkshop) : null,
                 new Buttoni("@mods", Icon.book, ui.mods::show),
                 new Buttoni("@settings", Icon.settings, ui.settings::show),
+                new Buttoni("@aboutcn_arc.button", Icon.info, ui.aboutcn_arc::show),
                 new Buttoni("@quit", Icon.exit, Core.app::exit)
             );
 
@@ -215,7 +251,7 @@ public class MenuFragment extends Fragment{
         for(Buttoni b : buttons){
             if(b == null) continue;
             Button[] out = {null};
-            out[0] = t.button(b.text, b.icon, Styles.clearToggleMenut, () -> {
+            out[0] = t.button(b.text, b.icon, Styles.flatToggleMenut, () -> {
                 if(currentMenu == out[0]){
                     currentMenu = null;
                     fadeOutMenu();

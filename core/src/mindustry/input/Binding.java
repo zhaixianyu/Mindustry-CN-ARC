@@ -12,6 +12,7 @@ public enum Binding implements KeyBind{
     pan(KeyCode.mouseForward),
 
     boost(KeyCode.shiftLeft),
+    command_mode(KeyCode.shiftLeft),
     control(KeyCode.controlLeft),
     respawn(KeyCode.v),
     select(KeyCode.mouseLeft),
@@ -20,8 +21,6 @@ public enum Binding implements KeyBind{
 
     pickupCargo(KeyCode.leftBracket),
     dropCargo(KeyCode.rightBracket),
-
-    command(KeyCode.g),
 
     clear_building(KeyCode.q),
     pause_building(KeyCode.e),
@@ -63,6 +62,8 @@ public enum Binding implements KeyBind{
     block_info(KeyCode.f1),
     toggle_menus(KeyCode.c),
     screenshot(KeyCode.p),
+    superUnitEffect(KeyCode.o),
+    toggle_block_render(KeyCode.i),
     toggle_power_lines(KeyCode.f5),
     toggle_block_status(KeyCode.f6),
     player_list(KeyCode.tab, "multiplayer"),
@@ -71,6 +72,8 @@ public enum Binding implements KeyBind{
     chat_history_next(KeyCode.down),
     chat_scroll(new Axis(KeyCode.scroll)),
     chat_mode(KeyCode.tab),
+    point(KeyCode.j),
+    showRTSAi(KeyCode.l),
     console(KeyCode.f8),
     ;
 

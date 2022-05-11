@@ -17,6 +17,8 @@ import mindustry.*;
 import mindustry.gen.*;
 import mindustry.input.*;
 import mindustry.ui.*;
+import mindustry.content.*;
+import mindustry.entities.*;
 
 import static arc.Core.*;
 import static mindustry.Vars.*;
@@ -37,12 +39,6 @@ public class ChatFragment extends Table{
     private Seq<String> history = new Seq<>();
     private int historyPos = 0;
     private int scrollPos = 0;
-    private Fragment container = new Fragment(){
-        @Override
-        public void build(Group parent){
-            scene.add(ChatFragment.this);
-        }
-    };
 
     public ChatFragment(){
         super();
@@ -71,6 +67,7 @@ public class ChatFragment extends Table{
             if(shown){
                 if(input.keyTap(Binding.chat_history_prev) && historyPos < history.size - 1){
                     if(historyPos == 0) history.set(0, chatfield.getText());
+                     while(!chatValidType(messages.get(historyPos))) historyPos++;
                     historyPos++;
                     updateChat();
                 }
@@ -89,8 +86,8 @@ public class ChatFragment extends Table{
         setup();
     }
 
-    public Fragment container(){
-        return container;
+    public void build(Group parent){
+        scene.add(this);
     }
 
     public void clearMessages(){
@@ -120,6 +117,11 @@ public class ChatFragment extends Table{
         }
     }
 
+    protected void rect(float x, float y, float w, float h){
+        //prevents texture bindings; the string lookup is irrelevant as it is only called <10 times per frame, and maps are very fast anyway
+        Draw.rect("whiteui", x + w/2f, y + h/2f, w, h);
+    }
+
     @Override
     public void draw(){
         float opacity = Core.settings.getInt("chatopacity") / 100f;
@@ -128,7 +130,7 @@ public class ChatFragment extends Table{
         Draw.color(shadowColor);
 
         if(shown){
-            Fill.crect(offsetx, chatfield.y + scene.marginBottom, chatfield.getWidth() + 15f, chatfield.getHeight() - 1);
+            rect(offsetx, chatfield.y + scene.marginBottom, chatfield.getWidth() + 15f, chatfield.getHeight() - 1);
         }
 
         super.draw();
@@ -142,7 +144,10 @@ public class ChatFragment extends Table{
         Draw.alpha(shadowColor.a * opacity);
 
         float theight = offsety + spacing + getMarginBottom() + scene.marginBottom;
-        for(int i = scrollPos; i < messages.size && i < messagesShown + scrollPos && (i < fadetime || shown); i++){
+        int messageCount = 0;
+        for (int i = scrollPos; i < messages.size && messageCount < messagesShown && (i < fadetime || shown); i++) {
+            if(!chatValidType(messages.get(i))) continue;
+            messageCount += 1;
 
             layout.setText(font, messages.get(i), Color.white, textWidth, Align.bottomLeft, true);
             theight += layout.height + textspacing;
@@ -159,7 +164,7 @@ public class ChatFragment extends Table{
                 font.getCache().setAlphas(opacity);
             }
 
-            Fill.crect(offsetx, theight - layout.height - 2, textWidth + Scl.scl(4f), layout.height + textspacing);
+            rect(offsetx, theight - layout.height - 2, textWidth + Scl.scl(4f), layout.height + textspacing);
             Draw.color(shadowColor);
             Draw.alpha(opacity * shadowColor.a);
 
@@ -179,6 +184,8 @@ public class ChatFragment extends Table{
 
         //avoid sending prefix-empty messages
         if(message.isEmpty() || (message.startsWith(mode.prefix) && message.substring(mode.prefix.length()).isEmpty())) return;
+
+        if (arcMessage(message)) return;
 
         history.insert(1, message);
 
@@ -221,8 +228,12 @@ public class ChatFragment extends Table{
         clearChatInput();
     }
 
-    public void updateChat(){
-        chatfield.setText(mode.normalizedPrefix() + history.get(historyPos));
+    public void updateChat() {
+        if (history.get(historyPos).contains(mode.normalizedPrefix())) {
+            chatfield.setText(history.get(historyPos));
+        } else {
+            chatfield.setText(mode.normalizedPrefix() + history.get(historyPos));
+        }
         updateCursor();
     }
 
@@ -257,14 +268,10 @@ public class ChatFragment extends Table{
         return shown;
     }
 
-    /** @deprecated prefixes are ignored now, just add raw messages */
-    @Deprecated
-    public void addMessage(String pointless, String message){
-        addMessage(message);
-    }
-
     public void addMessage(String message){
         if(message == null) return;
+
+        feedbackMessage(message);
         messages.insert(0, message);
 
         fadetime += 1f;
@@ -272,6 +279,132 @@ public class ChatFragment extends Table{
         
         if(scrollPos > 0) scrollPos++;
     }
+
+    private void feedbackMessage(String message) {
+        if (message.contains("标记了一处地点")) {
+            //"[ARC"+arcversion+"]"+"标记了一处地点[red]("+cursorX+","+cursorY+")"
+            try {
+                int strLength = message.length();
+                float x = 0;
+                float y = 0;
+                int stopindex = 0;
+                for (int i = 0; i < strLength; i++) {
+                    if (message.substring(i, i + 1).equals("(")) {
+                        stopindex = i;
+                    }
+                    if (message.substring(i, i + 1).equals(",") && stopindex > 0) {
+                        x = Float.parseFloat(message.substring(stopindex + 1, i).trim());
+                        y = Float.parseFloat(message.substring(i + 1, strLength - 1).trim());
+                        break;
+                    }
+                }
+                Effect showEffect = Fx.arcMarker;
+                showEffect.at(x * tilesize, y * tilesize, Color.red);
+            } catch (Exception e) {
+            }
+        } else if (message.contains("发起集合")) {
+            int strLength = message.length();
+            float x = 0;
+            float y = 0;
+            int initindex = 0;
+            int interval = 0;
+            try {
+                for (int i = 0; i < strLength; i++) {
+                    if (message.substring(i, i + 1).equals("(")) {
+                        initindex = i;
+                    }
+                    if (initindex > 0) {
+                        if (message.substring(i, i + 1).equals(",")) {
+                            interval = i;
+                        }
+                        if (message.substring(i, i + 1).equals(")")) {
+                            x = Float.parseFloat(message.substring(initindex + 6, interval).trim());
+                            y = Float.parseFloat(message.substring(interval + 1, i - 7).trim());
+                            break;
+                        }
+                    }
+                }
+            }catch (Exception e) {}
+            Effect showEffect = Fx.arcGatherMarker;
+            showEffect.at(x * tilesize, y * tilesize, Color.red);
+        }
+    }
+
+    private boolean arcMessage(String message){
+        if (message.startsWith("!help")) {
+            helpMessage();
+            return true;
+        }
+        if (message.startsWith("!clear")) {
+            clearMessages();
+            messages.insert(0, "[cyan][ARC" + arcVersion + "][pink]聊天记录已清空");
+            return true;
+        }
+        if (message.startsWith("!log")) {
+            copyMessage(message);
+            messages.insert(0, "[cyan][ARC" + arcVersion + "][pink]聊天记录已复制到粘贴板");
+            return true;
+        }
+        return false;
+    }
+
+    private void copyMessage(String message) {
+        int logLength = Integer.min(20,messages.size - 1);
+        try {
+            logLength = Integer.min(messages.size - 1, Integer.parseInt(message.substring(4, message.length()).trim()));
+        } catch (Exception e) {
+        }
+
+        StringBuilder messageHis = new StringBuilder();
+        messageHis.append("下面是[ARC").append(arcVersion).append("] 导出的游戏内聊天记录").append("\n");
+        messageHis.append("*** 当前地图名称: ").append(state.map.name()).append("（模式：").append(state.rules.modeName).append("）\n");
+        messageHis.append("*** 当前波次: ").append(state.wave).append("\n");
+        messageHis.append("*** 导出模式: ").append(getValidType()).append("\n");
+
+        StringBuilder messageLs = new StringBuilder();
+        int messageCount = 0;
+        for (int i = 0; i <messages.size && messageCount <= logLength; i++) {
+            String msg = messages.get(i);
+            if (!chatValidType(msg)) continue;
+            messageLs.insert(0,messages.get(i) + "\n");
+            messageCount +=1;
+        }
+
+        messageHis.append("成功选取共 ").append(messageCount).append(" 条记录，如下：\n");
+        messageHis.append(messageLs);
+        Core.app.setClipboardText(Strings.stripGlyphs(Strings.stripColors(messageHis.toString())));
+    }
+
+    private void helpMessage() {
+        StringBuilder msg = new StringBuilder();
+        msg.append("[cyan][ARC").append(arcVersion).append("][violet]聊天辅助器").append("\n\n");
+        msg.append("[acid]!help  [white]调出本帮助菜单").append("\n");
+        msg.append("[acid]!clear  [white]清除聊天记录").append("\n");
+        msg.append("[acid]!log  [white]复制聊天记录到粘贴板，默认导出20条").append("\n");
+        msg.append("[acid]!logx  [white]复制最近的x条聊天记录，数字可修改").append("\n\n");
+        msg.append("[orange]如果与服务器插件有指令冲突，请及时反馈。\n可以在设置处设置导出情况");
+        ui.showInfo(msg.toString());
+    }
+
+    private boolean chatValidType(String msg) {
+        int chatType = settings.getInt("chatValidType");
+        if (chatType==0 && (msg.contains("[acid][公屏][white]"))) return false;
+        else if(chatType==1 &&
+                (msg.contains("加入了服务器") ||msg.contains("离开了服务器")||msg.contains("小贴士")||msg.contains("自动存档完成")||
+                msg.contains("登录成功")||msg.contains("经验+")||msg.contains("[ARC")
+                ||(msg.contains("[acid][公屏][white]")))) return false;
+        else if(chatType==2 && !(msg.contains("[acid][公屏][white]"))) return false;
+        return true;
+    }
+
+    private String getValidType() {
+        int chatType = settings.getInt("chatValidType");
+        if (chatType==0) return "原版模式";   //默认下无视hub
+        else if (chatType==1) return "纯净聊天";
+        else if (chatType==2) return "服务器记录";
+        return "全部记录";
+    }
+
 
     private enum ChatMode{
         normal(""),

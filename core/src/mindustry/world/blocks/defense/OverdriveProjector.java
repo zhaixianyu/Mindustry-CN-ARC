@@ -54,6 +54,12 @@ public class OverdriveProjector extends Block{
         super.drawPlace(x, y, rotation, valid);
 
         Drawf.dashCircle(x * tilesize + offset, y * tilesize + offset, range, baseColor);
+        if (hasBoost){
+            Drawf.dashCircle(x * tilesize + offset, y * tilesize + offset, range + phaseRangeBoost, phaseColor);
+
+            indexer.eachBlock(player.team(), x * tilesize + offset, y * tilesize + offset, range + phaseRangeBoost, other -> other.block.canOverdrive, other -> Drawf.selected(other, Tmp.c1.set(phaseColor).a(Mathf.absin(4f, 1f))));
+        }
+
 
         indexer.eachBlock(player.team(), x * tilesize + offset, y * tilesize + offset, range, other -> other.block.canOverdrive, other -> Drawf.selected(other, Tmp.c1.set(baseColor).a(Mathf.absin(4f, 1f))));
     }
@@ -76,7 +82,7 @@ public class OverdriveProjector extends Block{
     @Override
     public void setBars(){
         super.setBars();
-        bars.add("boost", (OverdriveBuild entity) -> new Bar(() -> Core.bundle.format("bar.boost", Mathf.round(Math.max((entity.realBoost() * 100 - 100), 0))), () -> Pal.accent, () -> entity.realBoost() / (hasBoost ? speedBoost + speedBoostPhase : speedBoost)));
+        addBar("boost", (OverdriveBuild entity) -> new Bar(() -> Core.bundle.format("bar.boost", Mathf.round(Math.max((entity.realBoost() * 100 - 100), 0))), () -> Pal.accent, () -> entity.realBoost() / (hasBoost ? speedBoost + speedBoostPhase : speedBoost)));
     }
 
     public class OverdriveBuild extends Building implements Ranged{
@@ -92,17 +98,17 @@ public class OverdriveProjector extends Block{
 
         @Override
         public void drawLight(){
-            Drawf.light(team, x, y, lightRadius * smoothEfficiency, baseColor, 0.7f * smoothEfficiency);
+            Drawf.light(x, y, lightRadius * smoothEfficiency, baseColor, 0.7f * smoothEfficiency);
         }
 
         @Override
         public void updateTile(){
-            smoothEfficiency = Mathf.lerpDelta(smoothEfficiency, efficiency(), 0.08f);
-            heat = Mathf.lerpDelta(heat, consValid() ? 1f : 0f, 0.08f);
+            smoothEfficiency = Mathf.lerpDelta(smoothEfficiency, efficiency, 0.08f);
+            heat = Mathf.lerpDelta(heat, efficiency > 0 ? 1f : 0f, 0.08f);
             charge += heat * Time.delta;
 
             if(hasBoost){
-                phaseHeat = Mathf.lerpDelta(phaseHeat, Mathf.num(cons.optionalValid()), 0.1f);
+                phaseHeat = Mathf.lerpDelta(phaseHeat, optionalEfficiency, 0.1f);
             }
 
             if(charge >= reload){
@@ -112,13 +118,13 @@ public class OverdriveProjector extends Block{
                 indexer.eachBlock(this, realRange, other -> other.block.canOverdrive, other -> other.applyBoost(realBoost(), reload + 1f));
             }
 
-            if(timer(timerUse, useTime) && efficiency() > 0 && consValid()){
+            if(timer(timerUse, useTime) && efficiency > 0){
                 consume();
             }
         }
 
         public float realBoost(){
-            return consValid() ? (speedBoost + phaseHeat * speedBoostPhase) * efficiency() : 0f;
+            return (speedBoost + phaseHeat * speedBoostPhase) * efficiency;
         }
 
         @Override
@@ -133,6 +139,29 @@ public class OverdriveProjector extends Block{
         @Override
         public void draw(){
             super.draw();
+
+            float realRange = range + phaseHeat * phaseRangeBoost;
+            float pro_Transparency = (float)Core.settings.getInt("overdrive_zone") / 100f;
+            if(status() == BlockStatus.active&& pro_Transparency > 0.02f){
+                //Draw.z(Layer.overdrive - 1f);
+                if (phaseHeat>0.2){
+                    Draw.color(Color.valueOf("FFA500"), pro_Transparency);
+                    //Draw.color(baseColor, pro_Transparency);
+                    //Draw.reset();
+                    Lines.stroke(1f);
+                    Lines.circle(x, y, realRange);
+                    Draw.alpha(pro_Transparency * 0.1f);
+                    Fill.circle(x, y, realRange);
+                }
+                else {
+                    Draw.color(Color.valueOf("FF8C00"),pro_Transparency);
+                    //Draw.color(phaseColor,pro_Transparency);
+                    Lines.stroke(1f);
+                    Lines.circle(x, y, realRange);
+                    Draw.alpha(pro_Transparency * 0.1f);
+                    Fill.circle(x, y, realRange);
+                }
+            }
 
             float f = 1f - (Time.time / 100f) % 1f;
 

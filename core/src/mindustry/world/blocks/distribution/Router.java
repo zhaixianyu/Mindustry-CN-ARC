@@ -14,7 +14,8 @@ public class Router extends Block{
 
     public Router(String name){
         super(name);
-        solid = true;
+        solid = false;
+        underBullets = true;
         update = true;
         hasItems = true;
         itemCapacity = 1;
@@ -40,7 +41,7 @@ public class Router extends Block{
 
         @Override
         public boolean canControl(){
-            return size == 1;
+            return size != 0;
         }
 
         @Override

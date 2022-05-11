@@ -161,4 +161,22 @@ abstract class StatusComp implements Posc, Flyingc{
     boolean hasEffect(StatusEffect effect){
         return applied.get(effect.id);
     }
+
+    float getEffectTime(StatusEffect effect){
+        if(!hasEffect(effect)) return 0f;
+
+        int index = 0;
+        float returnt = 0f;
+        while(index < statuses.size){
+            StatusEntry entry = statuses.get(index++);
+            if(entry.effect == effect && !entry.effect.permanent){
+                returnt = Math.max(entry.time - Time.delta, 0);
+                break;
+            } else if(entry.effect == effect && entry.effect.permanent){
+                returnt = -1f;
+                break;
+            }
+        }
+        return returnt;
+    }
 }

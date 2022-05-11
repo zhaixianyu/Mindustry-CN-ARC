@@ -39,7 +39,7 @@ public class DatabaseDialog extends BaseDialog{
             search.setMessageText("@players.search");
         }).fillX().padBottom(4).row();
 
-        cont.pane(all);
+        cont.pane(all).scrollX(false);
     }
 
     void rebuild(){
@@ -53,18 +53,21 @@ public class DatabaseDialog extends BaseDialog{
 
             Seq<Content> array = allContent[j]
                 .select(c -> c instanceof UnlockableContent u &&
-                    (!u.isHidden() || u.node() != null) &&
-                    (text.isEmpty() || u.localizedName.toLowerCase().contains(text.toLowerCase())));
+                    (text.isEmpty() || u.localizedName.toLowerCase().contains(text.toLowerCase()))
+                    &&((Core.settings.getBool("allBlocksReveal")) || (!u.isHidden() || u.techNode != null))
+                );
+
+
             if(array.size == 0) continue;
 
-            all.add("@content." + type.name() + ".name").growX().left().color(Pal.accent);
+            all.add("@content." + type.name() + ".name").growX().left().color(getThemeColor());
             all.row();
-            all.image().growX().pad(5).padLeft(0).padRight(0).height(3).color(Pal.accent);
+            all.image().growX().pad(5).padLeft(0).padRight(0).height(3).color(getThemeColor());
             all.row();
             all.table(list -> {
                 list.left();
 
-                int cols = (int)Mathf.clamp((Core.graphics.getWidth() - Scl.scl(30)) / Scl.scl(32 + 10), 1, 22);
+                int cols = (int)Mathf.clamp((Core.graphics.getWidth() - Scl.scl(30)) / Scl.scl(32 + 12), 1, 22);
                 int count = 0;
 
                 for(int i = 0; i < array.size; i++){
@@ -98,7 +101,7 @@ public class DatabaseDialog extends BaseDialog{
                                 ui.content.show(unlock);
                             }
                         });
-                        image.addListener(new Tooltip(t -> t.background(Tex.button).add(unlock.localizedName + (enableConsole ? "\n[gray]" + unlock.name : ""))));
+                        image.addListener(new Tooltip(t -> t.background(Tex.button).add(unlock.localizedName + "\n[gray]" + unlock.name)));
                     }
 
                     if((++count) % cols == 0){
@@ -115,6 +118,7 @@ public class DatabaseDialog extends BaseDialog{
     }
 
     boolean unlocked(UnlockableContent content){
-        return (!Vars.state.isCampaign() && !Vars.state.isMenu()) || content.unlocked();
+        //return (!Vars.state.isCampaign() && !Vars.state.isMenu()) || content.unlocked();
+        return true;
     }
 }

@@ -38,6 +38,7 @@ public class SchematicsDialog extends BaseDialog{
     private Pattern ignoreSymbols = Pattern.compile("[`~!@#$%^&*()\\-_=+{}|;:'\",<.>/?]");
     private Seq<String> tags, selectedTags = new Seq<>();
     private boolean checkedTags;
+    private String blueprintlink = "https://docs.qq.com/sheet/DVHNoS3lIcm1NbFFS";
 
     public SchematicsDialog(){
         super("@schematics");
@@ -48,6 +49,12 @@ public class SchematicsDialog extends BaseDialog{
         shouldPause = true;
         addCloseButton();
         buttons.button("@schematic.import", Icon.download, this::showImport);
+        buttons.button("[cyan]蓝图档案馆", Icon.link, () -> {
+            if(!Core.app.openURI(blueprintlink)){
+                ui.showErrorMessage("@linkfail");
+                Core.app.setClipboardText(blueprintlink);
+            }
+        });
         shown(this::setup);
         onResize(this::setup);
     }
@@ -79,7 +86,7 @@ public class SchematicsDialog extends BaseDialog{
             in.add("@schematic.tags").padRight(4);
 
             //tags (no scroll pane visible)
-            in.pane(Styles.nonePane, t -> {
+            in.pane(Styles.noBarPane, t -> {
                 rebuildTags = () -> {
                     t.clearChildren();
                     t.left();
@@ -144,7 +151,7 @@ public class SchematicsDialog extends BaseDialog{
                             buttons.left();
                             buttons.defaults().size(50f);
 
-                            ImageButtonStyle style = Styles.clearPartiali;
+                            ImageButtonStyle style = Styles.clearNonei;
 
                             buttons.button(Icon.info, style, () -> {
                                 showInfo(s);
@@ -231,7 +238,7 @@ public class SchematicsDialog extends BaseDialog{
                                 hide();
                             }
                         }
-                    }).pad(4).style(Styles.cleari).get();
+                    }).pad(4).style(Styles.flati).get();
 
                     sel[0].getStyle().up = Tex.pane;
 
@@ -258,7 +265,7 @@ public class SchematicsDialog extends BaseDialog{
         dialog.cont.pane(p -> {
             p.margin(10f);
             p.table(Tex.button, t -> {
-                TextButtonStyle style = Styles.cleart;
+                TextButtonStyle style = Styles.flatt;
                 t.defaults().size(280f, 60f).left();
                 t.row();
                 t.button("@schematic.copy.import", Icon.copy, style, () -> {
@@ -309,7 +316,7 @@ public class SchematicsDialog extends BaseDialog{
         dialog.cont.pane(p -> {
            p.margin(10f);
            p.table(Tex.button, t -> {
-               TextButtonStyle style = Styles.cleart;
+               TextButtonStyle style = Styles.flatt;
                 t.defaults().size(280f, 60f).left();
                 if(steam && !s.hasSteamID()){
                     t.button("@schematic.shareworkshop", Icon.book, style,
@@ -327,12 +334,58 @@ public class SchematicsDialog extends BaseDialog{
                     dialog.hide();
                     platform.export(s.name(), schematicExtension, file -> Schematics.write(s, file));
                 }).marginLeft(12f);
+                t.row();
+                t.button("标记蓝图[cyan][简]", Icon.export, style, () -> {
+                    String message = arcSchematicsInfo(s,false);
+                    int seperator = 145;
+                    for (int i=0; i < message.length()/(float)seperator;i++){
+                        Call.sendChatMessage(message.substring(i*seperator,Math.min(message.length(),(i+1)*seperator)));
+                    }
+                    dialog.hide();
+                }).marginLeft(12f);
+                t.row();
+                t.button("标记蓝图[cyan][详]", Icon.export, style, () -> {
+                    String message = arcSchematicsInfo(s,true);
+                    int seperator = 145;
+                    for (int i=0; i < message.length()/(float)seperator;i++){
+                        Call.sendChatMessage(message.substring(i*seperator,Math.min(message.length(),(i+1)*seperator)));
+                    }
+                    dialog.hide();
+                }).marginLeft(12f);
             });
         });
 
         dialog.addCloseButton();
         dialog.show();
     }
+
+    private String arcSchematicsInfo(Schematic schem,boolean description){
+        String builder = "[ARC"+arcVersion+"]";
+        builder+="标记了蓝图["+schem.name()+"]";
+        builder+="。属性："+schem.width+"x"+schem.height+"，"+schem.tiles.size+"个建筑。";
+        if(description){
+            builder+="耗材：";
+            ItemSeq arr = schem.requirements();
+            for(ItemStack s : arr){
+                builder+=s.item.emoji()+ s.amount+"|";
+            }
+
+            builder+="。电力：";
+            cont.row();
+            float cons = schem.powerConsumption() * 60, prod = schem.powerProduction() * 60;
+            if(!Mathf.zero(prod)){
+                builder+="+"+ Strings.autoFixed(prod, 2);
+                if(!Mathf.zero(cons)){
+                    builder+="|";
+                }
+            }
+            if(!Mathf.zero(cons)){
+                builder+="-"+ Strings.autoFixed(cons, 2);
+            }
+        }
+        return builder;
+    }
+
 
 
     //adds all new tags to the global list of tags
@@ -419,7 +472,7 @@ public class SchematicsDialog extends BaseDialog{
                         int i = 0;
                         for(UnlockableContent u : content.getBy(ctype).<UnlockableContent>as()){
                             if(!u.isHidden() && u.unlockedNow() && u.hasEmoji() && !tags.contains(u.emoji())){
-                                t.button(new TextureRegionDrawable(u.uiIcon), Styles.cleari, iconMed, () -> {
+                                t.button(new TextureRegionDrawable(u.uiIcon), Styles.flati, iconMed, () -> {
                                     String out = u.emoji() + "";
 
                                     tags.add(out);

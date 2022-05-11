@@ -1,0 +1,177 @@
+[cyan]------------------------[v136test 5/8]---------------------------
+下列更新由[yellow]carrot[white]提供
+单位
+星辉物品容量降至10，开火速率降低，射程大砍，体积变小，略微提高生命
+天垠和苍穹不再能携带物品
+爬爬系单位不再能协助建
+略微提高了爬爬系单位的移速和生命
+略微提高了玄武闪电的伤害
+将玄武的雷达范围从4格提升至22格
+电鳗（t2海辅）的射程7格->12格
+略微提高了战锤的生命和移速
+王座的子弹和分裂子弹伤害稍微提高
+
+炮塔
+双管炮:移除硫子弹，强化所需液体减半，加成效果减半
+分裂:玻璃范围伤害45
+火焰:液体需求12->6，加成效果减半
+冰雹:同上
+兰瑟:对建筑伤害100%->25%，造价新增30钛，取消无限穿透
+电弧:对建筑伤害100%->25%，液体需求12->6，加强效果减半
+蜂群:液体需求12->18，加成相应提高
+齐射:稍微提高铜，石墨，硫化物子弹伤害
+裂解:造价新增40钛，生命250->1000
+雷光:液体需求12->18，加成效果相应提高
+浪涌:液体需求12->18，加成效果相应提高，硫化物伤害35->45
+气旋:液体需求12->18，加成效果相应提高，玻璃子弹3伤害->9伤害，27范伤->48范围伤害，范围2.0格->3.1格，分裂子弹5伤害->8伤害；塑钢分裂子弹10伤害->12伤害
+
+质量驱动器:生命360->430
+热能坩埚:生命360->395
+巨浪合金厂:生命360->430
+RTG发电机:生命160->245
+解离机:生命360->465
+超速穹顶:生命360->485
+爆破钻头:生命640->765
+大型太阳能板:生命360->450
+逻辑处理器:生命160->190
+超核处理器:生命360->520
+内存库:生命160->200
+大型逻辑显示屏:生命1440->1800
+热能泵:生命360->430
+相位编制器:生命160->190
+载荷驱动器:生命1000->1550
+t5厂:生命3240->5830
+t4厂:生命1968->3035
+t3厂:生命1000->1200
+
+
+[cyan]------------------------[v135.1 4/1]---------------------------
+[acid]官方更新日志
+sdgjkhgjskgdf[gray]没错官方更新日志就是这个
+[acid]解读
+实际上是加了个新音游游戏，以及将爆混的图标改成了among us。（留意：[red]学术端没有同步这两个功能[white]）
+以及更新了若干代码
+
+[cyan]------------------------[v135 11/25]---------------------------
+[acid]官方更新日志
+Fixed spawnpoint shockwave not killing units
+Fixed payEnter logic command creating infinite ghost units
+Fixed modded attributes wiping vanilla attributes
+Fixed some overdrive projector application inconsistencies
+Fixed some launch pad export calculation issues
+Fixed some unloader edge cases
+Fixed unit sector icons not saving
+Switched Linux audio backend to PulseAudio - if your sound breaks/gets distorted after this release, please report it
+Added WorldLabel entity for server-side persistent messages (no documentation yet)
+[acid]解读
+修复逻辑兵种进入载荷|兵厂时产生幽灵bug
+修复一堆bug
+
+[cyan]------------------------[v134.1 11/02]---------------------------
+[acid]官方更新日志
+Fixed block pickup on servers not removing block clientside
+Fixed certain blocks rendering/updating incorrectly on payload conveyors
+Fixed shoot effects not following units
+Fixed a turret select crash
+Fixed disabled mods appearing in crash logs
+Added unit build requirements to stats
+Unloaders: Fixed outputs with equal weight not being alternated
+Modding: Added deprecated ChatFragment method so certain mods don't crash
+Modding: Added Weapon#layerOffset
+Modding: Added support for reading JSON environment flags as string arrays
+[acid]解读
+增加单位建造花费属性（可是有什么用呢）
+修复了一堆bug，没有改动游戏机制|属性
+
+[cyan]------------------------[v134 10/20]---------------------------
+[acid]官方更新日志
+Fixed leg units using ground unit pathfinding
+Fixed some payload-related crashes
+Fixed all ground waves on Serpulo being replaced by flying units
+Fixed host not being able to make other users admin locally
+Fixed payload constructor blocks sharing the same scroll bar position
+Fixed a pixelation-related crash
+Fixed plastanium conveyors having infinite capacity when loaded
+Minor tweaks to copper requirements of certain blocks
+Made turrets payload-loadable
+Payload blocks now draw and update on conveyors; this allows for functional moving turrets
+Added saved games search & improved map search filters (Contributed by @TranquillyUnpleasant)
+New unloader implementation; more reliable & better at balancing items across blocks (Contributed by @hortiSquash)
+
+[acid]解读
+抽水机|大修复现在需要铜
+蜂群射程：235-->240
+炮台可以在载荷传送带上使用
+装卸器：速度不再和接触面有关，锁11。但能识别缺少的物品并装卸，即不再浪费装卸尝试(例如工厂-空选装卸器-工厂或核心-空选装卸器-核心)
+增加保存游戏的搜索&增加地图筛选
+
+[cyan]------------------------[v133 10/10]---------------------------
+[acid]官方更新日志
+While this version is technically network-compatible with 132, it has significant behavioral differences that warrant a new release. I would rather not see massive desyncs on outdated servers.
+
+Fixed logic being able to control dead/removed units (e.g. into payload blocks)
+Fixed deconstructors not checking unit payload size/etc (direct deconstruction was added hours before release and not tested properly)
+Fixed deconstructors sometimes refunding slightly less than 100% of resources
+Fixed constructor being able to create banned/invalid blocks
+Fixed player units not disappearing when ctrl-clicked into payloads
+Made payload loader only move out containers when >= 1 item is at full capacity
+Added liquid container to tech tree
+
+[cyan]------------------------[v132 10/19]---------------------------
+[acid]官方更新日志
+Fixed tapping items in block inventories always requesting the whole stack
+Added Constructor & Large Constructor for block creation; may be useful for item/liquid transport via payload mass drivers
+Added 2x2 tank
+Added payload loader & unloader
+Added Deconstructor; converts a unit/block back into items at 100% efficiency
+Added cryofluid tiles (Contributed by @TranquillyUnpleasant)
+Added editor map search (Contributed by @TranquillyUnpleasant)
+Added system for displaying backgrounds in map rules; currently can't be changed without mods/plugins
+Added system for custom chat formatting in servers (see NetServer#chatFormatter)
+Changed Retusa weapon to a naval torpedo
+Made legged units able to drown when all legs are in deep water; buffed speed/damage to compensate
+Made all large mechs able to drown (slowly) when surrounded by deep water
+Made crawler explosions deal damage on death
+Made certain shoot effects track unit rotation (Contributed by @MEEPofFaith)
+Made sorter/gate output flips direction-dependent
+Major changes to planet API; will break mods with planets
+Increased surge alloy damage when exploded
+Converted game soundtrack to ogg (-> smaller filesize)
+Improved planet renderer water/ice reflections
+Added clouds to Serpulo
+Added naval waves to Serpulo
+Improved Serpulo sector generation, especially when water is involved
+Increased Desolate Rift difficulty slightly
+Older generated maps made in the two new preset sectors are now auto-deleted
+Logic: Made @tick/@time be synced; @tick no longer resets; @time is now @tick in ms instead of local client unix time
+Logic: Synced random number generator state (note that this will still not fully fix RNG desyncs)
+Logic: Added line numbers and jump line indicators
+Logic: Added variable display dialog
+Logic: Added unit command to enter payload blocks
+Logic: Many various bugfixes
+
+[cyan]------------------------[v131 9/13]---------------------------
+[acid]官方更新日志
+Fixed Omura bullet trail length not being cut off by impact
+Fixed BE server not auto-updating
+Fixed sectors having decreased production/export when loaded for a short time
+Fixed overdrive visuals displaying for liquid routers/conduits
+Fixed overdrive projectors not affecting passive sector damage calculations
+Fixed alpha bleeding not applying properly to mods
+Made Stained Mountains guardian easier
+Made pebbles look less like ore
+Made most configurable blocks show their inventory when tapped
+Made campaign bases slightly denser
+Made Base AI walls correspond to tier
+Many various improvements to wave editor (Contributed by @JrTRinny, @TranquillyUnpleasant)
+Made drills no longer show items under solid walls
+Unit rebalancing
+Added unit icon selection for sectors
+Added 'target' field to river noise filter
+Added repair turrets to Vela
+Added Deep Tainted Water, made standard tainted water shallow
+Added rivers to Serpulo generation
+Added cliff button to map editor
+Added subtle shadow to ships
+Added 2 new (untested!) campaign naval maps
+Improved compatibility with v6 mods
