@@ -12,12 +12,13 @@ import mindustry.core.*;
 import mindustry.editor.*;
 import mindustry.game.*;
 import mindustry.gen.*;
+import mindustry.input.DesktopInput;
 import mindustry.net.*;
 import mindustry.type.*;
 
 import static arc.Core.settings;
 import static mindustry.Vars.*;
-import static mindustry.content.Items.copper;
+import static mindustry.content.UnitTypes.gamma;
 import static mindustry.content.UnitTypes.poly;
 import static mindustry.gen.Tex.underlineWhite;
 import static mindustry.ui.Styles.*;
@@ -267,11 +268,15 @@ public class MI2ToolsTable extends Table{
                 t.button(new TextureRegionDrawable(poly.uiIcon), imgStyle, imgSize, () -> {
                     player.buildDestroyedBlocks();
                 }).height(buttonSize).growX();
-/*
-                t.button(new TextureRegionDrawable(copper.uiIcon), imgStyle, imgSize, () -> {
-                    player.dropItems();
+
+                t.button(new TextureRegionDrawable(gamma.uiIcon), imgStyle, imgSize, () -> {
+                    if(control.input instanceof DesktopInput){
+                        ((DesktopInput) control.input).panning = true;
+                    }
+                    Core.camera.position.set(ui.chatfrag.getArcMarkerX(),ui.chatfrag.getArcMarkerY());
+
                 }).height(buttonSize).growX();
-*/
+
                 t.button(Icon.modeAttack, imgToggleStyle, imgSize, () -> {
                     boolean at = settings.getBool("autotarget");
                     settings.put("autotarget", !at);

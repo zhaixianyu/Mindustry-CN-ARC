@@ -39,6 +39,7 @@ public class ChatFragment extends Table{
     private Seq<String> history = new Seq<>();
     private int historyPos = 0;
     private int scrollPos = 0;
+    public float arcMarkX = 0,arcMarkY = 0;
 
     public ChatFragment(){
         super();
@@ -282,11 +283,10 @@ public class ChatFragment extends Table{
 
     private void feedbackMessage(String message) {
         if (message.contains("标记了一处地点")) {
-            //"[ARC"+arcversion+"]"+"标记了一处地点[red]("+cursorX+","+cursorY+")"
+            float x = 0;
+            float y = 0;
             try {
                 int strLength = message.length();
-                float x = 0;
-                float y = 0;
                 int stopindex = 0;
                 for (int i = 0; i < strLength; i++) {
                     if (message.substring(i, i + 1).equals("(")) {
@@ -298,10 +298,12 @@ public class ChatFragment extends Table{
                         break;
                     }
                 }
-                Effect showEffect = Fx.arcMarker;
-                showEffect.at(x * tilesize, y * tilesize, Color.red);
             } catch (Exception e) {
             }
+            arcMarkX = x;
+            arcMarkY = y;
+            Effect showEffect = Fx.arcMarker;
+            showEffect.at(x * tilesize, y * tilesize, Color.red);
         } else if (message.contains("发起集合")) {
             int strLength = message.length();
             float x = 0;
@@ -325,6 +327,8 @@ public class ChatFragment extends Table{
                     }
                 }
             }catch (Exception e) {}
+            arcMarkX = x;
+            arcMarkY = y;
             Effect showEffect = Fx.arcGatherMarker;
             showEffect.at(x * tilesize, y * tilesize, Color.red);
         }
@@ -437,5 +441,13 @@ public class ChatFragment extends Table{
         public boolean isValid(){
             return valid.get();
         }
+    }
+
+    public float  getArcMarkerX(){
+        return arcMarkX*tilesize;
+    }
+
+    public float  getArcMarkerY(){
+        return arcMarkY*tilesize;
     }
 }
