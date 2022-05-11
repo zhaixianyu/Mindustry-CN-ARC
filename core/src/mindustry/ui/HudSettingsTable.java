@@ -125,7 +125,7 @@ public class HudSettingsTable extends Table{
                 sp.row();
                 sp.table(t -> {
                     t.button("[red]灯", () -> {
-                        Core.settings.put("DisableLightRender", !Core.settings.getBool("DisableLightRender"));
+                        enableLight = !enableLight;
                     }).size(30,30).name("灯光").tooltip("[cyan]开灯啊！");
                     t.button("[acid]效", () ->{
                         Core.settings.put("effects", !Core.settings.getBool("effects"));

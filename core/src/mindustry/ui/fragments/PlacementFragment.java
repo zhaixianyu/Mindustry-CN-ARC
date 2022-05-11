@@ -462,6 +462,7 @@ public class PlacementFragment{
                                     }
                                 }
                                 u.row();
+                                col = 0;
                                 u.add("满").color(Color.green);
                                 u.add("("+Core.keybinds.get(Binding.rtsSelectHealth).key.toString()+")").color(getThemeColor()).visible(!android);
                                 for(int i = 0; i < counts_Full.length; i++){
