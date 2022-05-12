@@ -672,6 +672,7 @@ public class SettingsMenuDialog extends BaseDialog{
         specmode.checkPref("developmode", false);
         //////////cheating
         cheating.addCategory("arcWeakCheat");
+        cheating.checkPref("forceIgnoreAttack",false);
         cheating.checkPref("allBlocksReveal",false);
         cheating.checkPref("overrideSkipWave", false);
         cheating.checkPref("overridePickUpPayload",false);

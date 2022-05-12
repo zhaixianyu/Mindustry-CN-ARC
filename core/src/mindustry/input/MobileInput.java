@@ -968,12 +968,17 @@ public class MobileInput extends InputHandler implements GestureListener{
             payloadTarget = null;
         }
 
-        movement.set(targetPos).sub(player).limit(speed);
-        movement.setAngle(Mathf.slerp(movement.angle(), unit.vel.angle(), 0.05f));
+        if (!Core.settings.getBool("viewMode")) {
+            movement.set(targetPos).sub(player).limit(speed);
+            movement.setAngle(Mathf.slerp(movement.angle(), unit.vel.angle(), 0.05f));
 
-        if(player.within(targetPos, attractDst)){
+            if(player.within(targetPos, attractDst)){
+                movement.setZero();
+                unit.vel.approachDelta(Vec2.ZERO, unit.speed() * type.accel / 2f);
+            }
+        }
+        else {
             movement.setZero();
-            unit.vel.approachDelta(Vec2.ZERO, unit.speed() * type.accel / 2f);
         }
 
         unit.hitbox(rect);

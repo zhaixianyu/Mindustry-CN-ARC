@@ -284,10 +284,10 @@ public class MI2ToolsTable extends Table{
 
                 if(mobile){
                     t.button(Icon.eyeSmall, imgToggleStyle, () -> {
-                        boolean view = settings.getBool("viewmode");
+                        boolean view = settings.getBool("viewMode");
                         if(view) Core.camera.position.set(player);
-                        settings.put("viewmode", !view);
-                    }).height(buttonSize).growX().checked(settings.getBool("viewmode"));
+                        settings.put("viewMode", !view);
+                    }).height(buttonSize).growX().checked(settings.getBool("viewMode"));
                 }
 
                 t.button("-", textStyle, () -> {

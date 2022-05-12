@@ -1121,7 +1121,7 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
             if(!planet.allowWaveSimulation && !debugSelect){
                 //if there are two or more attacked sectors... something went wrong, don't show the dialog to prevent softlock
                 Sector attacked = planet.sectors.find(s -> s.isAttacked() && s != sector);
-                if(attacked != null &&  planet.sectors.count(s -> s.isAttacked()) < 2){
+                if(attacked != null &&  planet.sectors.count(s -> s.isAttacked()) < 2 && !settings.getBool("forceIgnoreAttack") ){
                     BaseDialog dialog = new BaseDialog("@sector.noswitch.title");
                     dialog.cont.add(bundle.format("sector.noswitch", attacked.name(), attacked.planet.localizedName)).maxWidth(400f).labelAlign(Align.center).center().wrap();
                     dialog.addCloseButton();
@@ -1135,6 +1135,7 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
 
                     return;
                 }
+                if (attacked!=sector && settings.getBool("forceIgnoreAttack")) ui.showInfo("[red]警告：你的一个区块正在遭受攻击。[white]\n但你使用了学术端的作弊功能来强行切换区块，这可能导致未知问题！");
             }
         }
 

@@ -47,6 +47,8 @@ public class HudFragment{
     private MI2ToolsTable mi2ToolsTable = new MI2ToolsTable();
     private HudSettingsTable hudSettingsTable = new HudSettingsTable();
 
+    private Boolean arcShowObjectives = false;
+
     private boolean editorMainShow = true;
 
     private String hudText = "";
@@ -234,7 +236,7 @@ public class HudFragment{
             }};
 
             //if(Core.settings.getBool("arcSpecificTable") && !state.isCampaign() && state.rules.objectives.size==0 ){
-            if(false){
+            if(true){
                 wavesMain.table(s -> {
                     //wave info button with text
                     s.add(makeStatusTableArc()).grow().name("status");
@@ -958,77 +960,113 @@ public class HudFragment{
 
         table.marginTop(0).marginBottom(4).marginLeft(4);
 
-        table.table(t -> {
-            t.margin(0);
-            t.clicked(() -> {
-                if(!player.dead() && mobile){
-                    Call.unitClear(player);
-                    control.input.recentRespawnTimer = 1f;
-                    control.input.controlledType = null;
-                }
-            });
-            //t.image(() -> player.icon()).scaling(Scaling.bounded).grow().maxWidth(20f);
-            t.image(() -> player.icon()).size(iconMed);
-            t.row();
-            t.add(new Bar(
-                () -> {
-                    if(player.unit().shield > 0){
-                        return UI.formatAmount((long)player.unit().health) + "[gray]+[white]" + UI.formatAmount((long)player.unit().shield);
-                    }else{
-                        return UI.formatAmount((long)player.unit().health);
+        Runnable[] rebuild = {null};
+        rebuild[0] = () -> {
+            table.clear();
+            table.table(t -> {
+                t.margin(0);
+                t.clicked(() -> {
+                    if (!player.dead() && mobile) {
+                        Call.unitClear(player);
+                        control.input.recentRespawnTimer = 1f;
+                        control.input.controlledType = null;
                     }
-                },
-                () -> Pal.health,
-                () -> Math.min(player.unit().health / player.unit().maxHealth, 1))).height(18).growX();
-            t.row();
-            //if(state.rules.unitAmmo){}
-            t.add(new Bar(
-                () -> {
-                if(state.rules.unitAmmo) return player.unit().type.ammoType.icon() + (int)player.unit().ammo + "/" + (int)player.unit().type.ammoCapacity;
-                else return player.unit().type.ammoType.icon();
-                },
-                () -> player.unit().type.ammoType.barColor(),
-                () -> {
-                    if(state.rules.unitAmmo) return player.unit().ammo / player.unit().type.ammoCapacity;
-                    else return 1;
-                })).height(18).growX();//.visible(state.rules.unitAmmo)
-            t.row();
-            //
-
-        }).size(120f, 80).padRight(4);
-
-        table.table(t -> {
-                t.add(new Bar(
-                        () -> Calwaveshower(),
-                        () -> Color.valueOf("ccffcc"),
-                        () -> {
-                            if (CalWinWave() >= 1 && CalWinWave() >= state.wave) return state.wave / (float)CalWinWave();
-                            else return 1f;
-                        })).height(18).growX().row();
-                t.add(new Bar(
-                        () -> Calwavetimeremain(),
-                        () -> Color.valueOf("F5DEB3"),
-                        () -> state.wavetime / state.rules.waveSpacing)).height(18).growX().row();
+                });
+                //t.image(() -> player.icon()).scaling(Scaling.bounded).grow().maxWidth(20f);
+                t.image(() -> player.icon()).size(iconMed);
+                t.row();
                 t.add(new Bar(
                         () -> {
-                            if(Vars.spawner.countSpawns() <= 1 || state.rules.mode() == Gamemode.pvp){
-                                return "[orange]"+state.enemies + "[gray](+"+CalwaveEnemy(state.wave - 1) + ")";
-                            }else if (CalwaveEnemy(state.wave - 1) > 0){
-                                return "[orange]"+state.enemies + "[gray](+"+CalwaveEnemy(state.wave - 1) + "×"+Vars.spawner.countSpawns() + ")";
-                            }else{
-                                return "[orange]"+state.enemies+"[gray](+0)";
+                            if (player.unit().shield > 0) {
+                                return UI.formatAmount((long) player.unit().health) + "[gray]+[white]" + UI.formatAmount((long) player.unit().shield);
+                            } else {
+                                return UI.formatAmount((long) player.unit().health);
                             }
                         },
-                        () -> Color.valueOf("F4A460"),
-                        () -> state.enemies / ((float)CalwaveEnemy(state.wave-2) * Vars.spawner.countSpawns()))).height(18).growX();
-        }).growX().pad(8f);
+                        () -> Pal.health,
+                        () -> Math.min(player.unit().health / player.unit().maxHealth, 1))).height(18).growX();
+                t.row();
+                //if(state.rules.unitAmmo){}
+                t.add(new Bar(
+                        () -> {
+                            if (state.rules.unitAmmo)
+                                return player.unit().type.ammoType.icon() + (int) player.unit().ammo + "/" + player.unit().type.ammoCapacity;
+                            else return player.unit().type.ammoType.icon();
+                        },
+                        () -> player.unit().type.ammoType.barColor(),
+                        () -> {
+                            if (state.rules.unitAmmo) return player.unit().ammo / player.unit().type.ammoCapacity;
+                            else return 1;
+                        })).height(18).growX();//.visible(state.rules.unitAmmo)
+                t.row();
+                //
 
-        // Power bar display
-        if (Core.settings.getBool("powerStatistic")){
-            table.row();
-            table.add(PowerInfo.getBars()).growX().colspan(table.getColumns());
-        }
+            }).size(120f, 80).padRight(4);
 
+            if (arcShowObjectives) {
+                table.labelWrap(() -> {
+                    //不清楚地图是否会中途添加任务系统，所以只能随时rebuild
+                    if (arcShowObjectives != (state.rules.objectives.size > 0 || state.rules.mission != null)) {
+                        arcShowObjectives = (state.rules.objectives.size > 0 || state.rules.mission != null);
+                        rebuild[0].run();
+                    }
+
+                    if (state.rules.objectives.size > 0) {
+                        var first = state.rules.objectives.first();
+                        String text = first.text();
+                        if (text != null) {
+                            return state.rules.objectives.first().text();
+                        }
+                    }
+                    //mission overrides everything
+                    if (state.rules.mission != null) {
+                        return state.rules.mission;
+                    }
+                    return "任务读取失败";
+                }
+                ).growX().pad(8f);
+            } else {
+                table.table(t -> {
+                    t.add(new Bar(
+                            () -> Calwaveshower(),
+                            () -> Color.valueOf("ccffcc"),
+                            () -> {
+                                if (arcShowObjectives != (state.rules.objectives.size > 0 || state.rules.mission != null)) {
+                                    arcShowObjectives = (state.rules.objectives.size > 0 || state.rules.mission != null);
+                                    rebuild[0].run();
+                                }
+
+                                if (CalWinWave() >= 1 && CalWinWave() >= state.wave)
+                                    return state.wave / (float) CalWinWave();
+                                else return 1f;
+
+                            })).height(18).growX().row();
+                    t.add(new Bar(
+                            () -> Calwavetimeremain(),
+                            () -> Color.valueOf("F5DEB3"),
+                            () -> state.wavetime / state.rules.waveSpacing)).height(18).growX().row();
+                    t.add(new Bar(
+                            () -> {
+                                if (Vars.spawner.countSpawns() <= 1 || state.rules.mode() == Gamemode.pvp) {
+                                    return "[orange]" + state.enemies + "[gray](+" + CalwaveEnemy(state.wave - 1) + ")";
+                                } else if (CalwaveEnemy(state.wave - 1) > 0) {
+                                    return "[orange]" + state.enemies + "[gray](+" + CalwaveEnemy(state.wave - 1) + "×" + Vars.spawner.countSpawns() + ")";
+                                } else {
+                                    return "[orange]" + state.enemies + "[gray](+0)";
+                                }
+                            },
+                            () -> Color.valueOf("F4A460"),
+                            () -> state.enemies / ((float) CalwaveEnemy(state.wave - 2) * Vars.spawner.countSpawns()))).height(18).growX();
+                }).growX().pad(8f);
+            }
+
+            // Power bar display
+            if (Core.settings.getBool("powerStatistic")) {
+                table.row();
+                table.add(PowerInfo.getBars()).growX().colspan(table.getColumns());
+            }
+        };
+        rebuild[0].run();
         return table;
     }
 
@@ -1079,12 +1117,6 @@ public class HudFragment{
 
     private String Calwaveshower(){
         StringBuilder builder = new StringBuilder();
-        IntFormat enemiesf = new IntFormat("wave.enemies");
-        IntFormat enemycf = new IntFormat("wave.enemycore");
-        IntFormat enemycsf = new IntFormat("wave.enemycores");
-        IntFormat wavef = new IntFormat("wave");
-        IntFormat wavefc = new IntFormat("wave.cap");
-        IntFormat enemyf = new IntFormat("wave.enemy");
 
 
         if(!state.rules.waves && state.rules.attackMode){
@@ -1102,7 +1134,7 @@ public class HudFragment{
         }
 
         if(CalWinWave() > 1 && CalWinWave() >= state.wave){
-            builder.append("[orange]" + state.wave).append("[white]/[yellow]" + CalWinWave());
+            builder.append("[orange]").append(state.wave).append("[white]/[yellow]").append(CalWinWave());
         }else{
             builder.append("波次：[orange]").append(state.wave);
         }
@@ -1116,13 +1148,13 @@ public class HudFragment{
         int s = ((int)state.wavetime / 60) % 60;
         int ms = (int)state.wavetime % 60;
         if(m > 0){
-            wavetimeremain.append(String.valueOf(m)).append("[white]: [orange]");
+            wavetimeremain.append(m).append("[white]: [orange]");
             if(s < 10){
                 wavetimeremain.append("0");
             }
-            wavetimeremain.append(String.valueOf(s)).append("[white]min");
+            wavetimeremain.append(s).append("[white]min");
         }else{
-            wavetimeremain.append(String.valueOf(s)).append("[white].[orange]").append(String.valueOf(ms)).append("[white]s");
+            wavetimeremain.append(s).append("[white].[orange]").append(ms).append("[white]s");
         }
         return wavetimeremain.toString();
     }
