@@ -335,26 +335,26 @@ public class Turret extends ReloadTurret{
                 if (turretShowRange==3 || (turretShowRange==2 && targetAir) || (turretShowRange==1 && targetGround)){
                     Draw.z(Layer.turret-0.8f);
                     Draw.color(team.color,0.05f);
-                    Fill.circle(x, y, range);
+                    Fill.circle(x, y, range());
                     Draw.color(team.color,0.3f);
-                    Lines.circle(x, y, range);
+                    Lines.circle(x, y, range());
                 }
                 Draw.reset();
             }
             if ( (hasAmmo()) && (!state.rules.pvp || team == player.team()) ){
                 if ((float)Core.settings.getInt("turretAlertRange") > 0f && !player.unit().isNull()){
                     boolean canHit = player.unit().isFlying() ? targetAir : targetGround;
-                    if (team != player.team() && canHit && (player.unit().dst(x,y) <= (range+ (float)Core.settings.getInt("turretAlertRange") * tilesize))){
+                    if (team != player.team() && canHit && (player.unit().dst(x,y) <= (range()+ (float)Core.settings.getInt("turretAlertRange") * tilesize))){
                         Draw.color(team.color, 0.8f);
-                        Lines.circle(x, y, range);
+                        Lines.circle(x, y, range());
                     }
                     int turretShowRange = Core.settings.getInt("turretShowRange");
                     if (turretShowRange==3 || (turretShowRange==2 && targetAir) || (turretShowRange==1 && targetGround)){
                         Draw.z(Layer.turret-0.8f);
                         Draw.color(team.color,0.05f);
-                        Fill.circle(x, y, range);
+                        Fill.circle(x, y, range());
                         Draw.color(team.color,0.3f);
-                        Lines.circle(x, y, range);
+                        Lines.circle(x, y, range());
                     }
                     Draw.reset();
                 }
