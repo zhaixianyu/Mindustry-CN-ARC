@@ -541,9 +541,11 @@ public class JoinDialog extends BaseDialog{
 
     void safeConnect(String ip, int port, int version){
         if(version != Version.build && Version.build != -1 && version != -1){
+
             ui.showInfo("[scarlet]" + (version > Version.build ? KickReason.clientOutdated : KickReason.serverOutdated) + "\n[]" +
                 Core.bundle.format("server.versions", Version.build, version));
-        }else{
+        }else if (version < 136 && version!=-1) ui.showInfo("当前学术端为v7测试版，无法进入正式版服务器\n[orange]请寻找BE测试服");
+        else {
             connect(ip, port);
         }
     }
