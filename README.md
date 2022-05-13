@@ -8,6 +8,35 @@ The automation tower defense RTS, written in Java.
 _[Trello Board](https://trello.com/b/aE2tcUwF/mindustry-40-plans)_  
 _[Wiki](https://mindustrygame.github.io/wiki)_  
 _[Javadoc](https://mindustrygame.github.io/docs/)_ 
+_[Original](https://github.com/Anuken/Mindustry)_ 
+
+## 学术端介绍
+制作团队：Mindustry PVP 学术交流群
+
+更多的工厂显示！从超速范围到工作细节！\
+更多的兵种显示！从攻击范围到单位血量！\
+更多的辅助功能！从地图属性到蓝图大小！\
+更多的地图设置！从更多队伍到强化波次！\
+强化核心数据库！给大量工厂和兵种配备详细机制用法讲解！
+
+# 作者声明
+关于更详细的游戏说明/机制，欢迎跟我补充。我们希望做一个真正的核心数据库
+## 主要负责人
+[violet]Lucky_Clover
+## 代码
+[green]Root[blue]Channel[white]、[blue]MyIndustry2[white]、[blue]xkldklp[white]、[violet]Lucky_Clover、
+[yellow]miner[white]、blac8、[yellow]wayzer、[brown]Xor
+## 翻译
+[lightblue]Somall_dumpling
+## 工作器件补充说明
+[yellow]Carrot
+
+# 发布|fork|自改端声明
+如果fork本端，请在Vars.arcVersion后面加上你自己的子版本号，或者你私仓版本的代号（如3.0.1selfclient) \
+如果需要公开发布你自行修改的版本，请联系Lucky Clover \
+不鼓励传播到国外！未经授权请不要转载或搬运到任何游戏平台或论坛！允许在Q群内传播 \
+
+# 下面是anuke-mindustry的说明
 
 ## Contributing
 
