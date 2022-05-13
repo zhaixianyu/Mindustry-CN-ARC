@@ -120,60 +120,60 @@ public class SectorPresets{
             rules = r -> {
                 r.objectives.addAll(
                     new ItemObjective(Items.beryllium, 15).withMarkers(
-                        new ShapeTextMarker("Click to mine [accent]resources[] from walls.", 290f * 8f, 106f * 8f)
+                        new ShapeTextMarker("点击墙壁上的[accent]矿物[]以手动开采。", 290f * 8f, 106f * 8f)
                     ),
                     new BuildCountObjective(Blocks.turbineCondenser, 1).withMarkers(
-                        new ShapeTextMarker("Open the tech tree.\nResearch, then place a [accent]turbine condenser[] on the vent.\nThis will generate [accent]power[].", 289f * 8f, 116f * 8f, 8f * 2.6f, 0f, 9f)
+                        new ShapeTextMarker("打开科技树。\n研究[accent]涡轮冷凝器[]，并放置在喷口上。\n它可以产生[accent]电力[]。", 289f * 8f, 116f * 8f, 8f * 2.6f, 0f, 9f)
                     ),
                     new BuildCountObjective(Blocks.plasmaBore, 1).withMarkers(
-                        new ShapeTextMarker("Research and place a [accent]plasma bore[]. \nThis automatically mines resources from walls.", 293.5f * 8f, 113.5f * 8f, 4f * 2.6f, 45f, 60f)
+                        new ShapeTextMarker("研究并放置[accent]等离子钻机[]。 \n它可以自动挖掘墙上的资源。", 293.5f * 8f, 113.5f * 8f, 4f * 2.6f, 45f, 60f)
                     ),
                     new BuildCountObjective(Blocks.beamNode, 1).withMarkers(
-                        new ShapeTextMarker("To [accent]power[] the plasma bore, research and place a [accent]beam node[].\nConnect the turbine condenser to the plasma bore.", 294f * 8f, 116f * 8f)
+                        new ShapeTextMarker("为了给等离子钻机提供[accent]电力[]，研究并放置一个[accent]激光节点[]。\n它可以从涡轮冷凝器向等离子钻机传输电力。", 294f * 8f, 116f * 8f)
                     ),
                     new CoreItemObjective(Items.beryllium, 5).withMarkers(
-                        new TextMarker("Research and place [accent]ducts[] to move the mined resources\nfrom the plasma bore to the core.", 285f * 8f, 108f * 8f)
+                        new TextMarker("研究并放置[accent]物品管道[]来把等离子钻机挖掘的矿物运输至核心中。", 285f * 8f, 108f * 8f)
                     ),
                     new CoreItemObjective(Items.beryllium, 200).withMarkers(
-                        new TextMarker("Expand the mining operation.\nPlace more Plasma Bores and use beam nodes and ducts to support them.\nMine 200 beryllium.", 280f * 8f, 118f * 8f)
+                        new TextMarker("扩大挖掘规模。\n放置更多的等离子钻机，并用激光节点与物品管道来使它们正常工作。\n挖掘200铍。", 280f * 8f, 118f * 8f)
                     ),
                     new CoreItemObjective(Items.graphite, 100).withMarkers(
-                        new TextMarker("More complex blocks require [accent]graphite[].\nSet up plasma bores to mine graphite.", 261f * 8f, 108f * 8f)
+                        new TextMarker("要建造更高级的建筑，需要[accent]石墨[]。\n使用等离子钻机挖掘石墨。", 261f * 8f, 108f * 8f)
                     ),
                     new ResearchObjective(Blocks.siliconArcFurnace).withMarkers(
-                        new TextMarker("Begin researching [accent]factories[].\nResearch the [accent]cliff crusher[] and [accent]silicon arc furnace[].", 268f * 8f, 101f * 8f)
+                        new TextMarker("开始研究[accent]工厂[]。\n研究[accent]墙壁粉碎机[]与[accent]电弧硅炉[]。", 268f * 8f, 101f * 8f)
                     ),
                     new CoreItemObjective(Items.silicon, 50).withMarkers(
-                        new TextMarker("The arc furnace needs [accent]sand[] and [accent]graphite[] to create [accent]silicon[].\n[accent]Power[] is also required.", 268f * 8f, 101f * 8f),
-                        new TextMarker("Use [accent]cliff crushers[] to mine sand.", 262f * 8f, 88f * 8f)
+                        new TextMarker("电弧硅炉需要输入[accent]沙[]与[accent]石墨[]来冶炼[accent]硅[]。\n它也需要[accent]电力[]。", 268f * 8f, 101f * 8f),
+                        new TextMarker("使用[accent]墙壁粉碎机[]挖掘沙。", 262f * 8f, 88f * 8f)
                     ),
                     new BuildCountObjective(Blocks.tankFabricator, 1).withMarkers(
-                        new TextMarker("Use [accent]units[] to explore the map, defend buildings, and go on the offensive.\n Research and place a [accent]fabricator[]", 258f * 8f, 116f * 8f)
+                        new TextMarker("使用[accent]单位[]探索地图，进行防御，发动攻击。\n 研究并放置一个[accent]坦克制造厂[]。", 258f * 8f, 116f * 8f)
                     ),
                     new UnitCountObjective(UnitTypes.stell, 1).withMarkers(
-                        new TextMarker("Produce a unit.\nUse the \"?\" button to see selected factory requirements.", 258f * 8f, 116f * 8f)
+                        new TextMarker("制造单位。\n点击\"?\"以显示制造单位所需资源。", 258f * 8f, 116f * 8f)
                     ),
                     new CommandModeObjective().withMarkers(
-                        new TextMarker("Hold [accent]shift[] to enter [accent]command mode[].\n[accent]Left-click and drag[] to select units.\n[accent]Right-click[] to order selected units to move or attack.", 258f * 8f, 116f * 8f)
+                        new TextMarker("按住[accent]shift[]键进入[accent]指挥模式[]。\n[accent]按住鼠标左键框选[]单位\n[accent]右键[]指挥选中的单位移动或攻击。", 258f * 8f, 116f * 8f)
                     ),
                     new BuildCountObjective(Blocks.breach, 1).withMarkers(
-                        new TextMarker("Units are effective, but [accent]turrets[] provide better defensive capabilities if used effectively.\n Place a [accent]Breach[] turret.\nTurrets require [accent]ammo[].", 258f * 8f, 114f * 8f)
+                        new TextMarker("使用单位防御很有效，但是有效使用[accent]炮塔[]可以提供更好的防御力。\n 放置一个[accent]撕裂[]。\n炮塔需要[accent]弹药[]供应。", 258f * 8f, 114f * 8f)
                     ),
                     new BuildCountObjective(Blocks.berylliumWall, 6).withMarkers(
-                        new TextMarker("[accent]Walls[] can prevent oncoming damage from reaching buildings\nPlace some [accent]beryllium walls[] around the turret.", 276f * 8f, 133f * 8f)
+                        new TextMarker("[accent]墙[]可以防止炮塔受到伤害。\n在炮塔周围放置一些[accent]铍墙[]。", 276f * 8f, 133f * 8f)
                     ),
                     new TimerObjective("@objective.enemiesapproaching",30 * 60).withMarkers(
-                        new TextMarker("Enemy incoming, prepare to defend.", 276f * 8f, 133f * 8f)
+                        new TextMarker("敌人即将来袭，准备好进行防御。", 276f * 8f, 133f * 8f)
                     ).withFlags("defStart"),
                     new DestroyUnitsObjective(2).withFlags("defDone"),
                     new DestroyBlockObjective(Blocks.coreBastion , 288, 198, Team.malis).withMarkers(
-                        new TextMarker("The enemy is vulnerable. Counter-attack.", 276f * 8f, 133f * 8f)
+                        new TextMarker("敌军基地十分脆弱。发动反攻。", 276f * 8f, 133f * 8f)
                     ),
                     new BuildCountObjective(Blocks.coreBastion, 1).withMarkers(
-                        new ShapeTextMarker("New cores can be placed on [accent]core tiles[].\nNew cores function as forward bases and share a resource inventory with other cores.\nPlace a core.", 287.5f * 8f, 197.5f * 8f, 9f * 2.6f, 0f, 12f)
+                        new ShapeTextMarker("你可以在[accent]核心地块[]上建造新的核心。\n新核心的功能类似于前沿基地，且与其他核心共享资源仓库。\n放置一个核心。", 287.5f * 8f, 197.5f * 8f, 9f * 2.6f, 0f, 12f)
                     ),
-                    new TimerObjective("[accent]Set up defenses:[lightgray] {0}", 120 * 60).withMarkers(
-                        new TextMarker("The enemy will be able to detect you in 2 minutes.\nSet up defenses, mining, and production.", 288f * 8f, 202f * 8f)
+                    new TimerObjective("[accent]设立防御：[lightgray] {0}", 120 * 60).withMarkers(
+                        new TextMarker("敌军将在2分钟内发现你。\n设立防御，挖掘矿物，并建造生产设施。", 288f * 8f, 202f * 8f)
                     ).withFlags("openMap")
                 );
             };
@@ -184,14 +184,14 @@ public class SectorPresets{
 
             rules = r -> {
                 r.objectives.addAll(
-                    new TimerObjective("[lightgray]Enemy detection:[] [accent]{0}", 7 * 60 * 60).withMarkers(
-                        new TextMarker("The enemy will begin constructing units in 7 minutes.", 276f * 8f, 164f * 8f)
+                    new TimerObjective("[lightgray]侦测到敌人：[] [accent]{0}", 7 * 60 * 60).withMarkers(
+                        new TextMarker("敌人将在7分钟内开始生产单位。", 276f * 8f, 164f * 8f)
                     ).withFlags("beginBuilding"),
                     new ProduceObjective(Items.tungsten).withMarkers(
-                        new ShapeTextMarker("Tungsten can be mined using an [accent]impact drill[].\nThis structure requires [accent]water[] and [accent]power[].", 220f * 8f, 181f * 8f)
+                        new ShapeTextMarker("[accent]冲击钻头[]可以开采钨矿。\n冲击钻头需要[accent]水[]和[accent]电力[]才能工作。", 220f * 8f, 181f * 8f)
                     ),
                     new DestroyBlockObjective(Blocks.largeShieldProjector, 210, 278, Team.malis).withMarkers(
-                        new TextMarker("The enemy is protected by shields.\nAn experimental shield breaker module has been detected in this sector.\nFind and activate it using tungsten.", 276f * 8f, 164f * 8f),
+                        new TextMarker("敌人被护盾保护着。\n在该区块中探测到一台实验性的护盾破坏器。\n找到它，并输入钨启动它。", 276f * 8f, 164f * 8f),
                         new MinimapMarker(23f, 137f, Pal.accent)
                     )
                 );
