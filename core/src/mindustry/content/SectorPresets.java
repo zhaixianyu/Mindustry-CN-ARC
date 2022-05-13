@@ -172,8 +172,8 @@ public class SectorPresets{
                     new BuildCountObjective(Blocks.coreBastion, 1).withMarkers(
                         new ShapeTextMarker("你可以在[accent]核心地块[]上建造新的核心。\n新核心的功能类似于前沿基地，且与其他核心共享资源仓库。\n放置一个核心。", 287.5f * 8f, 197.5f * 8f, 9f * 2.6f, 0f, 12f)
                     ),
-                    new TimerObjective("[accent]Set up defenses:[lightgray] {0}", 120 * 60).withMarkers(
-                        new TextMarker("The enemy will be able to detect you in 2 minutes.\nSet up defenses, mining, and production.", 288f * 8f, 202f * 8f)
+                    new TimerObjective("[accent]设立防御：[lightgray] {0}", 120 * 60).withMarkers(
+                        new TextMarker("敌军将在2分钟内发现你。\n设立防御，挖掘矿物，并建造生产设施。", 288f * 8f, 202f * 8f)
                     ).withFlags("openMap")
                 );
             };
