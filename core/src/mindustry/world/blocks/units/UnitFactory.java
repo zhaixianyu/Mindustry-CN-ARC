@@ -116,6 +116,7 @@ public class UnitFactory extends UnitBlock{
 
         stats.remove(Stat.itemCapacity);
 
+
         stats.add(Stat.output, table -> {
             Seq<UnitPlan> p = plans.select(u -> u.unit.unlockedNow());
             table.row();
