@@ -126,26 +126,26 @@ public class SectorPresets{
                         new ShapeTextMarker("打开科技树。\n研究[accent]涡轮冷凝器[]，并放置在喷口上。\n它可以产生[accent]电力[]。", 289f * 8f, 116f * 8f, 8f * 2.6f, 0f, 9f)
                     ),
                     new BuildCountObjective(Blocks.plasmaBore, 1).withMarkers(
-                        new ShapeTextMarker("研究并放置[accent]光束钻头[]。 \n它可以自动挖掘墙上的资源。", 293.5f * 8f, 113.5f * 8f, 4f * 2.6f, 45f, 60f)
+                        new ShapeTextMarker("研究并放置[accent]等离子钻机[]。 \n它可以自动挖掘墙上的资源。", 293.5f * 8f, 113.5f * 8f, 4f * 2.6f, 45f, 60f)
                     ),
                     new BuildCountObjective(Blocks.beamNode, 1).withMarkers(
-                        new ShapeTextMarker("为了给光束钻头提供[accent]电力[]，研究并放置一个[accent]光束节点[]。\n它可以从涡轮冷凝器向光束钻头传输电力。", 294f * 8f, 116f * 8f)
+                        new ShapeTextMarker("为了给等离子钻机提供[accent]电力[]，研究并放置一个[accent]激光节点[]。\n它可以从涡轮冷凝器向等离子钻机传输电力。", 294f * 8f, 116f * 8f)
                     ),
                     new CoreItemObjective(Items.beryllium, 5).withMarkers(
-                        new TextMarker("研究并放置[accent]物品管道[]来把光束钻头挖掘的矿物运输至核心中。", 285f * 8f, 108f * 8f)
+                        new TextMarker("研究并放置[accent]物品管道[]来把等离子钻机挖掘的矿物运输至核心中。", 285f * 8f, 108f * 8f)
                     ),
                     new CoreItemObjective(Items.beryllium, 200).withMarkers(
-                        new TextMarker("扩大挖掘规模。\n放置更多的光束钻头，并用电力节点与物品管道来使它们正常工作。\n挖掘200铍。", 280f * 8f, 118f * 8f)
+                        new TextMarker("扩大挖掘规模。\n放置更多的等离子钻机，并用激光节点与物品管道来使它们正常工作。\n挖掘200铍。", 280f * 8f, 118f * 8f)
                     ),
                     new CoreItemObjective(Items.graphite, 100).withMarkers(
-                        new TextMarker("要建造更高级的建筑，需要[accent]石墨[]。\n使用光束钻头挖掘石墨。", 261f * 8f, 108f * 8f)
+                        new TextMarker("要建造更高级的建筑，需要[accent]石墨[]。\n使用等离子钻机挖掘石墨。", 261f * 8f, 108f * 8f)
                     ),
                     new ResearchObjective(Blocks.siliconArcFurnace).withMarkers(
-                        new TextMarker("开始研究[accent]工厂[]。\n研究[accent]墙体粉碎机[]与[accent]电弧冶硅炉[]。", 268f * 8f, 101f * 8f)
+                        new TextMarker("开始研究[accent]工厂[]。\n研究[accent]墙壁粉碎机[]与[accent]电弧硅炉[]。", 268f * 8f, 101f * 8f)
                     ),
                     new CoreItemObjective(Items.silicon, 50).withMarkers(
-                        new TextMarker("电弧冶硅炉需要输入[accent]沙[]与[accent]石墨[]来冶炼[accent]硅[]。\n它也需要[accent]电力[]。", 268f * 8f, 101f * 8f),
-                        new TextMarker("使用[accent]墙体粉碎机[]挖掘沙。", 262f * 8f, 88f * 8f)
+                        new TextMarker("电弧硅炉需要输入[accent]沙[]与[accent]石墨[]来冶炼[accent]硅[]。\n它也需要[accent]电力[]。", 268f * 8f, 101f * 8f),
+                        new TextMarker("使用[accent]墙壁粉碎机[]挖掘沙。", 262f * 8f, 88f * 8f)
                     ),
                     new BuildCountObjective(Blocks.tankFabricator, 1).withMarkers(
                         new TextMarker("使用[accent]单位[]探索地图，进行防御，发动攻击。\n 研究并放置一个[accent]坦克制造厂[]。", 258f * 8f, 116f * 8f)
