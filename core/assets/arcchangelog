@@ -9,8 +9,12 @@
 [acid]---------------------[作者声明]-----------------------
 关于更详细的游戏说明/机制，欢迎跟我补充。我们希望做一个[red]真正的核心数据库
 主要负责人：[violet]Lucky_Clover
-共同制作：[green]Root[blue]Channel[white]、[blue]MyIndustry2[white]、[blue]xkldklp[white]、[violet]Lucky_Clover
+代码：[green]Root[blue]Channel[white]、[blue]MyIndustry2[white]、[blue]xkldklp[white]、[violet]Lucky_Clover
 [yellow]miner[white]、blac8、[yellow]wayzer、[brown]Xor
+翻译：
+[sky]Somall_dumpling
+工作元件详细说明：
+[yellow]Carrot
 [red]不鼓励传播到国外！未经授权请不要转载或搬运到任何游戏平台或论坛！但允许在Q群内传播
 
 [acid]---------------------[使用说明]-----------------------
@@ -62,7 +66,6 @@ Time Extender
 对mod现支持更大的物品选择框！还挣扎于寻找几十种材料和工厂吗？
 创世神      --[green]支持
 Extra Utilities|EUE     --[green]支持
-奇点     --[red]待定
 
 [orange]不建议使用（可能有功能覆盖/明确不匹配）
 吐槽语言、中文翻译等mod     [red]会覆盖强化核心数据库
@@ -76,6 +79,9 @@ MI2tool_lc_version (author:MI2->miner)   [red]已合并
 [cyan]---------------------[更新日志]-----------------------
 [cyan]请仔细阅读学术端  [cyan]设置答案：
 将本答案填入设置界面并[orange]重启游戏[white]，欢迎来到学术端！
+
+[orange]后续更新日志可以前往学术端github官网查看
+https://github.com/CN-ARC/Mindustry-CN-ARC/
 
 [acid]5/9[white]:
 [violet]Lucky Clover[white]:

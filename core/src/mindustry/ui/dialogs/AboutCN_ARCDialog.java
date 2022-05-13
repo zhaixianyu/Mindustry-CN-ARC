@@ -44,10 +44,6 @@ public class AboutCN_ARCDialog extends BaseDialog{
         cont.add("提议更新，请加入频道：Mindustry~~PVP中心").row();
         cont.add("讨论学术端更新|提议源码|共同编辑，请加入[yellow]mindustry PVP交流群[white]:931790051[orange]不欢迎萌新，仅限大佬加入").row();
         cont.row();
-        cont.row();
-        cont.add("[red]v7测试中，大量功能未经修复！！").row();
-        cont.add("[red]v7测试中，大量功能未经修复！！").row();
-        cont.add("[red]v7测试中，大量功能未经修复！！").row();
 
         cont.row();
         for(String log : changelogs){
