@@ -148,29 +148,29 @@ public class SectorPresets{
                         new TextMarker("使用[accent]墙体粉碎机[]挖掘沙。", 262f * 8f, 88f * 8f)
                     ),
                     new BuildCountObjective(Blocks.tankFabricator, 1).withMarkers(
-                        new TextMarker("Use [accent]units[] to explore the map, defend buildings, and go on the offensive.\n Research and place a [accent]fabricator[]", 258f * 8f, 116f * 8f)
+                        new TextMarker("使用[accent]单位[]探索地图，进行防御，发动攻击。\n 研究并放置一个[accent]坦克制造厂[]。", 258f * 8f, 116f * 8f)
                     ),
                     new UnitCountObjective(UnitTypes.stell, 1).withMarkers(
-                        new TextMarker("Produce a unit.\nUse the \"?\" button to see selected factory requirements.", 258f * 8f, 116f * 8f)
+                        new TextMarker("制造单位。\n点击\"?\"以显示制造单位所需资源。", 258f * 8f, 116f * 8f)
                     ),
                     new CommandModeObjective().withMarkers(
-                        new TextMarker("Hold [accent]shift[] to enter [accent]command mode[].\n[accent]Left-click and drag[] to select units.\n[accent]Right-click[] to order selected units to move or attack.", 258f * 8f, 116f * 8f)
+                        new TextMarker("按住[accent]shift[]键进入[accent]指挥模式[]。\n[accent]按住鼠标左键拖动[]以框选单位\n[accent]右键[]指挥选中的单位移动或攻击。", 258f * 8f, 116f * 8f)
                     ),
                     new BuildCountObjective(Blocks.breach, 1).withMarkers(
-                        new TextMarker("Units are effective, but [accent]turrets[] provide better defensive capabilities if used effectively.\n Place a [accent]Breach[] turret.\nTurrets require [accent]ammo[].", 258f * 8f, 114f * 8f)
+                        new TextMarker("使用单位防御很有效，但是有效使用[accent]炮塔[]可以提供更好的防御力。\n 放置一个[accent]撕裂[]。\n炮塔需要[accent]弹药[]供应。", 258f * 8f, 114f * 8f)
                     ),
                     new BuildCountObjective(Blocks.berylliumWall, 6).withMarkers(
-                        new TextMarker("[accent]Walls[] can prevent oncoming damage from reaching buildings\nPlace some [accent]beryllium walls[] around the turret.", 276f * 8f, 133f * 8f)
+                        new TextMarker("[accent]墙[]可以防止炮塔受到伤害。\n在炮塔周围放置一些[accent]铍墙[]。", 276f * 8f, 133f * 8f)
                     ),
                     new TimerObjective("@objective.enemiesapproaching",30 * 60).withMarkers(
-                        new TextMarker("Enemy incoming, prepare to defend.", 276f * 8f, 133f * 8f)
+                        new TextMarker("敌人即将来袭，准备好进行防御。", 276f * 8f, 133f * 8f)
                     ).withFlags("defStart"),
                     new DestroyUnitsObjective(2).withFlags("defDone"),
                     new DestroyBlockObjective(Blocks.coreBastion , 288, 198, Team.malis).withMarkers(
-                        new TextMarker("The enemy is vulnerable. Counter-attack.", 276f * 8f, 133f * 8f)
+                        new TextMarker("敌军基地十分脆弱。发动反攻。", 276f * 8f, 133f * 8f)
                     ),
                     new BuildCountObjective(Blocks.coreBastion, 1).withMarkers(
-                        new ShapeTextMarker("New cores can be placed on [accent]core tiles[].\nNew cores function as forward bases and share a resource inventory with other cores.\nPlace a core.", 287.5f * 8f, 197.5f * 8f, 9f * 2.6f, 0f, 12f)
+                        new ShapeTextMarker("你可以在[accent]核心地块[]上建造新的核心。\n新核心的功能类似于前沿基地，且与其他核心共享资源仓库。\n放置一个核心。", 287.5f * 8f, 197.5f * 8f, 9f * 2.6f, 0f, 12f)
                     ),
                     new TimerObjective("[accent]Set up defenses:[lightgray] {0}", 120 * 60).withMarkers(
                         new TextMarker("The enemy will be able to detect you in 2 minutes.\nSet up defenses, mining, and production.", 288f * 8f, 202f * 8f)
