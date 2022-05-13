@@ -120,32 +120,32 @@ public class SectorPresets{
             rules = r -> {
                 r.objectives.addAll(
                     new ItemObjective(Items.beryllium, 15).withMarkers(
-                        new ShapeTextMarker("Click to mine [accent]resources[] from walls.", 290f * 8f, 106f * 8f)
+                        new ShapeTextMarker("点击墙壁上的[accent]矿物[]以手动开采。", 290f * 8f, 106f * 8f)
                     ),
                     new BuildCountObjective(Blocks.turbineCondenser, 1).withMarkers(
-                        new ShapeTextMarker("Open the tech tree.\nResearch, then place a [accent]turbine condenser[] on the vent.\nThis will generate [accent]power[].", 289f * 8f, 116f * 8f, 8f * 2.6f, 0f, 9f)
+                        new ShapeTextMarker("打开科技树。\n研究[accent]涡轮冷凝器[]，并放置在喷口上。\n它可以产生[accent]电力[]。", 289f * 8f, 116f * 8f, 8f * 2.6f, 0f, 9f)
                     ),
                     new BuildCountObjective(Blocks.plasmaBore, 1).withMarkers(
-                        new ShapeTextMarker("Research and place a [accent]plasma bore[]. \nThis automatically mines resources from walls.", 293.5f * 8f, 113.5f * 8f, 4f * 2.6f, 45f, 60f)
+                        new ShapeTextMarker("研究并放置[accent]光束钻头[]。 \n它可以自动挖掘墙上的资源。", 293.5f * 8f, 113.5f * 8f, 4f * 2.6f, 45f, 60f)
                     ),
                     new BuildCountObjective(Blocks.beamNode, 1).withMarkers(
-                        new ShapeTextMarker("To [accent]power[] the plasma bore, research and place a [accent]beam node[].\nConnect the turbine condenser to the plasma bore.", 294f * 8f, 116f * 8f)
+                        new ShapeTextMarker("为了给光束钻头提供[accent]电力[]，研究并放置一个[accent]光束节点[]。\n它可以从涡轮冷凝器向光束钻头传输电力。", 294f * 8f, 116f * 8f)
                     ),
                     new CoreItemObjective(Items.beryllium, 5).withMarkers(
-                        new TextMarker("Research and place [accent]ducts[] to move the mined resources\nfrom the plasma bore to the core.", 285f * 8f, 108f * 8f)
+                        new TextMarker("研究并放置[accent]物品管道[]来把光束钻头挖掘的矿物运输至核心中。", 285f * 8f, 108f * 8f)
                     ),
                     new CoreItemObjective(Items.beryllium, 200).withMarkers(
-                        new TextMarker("Expand the mining operation.\nPlace more Plasma Bores and use beam nodes and ducts to support them.\nMine 200 beryllium.", 280f * 8f, 118f * 8f)
+                        new TextMarker("扩大挖掘规模。\n放置更多的光束钻头，并用电力节点与物品管道来使它们正常工作。\n挖掘200铍。", 280f * 8f, 118f * 8f)
                     ),
                     new CoreItemObjective(Items.graphite, 100).withMarkers(
-                        new TextMarker("More complex blocks require [accent]graphite[].\nSet up plasma bores to mine graphite.", 261f * 8f, 108f * 8f)
+                        new TextMarker("要建造更高级的建筑，需要[accent]石墨[]。\n使用光束钻头挖掘石墨。", 261f * 8f, 108f * 8f)
                     ),
                     new ResearchObjective(Blocks.siliconArcFurnace).withMarkers(
-                        new TextMarker("Begin researching [accent]factories[].\nResearch the [accent]cliff crusher[] and [accent]silicon arc furnace[].", 268f * 8f, 101f * 8f)
+                        new TextMarker("开始研究[accent]工厂[]。\n研究[accent]墙体粉碎机[]与[accent]电弧冶硅炉[]。", 268f * 8f, 101f * 8f)
                     ),
                     new CoreItemObjective(Items.silicon, 50).withMarkers(
-                        new TextMarker("The arc furnace needs [accent]sand[] and [accent]graphite[] to create [accent]silicon[].\n[accent]Power[] is also required.", 268f * 8f, 101f * 8f),
-                        new TextMarker("Use [accent]cliff crushers[] to mine sand.", 262f * 8f, 88f * 8f)
+                        new TextMarker("电弧冶硅炉需要输入[accent]沙[]与[accent]石墨[]来冶炼[accent]硅[]。\n它也需要[accent]电力[]。", 268f * 8f, 101f * 8f),
+                        new TextMarker("使用[accent]墙体粉碎机[]挖掘沙。", 262f * 8f, 88f * 8f)
                     ),
                     new BuildCountObjective(Blocks.tankFabricator, 1).withMarkers(
                         new TextMarker("Use [accent]units[] to explore the map, defend buildings, and go on the offensive.\n Research and place a [accent]fabricator[]", 258f * 8f, 116f * 8f)
