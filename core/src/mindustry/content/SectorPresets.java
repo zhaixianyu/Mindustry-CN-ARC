@@ -154,7 +154,7 @@ public class SectorPresets{
                         new TextMarker("制造单位。\n点击\"?\"以显示制造单位所需资源。", 258f * 8f, 116f * 8f)
                     ),
                     new CommandModeObjective().withMarkers(
-                        new TextMarker("按住[accent]shift[]键进入[accent]指挥模式[]。\n[accent]按住鼠标左键拖动[]以框选单位\n[accent]右键[]指挥选中的单位移动或攻击。", 258f * 8f, 116f * 8f)
+                        new TextMarker("按住[accent]shift[]键进入[accent]指挥模式[]。\n[accent]按住鼠标左键框选[]单位\n[accent]右键[]指挥选中的单位移动或攻击。", 258f * 8f, 116f * 8f)
                     ),
                     new BuildCountObjective(Blocks.breach, 1).withMarkers(
                         new TextMarker("使用单位防御很有效，但是有效使用[accent]炮塔[]可以提供更好的防御力。\n 放置一个[accent]撕裂[]。\n炮塔需要[accent]弹药[]供应。", 258f * 8f, 114f * 8f)
@@ -184,14 +184,14 @@ public class SectorPresets{
 
             rules = r -> {
                 r.objectives.addAll(
-                    new TimerObjective("[lightgray]Enemy detection:[] [accent]{0}", 7 * 60 * 60).withMarkers(
-                        new TextMarker("The enemy will begin constructing units in 7 minutes.", 276f * 8f, 164f * 8f)
+                    new TimerObjective("[lightgray]侦测到敌人：[] [accent]{0}", 7 * 60 * 60).withMarkers(
+                        new TextMarker("敌人将在7分钟内开始生产单位。", 276f * 8f, 164f * 8f)
                     ).withFlags("beginBuilding"),
                     new ProduceObjective(Items.tungsten).withMarkers(
-                        new ShapeTextMarker("Tungsten can be mined using an [accent]impact drill[].\nThis structure requires [accent]water[] and [accent]power[].", 220f * 8f, 181f * 8f)
+                        new ShapeTextMarker("[accent]冲击钻头[]可以开采钨矿。\n冲击钻头需要[accent]水[]和[accent]电力[]才能工作。", 220f * 8f, 181f * 8f)
                     ),
                     new DestroyBlockObjective(Blocks.largeShieldProjector, 210, 278, Team.malis).withMarkers(
-                        new TextMarker("The enemy is protected by shields.\nAn experimental shield breaker module has been detected in this sector.\nFind and activate it using tungsten.", 276f * 8f, 164f * 8f),
+                        new TextMarker("敌人被护盾保护着。\n在该区块中探测到一台实验性的护盾破坏器。\n找到它，并输入钨启动它。", 276f * 8f, 164f * 8f),
                         new MinimapMarker(23f, 137f, Pal.accent)
                     )
                 );
