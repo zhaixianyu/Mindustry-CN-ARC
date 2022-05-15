@@ -23,31 +23,36 @@ import mindustry.graphics.*;
 import static mindustry.Vars.*;
 import static arc.Core.bundle;
 import static arc.Core.settings;
+import static mindustry.gen.Tex.flatDownBase;
+import static mindustry.gen.Tex.pane;
+import static mindustry.ui.Styles.flatOver;
 
 public class HudSettingsTable extends Table{
     protected Seq<Setting> list = new Seq<>();
     private boolean expandList = false;
-    private int unitTransparency = Core.settings.getInt("unitTransparency");
+
+    private TextButton.TextButtonStyle textStyle;
 
     public HudSettingsTable(){
+        textStyle = new TextButton.TextButtonStyle(){{
+            down = flatOver;
+            up = pane;
+            over = flatDownBase;
+            font = Fonts.def;
+            fontColor = Color.white;
+            disabledFontColor = Color.gray;
+        }};
+
         rebuild();
         right();
     }
 
     void rebuild(){
 
-        var ustyle = new ImageButtonStyle(){{
-            down = Styles.none;
-            up = Styles.none;
-            imageDownColor = Pal.accent;
-            imageUpColor = Color.white;
-            imageOverColor = Color.lightGray;
-        }};
-
         clearChildren();
 
         if(expandList){
-            unitTransparency = Core.settings.getInt("unitTransparency");
+            int unitTransparency = Core.settings.getInt("unitTransparency");
 
             list.clear();
 
