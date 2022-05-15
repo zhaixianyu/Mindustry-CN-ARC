@@ -161,9 +161,6 @@ public class HudFragment{
                     select.button(Icon.paste, style, ui.schematics::show)
                     .name("schematics");
 
-                    select.button(Icon.book, style, ui.database::show)
-                    .name("database");
-
                     select.button(Icon.pause, style, () -> {
                         if(net.active()){
                             ui.listfrag.toggle();
@@ -236,7 +233,7 @@ public class HudFragment{
             }};
 
             //if(Core.settings.getBool("arcSpecificTable") && !state.isCampaign() && state.rules.objectives.size==0 ){
-            if(true){
+            if(Core.settings.getBool("arcSpecificTable")){
                 wavesMain.table(s -> {
                     //wave info button with text
                     s.add(makeStatusTableArc()).grow().name("status");
