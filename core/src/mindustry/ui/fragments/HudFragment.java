@@ -41,9 +41,7 @@ public class HudFragment{
 
     private ImageButton flip;
     private CoreItemsDisplay coreItems = new CoreItemsDisplay();
-    //shugen002/MI2's display
-    //private OtherCoreItemDisplay otherCoreItemDisplay = new OtherCoreItemDisplay();
-    // MI2 table
+    private OtherCoreItemDisplay otherCoreItemDisplay = new OtherCoreItemDisplay();
     private MI2ToolsTable mi2ToolsTable = new MI2ToolsTable();
     private HudSettingsTable hudSettingsTable = new HudSettingsTable();
 
@@ -99,7 +97,7 @@ public class HudFragment{
         });
 
         Events.on(WorldLoadEvent.class,e->{
-            //otherCoreItemDisplay.updateTeamList();
+            otherCoreItemDisplay.updateTeamList();
             mi2ToolsTable.rebuild();
             //startTime = Time.timeSinceMillis(0);
 
@@ -452,15 +450,13 @@ public class HudFragment{
             }));
         });
 
-        //other core items by shugen002
-        /*
         parent.fill(t -> {
             t.name = "otherCore";
             t.left().add(otherCoreItemDisplay);
             t.visible(() -> Core.settings.getBool("showOtherTeamResource") && ( player.team().id == 255 ||Core.settings.getBool("cheating_mode") || state.rules.mode() != Gamemode.pvp)
             && shown
             );
-        });*/
+        });
 
         parent.fill(t -> {
             t.name = "FloatingSettings";
