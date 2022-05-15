@@ -68,11 +68,13 @@ public class ChatFragment extends Table{
             if(shown){
                 if(input.keyTap(Binding.chat_history_prev) && historyPos < history.size - 1){
                     if(historyPos == 0) history.set(0, chatfield.getText());
-                     while(!chatValidType(messages.get(historyPos))) historyPos++;
+                     while(!chatValidType(messages.get(historyPos)) && historyPos < history.size - 1) historyPos++;
                     historyPos++;
                     updateChat();
                 }
                 if(input.keyTap(Binding.chat_history_next) && historyPos > 0){
+                    if(historyPos == 0) history.set(0, chatfield.getText());
+                    while(!chatValidType(messages.get(historyPos)) && historyPos < history.size - 1) historyPos--;
                     historyPos--;
                     updateChat();
                 }
@@ -392,12 +394,12 @@ public class ChatFragment extends Table{
 
     private boolean chatValidType(String msg) {
         int chatType = settings.getInt("chatValidType");
-        if (chatType==0 && (msg.contains("[acid][公屏][white]"))) return false;
+        if (chatType==0 && (msg.contains("[acid][公屏][white]") || msg.contains("[violet][逻辑-"))) return false;
         else if(chatType==1 &&
                 (msg.contains("加入了服务器") ||msg.contains("离开了服务器")||msg.contains("小贴士")||msg.contains("自动存档完成")||
                 msg.contains("登录成功")||msg.contains("经验+")||msg.contains("[ARC")
-                ||(msg.contains("[acid][公屏][white]")))) return false;
-        else if(chatType==2 && !(msg.contains("[acid][公屏][white]"))) return false;
+                ||(msg.contains("[acid][公屏][white]"))|| msg.contains("[violet][逻辑-"))) return false;
+        else if(chatType==2 && !(msg.contains("[acid][公屏][white]") || msg.contains("[violet][逻辑-") )) return false;
         return true;
     }
 

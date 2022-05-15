@@ -463,7 +463,7 @@ public class SettingsMenuDialog extends BaseDialog{
         }
 
         graphics.addCategory("arcCgamewindow");
-        //graphics.checkPref("fps", false);
+        graphics.checkPref("fps", false);
         graphics.checkPref("more_info_shown", true);
         graphics.checkPref("override_boss_shown", false);
 

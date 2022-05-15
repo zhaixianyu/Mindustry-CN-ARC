@@ -1751,6 +1751,10 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
         }
     }
 
+    public void updatePayload(@Nullable Unit unitHolder, @Nullable Building buildingHolder){
+        update();
+    }
+
     public void updateTile(){
 
     }

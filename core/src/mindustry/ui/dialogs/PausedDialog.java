@@ -88,6 +88,8 @@ public class PausedDialog extends BaseDialog{
                 cont.row();
             }
 
+            cont.buttonRow("@database", Icon.book, ui.database::show);
+
             cont.buttonRow("@hostserver.mobile", Icon.host, ui.host::show).disabled(b -> net.active());
 
             cont.buttonRow("@quit", Icon.exit, this::showQuitConfirm).update(s -> {

@@ -1283,9 +1283,7 @@ public class Block extends UnlockableContent implements Senseable{
                         }
                     }
 
-                    if(Core.settings.getBool("linear", true)){
-                        Pixmaps.bleed(out);
-                    }
+                    Drawf.checkBleed(out);
 
                     packer.add(PageType.main, name + "-team-" + team.name, out);
                 }
@@ -1302,12 +1300,11 @@ public class Block extends UnlockableContent implements Senseable{
         var gen = icons();
 
         if(outlineIcon){
-            PixmapRegion region = Core.atlas.getPixmap(gen[outlinedIcon >= 0 ? Math.min(outlinedIcon, gen.length - 1) : gen.length -1]);
+            AtlasRegion atlasRegion = (AtlasRegion)gen[outlinedIcon >= 0 ? Math.min(outlinedIcon, gen.length - 1) : gen.length -1];
+            PixmapRegion region = Core.atlas.getPixmap(atlasRegion);
             Pixmap out = last = Pixmaps.outline(region, outlineColor, outlineRadius);
-            if(Core.settings.getBool("linear", true)){
-                Pixmaps.bleed(out);
-            }
-            packer.add(PageType.main, name, out);
+            Drawf.checkBleed(out);
+            packer.add(PageType.main, atlasRegion.name, out);
         }
 
         var toOutline = new Seq<TextureRegion>();
@@ -1318,7 +1315,7 @@ public class Block extends UnlockableContent implements Senseable{
                 String regionName = atlas.name;
                 Pixmap outlined = Pixmaps.outline(Core.atlas.getPixmap(region), outlineColor, outlineRadius);
 
-                if(Core.settings.getBool("linear", true)) Pixmaps.bleed(outlined);
+                Drawf.checkBleed(outlined);
 
                 packer.add(PageType.main, regionName + "-outline", outlined);
             }
