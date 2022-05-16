@@ -193,7 +193,7 @@ public class Fonts{
         FreeTypeFontParameter param = new FreeTypeFontParameter(){{
             borderColor = Color.darkGray;
             incremental = true;
-            size = 18;
+            size = 23;
         }};
 
         Core.assets.load("outline", Font.class, new FreeTypeFontLoaderParameter(mainFont, param)).loaded = t -> Fonts.outline = t;
@@ -285,10 +285,11 @@ public class Fonts{
 
     static FreeTypeFontParameter fontParameter(){
         return new FreeTypeFontParameter(){{
-            size = 18;
+            size = 23;
             shadowColor = Color.darkGray;
             shadowOffsetY = 2;
             incremental = true;
+            borderStraight = true;
         }};
     }
 }
