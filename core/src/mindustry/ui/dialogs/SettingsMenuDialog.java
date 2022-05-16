@@ -522,7 +522,6 @@ public class SettingsMenuDialog extends BaseDialog{
         arc.checkPref("arcdrillmode", false);
         arc.checkPref("arcchoiceuiIcon", false);
         arc.checkPref("arclogicbordershow", true);
-        arc.checkPref("oneBlockProperty",false);
 
         arc.addCategory("arcMassDriverInfo");
         arc.sliderPref("mass_driver_line_alpha",100,0,100,1, i -> i > 0 ? i + "%" : "关闭");
@@ -661,15 +660,14 @@ public class SettingsMenuDialog extends BaseDialog{
         //////////specmode
         specmode.addCategory("Specgamemode");
         specmode.checkPref("banLogicImport",false);
-        specmode.addCategory("modSupportor");
         specmode.checkPref("modMode", false);
         specmode.checkPref("researchViewer",false);
-        specmode.addCategory("ModEnhancement");
-        specmode.checkPref("TUUI",false);
-        specmode.checkPref("TUstartfolded",true);
-        specmode.checkPref("TUinstakill",true);
-        specmode.addCategory("catdevelopmode");
-        specmode.checkPref("developmode", false);
+        //specmode.addCategory("ModEnhancement");
+        //specmode.checkPref("TUUI",false);
+        //specmode.checkPref("TUstartfolded",true);
+        //specmode.checkPref("TUinstakill",true);
+        //specmode.addCategory("catdevelopmode");
+        //specmode.checkPref("developmode", false);
         //////////cheating
         cheating.addCategory("arcWeakCheat");
         cheating.checkPref("forceIgnoreAttack",false);

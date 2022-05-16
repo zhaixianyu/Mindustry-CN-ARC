@@ -569,7 +569,7 @@ public class Block extends UnlockableContent implements Senseable{
 
     public void addLiquidBar(Liquid liq){
         addBar("liquid-" + liq.name, entity -> !liq.unlocked() ? null : new Bar(
-                () -> entity.liquids.get(liq) <= 0.001f ? Core.bundle.get("bar.liquid") : liq.localizedName + " " + (entity == null || entity.liquids == null ? 0f : (int)(entity.liquids.get(liq) * 100f) / 100f + "/" + liquidCapacity),
+                () -> entity.liquids.get(liq) <= 0.001f ? Core.bundle.get("bar.liquid") : liq.localizedName + " " + (entity == null || entity.liquids == null ? 0f : (int)(entity.liquids.get(liq) * 100f) / 100f + ((liquidCapacity - entity.liquids.get(liq)<1f)?"":"/" + liquidCapacity)),
                 liq::barColor,
                 () -> entity.liquids.get(liq) / liquidCapacity
         ));
@@ -578,7 +578,8 @@ public class Block extends UnlockableContent implements Senseable{
     /** Adds a liquid bar that dynamically displays a liquid type. */
     public <T extends Building> void addLiquidBar(Func<T, Liquid> current){
         addBar("liquid", entity -> new Bar(
-                () -> current.get((T)entity) == null || entity.liquids.get(current.get((T)entity)) <= 0.001f ? Core.bundle.get("bar.liquid") : current.get((T)entity).localizedName,
+                () -> current.get((T)entity) == null || entity.liquids.get(current.get((T)entity)) <= 0.001f ? Core.bundle.get("bar.liquid") :
+                        (current.get((T)entity).localizedName +"  "+ (int)(entity.liquids.get(current.get((T)entity)) * 100) / 100f + (liquidCapacity - entity.liquids.get(current.get((T)entity))<1f ? "": "/" + liquidCapacity)),
                 () -> current.get((T)entity) == null ? Color.clear : current.get((T)entity).barColor(),
                 () -> current.get((T)entity) == null ? 0f : entity.liquids.get(current.get((T)entity)) / liquidCapacity)
         );
