@@ -67,6 +67,11 @@ public class ShieldArcAbility extends Ability{
     protected float widthScale, alpha;
 
     @Override
+    public String localized(){
+        return "盾场：[stat]"+max+"[lightgray]盾容";
+    }
+
+    @Override
     public void update(Unit unit){
         if(data < max){
             data += Time.delta * regen;

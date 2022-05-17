@@ -373,15 +373,17 @@ public class StatValues{
                     }
 
                     if(type.lightning > 0){
-                        sep(bt, Core.bundle.format("bullet.lightning", type.lightning, type.lightningDamage < 0 ? type.damage : type.lightningDamage));
+                        sep(bt, "[stat]"+type.lightning+"[lightgray]x闪电~[stat]"+Strings.autoFixed((type.lightningDamage < 0 ? type.damage : type.lightningDamage),1)+"[lightgray]伤害~[stat]" + type.lightningLength+"[lightgray]格");
                     }
+
+
 
                     if(type.pierceArmor){
                         sep(bt, "@bullet.armorpierce");
                     }
 
                     if(type.status != StatusEffects.none){
-                        sep(bt, (type.status.minfo.mod == null ? type.status.emoji() : "") + "[stat]" + type.status.localizedName);
+                        sep(bt, (type.status.minfo.mod == null ? type.status.emoji() : "") + "[stat]" + type.status.localizedName + (type.status.reactive? "":"[lightgray] ~ [stat]" + Strings.autoFixed(type.statusDuration/60f,2)+"[white]s"));
                     }
 
                     if(type.fragBullet != null){

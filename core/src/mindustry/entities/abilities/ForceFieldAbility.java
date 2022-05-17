@@ -53,6 +53,11 @@ public class ForceFieldAbility extends Ability{
         this.cooldown = cooldown;
     }
 
+    @Override
+    public String localized(){
+        return "立场：[stat]"+max+"[lightgray]盾容~[stat]"+radius / Vars.tilesize+"[lightgray]格";
+    }
+
     ForceFieldAbility(){}
 
     @Override
