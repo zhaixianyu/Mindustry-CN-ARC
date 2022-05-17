@@ -33,6 +33,11 @@ public class UnitSpawnAbility extends Ability{
     }
 
     @Override
+    public String localized(){
+        return "单位工厂：[stat]"+unit.localizedName+"[]"+unit.emoji()+"[lightgray]单位~[stat]"+Strings.autoFixed(spawnTime/60f,2)+"[lightgray](s)";
+    }
+
+    @Override
     public void update(Unit unit){
         timer += Time.delta * state.rules.unitBuildSpeed(unit.team);
 
@@ -61,8 +66,4 @@ public class UnitSpawnAbility extends Ability{
         }
     }
 
-    @Override
-    public String localized(){
-        return Core.bundle.format("ability.unitspawn", unit.localizedName);
-    }
 }

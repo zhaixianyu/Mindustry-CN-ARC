@@ -55,7 +55,7 @@ public class ForceFieldAbility extends Ability{
 
     @Override
     public String localized(){
-        return "立场：[stat]"+max+"[lightgray]盾容~[stat]"+radius / Vars.tilesize+"[lightgray]格";
+        return "立场：[stat]"+max+"[lightgray]盾容~[stat]"+regen * 60f+"[lightgray]恢复~[stat]"+radius / Vars.tilesize+"[lightgray]格";
     }
 
     ForceFieldAbility(){}
