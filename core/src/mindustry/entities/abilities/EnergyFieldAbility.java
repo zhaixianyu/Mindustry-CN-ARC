@@ -49,7 +49,7 @@ public class EnergyFieldAbility extends Ability{
 
     @Override
     public String localized(){
-        return Core.bundle.format("ability.energyfield", damage, range / Vars.tilesize, maxTargets);
+        return "能量场：[stat]"+damage+"[lightgray]伤害~[stat]"+range / Vars.tilesize+"[lightgray]格~[stat]"+maxTargets+"[lightgray]目标";
     }
 
     @Override

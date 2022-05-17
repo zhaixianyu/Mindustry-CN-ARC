@@ -1,9 +1,11 @@
 package mindustry.entities.abilities;
 
+import arc.Core;
 import arc.graphics.*;
 import arc.graphics.g2d.*;
 import arc.math.*;
 import arc.util.*;
+import mindustry.Vars;
 import mindustry.entities.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
@@ -41,6 +43,11 @@ public class SuppressionFieldAbility extends Ability{
             Damage.applySuppression(unit.team, Tmp.v1.x, Tmp.v1.y, range, reload, reload, applyParticleChance, unit);
             timer = 0f;
         }
+    }
+
+    @Override
+    public String localized(){
+        return active?"压制场: [stat]"+Strings.autoFixed(range/Vars.tilesize,2)+"[lightgray]范围~[stat]"+Strings.autoFixed(reload/60f,2)+"[lightgray]频率(s)":"";
     }
 
     @Override

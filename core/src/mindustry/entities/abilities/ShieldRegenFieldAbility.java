@@ -1,6 +1,7 @@
 package mindustry.entities.abilities;
 
 import arc.util.*;
+import mindustry.Vars;
 import mindustry.content.*;
 import mindustry.entities.*;
 import mindustry.gen.*;
@@ -21,6 +22,11 @@ public class ShieldRegenFieldAbility extends Ability{
         this.max = max;
         this.reload = reload;
         this.range = range;
+    }
+
+    @Override
+    public String localized(){
+        return "修复场：[stat]"+Strings.autoFixed(range / Vars.tilesize,2)+"[lightgray]格~[stat]"+amount+"[lightgray]量~[stat]"+max+"[lightgray]最大~[stat]"+Strings.autoFixed(reload/60f,2)+"[lightgray]频率(s)";
     }
 
     @Override
