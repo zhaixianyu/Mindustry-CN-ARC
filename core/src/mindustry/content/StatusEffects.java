@@ -189,6 +189,7 @@ public class StatusEffects{
 
         invincible = new StatusEffect("invincible"){{
             healthMultiplier = Float.POSITIVE_INFINITY;
+            color = Color.red;
         }};
     }
 }
