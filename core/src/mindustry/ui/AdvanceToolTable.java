@@ -7,9 +7,8 @@ import arc.math.Mathf;
 import arc.math.geom.Vec2;
 import arc.scene.event.ClickListener;
 import arc.scene.style.TextureRegionDrawable;
-import arc.scene.ui.Button;
-import arc.scene.ui.ImageButton;
-import arc.scene.ui.TextButton;
+import arc.scene.ui.*;
+import arc.scene.ui.layout.Cell;
 import arc.scene.ui.layout.Table;
 import arc.scene.event.InputEvent;
 import arc.struct.ObjectMap;
@@ -20,15 +19,19 @@ import arc.util.Tmp;
 import mindustry.Vars;
 import mindustry.content.Blocks;
 import mindustry.content.Items;
+import mindustry.content.StatusEffects;
 import mindustry.content.UnitTypes;
 import mindustry.core.*;
+import mindustry.ctype.Content;
 import mindustry.game.Team;
 import mindustry.game.Teams;
 import mindustry.gen.Call;
 import mindustry.gen.Icon;
 import mindustry.gen.Tex;
+import mindustry.gen.Unit;
 import mindustry.input.DesktopInput;
 import mindustry.type.Item;
+import mindustry.type.StatusEffect;
 import mindustry.type.UnitType;
 import mindustry.ui.dialogs.BaseDialog;
 
@@ -49,7 +52,10 @@ public class AdvanceToolTable extends Table {
     private int unitCount = 1;
     private Vec2 unitLoc = new Vec2(0, 0);
     private Team unitTeam = Team.sharded;
-    private ObjectMap unitStatus = new ObjectMap();
+    private ObjectMap<StatusEffect, Float> unitStatus = new ObjectMap();
+    private ObjectMap<String,Float> unitProperty =  new ObjectMap();
+    private StatusEffect status = StatusEffects.none;
+    private float statusDuration = 0f;
 
 
     private TextButton.TextButtonStyle textStyle;
@@ -236,11 +242,18 @@ public class AdvanceToolTable extends Table {
 
             table.row();
 
+            table.button(StatusEffects.electrified.emoji() + "[cyan]构筑单位状态！",()->unitStatusMenu()).fillX();
+
+            table.row();
+
             table.button("[cyan]生成！", Icon.modeAttack, () -> {
                 for (var n = 0; n < unitCount; n++) {
                     Tmp.v1.rnd(Mathf.random(5f * Vars.tilesize));
-                    var unit = spawning.create(unitTeam);
+                    Unit unit = spawning.create(unitTeam);
                     unit.set(unitLoc.x * tilesize + Tmp.v1.x, unitLoc.y * tilesize + Tmp.v1.y);
+                    unitStatus.each((status,statusDuration)->{
+                        unit.apply(status,statusDuration * 60f);
+                    });
                     unit.add();
                 }
                 if (control.input instanceof DesktopInput) {
@@ -256,29 +269,60 @@ public class AdvanceToolTable extends Table {
         unitFactory.show();
     }
 
+    private void unitStatusMenu(){
+        BaseDialog unitStatusTable = new BaseDialog("单位状态重构厂");
+        Table table = unitStatusTable.cont;
 
-    /* Buttons */
-        /*
-        dialog.buttons.button(new TextureRegionDrawable(StatusEffects.burning.uiIcon), 40, () => {
-                status.build().show();
-	});
+        Runnable[] rebuildStatus = {null};
+        rebuildStatus[0] = () -> {
+            table.clear();
 
-	const teamRect = extend(TextureRegionDrawable, Tex.whiteui, {});
-        teamRect.tint.set(team.color);
-        dialog.buttons.button("设置队伍", teamRect, 40, () => {
-                ui.select("设置队伍", Team.baseTeams, t => {
-                        team = t;
-        teamRect.tint.set(team.color);
-		}, (i, t) => "[#" + t.color + "]" + t);
-	});
+            table.row();
 
-    const sButton = new ImageButton(statusicon.icon(Cicon.full), Styles.logici);
-        let bs = sButton.style;
-        bs.down = Styles.flatDown;
-        bs.over = Styles.flatOver;
-        bs.imageDisabledColor = Color.gray;
-        bs.imageUpColor = statusicon.color;
-        bs.disabled = Tex.whiteui.tint(0.625, 0, 0, 0.8);
-        */
-    /* Set clicky */
+            table.pane(list -> {
+                int i = 0;
+                for (StatusEffect effects : content.statusEffects()) {
+                    if (i++ % 8 == 0) list.row();
+                    list.button(effects.emoji(), () -> {
+                        if(unitStatus.get(effects) == null)
+                            unitStatus.put(effects, 10f);
+                        else unitStatus.remove(effects);
+                        rebuildStatus[0].run();
+                    }).size(50f).color(unitStatus.get(effects) == null ? Color.red:Color.acid);
+                }
+            }).top().center();
+
+            table.row();
+
+            table.table(t-> {
+                if(unitStatus.size > 0) {
+                    unitStatus.each((status,statusDuration)->{
+                        t.add(status.emoji() + status.localizedName+" ");
+                        if(!status.permanent){
+                            TextField sField;
+                            sField = t.field(String.valueOf(statusDuration), text -> {
+                                unitStatus.remove(status);
+                                unitStatus.put(status, Float.parseFloat(text));
+                                //rebuildStatus[0].run();
+                            }).maxTextLength(10).valid(value -> Strings.canParsePositiveFloat(value)).get();
+
+                             t.slider(0.125f, 10F, 0.125f, (float) Math.log10(statusDuration), n -> {
+                                unitStatus.remove(status);
+                                unitStatus.put(status, (float) Math.pow(10,n));
+                                sField.setText(Strings.autoFixed((float) Math.pow(10,n),2));
+                            });
+                        }
+                        t.row();
+                    });
+                }
+            });
+
+            table.row();
+            table.button("[red]重置出厂状态",()->{unitStatus.clear();}).fillX();
+        };
+        rebuildStatus[0].run();
+        unitStatusTable.addCloseButton();
+        unitStatusTable.show();
+    }
+
 }
