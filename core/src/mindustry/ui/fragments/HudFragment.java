@@ -43,6 +43,7 @@ public class HudFragment{
     private CoreItemsDisplay coreItems = new CoreItemsDisplay();
     private OtherCoreItemDisplay otherCoreItemDisplay = new OtherCoreItemDisplay();
     private MI2ToolsTable mi2ToolsTable = new MI2ToolsTable();
+    private AdvanceToolTable advanceToolTable = new AdvanceToolTable();
     private HudSettingsTable hudSettingsTable = new HudSettingsTable();
 
     private Boolean arcShowObjectives = false;
@@ -99,7 +100,6 @@ public class HudFragment{
         Events.on(WorldLoadEvent.class,e->{
             otherCoreItemDisplay.updateTeamList();
             mi2ToolsTable.rebuild();
-            //startTime = Time.timeSinceMillis(0);
 
         });
 
@@ -479,6 +479,12 @@ public class HudFragment{
             t.name = "saving";
             t.bottom().visible(() -> control.saves.isSaving());
             t.add("@saving").style(Styles.outlineLabel);
+        });
+
+        parent.fill(t->{
+            t.name = "advanceToolTable";
+            t.left().bottom().add(advanceToolTable);
+            t.visible(() -> Core.settings.getBool("showAdvanceToolTable") && shown);
         });
 
         //TODO DEBUG: rate table
