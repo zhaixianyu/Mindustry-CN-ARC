@@ -13,9 +13,7 @@ import arc.scene.ui.layout.Table;
 import arc.scene.event.InputEvent;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
-import arc.util.Strings;
-import arc.util.Time;
-import arc.util.Tmp;
+import arc.util.*;
 import mindustry.Vars;
 import mindustry.content.Blocks;
 import mindustry.content.Items;
@@ -23,17 +21,17 @@ import mindustry.content.StatusEffects;
 import mindustry.content.UnitTypes;
 import mindustry.core.*;
 import mindustry.ctype.Content;
+import mindustry.game.SpawnGroup;
 import mindustry.game.Team;
 import mindustry.game.Teams;
-import mindustry.gen.Call;
-import mindustry.gen.Icon;
-import mindustry.gen.Tex;
-import mindustry.gen.Unit;
+import mindustry.gen.*;
 import mindustry.input.DesktopInput;
 import mindustry.type.Item;
+import mindustry.type.ItemStack;
 import mindustry.type.StatusEffect;
 import mindustry.type.UnitType;
 import mindustry.ui.dialogs.BaseDialog;
+import mindustry.world.blocks.payloads.Payload;
 
 import static mindustry.Vars.*;
 import static mindustry.Vars.world;
@@ -45,7 +43,7 @@ import static mindustry.ui.Styles.*;
 
 public class AdvanceToolTable extends Table {
     private boolean show = false;
-    private boolean showGameMode = false,showResTool = false,showUnitStat = false;
+    private boolean showGameMode = false,showResTool = false,showTeamChange = false, showUnitStat = false;
 
     //unitFactory
     private UnitType spawning = UnitTypes.dagger;
@@ -53,6 +51,13 @@ public class AdvanceToolTable extends Table {
     private Vec2 unitLoc = new Vec2(0, 0);
     private Team unitTeam = Team.sharded;
     private ObjectMap<StatusEffect, Float> unitStatus = new ObjectMap();
+
+    private Item unitItems = null;
+    private int unitItemAmount = 0;
+    private boolean showSelectItems = false,showSelectPayload = false;
+    /** Seq of payloads that this unit will spawn with. */
+    private Seq<UnitType> unitPayload = Seq.with();
+
     private ObjectMap<String,Float> unitProperty =  new ObjectMap();
     private StatusEffect status = StatusEffects.none;
     private float statusDuration = 0f;
@@ -107,21 +112,27 @@ public class AdvanceToolTable extends Table {
                         }).width(40f);
                     }).left().row();
                 }
+                if (showTeamChange){
+                    t.table(tBox -> {
+                        tBox.background(Tex.buttonEdge3);
+                        tBox.add("队伍：").left();
+                        for(Team team:Team.baseTeams){
+                            tBox.button("[#" + team.color +  "]" + team.localized(),cleart,()->player.team(team)).width(40f);
+                        }
+                        tBox.button("[#" + Color.violet +  "]+",cleart,()->teamChangeMenu()).width(40f);
+
+                    }).left().row();
+                }
                 if(showUnitStat){
                     t.table(tBox -> {
                         tBox.background(Tex.buttonEdge3);
                         tBox.add("单位：").left();
-                        tBox.button(UnitTypes.gamma.emoji()+"[acid]+",cleart, () -> {
-                            player.unit().type().spawn(player.team(),player.x,player.y);
-                        }).width(40f).tooltip("[acid]克隆");
-                        tBox.button(UnitTypes.gamma.emoji()+"[red]×",cleart, () -> {
-                            player.unit().kill();
-                        }).width(40f).tooltip("[red]自杀");
+                        tBox.button(UnitTypes.gamma.emoji()+"[acid]+",cleart, () -> player.unit().type().spawn(player.team(),player.x,player.y)).width(40f).tooltip("[acid]克隆");
+                        tBox.button(UnitTypes.gamma.emoji()+"[red]×",cleart, () -> player.unit().kill()).width(40f).tooltip("[red]自杀");
                         tBox.button(Icon.waves,clearNonei, () -> {
                             unitSpawnMenu();
                         }).width(40f).tooltip("[acid]单位");
                     }).left().row();
-
                 }
 
 
@@ -140,6 +151,10 @@ public class AdvanceToolTable extends Table {
                         showResTool = !showResTool;
                         rebuild();
                     }).width(50f);
+                    mainBox.button((showResTool?"[cyan]":"[acid]")+"队伍",cleart, () -> {
+                        showTeamChange = !showTeamChange;
+                        rebuild();
+                    }).width(50f);
                     mainBox.button((showUnitStat?"[cyan]":"[acid]")+"单位",cleart, () -> {
                         showUnitStat = !showUnitStat;
                         rebuild();
@@ -150,6 +165,35 @@ public class AdvanceToolTable extends Table {
 
             }).left();
         }
+    }
+
+    private void teamChangeMenu(){
+        BaseDialog dialog = new BaseDialog("队伍选择器");
+        Table selectTeam = new Table().top();
+
+        dialog.cont.pane(td->{
+            int j = 0;
+            for(Team team : Team.all){
+                ImageButton button = new ImageButton(Tex.whiteui, Styles.clearTogglei);
+                button.getStyle().imageUpColor = team.color;
+                button.margin(10f);
+                button.resizeImage(40f);
+                button.clicked(() -> {player.team(team);dialog.hide();});
+                button.update(() -> button.setChecked(player.team() == team));
+                td.add(button);
+                j++;
+                if(j==5) {td.row();td.add("队伍："+j+"~"+(j+10));}
+                else if((j-5)%10==0) {td.row();td.add("队伍："+j+"~"+(j+10));}
+            }
+        }
+        );
+
+        dialog.add(selectTeam).center();
+        dialog.row();
+
+        dialog.addCloseButton();
+
+        dialog.show();
     }
 
     private void unitSpawnMenu(){
@@ -208,27 +252,27 @@ public class AdvanceToolTable extends Table {
                         unitTeam = Team.get(Integer.parseInt(text));
                     }).maxTextLength(4).valid(value -> Strings.canParsePositiveInt(value)).get();
                     for(Team team:Team.baseTeams){
-                        t.button(String.valueOf(team.id),()->{unitTeam = team;rebuild[0].run();}).size(30,30).color(team.color);
+                        t.button("[#" + team.color +  "]" + team.localized(),cleart,()->{unitTeam = team;rebuild[0].run();}).size(30,30).color(team.color);
                     }
                     t.button("更多", cleart ,() -> {
                         BaseDialog selectTeamDialog = new BaseDialog("队伍选择器");
                         Table selectTeam = new Table().top();
                         selectTeamDialog.cont.pane(td->{
-                                    int j = 0;
-                                    for(Team team : Team.all){
-                                        ImageButton button = new ImageButton(Tex.whiteui, Styles.clearTogglei);
-                                        button.getStyle().imageUpColor = team.color;
-                                        button.margin(10f);
-                                        button.resizeImage(40f);
-                                        button.clicked(() -> {
-                                            Call.setPlayerTeamEditor(player, team);selectTeamDialog.hide();rebuild[0].run();});
-                                        button.update(() -> button.setChecked(player.team() == team));
-                                        td.add(button);
-                                        j++;
-                                        if(j==5) {td.row();td.add("队伍："+j+"~"+(j+10));}
-                                        else if((j-5)%10==0) {td.row();td.add("队伍："+j+"~"+(j+10));}
-                                    }
+                                int j = 0;
+                                for(Team team : Team.all){
+                                    ImageButton button = new ImageButton(Tex.whiteui, Styles.clearTogglei);
+                                    button.getStyle().imageUpColor = team.color;
+                                    button.margin(10f);
+                                    button.resizeImage(40f);
+                                    button.clicked(() -> {
+                                        Call.setPlayerTeamEditor(player, team);selectTeamDialog.hide();rebuild[0].run();});
+                                    button.update(() -> button.setChecked(player.team() == team));
+                                    td.add(button);
+                                    j++;
+                                    if(j==5) {td.row();td.add("队伍："+j+"~"+(j+10));}
+                                    else if((j-5)%10==0) {td.row();td.add("队伍："+j+"~"+(j+10));}
                                 }
+                            }
                         );
 
                         selectTeamDialog.add(selectTeam).center();
@@ -242,18 +286,32 @@ public class AdvanceToolTable extends Table {
 
             table.row();
 
-            table.button(StatusEffects.electrified.emoji() + "[cyan]构筑单位状态！",()->unitStatusMenu()).fillX();
+            table.button(StatusEffects.electrified.emoji() + "[cyan]单位状态重构厂",()->unitStatusMenu()).fillX();
 
             table.row();
 
-            table.button("[cyan]生成！", Icon.modeAttack, () -> {
+            table.button(Items.copper.emoji() +"|" + UnitTypes.mono.emoji() + "  [cyan]单位的百宝袋",()->showItems()).fillX();
+
+            table.row();
+
+            table.button("[orange]生成！", Icon.modeAttack, () -> {
                 for (var n = 0; n < unitCount; n++) {
-                    Tmp.v1.rnd(Mathf.random(5f * Vars.tilesize));
+                    Tmp.v1.rnd(Mathf.random(5f * tilesize));
                     Unit unit = spawning.create(unitTeam);
                     unit.set(unitLoc.x * tilesize + Tmp.v1.x, unitLoc.y * tilesize + Tmp.v1.y);
                     unitStatus.each((status,statusDuration)->{
                         unit.apply(status,statusDuration * 60f);
                     });
+                    if (unitItems!=null) unit.addItem(unitItems,unitItemAmount);
+
+                    if (unit instanceof Payloadc pay){
+                        unitPayload.each(payload ->{
+                            Unit payloadUnit = payload.create(unitTeam);
+                            pay.pickup(payloadUnit);
+                        });
+                    }
+
+
                     unit.add();
                 }
                 if (control.input instanceof DesktopInput) {
@@ -324,5 +382,82 @@ public class AdvanceToolTable extends Table {
         unitStatusTable.addCloseButton();
         unitStatusTable.show();
     }
+
+    private void showItems(){
+        BaseDialog itemDialog = new BaseDialog("单位的百宝袋");
+        Table table = itemDialog.cont;
+        Runnable[] rebuildItems = {null};
+
+        rebuildItems[0] = () -> {
+            table.clear();
+            table.table(p -> {
+
+                p.table(pt->{
+                    pt.button(Items.copper.emoji(),cleart,() -> {showSelectItems = !showSelectItems;rebuildItems[0].run();}).size(50f);
+                    pt.add("数量：");
+                    pt.field(String.valueOf(unitItemAmount), text -> {
+                        unitItemAmount = Integer.parseInt(text);
+                    }).maxTextLength(4).valid(value -> Strings.canParsePositiveInt(value)).get();
+                    pt.add("/ " + spawning.itemCapacity+" ");
+                    pt.add(unitItems==null?"":unitItems.emoji());
+                });
+
+                p.row();
+
+                if(showSelectItems){
+                p.table(pt->{
+                    int i = 0;
+                    for (Item item : content.items()) {
+                        pt.button(item.emoji(), () -> {
+                            unitItems = item;
+                            rebuildItems[0].run();
+                        }).size(50f).left();
+                        if (++i % 6 == 0) pt.row();
+                    }
+                    pt.button("[red]×", () -> {
+                        unitItems = null;
+                        rebuildItems[0].run();
+                    }).size(50f).left();
+                    pt.row();
+                }).fillX().row();
+                }
+                p.button(UnitTypes.mono.emoji(),cleart,() -> {showSelectPayload = !showSelectPayload;rebuildItems[0].run();}).size(50f);
+                p.row();
+
+                p.table(pt->{
+                    int i = 0;
+                    for (UnitType payload:unitPayload){
+                        pt.button(payload.emoji(), () -> {
+                            unitPayload.remove(payload);
+                            rebuildItems[0].run();
+                        }).size(50f).left();
+                        if (++i % 8 == 0) pt.row();
+                    }
+                }).row();
+
+                if (showSelectPayload){
+                    p.pane(list -> {
+                        int i = 0;
+                        for (UnitType units : content.units()) {
+                            list.button(units.emoji(), () -> {
+                                unitPayload.add(units);
+                                rebuildItems[0].run();
+                            }).size(50f);
+                            if (++i % 8 == 0) list.row();
+                        }
+                    });
+                }
+
+
+            });
+
+
+        };
+
+        rebuildItems[0].run();
+        itemDialog.addCloseButton();
+        itemDialog.show();
+    }
+
 
 }
