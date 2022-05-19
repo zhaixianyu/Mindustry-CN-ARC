@@ -53,7 +53,7 @@ public class OtherCoreItemDisplay extends Table {
     void rebuild(){
         clear();
         if(!show){
-        button("[red]<",textStyle, () -> {
+        button("[red]+",textStyle, () -> {
             show = !show;
             rebuild();
         }).left().width(40f).fillY().get().left();}

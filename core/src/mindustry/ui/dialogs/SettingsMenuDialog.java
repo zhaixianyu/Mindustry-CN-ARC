@@ -498,6 +498,7 @@ public class SettingsMenuDialog extends BaseDialog{
         arc.addCategory("arcHudToolbox");
         arc.checkPref("showFloatingSettings",false);
         arc.checkPref("showMI2toolbox", true);
+        arc.checkPref("showAdvanceToolTable",false);
         arc.checkPref("arcSpecificTable",true);
         arc.checkPref("powerStatistic", true);
         arc.sliderPref("arccoreitems", 3, 0, 3, 1, s -> {
