@@ -627,6 +627,7 @@ public class SettingsMenuDialog extends BaseDialog{
 
         if(Shaders.shield != null){
             forcehide.checkPref("animatedshields", !mobile);
+            forcehide.checkPref("staticShieldsBorder", false);
         }
 
         forcehide.checkPref("atmosphere", !mobile);
