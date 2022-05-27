@@ -240,7 +240,7 @@ public class AuxilliaryTable extends Table {
 
             /* 玩家AI */
             body.collapser(t -> {
-                t.button(Blocks.microProcessor.emoji() + " >", textHanderNC, () -> showns[3] = !showns[3]).size(handerSize).tooltip("玩家AI");
+                t.button(Blocks.microProcessor.emoji() + " >", textHanderNC, () -> showns[2] = !showns[2]).size(handerSize).tooltip("玩家AI");
 
                 t.button(mono.emoji(), textHander, () -> {
                     playerAI = playerAI instanceof MinerAI ? null : new MinerAI();
