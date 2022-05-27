@@ -8,10 +8,7 @@ import arc.scene.ui.*;
 import arc.scene.ui.layout.Table;
 import arc.util.Strings;
 import mindustry.Vars;
-import mindustry.ai.types.BuilderAI;
-import mindustry.ai.types.DefenderAI;
-import mindustry.ai.types.MinerAI;
-import mindustry.ai.types.RepairAI;
+import mindustry.ai.types.*;
 import mindustry.content.Blocks;
 import mindustry.content.StatusEffects;
 import mindustry.core.UI;
@@ -243,8 +240,8 @@ public class AuxilliaryTable extends Table {
                 t.button(Blocks.microProcessor.emoji() + " >", textHanderNC, () -> showns[2] = !showns[2]).size(handerSize).tooltip("玩家AI");
 
                 t.button(mono.emoji(), textHander, () -> {
-                    playerAI = playerAI instanceof MinerAI ? null : new MinerAI();
-                }).checked(b -> playerAI instanceof MinerAI).size(handerSize).tooltip("矿机AI");
+                    playerAI = playerAI instanceof arcMinerAI ? null : new arcMinerAI();
+                }).checked(b -> playerAI instanceof arcMinerAI).size(handerSize).tooltip("矿机AI");
 
                 t.button(poly.emoji(), textHander, () -> {
                     playerAI = playerAI instanceof BuilderAI ? null : new BuilderAI();

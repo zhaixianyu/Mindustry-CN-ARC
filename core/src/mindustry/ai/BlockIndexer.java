@@ -42,6 +42,11 @@ public class BlockIndexer{
     /** Array used for returning and reusing. */
     private Seq<Building> breturnArray = new Seq<>(Building.class);
 
+    /** Stores all wallore quadrants on the map. Maps ID to qX to qY to a list of tiles with that ore. */
+    private IntSeq[][][] oresWall;
+    /** All wallores available on this map. */
+    private ObjectIntMap<Item> allOresWall = new ObjectIntMap<>();
+
     public BlockIndexer(){
         clearFlags();
 
@@ -61,7 +66,9 @@ public class BlockIndexer{
             clearFlags();
 
             allOres.clear();
+            allOresWall.clear();
             ores = new IntSeq[content.items().size][][];
+            oresWall = new IntSeq[content.items().size][][];
             quadWidth = Mathf.ceil(world.width() / (float)quadrantSize);
             quadHeight = Mathf.ceil(world.height() / (float)quadrantSize);
             blocksPresent = new boolean[content.blocks().size];
@@ -94,7 +101,29 @@ public class BlockIndexer{
                         }
                         ores[drop.id][qx][qy].add(tile.pos());
                         allOres.increment(drop);
+                    }else{
+                        if(oresWall[drop.id] == null){
+                            oresWall[drop.id] = new IntSeq[quadWidth][quadHeight];
+                        }
+                        if(oresWall[drop.id][qx][qy] == null){
+                            oresWall[drop.id][qx][qy] = new IntSeq(false, 16);
+                        }
+                        oresWall[drop.id][qx][qy].add(tile.pos());
+                        allOresWall.increment(drop);
                     }
+                }
+                else if(tile.block()!=null && tile.block().itemDrop!=null){
+                    int qx = (tile.x / quadrantSize);
+                    int qy = (tile.y / quadrantSize);
+                    if(oresWall[tile.block().itemDrop.id] == null){
+                        oresWall[tile.block().itemDrop.id] = new IntSeq[quadWidth][quadHeight];
+                    }
+                    if(oresWall[tile.block().itemDrop.id][qx][qy] == null){
+                        oresWall[tile.block().itemDrop.id][qx][qy] = new IntSeq(false, 16);
+                    }
+                    oresWall[tile.block().itemDrop.id][qx][qy].add(tile.pos());
+                    allOresWall.increment(tile.block().itemDrop);
+
                 }
             }
         });
@@ -166,6 +195,50 @@ public class BlockIndexer{
                 //otherwise, it likely became blocked, remove it (even if it wasn't there)
                 seq.removeValue(pos);
                 allOres.increment(drop, -1);
+            }
+
+
+            ///wallore
+            if(oresWall[drop.id] == null){
+                oresWall[drop.id] = new IntSeq[quadWidth][quadHeight];
+            }
+            if(oresWall[drop.id][qx][qy] == null){
+                oresWall[drop.id][qx][qy] = new IntSeq(false, 16);
+            }
+
+            pos = tile.pos();
+            seq = oresWall[drop.id][qx][qy];
+            //when the drop can be mined, record the ore position
+            if(tile.block() != Blocks.air && !seq.contains(pos)){
+                seq.add(pos);
+                allOresWall.increment(drop);
+            }else{
+                //otherwise, it likely became blocked, remove it (even if it wasn't there)
+                seq.removeValue(pos);
+                allOresWall.increment(drop, -1);
+            }
+        }
+        else if(tile.block()!=null && tile.block().itemDrop!=null){
+            int qx = tile.x / quadrantSize;
+            int qy = tile.y / quadrantSize;
+            ///wallore
+            if(oresWall[tile.block().itemDrop.id] == null){
+                oresWall[tile.block().itemDrop.id] = new IntSeq[quadWidth][quadHeight];
+            }
+            if(oresWall[tile.block().itemDrop.id][qx][qy] == null){
+                oresWall[tile.block().itemDrop.id][qx][qy] = new IntSeq(false, 16);
+            }
+
+            int pos = tile.pos();
+            var seq = oresWall[tile.block().itemDrop.id][qx][qy];
+            //when the drop can be mined, record the ore position
+            if(!seq.contains(pos)){
+                seq.add(pos);
+                allOresWall.increment(tile.block().itemDrop);
+            }else{
+                //otherwise, it likely became blocked, remove it (even if it wasn't there)
+                seq.removeValue(pos);
+                allOresWall.increment(tile.block().itemDrop, -1);
             }
         }
 
@@ -433,6 +506,36 @@ public class BlockIndexer{
     public Tile findClosestOre(Unit unit, Item item){
         return findClosestOre(unit.x, unit.y, item);
     }
+
+    public Tile findClosestWallOre(float xp, float yp, Item item){
+        if(oresWall[item.id] != null){
+            float minDst = 0f;
+            Tile closest = null;
+            for(int qx = 0; qx < quadWidth; qx++){
+                for(int qy = 0; qy < quadHeight; qy++){
+                    var arr = oresWall[item.id][qx][qy];
+                    if(arr != null && arr.size > 0){
+                        Tile tile = world.tile(arr.first());
+                        if(tile.block() != Blocks.air){
+                            float dst = Mathf.dst2(xp, yp, tile.worldx(), tile.worldy());
+                            if(closest == null || dst < minDst){
+                                closest = tile;
+                                minDst = dst;
+                            }
+                        }
+                    }
+                }
+            }
+            return closest;
+        }
+
+        return null;
+    }
+
+    public Tile findClosestWallOre(Unit unit, Item item){
+        return findClosestWallOre(unit.x, unit.y, item);
+    }
+
 
     private void process(Tile tile){
         var team = tile.team();
