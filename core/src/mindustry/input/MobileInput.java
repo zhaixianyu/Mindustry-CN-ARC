@@ -265,7 +265,7 @@ public class MobileInput extends InputHandler implements GestureListener{
     public void buildUI(Group group){
 
         group.fill(t -> {
-            t.visible(() ->!showCancel() && !settings.getBool("showAdvanceToolTable"));
+            t.visible(() ->showCancel() && !settings.getBool("showAdvanceToolTable"));
             t.bottom().left();
             t.button("@cancel", Icon.cancel, () -> {
                 player.unit().clearBuilding();
