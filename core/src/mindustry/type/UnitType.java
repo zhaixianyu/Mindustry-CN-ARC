@@ -1238,9 +1238,11 @@ public class UnitType extends UnlockableContent{
             //draw target line
             if(ai.targetPos != null){
                 Position lineDest = ai.attackTarget != null ? ai.attackTarget : ai.targetPos;
-                Drawf.limitLine(unit, lineDest, unit.hitSize / 2f, 3.5f);
+                Draw.color(unit.team.color);
+                Drawf.limitLineColor(unit, lineDest, unit.hitSize / 2f, 3.5f,unit.team.color);
 
                 if(ai.attackTarget == null){
+                    Draw.color(unit.team.color);
                     Drawf.square(lineDest.getX(), lineDest.getY(), 3.5f);
                 }
             }
@@ -1248,8 +1250,10 @@ public class UnitType extends UnlockableContent{
             //Drawf.square(unit.x, unit.y, unit.hitSize / 1.4f + 1f);
 
             if(ai.attackTarget != null){
+                Draw.color(unit.team.color);
                 Drawf.target(ai.attackTarget.getX(), ai.attackTarget.getY(), 6f, Pal.remove);
             }
+            Draw.color();
         }
 
         if(unit.controller().isBeingControlled(player.unit())){

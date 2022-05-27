@@ -146,6 +146,13 @@ public class Drawf{
         Drawf.line(Pal.accent, start.getX() + Tmp.v1.x, start.getY() + Tmp.v1.y, dest.getX() + Tmp.v2.x, dest.getY() + Tmp.v2.y);
     }
 
+    public static void limitLineColor(Position start, Position dest, float len1, float len2,Color color){
+        Tmp.v1.set(dest).sub(start).setLength(len1);
+        Tmp.v2.set(Tmp.v1).scl(-1f).setLength(len2);
+
+        Drawf.line(color, start.getX() + Tmp.v1.x, start.getY() + Tmp.v1.y, dest.getX() + Tmp.v2.x, dest.getY() + Tmp.v2.y);
+    }
+
     public static void dashLineDst(Color color, float x, float y, float x2, float y2){
         dashLine(color, x, y, x2, y2, (int)(Mathf.dst(x, y, x2, y2) / tilesize * 1.6f));
     }
