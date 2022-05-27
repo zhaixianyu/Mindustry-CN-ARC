@@ -82,12 +82,11 @@ public class arcMinerAI extends AIController{
 
             if(unit.within(core, unit.type.range)){
 
-                if(true){
+                if(core.acceptStack(unit.stack.item, unit.stack.amount, unit) > 0){
                         Call.transferItemTo(unit, unit.stack.item, unit.stack.amount, unit.x, unit.y, core);
                     }
                 Call.dropItem(player.angleTo(player.x, player.y));
-                //unit.clearItem();
-                if(unit.stack.amount == 0) mining = true;
+                mining = true;
             }
 
             circle(core, unit.type.range / 1.8f);
