@@ -266,6 +266,10 @@ public class BlockIndexer{
         return allOres.get(item) > 0;
     }
 
+    public boolean hasOreWall(Item item){
+        return allOresWall.get(item) > 0;
+    }
+
     /** Returns all damaged tiles by team. */
     public Seq<Building> getDamaged(Team team){
         if(damagedTiles[team.id] == null){

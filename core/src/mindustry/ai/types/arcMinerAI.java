@@ -1,97 +1,110 @@
 package mindustry.ai.types;
 
-import arc.math.*;
-import arc.math.geom.*;
+import arc.math.geom.Position;
 import arc.struct.Seq;
+import arc.util.Tmp;
 import mindustry.content.Blocks;
-import mindustry.entities.units.*;
+import mindustry.entities.units.AIController;
 import mindustry.gen.Building;
 import mindustry.gen.Call;
+import mindustry.gen.Posc;
+import mindustry.gen.Unit;
 import mindustry.type.Item;
 import mindustry.world.Block;
 import mindustry.world.Tile;
 import mindustry.world.blocks.environment.Floor;
 import mindustry.world.blocks.environment.StaticWall;
+import mindustry.world.blocks.storage.CoreBlock;
 
 import static mindustry.Vars.*;
-import static mindustry.Vars.player;
 
-public class arcMinerAI extends AIController{
-    private Seq<Block> oreList = content.blocks().select(b -> b instanceof Floor f && !f.wallOre && f.itemDrop != null);
-    private Seq<Block> oreWallList  = content.blocks().select(b -> ((b instanceof Floor f && f.wallOre)|| b instanceof StaticWall) && b.itemDrop != null);
-    //private Seq<Block> selOreList = new Seq<>();
-    //private Seq<Block> selOreWallList  = new Seq<>();
-    private Seq<Block> selOreList = oreList;
-    private Seq<Block> selOreWallList  = oreWallList;
-
+public class arcMinerAI extends AIController {
+    private final Seq<Block> oreList = content.blocks().select(b -> b instanceof Floor f && !f.wallOre && f.itemDrop != null);
+    private final Seq<Block> oreWallList = content.blocks().select(b -> ((b instanceof Floor f && f.wallOre) || b instanceof StaticWall) && b.itemDrop != null);
+    private Seq<Item> canMineList;
     public boolean mining = true;
     public Item targetItem;
     public Tile ore;
 
     @Override
-    public void updateMovement(){
-        Building core = unit.closestCore();
+    public void init() {
+        if (!unit.canMine()) return;
 
-        if(!(unit.canMine()) || core == null) return;
-
-        if(unit.mineTile != null && !unit.mineTile.within(unit, unit.type.mineRange)){
-            unit.mineTile(null);
-        }
-
-        if(mining){
-            if(timer.get(timerTarget2, 60 * 4) || targetItem == null){
-                if(unit.type.mineFloor && !selOreList.isEmpty()) targetItem = selOreList.select(t->t.itemDrop.hardness<=unit.type.mineTier).sort(i -> core.items.get(i.itemDrop)).first().itemDrop;
-                else if ((unit.type.mineWalls && !selOreWallList.isEmpty())) targetItem = selOreWallList.select(t->t.itemDrop.hardness<=unit.type.mineTier).sort(i -> core.items.get(i.itemDrop)).first().itemDrop;
-                else targetItem = null;
-            }
-
-            //core full of the target item, do nothing
-            if(targetItem != null && core.acceptStack(targetItem, 1, unit) == 0){
-                unit.clearItem();
-                unit.mineTile = null;
-                return;
-            }
-
-            //if inventory is full, drop it off.
-            if(unit.stack.amount >= unit.type.itemCapacity || (targetItem != null && !unit.acceptsItem(targetItem))){
-                mining = false;
-            }else{
-                if(timer.get(timerTarget3, 60) && targetItem != null){
-                    ore = unit.type.mineFloor? indexer.findClosestOre(unit, targetItem) : indexer.findClosestWallOre(unit, targetItem);
-                }
-
-                if(ore != null){
-                    moveTo(ore, unit.type.mineRange / 2f, 20f);
-
-                    if(((ore.block() == Blocks.air && unit.type.mineFloor) || (unit.type.mineWalls && ore.block()!=Blocks.air)) && unit.within(ore, unit.type.mineRange)){
-                        unit.mineTile = ore;
-                    }
-
-                    if((ore.block() != Blocks.air && unit.type.mineFloor) || (unit.type.mineWalls && ore.block()==Blocks.air)){
-                        mining = false;
-                    }
-                }
-            }
-        }else{
-            unit.mineTile = null;
-
-            if(unit.stack.amount == 0){
-                mining = true;
-                return;
-            }
-
-            if(unit.within(core, unit.type.range)){
-
-                if(core.acceptStack(unit.stack.item, unit.stack.amount, unit) > 0){
-                        Call.transferItemTo(unit, unit.stack.item, unit.stack.amount, unit.x, unit.y, core);
-                    }
-                Call.dropItem(player.angleTo(player.x, player.y));
-                mining = true;
-            }
-
-            circle(core, unit.type.range / 1.8f);
+        if (unit.type.mineFloor) {
+            canMineList = oreList.map(b -> b.itemDrop).select(i -> unit.canMine(i));
+        } else if (unit.type.mineWalls) {
+            canMineList = oreWallList.map(b -> b.itemDrop).select(i -> unit.canMine(i));
         }
     }
 
+    private Item updateTargetItem(boolean canMineNonBuildable) {
+        //reverse是因为min取最后一个最小的
+        return canMineList.select(i -> (unit.type.mineFloor ? indexer.hasOre(i) : indexer.hasOreWall(i))
+                && (canMineNonBuildable || i.buildable)
+                && unit.core().acceptItem(null, i)
+        ).reverse().min(i -> unit.core().items.get(i));
+    }
 
+    @Override
+    public void updateMovement() {
+        if (!unit.canMine() || canMineList.isEmpty() || unit.core() == null) return;
+
+        CoreBlock.CoreBuild core = unit.closestCore();
+        //变量命名不知道叫啥了
+        //最近的可以塞入非建筑物品的核心
+        CoreBlock.CoreBuild core2 = unit.team.data().cores.select(c -> !((CoreBlock) c.block).incinerateNonBuildable).min(c -> unit.dst(c));
+
+        CoreBlock.CoreBuild targetCore = targetItem == null || targetItem.buildable || core2 == null ? core : core2;
+
+        if (mining) {
+
+            if (targetItem != null && (!core.acceptItem(null, targetItem) || (core2 == null && !targetItem.buildable))) {
+                unit.mineTile = null;
+                targetItem = null;
+            }
+
+            if (targetItem == null || timer.get(timerTarget2, 120f)) {
+                targetItem = updateTargetItem(core2 != null);
+                if (targetItem == null) return;
+            }
+
+            if (!unit.acceptsItem(targetItem) || unit.stack.amount >= unit.type.itemCapacity) {
+                mining = false;
+                return;
+            }
+
+            if (ore == null || !unit.validMine(ore, false) || ore.drop() != targetItem || timer.get(timerTarget3, 120f)) {
+                ore = unit.type.mineFloor ? indexer.findClosestOre(targetCore.x, targetCore.y, targetItem) : indexer.findClosestWallOre(targetCore.x, targetCore.y, targetItem);
+                if (ore == null) return;
+            }
+
+
+            Tmp.v1.setLength(unit.type.mineRange * 0.9f).limit(ore.dst(targetCore) - 0.5f).setAngle(ore.angleTo(targetCore)).add(ore);
+            moveTo(Tmp.v1, 0.1f, 5f);
+            if (unit.validMine(ore)) {
+                unit.mineTile = ore;
+            }
+
+        } else {
+            unit.mineTile = null;
+
+            if (unit.stack.amount == 0) {
+                mining = true;
+                return;
+            }
+            if (!core.acceptItem(null, unit.stack.item)) {
+                unit.clearItem();
+            }
+
+            moveTo(targetCore, core.hitSize());
+            if (unit.within(targetCore, itemTransferRange) && targetCore.acceptItem(null, targetItem)) {
+                Call.transferInventory(player, core);
+                targetItem = updateTargetItem(core2 != null);
+            }
+        }
+    }
+
+    @Override
+    public void updateVisuals() {
+    }
 }
