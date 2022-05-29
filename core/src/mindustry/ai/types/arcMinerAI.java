@@ -1,14 +1,9 @@
 package mindustry.ai.types;
 
-import arc.math.geom.Position;
 import arc.struct.Seq;
 import arc.util.Tmp;
-import mindustry.content.Blocks;
 import mindustry.entities.units.AIController;
-import mindustry.gen.Building;
 import mindustry.gen.Call;
-import mindustry.gen.Posc;
-import mindustry.gen.Unit;
 import mindustry.type.Item;
 import mindustry.world.Block;
 import mindustry.world.Tile;
@@ -56,6 +51,9 @@ public class arcMinerAI extends AIController {
 
         CoreBlock.CoreBuild targetCore = targetItem == null || targetItem.buildable || core2 == null ? core : core2;
 
+        if (unit.type.canBoost) {
+            player.boosting = true;
+        }
         if (mining) {
 
             if (targetItem != null && (!core.acceptItem(null, targetItem) || (core2 == null && !targetItem.buildable))) {
