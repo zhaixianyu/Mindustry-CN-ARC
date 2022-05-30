@@ -56,6 +56,8 @@ public class DesktopInput extends InputHandler{
     /** Previously selected tile. */
     public Tile prevSelected;
 
+    public boolean autoAim = false;
+
     boolean showHint(){
         return ui.hudfrag.shown && Core.settings.getBool("hints") && selectPlans.isEmpty() &&
             (!isBuilding && !Core.settings.getBool("buildautopause") || player.unit().isBuilding() || !player.dead() && !player.unit().spawnedByCore());
@@ -768,7 +770,7 @@ public class DesktopInput extends InputHandler{
 
         unit.movePref(movement);
 
-        unit.aim(Core.input.mouseWorld());
+        if (!autoAim) unit.aim(Core.input.mouseWorld());
         unit.controlWeapons(true, player.shooting && !boosted);
 
         player.boosting = Core.input.keyDown(Binding.boost);

@@ -1,10 +1,12 @@
 package mindustry.ai.types;
 
 import arc.struct.Seq;
+import arc.util.Time;
 import arc.util.Tmp;
 import mindustry.entities.units.AIController;
 import mindustry.gen.Building;
 import mindustry.gen.Call;
+import mindustry.input.DesktopInput;
 import mindustry.type.Item;
 import mindustry.world.Block;
 import mindustry.world.Tile;
@@ -103,8 +105,16 @@ public class arcMinerAI extends AIController {
 
             moveTo(targetCore, core.hitSize());
             if (unit.within(targetCore, itemTransferRange) && targetCore.acceptItem(null, targetItem)) {
+                if (control.input instanceof DesktopInput di) {
+                    di.autoAim = true;
+                }
+                unit.aimX = core.x;
+                unit.aimY = core.y;
                 Call.transferInventory(player, core);
                 targetItem = updateTargetItem(core2 != null);
+                if (control.input instanceof DesktopInput di) {
+                    Time.run(30f, () -> di.autoAim = false);
+                }
             }
         }
     }
