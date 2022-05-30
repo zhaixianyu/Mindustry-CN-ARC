@@ -353,11 +353,11 @@ public class Turret extends ReloadTurret{
                 Draw.reset();
             }
             if ( (hasAmmo()) && (!state.rules.pvp || team == player.team()) ){
+                boolean canHitCommand = (control.input.block!=null && targetGround) || (control.input.commandMode && (control.input.selectedUnits.size>0));
                 boolean turretAlert = Core.settings.getInt("turretAlertRange") > 0f &&
-                        ((!player.unit().isNull() && player.unit().targetable(team)) || (control.input.commandMode && control.input.selectedUnits.size>0));
+                        ((!player.unit().isNull() && player.unit().targetable(team)) || canHitCommand);
                 if (turretAlert){
                     boolean canHitPlayer = player.unit().isFlying() ? targetAir : targetGround;
-                    boolean canHitCommand = control.input.commandMode && (control.input.selectedUnits.size>0);
                     boolean showHitPlayer = team != player.team() && canHitPlayer && (player.unit().dst(x,y) <= (range()+ (float)Core.settings.getInt("turretAlertRange") * tilesize));
                     boolean showHitCommand = team != player.team() && canHitCommand &&
                             Core.input.mouseWorld().dst(x,y) <= (range()+ (float)Core.settings.getInt("turretAlertRange") * tilesize);
