@@ -243,8 +243,8 @@ public class StatValues{
 
                 if(i == list.size-1||list.get(i+1).itemDrop.hardness!=list.get(i).itemDrop.hardness){
                     Float eff = 60f / (drill.drillTime + drill.hardnessDrillMultiplier * list.get(i).itemDrop.hardness) * drill.size * drill.size;
-                    blockInfo.append("    <").append(Strings.autoFixed(eff,2)).append("|[cyan]");
-                    blockInfo.append(Strings.autoFixed(eff * drill.liquidBoostIntensity * drill.liquidBoostIntensity,2)).append("[white]>");
+                    blockInfo.append("    [stat]<").append(Strings.autoFixed(eff,2)).append("|[cyan]");
+                    blockInfo.append(Strings.autoFixed(eff * drill.liquidBoostIntensity * drill.liquidBoostIntensity,2)).append("[stat]>");
                     l.add(blockInfo.toString()).left().row();
                     blockInfo = new StringBuilder();
                 }
@@ -253,6 +253,49 @@ public class StatValues{
             }
         });}
 
+    }
+
+    public static StatValue drillUnit(UnitType unit){
+        Seq<Block> list = content.blocks().select(b ->
+                b.itemDrop != null &&
+                        (b instanceof Floor f && (((f.wallOre && unit.mineWalls) || (!f.wallOre && unit.mineFloor))) ||
+                                (!(b instanceof Floor) && unit.mineWalls)) &&
+                        b.itemDrop.hardness <= unit.mineTier && (!b.playerUnmineable || Core.settings.getBool("doubletapmine")));
+        list.sort(t->t.itemDrop.hardness);
+        if(unit.mineHardnessScaling){
+            return table -> table.table(l -> {
+                l.left();
+                StringBuilder blockInfo = new StringBuilder();
+                for (int i = 0; i < list.size; i++) {
+                    var block = list.get(i);
+                    blockInfo.append(block.emoji()).append(" ").append(block.localizedName);
+
+                    if (i == list.size - 1 || list.get(i + 1).itemDrop.hardness != list.get(i).itemDrop.hardness) {
+                        Float eff = 60f * unit.mineSpeed / (50f + list.get(i).itemDrop.hardness * 15f);
+                        blockInfo.append("    [stat]<").append(Strings.autoFixed(eff, 2)).append(">");
+                        l.add(blockInfo.toString()).left().row();
+                        blockInfo = new StringBuilder();
+                    } else blockInfo.append("  ");
+                }
+            });
+        }
+        else {
+            return table -> table.table(l -> {
+                l.left();
+                StringBuilder blockInfo = new StringBuilder();
+                for (int i = 0; i < list.size; i++) {
+                    var item = list.get(i);
+                    l.image(item.uiIcon).size(iconSmall).padRight(2).padLeft(2).padTop(3).padBottom(3);
+                    l.add(item.localizedName).left().padLeft(1).padRight(4);
+                    if(i % 5 == 4){
+                        l.row();
+                    }
+                }
+                Float eff = 60f * unit.mineSpeed / (50f + 15f);
+                blockInfo.append("    <").append(Strings.autoFixed(eff, 2)).append("[white]>");
+                l.add(blockInfo.toString()).left();
+            });
+        }
     }
 
     public static StatValue blocks(Boolf<Block> pred){
