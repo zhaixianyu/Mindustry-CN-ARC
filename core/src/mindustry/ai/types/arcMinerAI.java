@@ -70,7 +70,7 @@ public class arcMinerAI extends AIController {
                 targetItem = null;
             }
 
-            if (targetItem == null || timer.get(timerTarget2, 120f)) {
+            if (targetItem == null || timer.get(timerTarget2, 300f)) {
                 targetItem = updateTargetItem(core2 != null);
                 if (targetItem == null) return;
             }
