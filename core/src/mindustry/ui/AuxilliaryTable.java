@@ -282,8 +282,6 @@ public class AuxilliaryTable extends Table {
 
                 t.button("♐", textHander,
                     () -> showns[5] = !showns[5]).checked(showns[5]).size(handerSize).tooltip("标记器");
-                //    settings.put("markType",(settings.getInt("markType")+1)%4);
-                //}).checked(b -> playerAI instanceof DefenderAI).size(handerSize).tooltip("保护AI");
 
             }, () -> showns[3]).left();
 
@@ -310,6 +308,12 @@ public class AuxilliaryTable extends Table {
                 t.button(Icon.down, ImageHanderNC,imgSize, () -> {
                     control.input.tryDropPayload();
                 }).tooltip("丢下载荷");
+
+                t.button(Blocks.payloadConveyor.emoji(), textHanderNC, () -> {
+                    Building build = world.buildWorld(player.unit().x, player.unit().y);
+                    if(build != null && player.unit().team() == build.team && build.canControlSelect(player.unit())){
+                        Call.unitBuildingControlSelect(player.unit(), build);}
+                }).tooltip("进入传送带");
 
             }, () -> showns[4]).left();
 
