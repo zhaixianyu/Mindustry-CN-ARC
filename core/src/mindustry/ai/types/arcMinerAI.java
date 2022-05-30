@@ -3,6 +3,7 @@ package mindustry.ai.types;
 import arc.struct.Seq;
 import arc.util.Tmp;
 import mindustry.entities.units.AIController;
+import mindustry.gen.Building;
 import mindustry.gen.Call;
 import mindustry.type.Item;
 import mindustry.world.Block;
@@ -16,7 +17,7 @@ import static mindustry.Vars.*;
 public class arcMinerAI extends AIController {
     private final Seq<Block> oreList = content.blocks().select(b -> b instanceof Floor f && !f.wallOre && f.itemDrop != null);
     private final Seq<Block> oreWallList = content.blocks().select(b -> ((b instanceof Floor f && f.wallOre) || b instanceof StaticWall) && b.itemDrop != null);
-    private Seq<Item> canMineList;
+    public Seq<Item> canMineList;
     public boolean mining = true;
     public Item targetItem;
     public Tile ore;
@@ -40,6 +41,12 @@ public class arcMinerAI extends AIController {
         ).reverse().min(i -> unit.core().items.get(i));
     }
 
+    private Tile findClosetOre(Building build) {
+        if (unit.type.mineFloor) {
+            return indexer.findClosestOre(build.x, build.y, targetItem);
+        }
+        return indexer.findClosestWallOre(build.x, build.y, targetItem);
+    }
     @Override
     public void updateMovement() {
         if (!unit.canMine() || canMineList.isEmpty() || unit.core() == null) return;
@@ -72,13 +79,13 @@ public class arcMinerAI extends AIController {
             }
 
             if (ore == null || !unit.validMine(ore, false) || ore.drop() != targetItem || timer.get(timerTarget3, 120f)) {
-                ore = unit.type.mineFloor ? indexer.findClosestOre(targetCore.x, targetCore.y, targetItem) : indexer.findClosestWallOre(targetCore.x, targetCore.y, targetItem);
+                ore = findClosetOre(targetCore);
                 if (ore == null) return;
             }
 
 
             Tmp.v1.setLength(unit.type.mineRange * 0.9f).limit(ore.dst(targetCore) - 0.5f).setAngle(ore.angleTo(targetCore)).add(ore);
-            moveTo(Tmp.v1, 0.1f, 5f);
+            moveTo(Tmp.v1, 0.1f);
             if (unit.validMine(ore)) {
                 unit.mineTile = ore;
             }
