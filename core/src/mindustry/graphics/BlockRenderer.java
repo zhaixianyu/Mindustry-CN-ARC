@@ -443,11 +443,11 @@ public class BlockRenderer{
                     }
 
                     if(build.team != pteam){
-                        build.drawTeam();
-                        Draw.z(Layer.block);
-                    }
-
-                    if((build.team == player.team()|| Core.settings.getBool("showOtherTeamState")) && renderer.drawStatus && block.hasConsumers){
+                        if(build.block.drawTeamOverlay){
+                            build.drawTeam();
+                            Draw.z(Layer.block);
+                        }
+                    }else if(renderer.drawStatus && block.hasConsumers && (build.team == player.team()|| Core.settings.getBool("showOtherTeamState"))){
                         build.drawStatus();
                     }
 
