@@ -13,13 +13,13 @@ import mindustry.ui.dialogs.*;
 import static mindustry.Vars.*;
 
 public class MapInfoDialog extends BaseDialog{
-    private final WaveInfoDialog waveInfo;
+    private final arcWaveInfoDialog waveInfo;
     private final MapGenerateDialog generate;
     private final CustomRulesDialog ruleInfo = new CustomRulesDialog();
 
     public MapInfoDialog(){
         super("@editor.mapinfo");
-        this.waveInfo = new WaveInfoDialog();
+        this.waveInfo = new arcWaveInfoDialog();
         this.generate = new MapGenerateDialog(false);
 
         addCloseButton();

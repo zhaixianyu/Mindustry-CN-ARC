@@ -40,8 +40,8 @@ public class AuxilliaryTable extends Table {
     private float tableSize = 20f;
 
 
-    private ImageButton.ImageButtonStyle ImageHander,ImageHanderNC;
-    private TextButton.TextButtonStyle textBasic,textHander,textHanderNC;
+    public ImageButton.ImageButtonStyle ImageHander,ImageHanderNC;
+    public TextButton.TextButtonStyle textBasic,textHander,textHanderNC;
 
     private MapInfoDialog mapInfoDialog = new MapInfoDialog();
     private WaveInfoDialog waveInfoDialog = new WaveInfoDialog();

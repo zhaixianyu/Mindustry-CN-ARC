@@ -268,6 +268,10 @@ public class Waves{
         return generate(difficulty, rand, attack, airOnly, false);
     }
 
+    public static Seq<SpawnGroup> generate(float difficulty, boolean attack, boolean airOnly, boolean naval){
+        return generate(difficulty, new Rand(), attack, airOnly,naval);
+    }
+
     public static Seq<SpawnGroup> generate(float difficulty, Rand rand, boolean attack, boolean airOnly, boolean naval){
         UnitType[][] species = {
         {dagger, mace, fortress, scepter, reign},

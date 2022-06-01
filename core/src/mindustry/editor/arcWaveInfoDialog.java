@@ -15,6 +15,7 @@ import arc.struct.*;
 import arc.util.*;
 import mindustry.*;
 import mindustry.content.*;
+import mindustry.core.UI;
 import mindustry.game.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
@@ -25,8 +26,10 @@ import mindustry.ui.dialogs.*;
 
 import java.util.*;
 
+import static arc.Core.settings;
 import static mindustry.Vars.*;
 import static mindustry.game.SpawnGroup.*;
+import static mindustry.ui.Styles.*;
 
 public class arcWaveInfoDialog extends BaseDialog{
     private int start = 0, displayed = 20, graphSpeed = 1, maxGraphSpeed = 16;
@@ -45,6 +48,13 @@ public class arcWaveInfoDialog extends BaseDialog{
     private TextField amountField = new TextField();
     private boolean checkedSpawns;
     private WaveGraph graph = new WaveGraph();
+
+    public int arcWaveIndex = 0;
+    private float handerSize = 40f;
+
+    //波次生成
+    Float difficult = 1f;
+    Boolean spawnAir = true,spawnAttack = false,spawnNaval = false;
 
     public arcWaveInfoDialog(){
         super("@waves.title");
@@ -146,16 +156,38 @@ public class arcWaveInfoDialog extends BaseDialog{
             }
         });
 
-        if(experimental){
+        if(true){
             buttons.button("x" + graphSpeed, () -> {
                 graphSpeed *= 2;
                 if(graphSpeed > maxGraphSpeed) graphSpeed = 1;
             }).update(b -> b.setText("x" + graphSpeed)).width(100f);
 
             buttons.button("Random", Icon.refresh, () -> {
-                groups.clear();
-                groups = Waves.generate(1f / 10f);
-                updateWaves();
+                BaseDialog dialog = new BaseDialog("随机生成器");
+                dialog.cont.table(c -> {
+                    c.table(ct ->{
+                        ct.add("难度：").width(100f);
+                        ct.field(difficult + "", text -> {
+                            difficult = Float.parseFloat(text);
+                        }).valid(Strings::canParsePositiveFloat).width(200f);
+                    }).width(300f);
+
+                    c.row();
+                    c.button("空军",flatToggleMenut,() -> spawnAir = !spawnAir).width(300f).height(50f).checked(spawnAir);
+                    c.row();
+                    c.button("海军",flatToggleMenut,() -> spawnNaval = !spawnNaval).width(300f).height(50f).checked(spawnAir);
+                    c.row();
+                    c.button("攻击模式",flatToggleMenut,() -> spawnAttack = !spawnAttack).width(300f).height(50f).checked(spawnAir);
+                    c.row();
+                    c.button("生成！",()->{
+                        groups.clear();
+                        groups = Waves.generate(difficult/10,spawnAttack,spawnAir,spawnNaval);
+                        updateWaves();
+                        buildGroups();
+                    }).width(300f);
+                });
+                dialog.addCloseButton();
+                dialog.show();
             }).width(200f);
         }
     }
@@ -233,8 +265,87 @@ public class arcWaveInfoDialog extends BaseDialog{
             setWrap(true);
             setAlignment(Align.center, Align.center);
         }}).width(390f).growY();
+        cont.table(tb->{
+            tb.table(t -> {
+                t.table(buttons -> {
+                    buttons.clear();
+                    buttons.button("<<", cleart, () -> {
+                        arcWaveIndex -= 10;
+                        if(arcWaveIndex < 0) arcWaveIndex = 1;
+                        setup();
+                    }).size(handerSize);
 
-        cont.add(graph = new WaveGraph()).grow();
+                    buttons.button("<", cleart, () -> {
+                        arcWaveIndex -= 1;
+                        if(arcWaveIndex < 0) arcWaveIndex = 1;
+                        setup();
+                    }).size(handerSize);
+
+                    buttons.field((arcWaveIndex + 1) + "", text -> {
+                        arcWaveIndex = Integer.parseInt(text) - 1;
+                        setup();
+                    });
+
+                    buttons.button(">", cleart, () -> {
+                        arcWaveIndex += 1;
+                        setup();
+                    }).size(handerSize);
+
+                    buttons.button(">>", cleart, () -> {
+                        arcWaveIndex += 10;
+                        setup();
+                    }).size(handerSize);
+
+                    buttons.button("×", cleart, () -> {
+                        arcWaveIndex = 1;
+                        setup();
+                    }).size(handerSize);
+                }).left().row();
+                t.pane(waveInfo -> {
+                    waveInfo.clear();
+                    waveInfo.table(wi -> {
+                        int curInfoWave = arcWaveIndex;
+                        for(SpawnGroup group : state.rules.spawns){
+                            int amount = group.getSpawned(curInfoWave);
+                            if(amount > 0) {
+                                StringBuilder groupInfo = new StringBuilder();
+                                groupInfo.append(group.type.emoji()).append("\n");
+                                groupInfo.append(amount).append("\n");
+                                if(group.getShield(curInfoWave) > 0f) groupInfo.append(UI.formatAmount((long)group.getShield(curInfoWave))).append("\n");
+                                if(group.effect != null && group.effect != StatusEffects.none) groupInfo.append(group.effect.emoji()).append("\n");
+                                wi.button(groupInfo.toString(),cleart,() -> {
+                                    BaseDialog dialog = new BaseDialog("@waves.group");
+                                    dialog.setFillParent(false);
+                                    dialog.cont.table(Tex.button, a -> iTable = a).row();
+                                    dialog.cont.table(c -> {
+                                        c.defaults().size(210f, 64f).pad(2f);
+                                        c.button("@waves.duplicate", Icon.copy, () -> {
+                                            SpawnGroup newGroup = group.copy();
+                                            groups.add(newGroup);
+                                            expandedGroup = newGroup;
+                                            buildGroups();
+                                            dialog.hide();
+                                        });
+                                        c.button("@settings.resetKey", Icon.refresh, () -> ui.showConfirm("@confirm", "@settings.clear.confirm", () -> {
+                                            group.effect = StatusEffects.none;
+                                            group.payloads = Seq.with();
+                                            group.items = null;
+                                            buildGroups();
+                                            dialog.hide();
+                                        }));
+                                    });
+                                    buildGroups();
+                                    updateIcons(group);
+                                    dialog.addCloseButton();
+                                    dialog.show();
+                                }).height(130f).width(50f);
+                            }
+                        }});
+                    }).scrollY(false).left();
+            }).growX();
+            tb.row();
+            tb.add(graph = new WaveGraph()).grow();
+        }).grow();
 
         buildGroups();
     }
@@ -268,9 +379,13 @@ public class arcWaveInfoDialog extends BaseDialog{
                         b.add().growX();
 
                         b.label(() -> {
-                            if(group.begin == group.end ) return group.begin + 1 + "" + (group.spacing==1?"":("[white]|[lightgray]"+group.spacing)) +"  ";
-                            else return (group.begin + 1) + (group.end>999999?"+":("~" + (group.end + 1)))  + (group.spacing==1?"":("[white]|[lightgray]"+group.spacing)) +"  ";
-                        }).color(Color.lightGray).minWidth(45f).labelAlign(Align.left).left();
+                            StringBuilder builder = new StringBuilder();
+                            builder.append("[lightgray]").append(group.begin + 1);
+                            if(group.begin == group.end ) return builder.toString();
+                            if(group.end>999999) builder.append("+"); else builder.append("~").append(group.end + 1);
+                            if(group.spacing>1) builder.append("[white]|[lightgray]"+group.spacing);
+                            return builder.append("  ").toString();
+                        }).minWidth(45f).labelAlign(Align.left).left();
 
                         b.button(Icon.settingsSmall, Styles.emptyi, () -> {
                             BaseDialog dialog = new BaseDialog("@waves.group");
@@ -395,7 +510,7 @@ public class arcWaveInfoDialog extends BaseDialog{
                             a.button("", () -> {
                                 if(!checkedSpawns){
                                     //recalculate waves when changed
-                                    Vars.spawner.reset();
+                                    spawner.reset();
                                     checkedSpawns = true;
                                 }
 
