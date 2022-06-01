@@ -14,6 +14,7 @@ import mindustry.content.StatusEffects;
 import mindustry.core.UI;
 import mindustry.editor.MapInfoDialog;
 import mindustry.editor.WaveInfoDialog;
+import mindustry.editor.arcWaveInfoDialog;
 import mindustry.entities.units.AIController;
 import mindustry.game.*;
 import mindustry.gen.*;
@@ -44,6 +45,7 @@ public class AuxilliaryTable extends Table {
 
     private MapInfoDialog mapInfoDialog = new MapInfoDialog();
     private WaveInfoDialog waveInfoDialog = new WaveInfoDialog();
+    private arcWaveInfoDialog arcWaveInfoDialog = new arcWaveInfoDialog();
 
     private AIController playerAI;
 
@@ -143,7 +145,7 @@ public class AuxilliaryTable extends Table {
 
             /* 波次信息界面 */
             body.collapser(t -> {
-                t.button(Icon.waves, ImageHanderNC, () -> {waveInfoDialog.show();
+                t.button(Icon.waves, ImageHanderNC, () -> {arcWaveInfoDialog.show();
                 }).size(handerSize).tooltip("波次信息");
 
                 t.table(buttons -> {
