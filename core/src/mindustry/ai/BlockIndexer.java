@@ -47,6 +47,9 @@ public class BlockIndexer{
     /** All wallores available on this map. */
     private ObjectIntMap<Item> allOresWall = new ObjectIntMap<>();
 
+    public Integer[] floorOresCount = new Integer[content.blocks().size +1];
+    public Integer[] wallOresCount = new Integer[content.blocks().size +1];
+
     public BlockIndexer(){
         clearFlags();
 
@@ -67,6 +70,12 @@ public class BlockIndexer{
 
             allOres.clear();
             allOresWall.clear();
+            floorOresCount = new Integer[content.blocks().size +1];
+            wallOresCount = new Integer[content.blocks().size +1];
+            for (int ls=0;ls<content.blocks().size;ls++){
+                floorOresCount[ls] = 0;
+                wallOresCount[ls] = 0;
+            }
             ores = new IntSeq[content.items().size][][];
             oresWall = new IntSeq[content.items().size][][];
             quadWidth = Mathf.ceil(world.width() / (float)quadrantSize);
@@ -101,6 +110,8 @@ public class BlockIndexer{
                         }
                         ores[drop.id][qx][qy].add(tile.pos());
                         allOres.increment(drop);
+                        if(tile.floor().itemDrop!=null) floorOresCount[tile.floor().id] +=1;
+                        else if(tile.overlay().itemDrop!=null) floorOresCount[tile.overlay().id] +=1;
                     }else{
                         if(oresWall[drop.id] == null){
                             oresWall[drop.id] = new IntSeq[quadWidth][quadHeight];
@@ -110,6 +121,8 @@ public class BlockIndexer{
                         }
                         oresWall[drop.id][qx][qy].add(tile.pos());
                         allOresWall.increment(drop);
+                        if(tile.floor().itemDrop!=null) wallOresCount[tile.floor().id] +=1;
+                        else if(tile.overlay().itemDrop!=null) wallOresCount[tile.overlay().id] +=1;
                     }
                 }
                 else if(tile.block()!=null && tile.block().itemDrop!=null){
@@ -123,7 +136,7 @@ public class BlockIndexer{
                     }
                     oresWall[tile.block().itemDrop.id][qx][qy].add(tile.pos());
                     allOresWall.increment(tile.block().itemDrop);
-
+                    wallOresCount[tile.block().id] +=1;
                 }
             }
         });

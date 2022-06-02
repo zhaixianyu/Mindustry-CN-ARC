@@ -10,6 +10,7 @@ import arc.util.Strings;
 import mindustry.Vars;
 import mindustry.ai.types.*;
 import mindustry.content.Blocks;
+import mindustry.content.Items;
 import mindustry.content.StatusEffects;
 import mindustry.core.UI;
 import mindustry.editor.MapInfoDialog;
@@ -139,6 +140,7 @@ public class AuxilliaryTable extends Table {
             /* 地图信息界面 */
             body.collapser(t -> {
                 t.button(Icon.map, ImageHanderNC, () -> mapInfoDialog.show()).size(handerSize).tooltip("地图信息");
+                t.button(Items.copper.emoji(), textHanderNC, () -> new arcMinerAI().editorTable()).size(handerSize).tooltip("地图信息");
             }, () -> showns[0]).left();
 
             body.row();
