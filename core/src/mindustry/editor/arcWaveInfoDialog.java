@@ -14,6 +14,9 @@ import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.*;
+import mindustry.ai.types.BuilderAI;
+import mindustry.ai.types.MinerAI;
+import mindustry.ai.types.RepairAI;
 import mindustry.content.*;
 import mindustry.core.UI;
 import mindustry.game.*;
@@ -21,6 +24,8 @@ import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.io.*;
 import mindustry.type.*;
+import mindustry.type.unit.ErekirUnitType;
+import mindustry.type.unit.MissileUnitType;
 import mindustry.ui.*;
 import mindustry.ui.dialogs.*;
 
@@ -28,6 +33,7 @@ import java.util.*;
 
 import static arc.Core.settings;
 import static mindustry.Vars.*;
+import static mindustry.content.UnitTypes.*;
 import static mindustry.game.SpawnGroup.*;
 import static mindustry.ui.Styles.*;
 
@@ -54,7 +60,11 @@ public class arcWaveInfoDialog extends BaseDialog{
 
     //波次生成
     Float difficult = 1f;
-    Boolean spawnAir = true,spawnAttack = false,spawnNaval = false;
+    Seq<UnitType> spawnUnit = content.units().copy().filter(unitType-> !(unitType instanceof MissileUnitType || unitType.controller instanceof BuilderAI || unitType.controller instanceof MinerAI || unitType.controller instanceof RepairAI));
+    Seq<UnitType> allowUnit = content.units().copy().filter(unitType-> !(unitType instanceof MissileUnitType));
+    boolean surplusUnit = true, ErekirUnit = true;
+    boolean showUnitSelect = true;
+    boolean flyingUnit=true,navalUnit=true,supportUnit=true;
 
     public arcWaveInfoDialog(){
         super("@waves.title");
@@ -162,33 +172,7 @@ public class arcWaveInfoDialog extends BaseDialog{
                 if(graphSpeed > maxGraphSpeed) graphSpeed = 1;
             }).update(b -> b.setText("x" + graphSpeed)).width(100f);
 
-            buttons.button("Random", Icon.refresh, () -> {
-                BaseDialog dialog = new BaseDialog("随机生成器");
-                dialog.cont.table(c -> {
-                    c.table(ct ->{
-                        ct.add("难度：").width(100f);
-                        ct.field(difficult + "", text -> {
-                            difficult = Float.parseFloat(text);
-                        }).valid(Strings::canParsePositiveFloat).width(200f);
-                    }).width(300f);
-
-                    c.row();
-                    c.button("空军",flatToggleMenut,() -> spawnAir = !spawnAir).width(300f).height(50f).checked(spawnAir);
-                    c.row();
-                    c.button("海军",flatToggleMenut,() -> spawnNaval = !spawnNaval).width(300f).height(50f).checked(spawnAir);
-                    c.row();
-                    c.button("攻击模式",flatToggleMenut,() -> spawnAttack = !spawnAttack).width(300f).height(50f).checked(spawnAir);
-                    c.row();
-                    c.button("生成！",()->{
-                        groups.clear();
-                        groups = Waves.generate(difficult/10,spawnAttack,spawnAir,spawnNaval);
-                        updateWaves();
-                        buildGroups();
-                    }).width(300f);
-                });
-                dialog.addCloseButton();
-                dialog.show();
-            }).width(200f);
+            buttons.button("随机", Icon.refresh, () -> arcSpawner()).width(200f);
         }
     }
 
@@ -838,5 +822,269 @@ public class arcWaveInfoDialog extends BaseDialog{
         graph.from = start;
         graph.to = start + displayed;
         graph.rebuild();
+    }
+
+    void arcSpawner(){
+        BaseDialog dialog = new BaseDialog("ARC-随机生成器");
+        ui.announce("功能制作中..请等待完成");
+        Table table = dialog.cont;
+        Runnable[] rebuild = {null};
+        rebuild[0] = () -> {
+            table.clear();
+            table.table(c -> {
+                c.table(ct -> {
+                    ct.add("难度：").width(100f);
+                    ct.field(difficult + "", text -> {
+                        difficult = Float.parseFloat(text);
+                    }).valid(Strings::canParsePositiveFloat).width(200f);
+                }).width(300f);
+                c.row();
+                c.button("单位设置", showUnitSelect ? Icon.upOpen : Icon.downOpen, Styles.togglet, () -> {
+                    showUnitSelect = !showUnitSelect;
+                    rebuild[0].run();
+                }).fillX().minWidth(400f).row();
+                c.row();
+                if(showUnitSelect){
+                    c.table(list -> {
+                        int i = 0;
+                        for (UnitType unit : content.units()) {
+                            if (i++ % 8 == 0) list.row();
+                            list.button(unit.emoji(), flatToggleMenut, () -> {
+                                if(spawnUnit.contains(unit))  spawnUnit.remove(unit);
+                                else spawnUnit.add(unit);
+                                rebuild[0].run();
+                            }).tooltip(unit.localizedName).checked(spawnUnit.contains(unit)).size(50f);
+                        }
+                    }).row();
+                    c.table(ct ->{
+                        ct.add("环境").width(50f);
+                        ct.button("Surplus",flatToggleMenut,()->{surplusUnit = !surplusUnit;
+                            for(UnitType unit : allowUnit.copy().filter(unitType -> !(unitType instanceof ErekirUnitType))) {
+                                filterUnit(unit,surplusUnit);
+                            }
+                            rebuild[0].run();
+                        }).checked(surplusUnit).width(120f);
+                        ct.button("Erekir",flatToggleMenut,()->{ErekirUnit = !ErekirUnit;
+                            for(UnitType unit :allowUnit.copy().filter(unitType -> unitType instanceof ErekirUnitType)) {
+                                filterUnit(unit,ErekirUnit);
+                            }
+                            rebuild[0].run();
+                        }).checked(ErekirUnit).width(120f);
+                    });
+                    c.row();
+                    c.table(ct ->{
+                        ct.add("兵种").width(50f);
+                        ct.button("空军",flatToggleMenut,()->{flyingUnit = !flyingUnit;
+                            for(UnitType unit : allowUnit.copy().filter(unitType -> unitType.flying)) {
+                                filterUnit(unit,flyingUnit);
+                            }
+                            rebuild[0].run();
+                        }).checked(flyingUnit).width(70f);
+                        ct.button("海军",flatToggleMenut,()->{navalUnit = !navalUnit;
+                            for(UnitType unit : allowUnit.copy().filter(unitType -> unitType.naval)) {
+                                filterUnit(unit,navalUnit);
+                            }
+                            rebuild[0].run();
+                        }).checked(navalUnit).width(70f);
+                        ct.button("支援",flatToggleMenut,()->{supportUnit = !supportUnit;
+                            for(UnitType unit : allowUnit.copy().filter(unitType->unitType.controller instanceof BuilderAI || unitType.controller instanceof MinerAI || unitType.controller instanceof RepairAI)) {
+                                filterUnit(unit,supportUnit);
+                            }
+                            rebuild[0].run();
+                        }).checked(supportUnit).width(70f);
+                    });
+                }
+                c.row();
+                c.button("生成！", () -> {
+                    groups.clear();
+                    groups = Waves.generate(difficult / 10,flyingUnit,navalUnit,supportUnit);
+                    updateWaves();
+                    buildGroups();
+                }).width(300f);
+            });
+
+        };
+        rebuild[0].run();
+        dialog.addCloseButton();
+        dialog.show();
+    }
+
+    private void filterUnit(UnitType unit,boolean filter){
+        if (filter && !spawnUnit.contains(unit)) {
+            spawnUnit.add(unit);
+        } else if(!filter && spawnUnit.contains(unit)) {
+            spawnUnit.remove(unit);
+        }
+    }
+
+    public Seq<SpawnGroup> arcGenerate(float difficulty){
+        Rand rand = new Rand();
+        UnitType[][] species = {
+                {dagger, mace, fortress, scepter, reign},
+                {nova, pulsar, quasar, vela, corvus},
+                {crawler, atrax, spiroct, arkyid, toxopid},
+                {risso, minke, bryde, sei, omura},
+                {retusa, oxynoe, cyerce, aegires, navanax}, //retusa intentionally left out as it cannot damage the core properly
+                {flare, horizon, zenith, antumbra, eclipse},
+                {mono,poly,mega,quad,oct},
+                {stell, locus, precept, vanquish, conquer},
+                {merui, cleroi, anthicus,tecta,collaris},
+                {elude,avert, obviate,quell,disrupt}
+        };
+
+
+        UnitType[][] fspec = species;
+
+        //required progression:
+        //- extra periodic patterns
+
+        Seq<SpawnGroup> out = new Seq<>();
+
+        //max reasonable wave, after which everything gets boring
+        int cap = 150;
+
+        float shieldStart = 30, shieldsPerWave = 20 + difficulty*30f;
+        float[] scaling = {1, 2f, 3f, 4f, 5f};
+
+        Intc createProgression = start -> {
+            //main sequence
+            UnitType[] curSpecies = Structs.random(fspec);
+            int curTier = 0;
+
+            for(int i = start; i < cap;){
+                int f = i;
+                int next = rand.random(8, 16) + (int)Mathf.lerp(5f, 0f, difficulty) + curTier * 4;
+
+                float shieldAmount = Math.max((i - shieldStart) * shieldsPerWave, 0);
+                int space = start == 0 ? 1 : rand.random(1, 2);
+                int ctier = curTier;
+
+                //main progression
+                out.add(new SpawnGroup(curSpecies[Math.min(curTier, curSpecies.length - 1)]){{
+                    unitAmount = f == start ? 1 : 6 / (int)scaling[ctier];
+                    begin = f;
+                    end = f + next >= cap ? never : f + next;
+                    max = 13;
+                    unitScaling = (difficulty < 0.4f ? rand.random(2.5f, 5f) : rand.random(1f, 4f)) * scaling[ctier];
+                    shields = shieldAmount;
+                    shieldScaling = shieldsPerWave;
+                    spacing = space;
+                }});
+
+                //extra progression that tails out, blends in
+                out.add(new SpawnGroup(curSpecies[Math.min(curTier, curSpecies.length - 1)]){{
+                    unitAmount = 3 / (int)scaling[ctier];
+                    begin = f + next - 1;
+                    end = f + next + rand.random(6, 10);
+                    max = 6;
+                    unitScaling = rand.random(2f, 4f);
+                    spacing = rand.random(2, 4);
+                    shields = shieldAmount/2f;
+                    shieldScaling = shieldsPerWave;
+                }});
+
+                i += next + 1;
+                if(curTier < 3 || (rand.chance(0.05) && difficulty > 0.8)){
+                    curTier ++;
+                }
+
+                //do not spawn bosses
+                curTier = Math.min(curTier, 3);
+
+                //small chance to switch species
+                if(rand.chance(0.3)){
+                    curSpecies = Structs.random(fspec);
+                }
+            }
+        };
+
+        createProgression.get(0);
+
+        int step = 5 + rand.random(5);
+
+        while(step <= cap){
+            createProgression.get(step);
+            step += (int)(rand.random(15, 30) * Mathf.lerp(1f, 0.5f, difficulty));
+        }
+
+        int bossWave = (int)(rand.random(50, 70) * Mathf.lerp(1f, 0.5f, difficulty));
+        int bossSpacing = (int)(rand.random(25, 40) * Mathf.lerp(1f, 0.5f, difficulty));
+
+        int bossTier = difficulty < 0.6 ? 3 : 4;
+
+        //main boss progression
+        out.add(new SpawnGroup(Structs.random(species)[bossTier]){{
+            unitAmount = 1;
+            begin = bossWave;
+            spacing = bossSpacing;
+            end = never;
+            max = 16;
+            unitScaling = bossSpacing;
+            shieldScaling = shieldsPerWave;
+            effect = StatusEffects.boss;
+        }});
+
+        //alt boss progression
+        out.add(new SpawnGroup(Structs.random(species)[bossTier]){{
+            unitAmount = 1;
+            begin = bossWave + rand.random(3, 5) * bossSpacing;
+            spacing = bossSpacing;
+            end = never;
+            max = 16;
+            unitScaling = bossSpacing;
+            shieldScaling = shieldsPerWave;
+            effect = StatusEffects.boss;
+        }});
+
+        int finalBossStart = 120 + rand.random(30);
+
+        //final boss waves
+        out.add(new SpawnGroup(Structs.random(species)[bossTier]){{
+            unitAmount = 1;
+            begin = finalBossStart;
+            spacing = bossSpacing/2;
+            end = never;
+            unitScaling = bossSpacing;
+            shields = 500;
+            shieldScaling = shieldsPerWave * 4;
+            effect = StatusEffects.boss;
+        }});
+
+        //final boss waves (alt)
+        out.add(new SpawnGroup(Structs.random(species)[bossTier]){{
+            unitAmount = 1;
+            begin = finalBossStart + 15;
+            spacing = bossSpacing/2;
+            end = never;
+            unitScaling = bossSpacing;
+            shields = 500;
+            shieldScaling = shieldsPerWave * 4;
+            effect = StatusEffects.boss;
+        }});
+
+        //add megas to heal the base.
+        if(supportUnit && difficulty >= 0.5){
+            int amount = Mathf.random(1, 3 + (int)(difficulty*2));
+
+            for(int i = 0; i < amount; i++){
+                int wave = Mathf.random(3, 20);
+                out.add(new SpawnGroup(mega){{
+                    unitAmount = 1;
+                    begin = wave;
+                    end = wave;
+                    max = 16;
+                }});
+            }
+        }
+
+        //shift back waves on higher difficulty for a harder start
+        int shift = Math.max((int)(difficulty * 14 - 5), 0);
+
+        for(SpawnGroup group : out){
+            group.begin -= shift;
+            group.end -= shift;
+        }
+
+        return out;
     }
 }
