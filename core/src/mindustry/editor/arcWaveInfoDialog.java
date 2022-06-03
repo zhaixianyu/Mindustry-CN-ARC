@@ -826,10 +826,11 @@ public class arcWaveInfoDialog extends BaseDialog{
 
     void arcSpawner(){
         BaseDialog dialog = new BaseDialog("ARC-随机生成器");
-        ui.announce("功能制作中..请等待完成");
+
         Table table = dialog.cont;
         Runnable[] rebuild = {null};
         rebuild[0] = () -> {
+            ui.announce("功能制作中..请等待完成",10);
             table.clear();
             table.table(c -> {
                 c.table(ct -> {

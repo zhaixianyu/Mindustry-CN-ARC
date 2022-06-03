@@ -110,8 +110,8 @@ public class BlockIndexer{
                         }
                         ores[drop.id][qx][qy].add(tile.pos());
                         allOres.increment(drop);
-                        if(tile.floor().itemDrop!=null) floorOresCount[tile.floor().id] +=1;
-                        else if(tile.overlay().itemDrop!=null) floorOresCount[tile.overlay().id] +=1;
+                        if(tile.overlay().itemDrop!=null) floorOresCount[tile.overlay().id] +=1;
+                        else if(tile.floor().itemDrop!=null) floorOresCount[tile.floor().id] +=1;
                     }else{
                         if(oresWall[drop.id] == null){
                             oresWall[drop.id] = new IntSeq[quadWidth][quadHeight];
@@ -121,11 +121,10 @@ public class BlockIndexer{
                         }
                         oresWall[drop.id][qx][qy].add(tile.pos());
                         allOresWall.increment(drop);
-                        if(tile.floor().itemDrop!=null) wallOresCount[tile.floor().id] +=1;
-                        else if(tile.overlay().itemDrop!=null) wallOresCount[tile.overlay().id] +=1;
+                        if(tile.overlay().itemDrop!=null) wallOresCount[tile.overlay().id] +=1;
                     }
                 }
-                else if(tile.block()!=null && tile.block().itemDrop!=null){
+                if(tile.block()!=null && tile.block().itemDrop!=null){
                     int qx = (tile.x / quadrantSize);
                     int qy = (tile.y / quadrantSize);
                     if(oresWall[tile.block().itemDrop.id] == null){
@@ -137,6 +136,9 @@ public class BlockIndexer{
                     oresWall[tile.block().itemDrop.id][qx][qy].add(tile.pos());
                     allOresWall.increment(tile.block().itemDrop);
                     wallOresCount[tile.block().id] +=1;
+                }
+                if(tile.block()!=null && tile.floor().liquidDrop!=null){
+                    floorOresCount[tile.floor().id] +=1;
                 }
             }
         });

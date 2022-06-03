@@ -6,6 +6,7 @@ import arc.graphics.Color;
 import arc.scene.style.TextureRegionDrawable;
 import arc.scene.ui.*;
 import arc.scene.ui.layout.Table;
+import arc.struct.Seq;
 import arc.util.Strings;
 import mindustry.Vars;
 import mindustry.ai.types.*;
@@ -24,6 +25,9 @@ import mindustry.type.StatusEffect;
 
 import mindustry.arcModule.arcMarker;
 import mindustry.ui.dialogs.BaseDialog;
+import mindustry.world.Block;
+import mindustry.world.blocks.environment.Floor;
+import mindustry.world.blocks.environment.StaticWall;
 
 import static arc.Core.settings;
 import static mindustry.Vars.*;
@@ -140,7 +144,7 @@ public class AuxilliaryTable extends Table {
             /* 地图信息界面 */
             body.collapser(t -> {
                 t.button(Icon.map, ImageHanderNC, () -> mapInfoDialog.show()).size(handerSize).tooltip("地图信息");
-                t.button(Items.copper.emoji(), textHanderNC, () -> new arcMinerAI().editorTable()).size(handerSize).tooltip("地图信息");
+                t.button(Items.copper.emoji(), textHanderNC, () -> floorStatisticDialog()).size(handerSize).tooltip("地图信息");
             }, () -> showns[0]).left();
 
             body.row();
@@ -402,6 +406,49 @@ public class AuxilliaryTable extends Table {
             str.append(s).append(".").append(ms).append('s');
         }
         return str.toString();
+    }
+
+    private void floorStatisticDialog(){
+        BaseDialog dialog = new BaseDialog("矿物统计");
+        Table table = dialog.cont;
+        Runnable[] rebuild = {null};
+        rebuild[0] = () -> {
+            table.clear();
+
+            table.table(c -> {
+                c.add("<---[cyan]地表矿[]--->").row();
+                c.table(list -> {
+                    int i = 0;
+                    for (Block block : content.blocks().select(b -> b instanceof Floor f && !f.wallOre && f.itemDrop != null)) {
+                        if(indexer.floorOresCount[block.id]==0) continue;
+                        if (i++ % 4 == 0) list.row();
+                        list.add(block.emoji() +" "+ block.localizedName + "\n" + indexer.floorOresCount[block.id]).width(100f).height(50f);
+                    }
+                }).row();
+                c.add("<---[cyan]墙矿[]--->").row();
+                c.table(list -> {
+                    int i = 0;
+                    for (Block block : content.blocks().select(b -> ((b instanceof Floor f && f.wallOre) || b instanceof StaticWall) && b.itemDrop != null)) {
+                        if(indexer.wallOresCount[block.id]==0) continue;
+                        if (i++ % 4 == 0) list.row();
+                        list.add(block.emoji() +" "+ block.localizedName + "\n" + indexer.wallOresCount[block.id]).width(100f).height(50f);
+                    }
+                }).row();
+                c.add("<---[cyan]液体[]--->").row();
+                c.table(list -> {
+                    int i = 0;
+                    for (Block block : content.blocks().select(b -> ((b instanceof Floor f && f.liquidDrop!=null)))) {
+                        if(indexer.floorOresCount[block.id]==0) continue;
+                        if (i++ % 4 == 0) list.row();
+                        list.add(block.emoji() +" "+ block.localizedName + "\n" + indexer.floorOresCount[block.id]).width(100f).height(50f);
+                    }
+                }).row();
+                c.row();
+            });
+        };
+        rebuild[0].run();
+        dialog.addCloseButton();
+        dialog.show();
     }
 
 
