@@ -67,7 +67,7 @@ public class arcWaveInfoDialog extends BaseDialog{
     boolean flyingUnit=true,navalUnit=true,supportUnit=true;
 
     public arcWaveInfoDialog(){
-        super("@waves.title");
+        super("ARC-波次编辑器");
 
         shown(() -> {
             checkedSpawns = false;
@@ -255,7 +255,7 @@ public class arcWaveInfoDialog extends BaseDialog{
                     buttons.clear();
                     buttons.button("<<", cleart, () -> {
                         arcWaveIndex -= 10;
-                        if(arcWaveIndex < 0) arcWaveIndex = 1;
+                        if(arcWaveIndex < 0) arcWaveIndex = 0;
                         setup();
                     }).size(handerSize);
 
@@ -265,10 +265,10 @@ public class arcWaveInfoDialog extends BaseDialog{
                         setup();
                     }).size(handerSize);
 
-                    buttons.field((arcWaveIndex + 1) + "", text -> {
+                    TextField sField = buttons.field((arcWaveIndex + 1) + "", text -> {
                         arcWaveIndex = Integer.parseInt(text) - 1;
                         setup();
-                    });
+                    }).get();
 
                     buttons.button(">", cleart, () -> {
                         arcWaveIndex += 1;
@@ -284,6 +284,12 @@ public class arcWaveInfoDialog extends BaseDialog{
                         arcWaveIndex = 1;
                         setup();
                     }).size(handerSize);
+
+                    buttons.slider(0,calWinWave(),1,res->{
+                        arcWaveIndex = (int) res;
+                        sField.setText((arcWaveIndex + 1) + "");
+                    });
+
                 }).left().row();
                 t.pane(waveInfo -> {
                     waveInfo.clear();
@@ -830,7 +836,7 @@ public class arcWaveInfoDialog extends BaseDialog{
         Table table = dialog.cont;
         Runnable[] rebuild = {null};
         rebuild[0] = () -> {
-            ui.announce("功能制作中..请等待完成",10);
+
             table.clear();
             table.table(c -> {
                 c.table(ct -> {
@@ -908,6 +914,7 @@ public class arcWaveInfoDialog extends BaseDialog{
         rebuild[0].run();
         dialog.addCloseButton();
         dialog.show();
+        ui.announce("功能制作中..请等待完成\n[orange]目前可调整：难度|空|海|辅，其他功能均无效",15);
     }
 
     private void filterUnit(UnitType unit,boolean filter){
@@ -1087,5 +1094,16 @@ public class arcWaveInfoDialog extends BaseDialog{
         }
 
         return out;
+    }
+
+    public int calWinWave(){
+        if (state.rules.winWave >= 1) return state.rules.winWave;
+        int maxwave = 0;
+        for(SpawnGroup group : state.rules.spawns){
+            if(group.end>99999) continue;
+            maxwave = Math.max(maxwave ,group.end);
+        }
+        if (maxwave > 99999) return 200;
+        return maxwave + 1;
     }
 }
