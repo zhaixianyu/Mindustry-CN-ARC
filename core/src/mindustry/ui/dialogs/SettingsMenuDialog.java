@@ -679,6 +679,7 @@ public class SettingsMenuDialog extends BaseDialog{
         cheating.addCategory("arcWeakCheat");
         cheating.checkPref("forceIgnoreAttack",false);
         cheating.checkPref("allBlocksReveal",false);
+        cheating.checkPref("worldCreator",false);
         cheating.checkPref("overrideSkipWave", false);
         cheating.checkPref("overridePickUpPayload",false);
         cheating.addCategory("arcStrongCheat");

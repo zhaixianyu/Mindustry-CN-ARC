@@ -141,10 +141,6 @@ public class AdvanceToolTable extends Table {
                         tBox.background(Tex.buttonEdge3);
                         tBox.add("规则：").left();
 
-                        tBox.button("解禁", cleart, () -> {
-                            state.rules.bannedBlocks.clear();
-                        }).tooltip("[acid]解除所有被禁建筑(不可还原，服务器可以sync)").width(50f);
-
                         tBox.button("无限火力", flatToggleMenut, () -> {
                             player.team().rules().cheat = !player.team().rules().cheat;
                         }).checked(b -> player.team().rules().cheat).tooltip("[acid]开关自己队的无限火力").size(90f, 30f);
@@ -158,6 +154,12 @@ public class AdvanceToolTable extends Table {
                         }).checked(b -> state.rules.infiniteResources).size(50f, 30f);
 
                         if (Core.settings.getBool("developmode")) {
+
+                            tBox.button("解禁", flatToggleMenut, () -> {
+                                Core.settings.put("allBlocksReveal", !Core.settings.getBool("allBlocksReveal"));
+                                ui.hudfrag.blockfrag.rebuild();
+                            }).checked(b -> Core.settings.getBool("allBlocksReveal")).tooltip("[acid]显示并允许建造所有物品").size(50f, 30f);
+
                             tBox.button("创世神", flatToggleMenut, () -> {
                                 Core.settings.put("worldCreator", !Core.settings.getBool("worldCreator"));
                             }).checked(b -> Core.settings.getBool("worldCreator")).size(70f, 30f);
