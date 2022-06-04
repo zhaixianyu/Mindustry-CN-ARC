@@ -1152,7 +1152,7 @@ public class UnitType extends UnlockableContent{
 
             Lines.stroke(Lines.getStroke() * curStroke);
 
-            Draw.z(Layer.shields + 6.5f);
+            Draw.z(Layer.effect - 2f);
             Draw.color(effectcolor);
 
             Tmp.v1.trns(unit.rotation - 90, unit.x, unit.y).add(unit.x, unit.y);
@@ -1164,8 +1164,6 @@ public class UnitType extends UnlockableContent{
                     Lines.arc(unit.x, unit.y, maxRange, sectorRad, rot);
                 }
             }
-
-            Drawf.light(unit.x, unit.y, range * 1.5f, effectcolor, curStroke * 0.8f);
 
             Draw.reset();
 
@@ -1181,7 +1179,7 @@ public class UnitType extends UnlockableContent{
 
             Lines.stroke(Lines.getStroke() * curStroke);
 
-            Draw.z(Layer.shields + 6.5f);
+            Draw.z(Layer.effect - 2f);
             Draw.color(effectcolor);
 
             Tmp.v1.trns(unit.rotation - 90, unit.x, unit.y).add(unit.x, unit.y);

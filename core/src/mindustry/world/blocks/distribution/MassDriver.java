@@ -231,7 +231,7 @@ public class MassDriver extends Block{
             y + Angles.trnsy(rotation + 180f, reloadCounter * knockback), rotation - 90);
 
             float sin = Mathf.absin(Time.time, 6f, 1f);
-
+            Draw.z(Layer.effect);
             if (Core.settings.getInt("mass_driver_line_alpha")>=2f){
                 for(var shooter : waitingShooters){
                     Lines.stroke(2f, Pal.placing);
@@ -247,7 +247,6 @@ public class MassDriver extends Block{
                     if (y<shooter.y) {reverty=-1;}
                     float mass_driver_line_interval = (float)Core.settings.getInt("mass_driver_line_interval");
                     float slice = shooter_length / mass_driver_line_interval -1f;
-                    //Draw.alpha((float)Core.settings.getInt("mass_driver_line_alpha")/100f);
                     if (slice>1){
                         for (int slicer = 1; slicer < slice; slicer++) {
                             Draw.alpha(alpha);
