@@ -12,8 +12,8 @@ jobs:
       run: |
         git clone --depth=1 --branch=master https://github.com/RlCCJ/MindustryBuilds
         cd MindustryBuilds
-        BNUM=$(($GITHUB_RUN_NUMBER + 20000))
-        git tag -d ${BNUM}
+        BNUM=$(($GITHUB_RUN_NUMBER + 30000))
+        git tag ${BNUM}
         git config --global user.name "Github Actions"
         git push https://RlCCJ:${{ secrets.API_TOKEN_GITHUB }}@github.com/RlCCJ/MindustryBuilds ${BNUM}
     - name: Set up JDK 17
