@@ -10,6 +10,8 @@ _[Wiki](https://mindustrygame.github.io/wiki)_
 _[Javadoc](https://mindustrygame.github.io/docs/)_ 
 _[Original](https://github.com/Anuken/Mindustry)_ 
 
+_[前往最新构建版](https://github.com/RlCCJ/MindustryBuilds/releases)_
+
 ## 学术端介绍
 制作团队：Mindustry PVP 学术交流群
 
