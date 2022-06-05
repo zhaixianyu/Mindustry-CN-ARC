@@ -32,5 +32,3 @@ jobs:
           git commit -m "Automatic bundle update"
           git push
         fi
-    - name: Run unit tests
-      run: ./gradlew clean cleanTest test --stacktrace
