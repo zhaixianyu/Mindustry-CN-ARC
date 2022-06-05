@@ -94,10 +94,9 @@ public class UnitAssembler extends PayloadBlock{
         super.setBars();
 
         //addBar("progress", (UnitAssemblerBuild e) -> new Bar("bar.progress", Pal.ammo, () -> e.progress));
-
         addBar("progress", (UnitAssembler.UnitAssemblerBuild e) -> new Bar(() ->
-                Core.bundle.format("bar.unitprogress", Strings.fixed(e.progress * 100f / e.plan().time, 0),
-                        Strings.fixed((e.plan().time - e.progress) / (60f * Vars.state.rules.unitBuildSpeedMultiplier * e.timeScale()), 0)), () -> Pal.ammo, e::progress
+                "制造进度: " + (int)(e.progress * 100) + "%" + " | " +Strings.fixed((e.plan().time * (1-e.progress))/(60f * e.timeScale()),0) +  " s",
+                () -> Pal.ammo, e::progress
 
         ));
 
@@ -435,7 +434,8 @@ public class UnitAssembler extends PayloadBlock{
             Lines.line(x - block.size * tilesize / 2f * 0.6f, y + block.size * tilesize / 2.5f,
                     x + 0.6f * (Mathf.clamp(progress, 0f, 1f) - 0.5f) * block.size * tilesize, y + block.size * tilesize / 2.5f);
             Draw.color();
-            this.block.drawText((int)(Mathf.clamp(progress, 0f, 1f) * 100) + "% | " + ( Strings.fixed((plan().time - progress) / (60f * Vars.state.rules.unitBuildSpeed(team) * timeScale), 0)), x, y + block.size * tilesize / 2.5f - 5f, true, 0.9f);
+
+            this.block.drawText((int)(progress * 100) + "%" + " | " +Strings.fixed((plan().time * (1-progress))/(60f * timeScale()),0) +  " s", x, y + block.size * tilesize / 2.5f - 5f, true, 0.9f);
         }
 
         @Override
