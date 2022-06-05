@@ -10,8 +10,8 @@ jobs:
     - uses: actions/checkout@v2
     - name: Trigger BE build
       run: |
-        git clone --depth=1 --branch=master https://github.com/RlCCJ/MindustryBuilds ../MindustryBuilds
-        cd ../MindustryBuilds
+        git clone --depth=1 --branch=master https://github.com/RlCCJ/MindustryBuilds
+        cd MindustryBuilds
         BNUM=$(($GITHUB_RUN_NUMBER + 20000))
         git tag ${BNUM}
         git config --global user.name "Github Actions"
