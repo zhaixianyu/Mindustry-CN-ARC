@@ -275,8 +275,9 @@ public class OverlayRenderer{
 
         //单位射程
         if(ui.hudfrag.blockfrag.hover() instanceof Unit unit){
+            Draw.reset();
             Draw.color(unit.team.color);
-            Lines.dashCircle(unit.x, unit.y, unit.type.maxRange);
+            Lines.dashCircle(unit.x, unit.y, unit.type.range);
         }
 
         if(ui.hudfrag.blockfrag.hover() instanceof Unit unit && unit.controller() instanceof LogicAI ai && ai.controller != null && ai.controller.isValid()){
