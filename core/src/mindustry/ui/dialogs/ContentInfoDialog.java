@@ -92,32 +92,33 @@ public class ContentInfoDialog extends BaseDialog{
 
         table.table(t -> {
             t.row();
-            t.button(Icon.copy, Styles.clearNonei, () -> {
-                Core.app.setClipboardText((char) Fonts.getUnicode(content.name) + "");
+            t.table(tt->{
+                tt.button(content.emoji(), Styles.cleart, () -> Core.app.setClipboardText((char) Fonts.getUnicode(content.name) + "")).width(60f);
+                tt.button(Icon.info, Styles.clearNonei, () -> Core.app.setClipboardText(content.name + "")).width(50f);
+                tt.button(Icon.book, Styles.clearNonei, () -> Core.app.setClipboardText(content.description + "")).width(50f);
             });
-            t.button(Icon.info, Styles.clearNonei, () -> {
-                Core.app.setClipboardText(content.name + "");
-            });
-            t.button(Icon.book, Styles.clearNonei, () -> {
-                Core.app.setClipboardText(content.description + "");
-            });
+
             t.row();
-            t.add("分享|标记：[简]");
-            t.button(Icon.link,  Styles.clearNonei, () -> {
-                String message = arcItemInfo(content,false);
-                int seperator = 145;
-                for (int i=0; i < message.length()/(float)seperator;i++){
-                    Call.sendChatMessage(message.substring(i*seperator,Math.min(message.length(),(i+1)*seperator)));
-                }
-            }).size(30).disabled(!Core.settings.getBool("arcShareWaveInfo"));
-            t.add("   ;[详]");
-            t.button(Icon.link,  Styles.clearNonei, () -> {
-                String message = arcItemInfo(content,true);
-                int seperator = 145;
-                for (int i=0; i < message.length()/(float)seperator;i++){
-                    Call.sendChatMessage(message.substring(i*seperator,Math.min(message.length(),(i+1)*seperator)));
-                }
-            }).size(30).disabled(!Core.settings.getBool("arcShareWaveInfo"));
+            t.table(tt->{
+                tt.add("♐");
+                tt.button("简",  Styles.cleart, () -> {
+                    String message = arcItemInfo(content,false);
+                    int seperator = 145;
+                    for (int i=0; i < message.length()/(float)seperator;i++){
+                        Call.sendChatMessage(message.substring(i*seperator,Math.min(message.length(),(i+1)*seperator)));
+                    }
+                }).width(50f).disabled(!Core.settings.getBool("arcShareWaveInfo"));
+                tt.button("详",  Styles.cleart, () -> {
+                    String message = arcItemInfo(content,true);
+                    int seperator = 145;
+                    for (int i=0; i < message.length()/(float)seperator;i++){
+                        Call.sendChatMessage(message.substring(i*seperator,Math.min(message.length(),(i+1)*seperator)));
+                    }
+                }).width(50f).disabled(!Core.settings.getBool("arcShareWaveInfo"));
+
+
+            });
+
         }).fillX().padLeft(10);
 
         ScrollPane pane = new ScrollPane(table);
