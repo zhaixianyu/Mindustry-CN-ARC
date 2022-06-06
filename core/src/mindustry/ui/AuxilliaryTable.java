@@ -304,9 +304,13 @@ public class AuxilliaryTable extends Table {
             body.collapser(t -> {
                 t.button(emanate.emoji() + " >", textHanderNC, () -> showns[3] = !showns[3]).size(handerSize).tooltip("手机控制器");
 
-                t.button(Icon.units, ImageHanderNC,imgSize * 0.8f, () -> {
+                t.button(Icon.unitsSmall, ImageHanderNC,imgSize, () -> {
                     control.input.commandMode = !control.input.commandMode;
                 }).tooltip("指挥模式").checked(control.input.commandMode);
+
+                t.button(Icon.pause, ImageHanderNC,imgSize, () -> {
+                    control.input.isBuilding = !control.input.isBuilding;
+                }).tooltip("暂停建造").checked(control.input.isBuilding);
 
                 t.button(StatusEffects.unmoving.emoji(), textHanderNC, () -> {
                     boolean view = settings.getBool("viewMode");
