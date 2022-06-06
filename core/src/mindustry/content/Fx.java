@@ -2377,6 +2377,17 @@ public class Fx{
         }
     }),
 
+    arcQuesMarker = new Effect(1200, e -> {
+        color(Color.violet);
+        stroke(2f);
+        Draw.alpha(Math.min(e.fin() * 5,1));
+        Lines.arc(e.x, e.y + 25f, 10, 0.75f,270);
+        Lines.line(e.x,e.y + 15f,e.x,e.y + 7f);
+        Lines.circle(e.x,e.y,3f);
+        Lines.circle(e.x,e.y+18.5f,27f);
+        Drawf.arrow(player.x, player.y, e.x, e.y,5f * tilesize, 4f, Color.violet);
+    }),
+
     chainEmp = new Effect(30f, 300f, e -> {
         if(!(e.data instanceof Position p)) return;
         float tx = p.getX(), ty = p.getY(), dst = Mathf.dst(e.x, e.y, tx, ty);

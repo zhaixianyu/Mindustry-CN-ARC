@@ -18,7 +18,7 @@ import java.util.Map;
 import static mindustry.Vars.*;
 
 public class arcMarker{
-    public enum markType{MARK,GATHER,ATTACK,DEFENCE} //,ITEMS,WAVES需要加入吗
+    public enum markType{MARK,GATHER,ATTACK,DEFENCE,QUES} //,ITEMS,WAVES需要加入吗
     public markType type = markType.MARK;
     /* 应该是int类型 */
     public Vec2 loc = new Vec2(0,0);
@@ -32,6 +32,7 @@ public class arcMarker{
         put(markType.GATHER,"集合");
         put(markType.ATTACK,"攻击");
         put(markType.DEFENCE,"防御");
+        put(markType.QUES,"问号");
     }};
     //感觉有点蠢，但总比跑循环好吧
     public static ObjectMap<String,markType> stringMark =  new ObjectMap<>(){{
@@ -39,6 +40,7 @@ public class arcMarker{
         put("集合",markType.GATHER);
         put("攻击",markType.ATTACK);
         put("防御",markType.DEFENCE);
+        put("问号",markType.QUES);
     }};
 
     //储存所有标记点
@@ -49,8 +51,6 @@ public class arcMarker{
     //信息相关
     private static String msgMarkType = "";
 
-
-
     public static arcMarker newMarker(int x,int y){
         arcMarker marker = new arcMarker();
         marker.loc = new Vec2(x,y);
@@ -59,6 +59,7 @@ public class arcMarker{
             case 1: marker.type = markType.GATHER;break;
             case 2: marker.type = markType.ATTACK;break;
             case 3: marker.type = markType.DEFENCE;break;
+            case 4: marker.type = markType.QUES;break;
         }
         marker.time = Time.time;
         markList.add(marker);
@@ -146,6 +147,9 @@ public class arcMarker{
         }
         else if(type == markType.DEFENCE){
             showEffect = Fx.arcDefenseMarker;
+        }
+        else if(type == markType.QUES){
+            showEffect = Fx.arcQuesMarker;
         }
         showEffect.arcCreate(loc.x * tilesize, loc.y * tilesize,0f, Color.red,null);
     }

@@ -351,6 +351,8 @@ public class AuxilliaryTable extends Table {
                         .checked(b -> settings.getInt("markType") == 2).size(handerSize).tooltip("标记攻击点");
                 t.button("[#7fff00]守", textHander, () -> settings.put("markType",3))
                         .checked(b -> settings.getInt("markType") == 3).size(handerSize).tooltip("标记防守点");
+                t.button("[#ee82ee]?", textHander, () -> settings.put("markType",4))
+                        .checked(b -> settings.getInt("markType") == 4).size(handerSize).tooltip("问号");
 
             }, () -> showns[5]).left();
 
