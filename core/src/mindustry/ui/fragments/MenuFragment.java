@@ -31,7 +31,6 @@ public class MenuFragment{
         renderer = new MenuRenderer();
 
         if (!Core.settings.getBool("arcDisableModWarning")){
-            ui.showInfo("@arcModLoad.warning");
             ui.aboutcn_arc.show();
         }
 
