@@ -23,8 +23,9 @@ import mindustry.graphics.*;
 import static mindustry.Vars.*;
 import static arc.Core.bundle;
 import static arc.Core.settings;
-import static mindustry.gen.Tex.flatDownBase;
-import static mindustry.gen.Tex.pane;
+import static mindustry.gen.Tex.*;
+import static mindustry.gen.Tex.button;
+import static mindustry.ui.Styles.flatDown;
 import static mindustry.ui.Styles.flatOver;
 
 public class HudSettingsTable extends Table{
@@ -33,7 +34,7 @@ public class HudSettingsTable extends Table{
     private int unitTransparency = Core.settings.getInt("unitTransparency");
     private Boolean unitHide = false;
 
-    private TextButton.TextButtonStyle textStyle;
+    private TextButton.TextButtonStyle textStyle,circleStyle;
 
     public HudSettingsTable(){
         textStyle = new TextButton.TextButtonStyle(){{
@@ -43,6 +44,18 @@ public class HudSettingsTable extends Table{
             font = Fonts.def;
             fontColor = Color.white;
             disabledFontColor = Color.gray;
+            checked = flatDown;
+        }};
+
+        circleStyle = new TextButton.TextButtonStyle(){{
+            over = buttonOver;
+            disabled = buttonDisabled;
+            font = Fonts.def;
+            fontColor = Color.white;
+            disabledFontColor = Color.gray;
+            down = buttonDown;
+            up = button;
+            checked = flatDown;
         }};
 
         rebuild();
@@ -92,60 +105,60 @@ public class HudSettingsTable extends Table{
             ScrollPane pane = pane(sp -> {
                 sp.background(Styles.black6);
                 sp.table(t -> {
-                    t.button("[cyan]S", () ->{
+                    t.button("[cyan]S",textStyle, () ->{
                         Call.sendChatMessage("/sync");
                     }).size(30,30).name("sync").tooltip("sync");
-                    t.button("[cyan]观", () -> {
+                    t.button("[cyan]观",textStyle, () -> {
                         Call.sendChatMessage("/ob");
                     }).size(30,30).name("ob").tooltip("观察者模式");
-                    t.button("[cyan]版", () -> {
+                    t.button("[cyan]版",textStyle, () -> {
                         Call.sendChatMessage("/broad");
                     }).size(30,30).tooltip("服务器信息版");
-                    t.button("[red]版", () -> {
+                    t.button("[red]版",textStyle, () -> {
                         Core.settings.put("ShowInfoPopup", !Core.settings.getBool("ShowInfoPopup"));
-                    }).size(30,30).tooltip("关闭所有信息版");
-                    t.button("[cyan]指", () -> {
-                        control.input.commandMode = !control.input.commandMode;
-                    }).size(30,30).tooltip("指挥模式");
+                    }).checked(a->Core.settings.getBool("ShowInfoPopup")).size(30,30).tooltip("关闭所有信息版");
+                    t.button("[white]法",textStyle, () -> {
+                        Call.sendChatMessage("/vote gameover");
+                    }).size(30,30).tooltip("法国模式");
                 }).left();
                 sp.row();
                 sp.table(t -> {
-                    t.button("[cyan]块", () ->{
+                    t.button("[cyan]块",textStyle, () ->{
                         int blockrenderlevel = Core.settings.getInt("blockrenderlevel");
                         Core.settings.put("blockrenderlevel", (blockrenderlevel+1) % 3);
                     }).size(30,30).tooltip("建筑显示");
-                    t.button("[cyan]兵", () ->{
+                    t.button("[cyan]兵",textStyle, () ->{
                         unitTransparency = unitHide? unitTransparency : Core.settings.getInt("unitTransparency");
                         unitHide = !unitHide;
                         Core.settings.put("unitTransparency", unitHide? 0:unitTransparency);
-                    }).size(30,30).tooltip("兵种显示");
-                    t.button("[cyan]箱", () ->{
+                    }).checked(a->!unitHide).size(30,30).tooltip("兵种显示");
+                    t.button("[cyan]箱",textStyle, () ->{
                         Core.settings.put("unithitbox", !Core.settings.getBool("unithitbox"));
-                    }).size(30,30).tooltip("碰撞箱显示");
-                    t.button("[cyan]弹", () ->{
+                    }).checked(a->Core.settings.getBool("unithitbox")).size(30,30).tooltip("碰撞箱显示");
+                    t.button("[cyan]弹",textStyle, () ->{
                         Core.settings.put("bulletShow", !Core.settings.getBool("bulletShow"));
-                    }).size(30,30).tooltip("子弹显示");
-                    t.button("[cyan]雾", () ->{
+                    }).checked(a->Core.settings.getBool("bulletShow")).size(30,30).tooltip("子弹显示");
+                    t.button("[cyan]雾",textStyle, () ->{
                         state.rules.fog = !state.rules.fog;
-                    }).size(30,30).tooltip("战争迷雾").visible(!state.rules.pvp || player.team().id == 255);
+                    }).checked(a->state.rules.fog).size(30,30).tooltip("战争迷雾").visible(!state.rules.pvp || player.team().id == 255);
                 }).left();
                 sp.row();
                 sp.table(t -> {
-                    t.button("[red]灯", () -> {
+                    t.button("[red]灯",textStyle, () -> {
                         enableLight = !enableLight;
-                    }).size(30,30).name("灯光").tooltip("[cyan]开灯啊！");
-                    t.button("[acid]效", () ->{
+                    }).checked(a->enableLight).size(30,30).name("灯光").tooltip("[cyan]开灯啊！");
+                    t.button("[acid]效",textStyle, () ->{
                         Core.settings.put("effects", !Core.settings.getBool("effects"));
-                    }).size(30,30).tooltip("特效显示");
-                    t.button("[acid]光", () ->{
+                    }).checked(a->Core.settings.getBool("effects")).size(30,30).tooltip("特效显示");
+                    t.button("[acid]光",textStyle, () ->{
                         Core.settings.put("bloom", !Core.settings.getBool("bloom"));
-                    }).size(30,30).tooltip("光效显示");
-                    t.button("[acid]阴", () ->{
+                    }).checked(a->Core.settings.getBool("bloom")).size(30,30).tooltip("光效显示");
+                    t.button("[acid]阴",textStyle, () ->{
                         Core.settings.put("forceEnableDarkness", !Core.settings.getBool("forceEnableDarkness"));
-                    }).size(30,30).tooltip("墙体阴影显示");
-                    t.button("[acid]天", () ->{
+                    }).checked(a->Core.settings.getBool("forceEnableDarkness")).size(30,30).tooltip("墙体阴影显示");
+                    t.button("[acid]天",textStyle, () ->{
                         Core.settings.put("showweather", !Core.settings.getBool("showweather"));
-                    }).size(30,30).tooltip("天气显示");
+                    }).checked(a->Core.settings.getBool("showweather")).size(30,30).tooltip("天气显示");
                 }).left();
                 sp.row();
                 sp.add(sets);

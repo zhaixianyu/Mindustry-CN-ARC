@@ -45,6 +45,7 @@ public class OtherCoreItemDisplay extends Table {
             font = Fonts.def;
             fontColor = Color.white;
             disabledFontColor = Color.gray;
+            checked = flatDown;
         }};
 
         teamsTable = new Table();
@@ -89,15 +90,15 @@ public class OtherCoreItemDisplay extends Table {
 
                     buttons.button(Blocks.worldProcessor.emoji(),textStyle, () -> {
                         showStat = !showStat;
-                    }).size(40f).row();
+                    }).checked(a->showStat).size(40f).row();
 
                     buttons.button(content.items().get(0).emoji(),textStyle, () -> {
                         showItem = !showItem;
-                    }).size(40f).row();
+                    }).checked(a->showItem).size(40f).row();
     
                     buttons.button(UnitTypes.mono.emoji(),textStyle, () -> {
                         showUnit = !showUnit;
-                    }).size(40f);
+                    }).checked(a->showUnit).size(40f);
                 }).left();
         
                 teamsRebuild();
