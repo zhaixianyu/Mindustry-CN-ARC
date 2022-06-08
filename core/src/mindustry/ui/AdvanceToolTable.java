@@ -9,6 +9,7 @@ import arc.scene.ui.*;
 import arc.scene.ui.layout.Table;
 import arc.struct.ObjectMap;
 import arc.util.Strings;
+import arc.util.Time;
 import arc.util.Tmp;
 import mindustry.ai.types.BuilderAI;
 import mindustry.ai.types.MinerAI;
@@ -46,7 +47,7 @@ import static mindustry.ui.Styles.*;
 
 public class AdvanceToolTable extends Table {
     private boolean show = false;
-    private boolean showGameMode = false, showResTool = false, showTeamChange = false, showUnitStat = false;
+    private boolean showGameMode = false, showEntities = false, showTeamChange = false, showCreator = false;
 
     //unitFactory
     private int unitCount = 1;
@@ -62,6 +63,7 @@ public class AdvanceToolTable extends Table {
     private Boolean showPayload = false;
     private boolean showSelectPayload = false;
     private Boolean showPayloadBlock = false;
+    private float timeAcce = 1f;
 
     public AdvanceToolTable() {
         rebuild();
@@ -93,32 +95,59 @@ public class AdvanceToolTable extends Table {
                     }).left().row();
                 }
 
-                if (showResTool) {
-                    t.table(tBox -> {
-                        tBox.background(Tex.buttonEdge3);
-                        tBox.add("资源：").left();
-                        tBox.button(Items.copper.emoji() + "[acid]+", cleart, () -> {
-                            for (Item item : content.items())
-                                player.core().items.set(item, player.core().storageCapacity);
-                        }).width(40f).tooltip("[acid]填满核心的所有资源");
-                        tBox.button(Items.copper.emoji() + "[red]-", cleart, () -> {
-                            for (Item item : content.items()) player.core().items.set(item, 0);
-                        }).width(40f).tooltip("[acid]清空核心的所有资源");
-                    }).left().row();
+                if (showEntities) {
+                    t.table(tt->{
+                        tt.table(
+                            tBox -> {
+                                tBox.background(Tex.pane);
+                                tBox.button(Items.copper.emoji() + "[acid]+", cleart, () -> {
+                                    for (Item item : content.items())
+                                        player.core().items.set(item, player.core().storageCapacity);
+                                }).width(40f).tooltip("[acid]填满核心的所有资源");
+                                tBox.button(Items.copper.emoji() + "[red]-", cleart, () -> {
+                                    for (Item item : content.items()) player.core().items.set(item, 0);
+                                }).width(40f).tooltip("[acid]清空核心的所有资源");
+                            }).left();
+                        tt.table(
+                            tBox -> {
+                                tBox.background(Tex.buttonEdge3);
+                                tBox.button(UnitTypes.gamma.emoji() + "[acid]+", cleart, () -> {
+                                    Unit cloneUnit = cloneExactUnit(player.unit());
+                                    cloneUnit.set(player.x + Mathf.range(8f), player.y + Mathf.range(8f));
+                                    cloneUnit.add();
+                                }).width(40f).tooltip("[acid]克隆");
+                                tBox.button(UnitTypes.gamma.emoji() + "[red]×", cleart, () -> player.unit().kill()).width(40f).tooltip("[red]自杀");
+                                tBox.button(Icon.waves, clearNonei, this::unitSpawnMenu).width(40f).tooltip("[acid]单位工厂-ARC");
+                            }).left();
+                    }).left();
                 }
 
-                if (showUnitStat) {
-                    t.table(tBox -> {
-                        tBox.background(Tex.buttonEdge3);
-                        tBox.add("单位：").left();
-                        tBox.button(UnitTypes.gamma.emoji() + "[acid]+", cleart, () -> {
-                            Unit cloneUnit = cloneExactUnit(player.unit());
-                            cloneUnit.set(player.x + Mathf.range(8f), player.y + Mathf.range(8f));
-                            cloneUnit.add();
-                        }).width(40f).tooltip("[acid]克隆");
-                        tBox.button(UnitTypes.gamma.emoji() + "[red]×", cleart, () -> player.unit().kill()).width(40f).tooltip("[red]自杀");
-                        tBox.button(Icon.waves, clearNonei, this::unitSpawnMenu).width(40f).tooltip("[acid]单位工厂-ARC");
-                    }).left().row();
+                if (showCreator) {
+                    t.table(tt->{
+                        tt.table(
+                            tBox -> {
+                                tBox.background(Tex.pane);
+                                tBox.button("创世神", flatToggleMenut, () -> {
+                                    Core.settings.put("worldCreator", !Core.settings.getBool("worldCreator"));
+                                }).checked(b -> Core.settings.getBool("worldCreator")).size(70f, 30f);
+
+                            }).left();
+                        tt.table(
+                            tBox -> {
+                                tBox.background(Tex.buttonEdge3);
+                                tBox.add("沙漏：").left();
+                                tBox.button("/2", flatToggleMenut, () -> {
+                                    timeAcce/=2;
+                                    Time.setDeltaProvider(() -> Math.min(Core.graphics.getDeltaTime() * 60 * timeAcce, 3 * timeAcce));
+                                    ui.announce("当前时间倍率：" + timeAcce);
+                                }).size(50f, 30f);
+                                tBox.button("×2", flatToggleMenut, () -> {
+                                    timeAcce*=2;
+                                    Time.setDeltaProvider(() -> Math.min(Core.graphics.getDeltaTime() * 60 * timeAcce, 3 * timeAcce));
+                                    ui.announce("当前时间倍率：" + timeAcce);
+                                }).size(50f, 30f);
+                            }).left();
+                    }).left();
                 }
 
                 if (showTeamChange) {
@@ -153,17 +182,11 @@ public class AdvanceToolTable extends Table {
                             state.rules.infiniteResources = !state.rules.infiniteResources;
                         }).checked(b -> state.rules.infiniteResources).size(50f, 30f);
 
-                        if (Core.settings.getBool("developmode")) {
+                        tBox.button("解禁", flatToggleMenut, () -> {
+                            Core.settings.put("allBlocksReveal", !Core.settings.getBool("allBlocksReveal"));
+                            ui.hudfrag.blockfrag.rebuild();
+                        }).checked(b -> Core.settings.getBool("allBlocksReveal")).tooltip("[acid]显示并允许建造所有物品").size(50f, 30f);
 
-                            tBox.button("解禁", flatToggleMenut, () -> {
-                                Core.settings.put("allBlocksReveal", !Core.settings.getBool("allBlocksReveal"));
-                                ui.hudfrag.blockfrag.rebuild();
-                            }).checked(b -> Core.settings.getBool("allBlocksReveal")).tooltip("[acid]显示并允许建造所有物品").size(50f, 30f);
-
-                            tBox.button("创世神", flatToggleMenut, () -> {
-                                Core.settings.put("worldCreator", !Core.settings.getBool("worldCreator"));
-                            }).checked(b -> Core.settings.getBool("worldCreator")).size(70f, 30f);
-                        }
                     }).left().row();
                 }
 
@@ -174,18 +197,21 @@ public class AdvanceToolTable extends Table {
                         show = !show;
                         rebuild();
                     }).width(70f);
-                    mainBox.button((showResTool ? "[cyan]" : "[acid]") + "资源", cleart, () -> {
-                        showResTool = !showResTool;
+                    mainBox.button((showEntities ? "[cyan]" : "[acid]") + Items.copper.emoji() + UnitTypes.gamma.emoji(), cleart, () -> {
+                        showEntities = !showEntities;
                         rebuild();
                     }).width(50f);
-                    mainBox.button((showUnitStat ? "[cyan]" : "[acid]") + "单位", cleart, () -> {
-                        showUnitStat = !showUnitStat;
+
+                    mainBox.button((showCreator ? "[cyan]" : "[acid]") + Blocks.worldProcessor.emoji(), cleart, () -> {
+                        showCreator = !showCreator;
                         rebuild();
                     }).width(50f);
+
                     mainBox.button((showGameMode ? "[cyan]" : "[acid]") + "规则", cleart, () -> {
                         showGameMode = !showGameMode;
                         rebuild();
                     }).width(50f);
+
                     mainBox.button((showTeamChange ? "[cyan]" : "[acid]") + "队伍", cleart, () -> {
                         showTeamChange = !showTeamChange;
                         rebuild();
