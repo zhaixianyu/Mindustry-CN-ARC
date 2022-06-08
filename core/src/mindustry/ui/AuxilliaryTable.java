@@ -294,7 +294,7 @@ public class AuxilliaryTable extends Table {
                 }).tooltip("助推").size(handerSize).checked(playerBoost);
 
                 t.button("♐", textHander,
-                    () -> showns[5] = !showns[5]).checked(showns[5]).size(handerSize).tooltip("标记器");
+                    () -> showns[5] = !showns[5]).checked(a->showns[5]).size(handerSize).tooltip("标记器");
 
             }, () -> showns[3]).left();
 
