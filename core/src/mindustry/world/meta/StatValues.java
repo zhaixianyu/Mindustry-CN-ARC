@@ -310,10 +310,6 @@ public class StatValues{
         return content(list.as());
     }
 
-    public static StatValue statusEffects(Seq<StatusEffect> list){
-        return content(list.as());
-    }
-
     public static StatValue boosters(float reload, float maxUsed, float multiplier, boolean baseReload, Boolf<Liquid> filter){
         return table -> {
             table.row();
