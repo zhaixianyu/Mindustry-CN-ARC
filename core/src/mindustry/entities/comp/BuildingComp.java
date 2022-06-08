@@ -613,6 +613,10 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
         Fx.unitDrop.at(unit);
     }
 
+    public boolean canWithdraw(){
+        return true;
+    }
+
     public boolean canUnload(){
         return block.unloadable;
     }
@@ -1356,11 +1360,6 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
     public ItemModule flowItems(){
         return items;
     }
-
-    public boolean displayable(){
-        return true;
-    }
-
     @Override
     public void display(Table table){
         //display the block stuff
