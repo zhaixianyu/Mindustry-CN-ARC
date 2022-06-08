@@ -19,6 +19,7 @@ import mindustry.content.Blocks;
 import mindustry.content.Items;
 import mindustry.content.StatusEffects;
 import mindustry.content.UnitTypes;
+import mindustry.core.GameState;
 import mindustry.entities.units.AIController;
 import mindustry.game.EventType;
 import mindustry.game.Team;
@@ -40,6 +41,7 @@ import mindustry.world.blocks.payloads.UnitPayload;
 import java.util.Arrays;
 import java.util.Objects;
 
+import static arc.Core.settings;
 import static mindustry.Vars.*;
 import static mindustry.content.UnitTypes.*;
 import static mindustry.ui.Styles.*;
@@ -66,6 +68,8 @@ public class AdvanceToolTable extends Table {
     private float timeAcce = 1f;
 
     public AdvanceToolTable() {
+
+
         rebuild();
     }
 
@@ -119,7 +123,7 @@ public class AdvanceToolTable extends Table {
                                 tBox.button(UnitTypes.gamma.emoji() + "[red]×", cleart, () -> player.unit().kill()).width(40f).tooltip("[red]自杀");
                                 tBox.button(Icon.waves, clearNonei, this::unitSpawnMenu).width(40f).tooltip("[acid]单位工厂-ARC");
                             }).left();
-                    }).left();
+                    }).left().row();
                 }
 
                 if (showCreator) {
@@ -136,18 +140,36 @@ public class AdvanceToolTable extends Table {
                             tBox -> {
                                 tBox.background(Tex.buttonEdge3);
                                 tBox.add("沙漏：").left();
-                                tBox.button("/2", flatToggleMenut, () -> {
+                                tBox.button("/2", cleart, () -> {
                                     timeAcce/=2;
                                     Time.setDeltaProvider(() -> Math.min(Core.graphics.getDeltaTime() * 60 * timeAcce, 3 * timeAcce));
                                     ui.announce("当前时间倍率：" + timeAcce);
-                                }).size(50f, 30f);
-                                tBox.button("×2", flatToggleMenut, () -> {
+                                }).size(40f, 30f);
+                                tBox.button("×2", cleart, () -> {
                                     timeAcce*=2;
                                     Time.setDeltaProvider(() -> Math.min(Core.graphics.getDeltaTime() * 60 * timeAcce, 3 * timeAcce));
                                     ui.announce("当前时间倍率：" + timeAcce);
-                                }).size(50f, 30f);
+                                }).size(40f, 30f);
+                                tBox.button("[red]S", cleart, () -> {
+                                    timeAcce=0;
+                                    Time.setDeltaProvider(() -> Math.min(Core.graphics.getDeltaTime() * 60 * timeAcce, 3 * timeAcce));
+
+                                    ui.announce("当前时间倍率：" + timeAcce);
+                                }).size(30f, 30f);
+                                tBox.button("[green]N", cleart, () -> {
+                                    timeAcce=1;
+                                    Time.setDeltaProvider(() -> Math.min(Core.graphics.getDeltaTime() * 60 * timeAcce, 3 * timeAcce));
+                                    ui.announce("当前时间倍率：" + timeAcce);
+                                }).size(30f, 30f);
+                                /*tBox.button("[orange]||", cleart, () -> {
+                                    if(state.is(GameState.State.playing)) {state.set(GameState.State.paused);}
+                                    else if(state.is(GameState.State.paused)){
+                                        state.set(GameState.State.playing);
+                                    }
+                                    //ui.announce("当前时间倍率：" + timeAcce);
+                                }).size(30f, 30f);*/
                             }).left();
-                    }).left();
+                    }).left().row();
                 }
 
                 if (showTeamChange) {
@@ -197,12 +219,12 @@ public class AdvanceToolTable extends Table {
                         show = !show;
                         rebuild();
                     }).width(70f);
-                    mainBox.button((showEntities ? "[cyan]" : "[acid]") + Items.copper.emoji() + UnitTypes.gamma.emoji(), cleart, () -> {
+                    mainBox.button(Items.copper.emoji() + UnitTypes.gamma.emoji(), cleart, () -> {
                         showEntities = !showEntities;
                         rebuild();
                     }).width(50f);
 
-                    mainBox.button((showCreator ? "[cyan]" : "[acid]") + Blocks.worldProcessor.emoji(), cleart, () -> {
+                    mainBox.button(Blocks.worldProcessor.emoji(), cleart, () -> {
                         showCreator = !showCreator;
                         rebuild();
                     }).width(50f);
