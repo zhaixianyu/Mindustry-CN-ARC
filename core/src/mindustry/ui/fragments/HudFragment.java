@@ -32,6 +32,8 @@ import mindustry.ui.dialogs.BaseDialog;
 
 import static mindustry.Vars.*;
 import static mindustry.gen.Tex.*;
+import static mindustry.ui.Styles.clearNonei;
+import static mindustry.ui.Styles.cleari;
 
 public class HudFragment{
     private static final float dsize = 65f, pauseHeight = 36f;
@@ -56,6 +58,8 @@ public class HudFragment{
     private Table lastUnlockTable;
     private Table lastUnlockLayout;
     private long lastToast;
+
+    private boolean showSkipwave = Core.settings.getBool("overrideSkipWave");
 
     public void build(Group parent){
 
@@ -258,15 +262,6 @@ public class HudFragment{
                 wavesMain.table(s -> {
                     //wave info button with text
                     s.add(makeStatusTableArc()).grow().name("status");
-
-                    //table with button to skip wave
-                    s.button(Icon.play, rightStyle, 30f, () -> {
-                        if(net.client() && player.admin){
-                            Call.adminRequest(player, AdminAction.wave);
-                        }else{
-                            logic.skipWave();
-                        }
-                    }).growY().fillX().right().width(40f).disabled(b -> !Core.settings.getBool("overrideSkipWave") && !canSkipWave()).name("skip");
                 }).width(dsize * 5 + 4f).name("statustable");
             }
             else{
@@ -979,7 +974,16 @@ public class HudFragment{
 
 
     private Table makeStatusTableArc(){
-        Table table = new Table(Tex.wavepane);
+        Table table = new Table(buttonEdge4);
+
+        var rightStyle = new ImageButtonStyle(){{
+            over = buttonRightOver;
+            down = buttonRightDown;
+            up = buttonRight;
+            disabled = buttonRightDisabled;
+            imageDisabledColor = Color.clear;
+            imageUpColor = Color.white;
+        }};
 
         table.name = "waves";
 
@@ -1095,12 +1099,26 @@ public class HudFragment{
                             () -> state.enemies / ((float) CalwaveEnemy(state.wave - 2) * Vars.spawner.countSpawns()))).height(18).growX();
                 }).growX().pad(8f);
             }
+            if(showSkipwave){
+                table.button(Icon.play,clearNonei, 30f, () -> {
+                    if(net.client() && player.admin){
+                        Call.adminRequest(player, AdminAction.wave);
+                    }else{
+                        logic.skipWave();
+                    }
+                }).growY().fillX().right().width(40f);
+            }
 
             // Power bar display
             if (Core.settings.getBool("powerStatistic")) {
                 table.row();
                 table.add(PowerInfo.getBars()).growX().colspan(table.getColumns());
             }
+
+            table.update(()->{
+                if(showSkipwave != Core.settings.getBool("overrideSkipWave") && !canSkipWave())
+                {showSkipwave = Core.settings.getBool("overrideSkipWave") && !canSkipWave();rebuild[0].run();}
+            });
         };
         rebuild[0].run();
         return table;
