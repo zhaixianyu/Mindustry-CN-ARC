@@ -17,6 +17,7 @@ import mindustry.type.*;
 import mindustry.ui.*;
 import mindustry.world.*;
 
+import static arc.Core.*;
 import static mindustry.Vars.*;
 
 public class DatabaseDialog extends BaseDialog{

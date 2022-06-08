@@ -269,6 +269,10 @@ public class SettingsMenuDialog extends BaseDialog{
         addCategory(name, (Drawable)null, builder);
     }
 
+    public Seq<SettingsCategory> getCategories(){
+        return categories;
+    }
+
     void rebuildMenu(){
         menu.clearChildren();
 
@@ -397,6 +401,7 @@ public class SettingsMenuDialog extends BaseDialog{
         game.addCategory("arcCHint");
         game.checkPref("hints", true);
         game.checkPref("logichints", true);
+        game.checkPref("console", false);
 
         graphics.addCategory("arcCOverview");
         graphics.stringInput("themeColor", "ffd37f");

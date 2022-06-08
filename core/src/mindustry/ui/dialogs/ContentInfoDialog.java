@@ -11,6 +11,7 @@ import mindustry.ui.Fonts;
 import mindustry.ui.Styles;
 import mindustry.world.meta.*;
 
+import static arc.Core.*;
 import static mindustry.Vars.*;
 
 public class ContentInfoDialog extends BaseDialog{
