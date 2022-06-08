@@ -128,11 +128,11 @@ public class AuxilliaryTable extends Table {
         Table hander = table().fillX().get();
 
         hander.button("[acid]辅助器", textHander, this::toggle).width(80f).height(handerSize).tooltip("关闭辅助器");
-        hander.button(Icon.map, ImageHander, () -> showns[0] = !showns[0]).checked(showns[0]).size(handerSize).tooltip("地图信息");
-        hander.button(Icon.waves, ImageHander, () -> showns[1] = !showns[1]).checked(showns[1]).size(handerSize).tooltip("波次信息");
-        hander.button(Blocks.microProcessor.emoji(), textHander, () -> showns[2] = !showns[2]).checked(showns[2]).size(handerSize).tooltip("玩家AI");
-        hander.button(gamma.emoji(), textHander, () -> {showns[3] = !showns[3];showns[5] = false;}).checked(showns[3]).size(handerSize).tooltip("控制器");
-        hander.button(emanate.emoji(), textHander, () -> showns[4] = !showns[4]).checked(showns[4]).size(handerSize).tooltip("<手机>控制器").visible(true);
+        hander.button(Icon.map, ImageHander, () -> showns[0] = !showns[0]).checked(a->showns[0]).size(handerSize).tooltip("地图信息");
+        hander.button(Icon.waves, ImageHander, () -> showns[1] = !showns[1]).checked(a->showns[1]).size(handerSize).tooltip("波次信息");
+        hander.button(Blocks.microProcessor.emoji(), textHander, () -> showns[2] = !showns[2]).checked(a->showns[2]).size(handerSize).tooltip("玩家AI");
+        hander.button(gamma.emoji(), textHander, () -> {showns[3] = !showns[3];showns[5] = false;}).checked(a->showns[3]).size(handerSize).tooltip("控制器");
+        hander.button(emanate.emoji(), textHander, () -> showns[4] = !showns[4]).checked(a->showns[4]).size(handerSize).tooltip("<手机>控制器").visible(true);
 
         row();
 
@@ -302,7 +302,7 @@ public class AuxilliaryTable extends Table {
 
             /* <手机>控制器 */
             body.collapser(t -> {
-                t.button(emanate.emoji() + " >", textHanderNC, () -> showns[3] = !showns[3]).size(handerSize).tooltip("手机控制器");
+                t.button(emanate.emoji() + " >", textHanderNC, () -> showns[4] = !showns[4]).size(handerSize).tooltip("手机控制器");
 
                 t.button(Icon.unitsSmall, ImageHanderNC,imgSize, () -> {
                     control.input.commandMode = !control.input.commandMode;

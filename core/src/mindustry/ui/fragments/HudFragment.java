@@ -298,7 +298,7 @@ public class HudFragment{
                 wavesMain.table(t->{
                     t.name = "AuxiliaryTable";
                     t.left().top().add(auxilliaryTable);
-                });
+                }).left();
                 wavesMain.row();
             }
 
