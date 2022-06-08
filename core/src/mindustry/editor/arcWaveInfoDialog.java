@@ -281,7 +281,7 @@ public class arcWaveInfoDialog extends BaseDialog{
                     }).size(handerSize);
 
                     buttons.button("×", cleart, () -> {
-                        arcWaveIndex = 1;
+                        arcWaveIndex = 0;
                         setup();
                     }).size(handerSize);
 

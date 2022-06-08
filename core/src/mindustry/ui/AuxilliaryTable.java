@@ -185,7 +185,7 @@ public class AuxilliaryTable extends Table {
                 t.table(setWave -> {
                     setWave.label(() -> "" + (state.wave + waveOffset)).get().setFontScale(tableSize/30f);
                     setWave.row();
-                    setWave.button(Icon.settings,ImageHanderNC,imgSize * 0.7f,()->{
+                    setWave.button(Icon.settingsSmall,ImageHanderNC,imgSize * 0.7f,()->{
                         Dialog lsSet = new BaseDialog("波次设定");
                         lsSet.cont.add("设定查询波次").padRight(5f).left();
                         TextField field = lsSet.cont.field(state.wave + waveOffset + "", text -> {
@@ -211,7 +211,7 @@ public class AuxilliaryTable extends Table {
                             if(amount > 0){
                                 float shield = group.getShield(curInfoWave);
                                 StatusEffect effect = group.effect;
-
+                                /*
                                 StringBuilder waveUI = new StringBuilder();
                                 waveUI.append("[cyan]单位：[white]").append(group.type.localizedName).append(group.type.uiIcon).append("\n");
                                 waveUI.append("[cyan]波次：[white]").append(group.begin).append("+").append(group.spacing).append("×n").append("->").append(group.end).append("\n");
@@ -227,7 +227,7 @@ public class AuxilliaryTable extends Table {
                                     waveUI.append("[cyan]载荷：[white]");
                                     group.payloads.each(payload-> waveUI.append(payload.uiIcon));
                                     waveUI.append("\n");
-                                }
+                                }*/
 
                                 waveInfo.table(groupT -> {
                                     groupT.image(group.type.uiIcon).size(tableSize).row();
@@ -238,7 +238,7 @@ public class AuxilliaryTable extends Table {
                                     if(shield > 0f) groupT.add("" + UI.formatAmount((long)shield), tableSize/30f).center();
                                     groupT.row();
                                     if(effect != null && effect != StatusEffects.none) groupT.image(effect.uiIcon).size(tableSize);
-                                }).padLeft(4).top().tooltip(waveUI.toString());
+                                }).padLeft(4).top();
 
                             }
                         }

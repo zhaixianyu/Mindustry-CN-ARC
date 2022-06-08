@@ -394,8 +394,6 @@ public class SettingsMenuDialog extends BaseDialog{
             }
         }
 
-        game.checkPref("showAllBlockAttributes", false);
-
         game.addCategory("arcCHint");
         game.checkPref("hints", true);
         game.checkPref("logichints", true);
@@ -464,7 +462,6 @@ public class SettingsMenuDialog extends BaseDialog{
 
         graphics.addCategory("arcCgamewindow");
         graphics.checkPref("fps", false);
-        graphics.checkPref("more_info_shown", true);
         graphics.checkPref("override_boss_shown", false);
 
         graphics.checkPref("minimap", !mobile);
@@ -671,17 +668,16 @@ public class SettingsMenuDialog extends BaseDialog{
         });
 
         //////////specmode
-        specmode.addCategory("Specgamemode");
+        specmode.addCategory("specGameMode");
         specmode.checkPref("modMode", false);
         specmode.checkPref("researchViewer",false);
-        specmode.checkPref("developmode", false);
+        specmode.checkPref("developMode", false);
         //////////cheating
         cheating.addCategory("arcWeakCheat");
         cheating.checkPref("forceIgnoreAttack",false);
         cheating.checkPref("allBlocksReveal",false);
         cheating.checkPref("worldCreator",false);
         cheating.checkPref("overrideSkipWave", false);
-        cheating.checkPref("overridePickUpPayload",false);
         cheating.addCategory("arcStrongCheat");
         cheating.checkPref("showOtherTeamResource", false);
         cheating.checkPref("showOtherTeamState", false);
