@@ -151,6 +151,13 @@ public class HudFragment{
             .touchable(Touchable.disabled)
             .style(Styles.outlineLabel)
             .name("position");
+            if(Core.settings.getInt("AuxiliaryTable") == 3){
+                t.row();
+                t.table(infoWave -> {
+                    infoWave.left().top();
+                    infoWave.add(auxilliaryTable);
+                }).left().top();
+            }
             t.top().right();
         });
 
@@ -287,7 +294,7 @@ public class HudFragment{
 
             wavesMain.row();
 
-            if(Core.settings.getBool("showAuxiliary") && mobile && Core.graphics.isPortrait()){
+            if(Core.settings.getInt("AuxiliaryTable") == 2){
                 wavesMain.table(t->{
                     t.name = "AuxiliaryTable";
                     t.left().top().add(auxilliaryTable);
@@ -357,7 +364,7 @@ public class HudFragment{
             editorMain.visible(() -> shown && (state.isEditor() || Core.settings.getBool("selectTeam")) && !Core.settings.getBool("showAdvanceToolTable"));
 
             //map info/nextwave display
-            if(Core.settings.getBool("showAuxiliary") && !(mobile && Core.graphics.isPortrait())){
+            if(Core.settings.getInt("AuxiliaryTable") == 1){
                 cont.table(infoWave -> {
                     infoWave.name = "map/wave";
                     infoWave.left().top();

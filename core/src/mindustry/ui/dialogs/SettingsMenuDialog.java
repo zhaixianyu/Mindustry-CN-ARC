@@ -496,8 +496,13 @@ public class SettingsMenuDialog extends BaseDialog{
         }
 
         arc.addCategory("arcHudToolbox");
-        arc.checkPref("showFloatingSettings",false);
-        arc.checkPref("showAuxiliary", true);
+        arc.sliderPref("AuxiliaryTable", 0, 0, 3, 1, s -> {
+            if(s==0){return "关闭";}
+            else if(s==1){return "左上-右";}
+            else if(s==2){return "左上-下";}
+            else if(s==3){return "右上-下";}
+            else{return "";}
+        });
         arc.checkPref("showAdvanceToolTable",false);
         arc.checkPref("arcSpecificTable",true);
         arc.checkPref("powerStatistic", true);
@@ -507,6 +512,7 @@ public class SettingsMenuDialog extends BaseDialog{
             else if(s==2){return "兵种状态";}
             else{return "显示资源和兵种";}
         });
+        arc.checkPref("showFloatingSettings",false);
         arc.sliderPref("arcDetailInfo", 1, 0, 1, 1, s -> {
             if(s==0){return "详细模式";}
             else if(s==1){return "简略模式";}
