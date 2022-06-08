@@ -5,9 +5,11 @@ import arc.graphics.*;
 import arc.graphics.g2d.*;
 import arc.math.*;
 import arc.math.geom.*;
+import arc.struct.*;
 import arc.util.*;
 import arc.util.io.*;
 import mindustry.annotations.Annotations.*;
+import mindustry.content.*;
 import mindustry.entities.units.*;
 import mindustry.game.*;
 import mindustry.gen.*;
@@ -103,8 +105,9 @@ public class BeamDrill extends Block{
     public void setStats(){
         super.setStats();
 
-        stats.add(Stat.drillTier, StatValues.blocks(b -> ((b instanceof Floor f && f.wallOre)|| b instanceof StaticWall) && b.itemDrop != null && b.itemDrop.hardness <= tier));
+        stats.add(Stat.drillTier, StatValues.blocks(b -> (b instanceof Floor f && f.wallOre && f.itemDrop != null && f.itemDrop.hardness <= tier) || (b instanceof StaticWall w && w.itemDrop != null && w.itemDrop.hardness <= tier)));
 
+        stats.add(Stat.drillSpeed, 60f / drillTime * size, StatUnit.itemsSecond);
         if(optionalBoostIntensity != 1){
             stats.add(Stat.boostEffect, optionalBoostIntensity, StatUnit.timesSpeed);
         }
