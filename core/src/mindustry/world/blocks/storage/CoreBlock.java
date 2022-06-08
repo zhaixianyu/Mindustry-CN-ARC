@@ -130,13 +130,15 @@ public class CoreBlock extends StorageBlock{
         //in the editor, you can place them anywhere for convenience
         if(state.isEditor()) return true;
 
+        CoreBuild core = team.core();
+        //must have all requirements
+        if(core == null || (!state.rules.infiniteResources && !core.items.has(requirements, state.rules.buildCostMultiplier))) return false;
+
         //special floor upon which cores can be placed
         tile.getLinkedTilesAs(this, tempTiles);
         if(!tempTiles.contains(o -> !o.floor().allowCorePlacement)){
             return true;
         }
-
-        CoreBuild core = team.core();
 
         if (Core.settings.getBool("buildCoreOverride")) return true;    //LC: force build core
         //must have all requirements
