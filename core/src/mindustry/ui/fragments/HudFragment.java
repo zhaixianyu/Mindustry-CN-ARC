@@ -354,7 +354,7 @@ public class HudFragment{
 
                 t.visible(() -> editorMainShow);
             }).width(dsize * 5 + 4f);
-            editorMain.visible(() -> shown && (state.isEditor() || Core.settings.getBool("selectTeam")));
+            editorMain.visible(() -> shown && (state.isEditor() || Core.settings.getBool("selectTeam")) && !Core.settings.getBool("showAdvanceToolTable"));
 
             //map info/nextwave display
             if(Core.settings.getBool("showAuxiliary") && !(mobile && Core.graphics.isPortrait())){

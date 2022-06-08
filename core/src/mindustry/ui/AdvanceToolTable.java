@@ -68,8 +68,6 @@ public class AdvanceToolTable extends Table {
     private float timeAcce = 1f;
 
     public AdvanceToolTable() {
-
-
         rebuild();
     }
 
