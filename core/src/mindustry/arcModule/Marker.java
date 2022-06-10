@@ -17,10 +17,10 @@ public class Marker{
 
     public static Seq<MarkType> markTypes = Seq.with(
     mark = new MarkType("mark", Fx.arcMarker, Color.valueOf("eab678")),
-    gatherMark = new MarkType("gather", Fx.arcGatherMarker, Color.red),
-    attackMark = new MarkType("attack", Fx.arcAttackMarker, Color.cyan),
+    gatherMark = new MarkType("gather", Fx.arcGatherMarker, Color.cyan),
+    attackMark = new MarkType("attack", Fx.arcAttackMarker, Color.red),
     defenseMark = new MarkType("defense", Fx.arcDefenseMarker, Color.acid),
-    quesMark = new MarkType("question", Fx.arcQuesMarker)
+    quesMark = new MarkType("question", Fx.arcQuesMarker, Color.pink)
     );
 
     public float time;
@@ -37,7 +37,7 @@ public class Marker{
 
     public void mark(MarkType type, Vec2 pos){
         if(time != heatTime){
-            Vars.ui.announce("冷却时间未到");
+            Vars.ui.announce("请不要连续使用标记");
             return;
         }
 
@@ -130,7 +130,7 @@ public class Marker{
         }
 
         public String shortName(){
-            return "[#" + color + "]" + localizedName;
+            return "[#" + color + "]" + localizedName.substring(0,1);
         }
 
         public void showEffect(Vec2 pos){
