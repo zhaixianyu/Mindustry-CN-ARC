@@ -21,36 +21,31 @@ import mindustry.game.EventType.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.service.Achievement;
+import mindustry.service.SStat;
 import mindustry.ui.*;
 
 import java.io.*;
 import java.text.*;
 import java.util.*;
 
+import static arc.Core.bundle;
 import static mindustry.Vars.*;
 
 public class AchievementsDialog extends BaseDialog{
     private ObjectMap<String, TextureRegion> textureCache = new ObjectMap<>();
-    private String searchtxt = "";
+    private String searchTxt = "";
     private Table browserTable;
+    private Table SStatTable;
 
 
     public AchievementsDialog(){
-        super("@achievements");
+        super("ARC-统计与成就");
 
-        cont.table(table -> {
-            table.left();
-            table.image(Icon.zoom);
-            table.field(searchtxt, res -> {
-                searchtxt = res;
-                rebuildBrowser();
-            }).growX().get();
-        }).fillX().padBottom(4);
 
-        cont.row();
-        cont.pane(tablebrow -> {
-            tablebrow.margin(10f).top();
-            browserTable = tablebrow;
+        cont.pane(t->{
+            SStatTable = t;
+            t.row();
+            browserTable = t;
         }).scrollX(false);
         addCloseButton();
 
@@ -59,39 +54,54 @@ public class AchievementsDialog extends BaseDialog{
     }
 
     private void rebuildBrowser(){
+        int cols = (int)Math.max(Core.graphics.getWidth() / Scl.scl(480), 1);
+        SStatTable.clear();
         browserTable.clear();
 
-        int cols = (int)Math.max(Core.graphics.getWidth() / Scl.scl(480), 1);
+        SStatTable.add("统计——原版").color(getThemeColor()).pad(cols/2).center().row();
+        SStatTable.image().color(getThemeColor()).fillX().row();
+        SStatTable.table(t->{
+            for (SStat stat : SStat.values()){
+                String name = Core.bundle.get("sstat." + stat.name() + ".name");
+                t.add(name);
+                t.add("                 "+stat.get());
+                t.row();
+            }
+        });
 
-        int i = 0;
-        float s = 64f;
+        browserTable.row();
+        browserTable.add("成就——原版").color(getThemeColor()).pad(cols/2).center().row();
+        browserTable.image().color(getThemeColor()).fillX().row();
+        browserTable.table(t->{
+            int i = 0;
+            float s = 64f;
 
-        for( Achievement ach : Achievement.all){
-            String name = Core.bundle.get("achievement." + ach.name() + ".name");
-            String desc = Core.bundle.get("achievement." + ach.name() + ".desc");
-            if( !Strings.matches(searchtxt, name) && !Strings.matches(searchtxt, desc) ) continue;
+            for( Achievement ach : Achievement.all){
+                String name = Core.bundle.get("achievement." + ach.name() + ".name");
+                String desc = (ach.isAchieved()?"[stat]":"") + Core.bundle.get("achievement." + ach.name() + ".desc");
+                //if( !Strings.matches(searchTxt, name) && !Strings.matches(searchTxt, desc) ) continue;
 
-            browserTable.button(con -> {
-                con.setColor(ach.isAchieved() ? Pal.accent : Color.lightGray);
-                con.margin(0f);
-                con.left();
+                t.button(con -> {
+                    con.setColor(ach.isAchieved() ? Pal.accent : Color.lightGray);
+                    con.margin(0f);
+                    con.left();
 
-                con.add(new BorderImage(){
-                    TextureRegion last;
+                    con.add(new BorderImage(){
+                        TextureRegion last;
 
-                    {
-                        border(ach.isAchieved() ? Pal.accent : Color.lightGray);
-                        setDrawable(Tex.nomap);
-                        pad = Scl.scl(4f);
-                    }
+                        {
+                            border(ach.isAchieved() ? Pal.accent : Color.lightGray);
+                            setDrawable(Tex.nomap);
+                            pad = Scl.scl(4f);
+                        }
 
-                    @Override
-                    public void draw(){
-                        super.draw();
+                        @Override
+                        public void draw(){
+                            super.draw();
 
-                        //TODO draw the sprite of the achievement
+                            //TODO draw the sprite of the achievement
 
-                        //textures are only requested when the rendering happens; this assists with culling
+                            //textures are only requested when the rendering happens; this assists with culling
                         /*
                         if(!textureCache.containsKey(repo)){
                             textureCache.put(repo, last = Core.atlas.find("nomap"));
@@ -115,16 +125,20 @@ public class AchievementsDialog extends BaseDialog{
                             setDrawable(next);
                         }
                         */
-                    }
-                }).size(s).pad(4f * 2f);
+                        }
+                    }).size(s).pad(4f * 2f);
 
-                con.add("[accent]" + name +
-                        "\n[lightgray]" + desc
-                ).width(358f).wrap().grow().pad(4f, 2f, 4f, 6f).top().left().labelAlign(Align.topLeft);
+                    con.add("[accent]" + name +
+                            "\n[lightgray]" + desc
+                    ).width(358f).wrap().grow().pad(4f, 2f, 4f, 6f).top().left().labelAlign(Align.topLeft);
 
-            }, Styles.flatBordert,() -> {}).padRight(4f);
+                }, Styles.flatBordert,() -> {}).padRight(4f);
 
-            if(++i % cols == 0) browserTable.row();
-        }
+                if(++i % cols == 0) t.row();
+            }
+
+
+        });
+
     }
 }
