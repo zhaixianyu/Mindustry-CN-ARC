@@ -193,7 +193,8 @@ public class MenuFragment{
                     new Buttoni("@campaign", Icon.play, () -> checkPlay(ui.planet::show)),
                     new Buttoni("@joingame", Icon.add, () -> checkPlay(ui.join::show)),
                     new Buttoni("@customgame", Icon.terrain, () -> checkPlay(ui.custom::show)),
-                    new Buttoni("@loadgame", Icon.download, () -> checkPlay(ui.load::show))
+                    new Buttoni("@loadgame", Icon.download, () -> checkPlay(ui.load::show)),
+                    new Buttoni("@editor", Icon.terrain, () -> checkPlay(ui.maps::show)), steam ? new Buttoni("@workshop", Icon.steam, platform::openWorkshop) : null
                 ),
                 new Buttoni("@database.button", Icon.menu,
                     new Buttoni("@schematics", Icon.paste, ui.schematics::show),
@@ -202,7 +203,7 @@ public class MenuFragment{
                     new Buttoni("@updatedialog.button", Icon.distribution, ui.updatedialog::show)
                     //new Buttoni("@mindustrywiki.button", Icon.info, ui.mindustrywiki::show)
                 ),
-                new Buttoni("@editor", Icon.terrain, () -> checkPlay(ui.maps::show)), steam ? new Buttoni("@workshop", Icon.steam, platform::openWorkshop) : null,
+                new Buttoni("@achievements", Icon.star, ui.achievements::show),
                 new Buttoni("@mods", Icon.book, ui.mods::show),
                 new Buttoni("@settings", Icon.settings, ui.settings::show),
                 new Buttoni("@aboutcn_arc.button", Icon.info, ui.aboutcn_arc::show),

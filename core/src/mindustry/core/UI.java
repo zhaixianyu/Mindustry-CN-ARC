@@ -79,6 +79,7 @@ public class UI implements ApplicationListener, Loadable{
     public AboutCN_ARCDialog aboutcn_arc;
     public UpdateDialog updatedialog;
     public CustomRulesDialog customrules;
+    public AchievementsDialog achievements;
     //public MindustryWikiDialog mindustrywiki;
 
     private @Nullable Element lastAnnouncement;
@@ -207,6 +208,7 @@ public class UI implements ApplicationListener, Loadable{
         aboutcn_arc = new AboutCN_ARCDialog();
         updatedialog = new UpdateDialog();
         customrules = new CustomRulesDialog();
+        achievements = new AchievementsDialog();
         //mindustrywiki = new MindustryWikiDialog();
 
         Group group = Core.scene.root;
