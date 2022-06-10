@@ -58,19 +58,19 @@ public class AchievementsDialog extends BaseDialog{
         SStatTable.clear();
         browserTable.clear();
 
-        SStatTable.add("统计——原版").color(getThemeColor()).pad(cols/2).center().row();
+        SStatTable.add("统计").color(getThemeColor()).pad(cols/2).center().row();
         SStatTable.image().color(getThemeColor()).fillX().row();
         SStatTable.table(t->{
             for (SStat stat : SStat.values()){
                 String name = Core.bundle.get("sstat." + stat.name() + ".name");
-                t.add(name);
-                t.add("                 "+stat.get());
+                t.add(name).left();
+                t.add("                 "+stat.get()).left();
                 t.row();
             }
         });
 
         browserTable.row();
-        browserTable.add("成就——原版").color(getThemeColor()).pad(cols/2).center().row();
+        browserTable.add("成就").color(getThemeColor()).pad(cols/2).center().row();
         browserTable.image().color(getThemeColor()).fillX().row();
         browserTable.table(t->{
             int i = 0;

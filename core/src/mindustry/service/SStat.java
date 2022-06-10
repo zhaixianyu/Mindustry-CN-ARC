@@ -3,7 +3,8 @@ package mindustry.service;
 import static mindustry.Vars.*;
 
 public enum SStat{
-    unitsDestroyed,
+    unitTypesBuilt,
+    unitsBuilt,
     attacksWon,
     pvpsWon,
     timesLaunched,
@@ -11,17 +12,24 @@ public enum SStat{
     itemsLaunched,
     reactorsOverheated,
     maxUnitActive,
-    unitTypesBuilt,
-    unitsBuilt,
+    unitsDestroyed,
     bossesDefeated,
     maxPlayersServer,
-    mapsMade,
     mapsPublished,
     maxWavesSurvived,
     blocksBuilt,
     maxProduction,
     sectorsControlled,
+
+    mapsMade,
     schematicsCreated,
+    arcUnitsBuilt,
+    arcUnitsDestroyed,
+    arcBlocksBuilt,
+    arcBlocksDestroyed,
+    arcPlayTime,
+    arcMapsPlayed,
+    arcReactorsOverheated
     ;
 
     public int get(){

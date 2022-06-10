@@ -72,6 +72,7 @@ public class GameService{
         //periodically check for various conditions
         float updateInterval = 2f;
         Timer.schedule(this::checkUpdate, updateInterval, updateInterval);
+        Timer.schedule(()->SStat.arcPlayTime.add(15),15,15);
 
         if(Items.thorium.unlocked()) obtainThorium.complete();
         if(Items.titanium.unlocked()) obtainTitanium.complete();
@@ -88,7 +89,8 @@ public class GameService{
                         SStat.bossesDefeated.add();
                     }
                 }
-            }
+            }else if(e.unit.team != Vars.player.team())
+                SStat.arcUnitsDestroyed.add();
         });
 
         Events.on(TurnEvent.class, e -> {
@@ -153,6 +155,7 @@ public class GameService{
                     }
                 }
             }
+            else if(e.unit != null && e.unit.isLocal() && !e.breaking)  SStat.arcBlocksBuilt.add();
         });
 
         Events.on(UnitCreateEvent.class, e -> {
@@ -181,6 +184,8 @@ public class GameService{
         Events.on(BlockDestroyEvent.class, e -> {
             if(campaign() && e.tile.team() != player.team()){
                 SStat.blocksDestroyed.add();
+            }else if(e.tile.team() != player.team()){
+                SStat.arcBlocksDestroyed.add();
             }
         });
 
@@ -222,6 +227,9 @@ public class GameService{
             if(campaign()){
                 SStat.reactorsOverheated.add();
             }
+            else{
+                SStat.arcReactorsOverheated.add();
+            }
         });
 
         trigger(Trigger.shock, shockWetEnemy);
@@ -244,6 +252,7 @@ public class GameService{
             if(campaign() && e.unit.team() == player.team()){
                 SStat.unitsBuilt.add();
             }
+            else if(e.unit.team() == player.team()) SStat.arcUnitsBuilt.add();
         });
 
         Events.on(SectorLaunchEvent.class, e -> {
@@ -313,6 +322,9 @@ public class GameService{
             }
 
             SStat.sectorsControlled.set(e.sector.planet.sectors.count(Sector::hasBase));
+        });
+        Events.on(WorldLoadEvent.class, e -> {
+            SStat.arcMapsPlayed.add();
         });
     }
 
