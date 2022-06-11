@@ -36,6 +36,10 @@ public class Marker{
     }
 
     public void mark(MarkType type, Vec2 pos){
+        if(type == null){
+            return;
+        }
+
         if(time != heatTime){
             Vars.ui.announce("请不要连续使用标记");
             return;
