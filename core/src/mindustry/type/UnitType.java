@@ -949,6 +949,8 @@ public class UnitType extends UnlockableContent{
         var toOutline = new Seq<TextureRegion>();
         getRegionsToOutline(toOutline);
 
+        boolean separateOutline = weapons.contains(w -> !w.top);
+
         for(var region : toOutline){
             if(region instanceof AtlasRegion atlas){
                 String regionName = atlas.name;
@@ -961,9 +963,13 @@ public class UnitType extends UnlockableContent{
         }
 
         if(outlines){
+            Seq<TextureRegion> outlineSeq = Seq.with(region, jointRegion, footRegion, baseJointRegion, legRegion, treadRegion);
+            if(Core.atlas.has(name + "-leg-base")){
+                outlineSeq.add(legBaseRegion);
+            }
 
             //note that mods with these regions already outlined will have *two* outlines made, which is... undesirable
-            for(var outlineTarget : new TextureRegion[]{region, jointRegion, footRegion, legBaseRegion, baseJointRegion, legRegion, treadRegion}){
+            for(var outlineTarget : outlineSeq){
                 if(!outlineTarget.found()) continue;
 
                 makeOutline(PageType.main, packer, outlineTarget, alwaysCreateOutline && region == outlineTarget, outlineColor, outlineRadius);
@@ -972,7 +978,35 @@ public class UnitType extends UnlockableContent{
             for(Weapon weapon : weapons){
                 if(!weapon.name.isEmpty()){
                     //TODO makeNew isn't really necessary here is it
-                    makeOutline(PageType.main, packer, weapon.region, true, outlineColor, outlineRadius);
+                    makeOutline(PageType.main, packer, weapon.region, separateOutline, outlineColor, outlineRadius);
+                }
+            }
+        }
+
+        //TODO test
+        if(sample instanceof Tankc){
+            PixmapRegion pix = Core.atlas.getPixmap(treadRegion);
+
+            for(int r = 0; r < treadRects.length; r++){
+                Rect treadRect = treadRects[r];
+                //slice is always 1 pixel wide
+                Pixmap slice = pix.crop((int)(treadRect.x + pix.width/2f), (int)(treadRect.y + pix.height/2f), 1, (int)treadRect.height);
+                int frames = treadFrames;
+                for(int i = 0; i < frames; i++){
+                    int pullOffset = treadPullOffset;
+                    Pixmap frame = new Pixmap(slice.width, slice.height);
+                    for(int y = 0; y < slice.height; y++){
+                        int idx = y + i;
+                        if(idx >= slice.height){
+                            idx -= slice.height;
+                            idx += pullOffset;
+                            idx = Mathf.mod(idx, slice.height);
+                        }
+
+                        frame.setRaw(0, y, slice.getRaw(0, idx));
+                    }
+
+                    packer.add(PageType.main, name + "-treads" + r + "-" + i, frame);
                 }
             }
         }
