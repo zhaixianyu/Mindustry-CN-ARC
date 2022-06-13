@@ -20,6 +20,8 @@ import mindustry.game.Saves.*;
 import mindustry.io.*;
 import mindustry.net.*;
 import mindustry.ui.dialogs.*;
+import mindustry.service.*;
+import static arc.Core.bundle;
 
 import java.io.*;
 import java.lang.Thread.*;
@@ -29,6 +31,7 @@ import static mindustry.Vars.*;
 
 public class AndroidLauncher extends AndroidApplication{
     public static final int PERMISSION_REQUEST_CODE = 1;
+    public static GameService service = new GameService();
     boolean doubleScaleTablets = true;
     FileChooser chooser;
     Runnable permCallback;

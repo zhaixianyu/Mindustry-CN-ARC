@@ -17,6 +17,7 @@ import mindustry.core.*;
 import mindustry.game.EventType.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
+import mindustry.service.GameService;
 import mindustry.ui.*;
 
 import static mindustry.Vars.*;
@@ -112,6 +113,8 @@ public class MenuFragment{
         float size = 120f;
         container.defaults().size(size).pad(5).padTop(4f);
 
+        initAchievement();
+
         MobileButton
             play = new MobileButton(Icon.play, "@campaign", () -> checkPlay(ui.planet::show)),
             custom = new MobileButton(Icon.rightOpenOut, "@customgame", () -> checkPlay(ui.custom::show)),
@@ -124,7 +127,9 @@ public class MenuFragment{
             cn_arc = new MobileButton(Icon.info,"@aboutcn_arc.button",  ui.aboutcn_arc::show),
             //mindustrywiki = new MobileButton(Icon.book, "@mindustrywiki.button", ui.mindustrywiki::show),
             updatedialog = new MobileButton(Icon.info,"@updatedialog.button",  ui.updatedialog::show),
-            database = new MobileButton(Icon.book, "@database",  ui.database::show);
+            database = new MobileButton(Icon.book, "@database",  ui.database::show),
+            achievements = new MobileButton(Icon.star, "@achievements",  ui.achievements::show);
+
 
         if(!Core.graphics.isPortrait()){
             container.marginTop(60f);
@@ -144,6 +149,7 @@ public class MenuFragment{
                 if(!ios) table.add(exit);
             }).colspan(4);
             container.row();
+            container.add(achievements);
             container.add(cn_arc);
             container.add(updatedialog);
             container.add(database);
@@ -170,9 +176,41 @@ public class MenuFragment{
             container.add(cn_arc);
             container.add(database);
             container.row();
+            container.add(achievements);
             container.add(updatedialog);
             //container.add(mindustrywiki);
         }
+    }
+
+    void initAchievement(){
+        service = new GameService(){
+            @Override
+            public boolean enabled(){ return true; }
+
+            @Override
+            public void completeAchievement(String name){
+                Core.settings.put("achievement." + name, true);
+                //TODO draw the sprite of the achievement
+                ui.hudfrag.showToast(Core.atlas.getDrawable("error"), Core.bundle.get("achievement.unlocked") +"\n"+ Core.bundle.get("achievement."+name+".name"));
+            }
+
+            @Override
+            public boolean isAchieved(String name){
+                return Core.settings.getBool("achievement." + name, false);
+            }
+
+            @Override
+            public int getStat(String name, int def) {
+                return Core.settings.getInt("achievementstat." + name, def);
+            }
+
+            @Override
+            public void setStat(String name, int amount) {
+                Core.settings.put("achievementstat." + name, amount);
+            }
+        };
+
+        service.init();
     }
 
     private void buildDesktop(){
