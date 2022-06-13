@@ -1251,6 +1251,8 @@ public class UnitType extends UnlockableContent{
 
 
         if(Core.settings.getInt("unitTargetType")>0 && unit.controller() instanceof Player){
+            Draw.reset();
+            Draw.z(Layer.effect);
             Color effectColor = unit.controller() == Vars.player? getPlayerEffectColor(): unit.team.color;
             Draw.color(effectColor,0.8f);
             Lines.stroke(1f);
@@ -1266,7 +1268,7 @@ public class UnitType extends UnlockableContent{
         }
 
         if(!control.input.commandMode && Core.settings.getBool("alwaysShowUnitRTSAi") && unit.isCommandable() && (unit.team() == player.team() || !state.rules.pvp ) ){
-
+            Draw.z(Layer.effect);
             CommandAI ai = unit.command();
             //draw target line
             if(ai.targetPos != null){
@@ -1276,7 +1278,7 @@ public class UnitType extends UnlockableContent{
 
                 if(ai.attackTarget == null){
                     Draw.color(unit.team.color);
-                    Drawf.square(lineDest.getX(), lineDest.getY(), 3.5f);
+                    Drawf.square(lineDest.getX(), lineDest.getY(), 3.5f, unit.team.color);
                 }
             }
 
@@ -1284,7 +1286,7 @@ public class UnitType extends UnlockableContent{
 
             if(ai.attackTarget != null){
                 Draw.color(unit.team.color);
-                Drawf.target(ai.attackTarget.getX(), ai.attackTarget.getY(), 6f, Pal.remove);
+                Drawf.target(ai.attackTarget.getX(), ai.attackTarget.getY(), 6f, unit.team.color);
             }
             Draw.color();
         }
