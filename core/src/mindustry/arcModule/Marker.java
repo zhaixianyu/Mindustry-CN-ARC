@@ -64,6 +64,7 @@ public class Marker{
 
     public static void resolveMessage(String text){
         if(isLocal){
+            isLocal = false;
             return;
         }
 
