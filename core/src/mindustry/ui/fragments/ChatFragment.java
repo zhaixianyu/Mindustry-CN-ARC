@@ -6,6 +6,7 @@ import arc.func.*;
 import arc.graphics.*;
 import arc.graphics.g2d.*;
 import arc.math.*;
+import arc.math.geom.Vec2;
 import arc.scene.*;
 import arc.scene.ui.*;
 import arc.scene.ui.Label.*;
@@ -14,9 +15,12 @@ import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.*;
+import mindustry.arcModule.arcMarker;
 import mindustry.gen.*;
 import mindustry.input.*;
 import mindustry.ui.*;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 import static arc.Core.*;
 import static mindustry.Vars.*;
@@ -271,7 +275,7 @@ public class ChatFragment extends Table{
     public void addMessage(String message){
         if(message == null) return;
 
-        Vars.marker.resolveMessage(message);
+        arcMarker.newMsgMarker(message);
         messages.insert(0, message);
 
         fadetime += 1f;

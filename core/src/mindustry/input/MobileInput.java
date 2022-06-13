@@ -11,7 +11,8 @@ import arc.scene.ui.ImageButton.*;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
-import mindustry.arcModule.Marker;
+import mindustry.*;
+import mindustry.arcModule.arcMarker;
 import mindustry.content.*;
 import mindustry.core.*;
 import mindustry.entities.*;
@@ -560,6 +561,7 @@ public class MobileInput extends InputHandler implements GestureListener{
         //handle long tap when player isn't building
         if(mode == none){
             Vec2 pos = Core.input.mouseWorld(x, y);
+            arcMarker.arcSendMarkPos(pos.x, pos.y);
 
             if(commandMode){
 

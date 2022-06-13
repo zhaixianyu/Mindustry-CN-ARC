@@ -178,7 +178,6 @@ task pack(dependsOn: [classes, configurations.runtimeClasspath]){
 
         //replace config file contents
         fileTree(dir: '../core/assets-raw/sprites_out/', include: "**/*.json").visit{ file ->
-
             if(!file.isDirectory()) file.file.text = file.file.text.replace("4096", "2048")
         }
 
@@ -284,13 +283,13 @@ task updateBundles{
         }
 
         OrderedMap<String, String> base = new OrderedMap<>()
-        PropertiesUtils.load(base, Fi.get("core/assets/bundles/bundle_zh_CN.properties").reader())
+        PropertiesUtils.load(base, Fi.get("core/assets/bundles/bundle.properties").reader())
         Seq<String> removals = new Seq<>()
 
         Log.info("Updating bundles...")
 
         Fi.get("core/assets/bundles").walk(child -> {
-            if(child.name().equals("bundle_zh_CN.properties") || child.toString().contains("output")) return
+            if(child.name().equals("bundle.properties") || child.toString().contains("output")) return
 
             Log.info("| @", child.nameWithoutExtension())
 

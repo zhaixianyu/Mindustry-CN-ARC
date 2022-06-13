@@ -1,6 +1,7 @@
 package mindustry.ui;
 
 import arc.Core;
+import arc.Events;
 import arc.graphics.Color;
 import arc.math.Mathf;
 import arc.math.geom.Vec2;
@@ -10,11 +11,17 @@ import arc.struct.ObjectMap;
 import arc.util.Strings;
 import arc.util.Time;
 import arc.util.Tmp;
-import mindustry.arcModule.Marker;
+import mindustry.ai.types.BuilderAI;
+import mindustry.ai.types.MinerAI;
+import mindustry.ai.types.RepairAI;
+import mindustry.arcModule.arcMarker;
 import mindustry.content.Blocks;
 import mindustry.content.Items;
 import mindustry.content.StatusEffects;
 import mindustry.content.UnitTypes;
+import mindustry.core.GameState;
+import mindustry.entities.units.AIController;
+import mindustry.game.EventType;
 import mindustry.game.Team;
 import mindustry.gen.Icon;
 import mindustry.gen.Payloadc;
@@ -34,6 +41,7 @@ import mindustry.world.blocks.payloads.UnitPayload;
 import java.util.Arrays;
 import java.util.Objects;
 
+import static arc.Core.settings;
 import static mindustry.Vars.*;
 import static mindustry.content.UnitTypes.*;
 import static mindustry.ui.Styles.*;
@@ -306,6 +314,12 @@ public class AdvanceToolTable extends Table {
                     unitLoc.y = player.y / tilesize;
                     rebuild[0].run();
                 }).tooltip("选择玩家当前位置：" + Strings.autoFixed(player.x / tilesize, 2) + "," + Strings.autoFixed(player.y / tilesize, 2)).height(50f);
+                t.button(StatusEffects.blasted.emoji(), () -> {
+                    if(arcMarker.markList.size==0) return;
+                    unitLoc.x = arcMarker.markList.peek().loc.x;
+                    unitLoc.y = arcMarker.markList.peek().loc.y;
+                    rebuild[0].run();
+                }).tooltip(arcMarker.markList.size==0?"[red]未标记":"选择上个标记点：" + arcMarker.markList.peek().loc.x + "," + arcMarker.markList.peek().loc.y).height(50f);
             });
 
             table.row();

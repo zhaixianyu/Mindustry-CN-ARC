@@ -9,18 +9,24 @@ import arc.input.*;
 import arc.math.*;
 import arc.math.geom.*;
 import arc.scene.*;
+import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
 import arc.util.*;
 import mindustry.*;
+import mindustry.content.*;
 import mindustry.core.*;
+import mindustry.entities.*;
 import mindustry.entities.units.*;
 import mindustry.game.EventType.*;
 import mindustry.game.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
+import mindustry.type.*;
 import mindustry.ui.*;
 import mindustry.world.*;
-import mindustry.arcModule.Marker;
+import mindustry.world.Block.*;
+import mindustry.world.blocks.*;
+import mindustry.arcModule.arcMarker;
 
 import static arc.Core.*;
 import static mindustry.Vars.net;
@@ -522,6 +528,10 @@ public class DesktopInput extends InputHandler{
             if(isBuilding){
                 player.shooting = false;
             }
+        }
+
+        if(Core.input.keyTap(Binding.point)){
+            arcMarker.newMarker(cursorX,cursorY).shareInfo();
         }
 
         if(Core.input.keyTap(Binding.rtsSelectHealth)){

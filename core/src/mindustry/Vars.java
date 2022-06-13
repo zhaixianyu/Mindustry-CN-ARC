@@ -9,7 +9,6 @@ import arc.struct.*;
 import arc.util.*;
 import arc.util.Log.*;
 import mindustry.ai.*;
-import mindustry.arcModule.*;
 import mindustry.async.*;
 import mindustry.core.*;
 import mindustry.ctype.*;
@@ -257,8 +256,6 @@ public class Vars implements Loadable{
 
     public static Player player;
 
-    public static Marker marker;
-
     @Override
     public void loadAsync(){
         loadSettings();
@@ -320,13 +317,11 @@ public class Vars implements Loadable{
         bases = new BaseRegistry();
         logicVars = new GlobalVars();
         javaPath =
-        new Fi(OS.prop("java.home")).child("bin/java").exists() ? new Fi(OS.prop("java.home")).child("bin/java").absolutePath() :
-        Core.files.local("jre/bin/java").exists() ? Core.files.local("jre/bin/java").absolutePath() :
-        "java";
+            new Fi(OS.prop("java.home")).child("bin/java").exists() ? new Fi(OS.prop("java.home")).child("bin/java").absolutePath() :
+            Core.files.local("jre/bin/java").exists() ? Core.files.local("jre/bin/java").absolutePath() :
+            "java";
 
         state = new GameState();
-
-        marker = new Marker();
 
         mobile = Core.app.isMobile() || testMobile;
         ios = Core.app.isIOS();
