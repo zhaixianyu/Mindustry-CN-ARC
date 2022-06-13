@@ -9,105 +9,96 @@ import mindustry.*;
 import mindustry.content.*;
 import mindustry.entities.*;
 import mindustry.game.EventType.*;
+import mindustry.gen.*;
 
 public class Marker{
     public static final float heatTime = 35f;
+
+    public static final String preFixed = "<ARC" + Vars.arcVersion + ">";
 
     public static MarkType mark, gatherMark, attackMark, defenseMark, quesMark;
 
     public static Seq<MarkType> markTypes = Seq.with(
     mark = new MarkType("mark", Fx.arcMarker, Color.valueOf("eab678")),
-    gatherMark = new MarkType("gather", Fx.arcGatherMarker, Color.cyan),
-    attackMark = new MarkType("attack", Fx.arcAttackMarker, Color.red),
+    gatherMark = new MarkType("gather", Fx.arcGatherMarker, Color.red),
+    attackMark = new MarkType("attack", Fx.arcAttackMarker, Color.cyan),
     defenseMark = new MarkType("defense", Fx.arcDefenseMarker, Color.acid),
-    quesMark = new MarkType("question", Fx.arcQuesMarker, Color.pink)
+    quesMark = new MarkType("question", Fx.arcQuesMarker)
     );
 
-    public float time;
+    public static float time;
+    public static boolean isLocal;
 
-    public Marker(){
+    static{
         Events.run(Trigger.update, () -> {
             time = Math.min(heatTime, time + Time.delta);
         });
     }
 
-    public void mark(MarkType type, float x, float y){
-        mark(type, Tmp.v1.set(x, y));
+    public static void mark(MarkType type, float x, float y){
+        mark(type, Tmp.v1.set(x, y), true);
     }
 
-    public void mark(MarkType type, Vec2 pos){
-        if(type == null){
-            return;
-        }
+    public static void mark(MarkType type, float x, float y, boolean sendMessage){
+        mark(type, Tmp.v1.set(x, y), sendMessage);
+    }
 
+    public static void mark(MarkType type, Vec2 pos){
+        mark(type, pos, true);
+    }
+
+    public static void mark(MarkType type, Vec2 pos, boolean sendMessage){
         if(time != heatTime){
-            Vars.ui.announce("请不要连续使用标记");
+            Vars.ui.announce("冷却时间未到");
             return;
         }
 
         time = 0f;
         type.showEffect(pos);
+
+        if(sendMessage){
+            isLocal = true;
+            type.sendMessage(pos);
+        }
     }
 
-    public void resolveMessage(String message){
-        String markType = "";
+    public static void resolveMessage(String text){
+        if(isLocal){
+            return;
+        }
 
-        if(message.contains("<ARC")){
-            int x = 0, y = 0;
-            try{
-                int strLength = message.length();
-                int stopindex = 0;
-                for(int i = 0; i < strLength; i++){
-                    if(message.charAt(i) == '>'){
-                        markType = message.substring(i + 1, i + 3).trim();
-                    }
-                    if(message.charAt(i) == '('){
-                        stopindex = i;
-                    }
-                    if(message.charAt(i) == ',' && stopindex > 0){
-                        x = Integer.parseInt(message.substring(stopindex + 1, i).trim());
-                        y = Integer.parseInt(message.substring(i + 1, strLength - 1).trim());
-                        break;
-                    }
-                }
-            }catch(Exception e){
-                Log.err(e);
+        int preFixedIndex = text.indexOf(preFixed);
+
+        if(preFixedIndex != -1){
+            int s = preFixedIndex + preFixed.length() + 1;
+
+            String typeLocalized = text.substring(text.indexOf('<', s) + 1, text.indexOf('>', s));
+
+            MarkType markType = findType(typeLocalized);
+
+            if(markType == null){
+                Log.err("Cannot resolve mark type from " + typeLocalized);
                 return;
             }
-            mark(findType(markType), x, y);
 
-        }else if(message.contains("发起集合")){
-            int strLength = message.length();
-            int x = 0;
-            int y = 0;
-            int initindex = 0;
-            int interval = 0;
+            /* Parse position */
+            String posStr = text.substring(text.indexOf('(', s + 1));
+
+            Vec2 pos = Tmp.v1;
+
             try{
-                for(int i = 0; i < strLength; i++){
-                    if(message.charAt(i) == '('){
-                        initindex = i;
-                    }
-                    if(initindex > 0){
-                        if(message.charAt(i) == ','){
-                            interval = i;
-                        }
-                        if(message.charAt(i) == ')'){
-                            x = Integer.parseInt(message.substring(initindex + 6, interval).trim());
-                            y = Integer.parseInt(message.substring(interval + 1, i - 7).trim());
-                            break;
-                        }
-                    }
-                }
-            }catch(Exception e){
-                Log.err(e);
+                pos.fromString(posStr);
+            }catch(Throwable e){
+                Log.err("Cannot resolve position from " + posStr);
+                return;
             }
 
-            mark(gatherMark, x, y);
+            mark(markType, pos, false);
         }
 
     }
 
-    public MarkType findType(String name){
+    public static MarkType findType(String name){
         return markTypes.find(maskType -> maskType.name.equals(name));
     }
 
@@ -134,11 +125,18 @@ public class Marker{
         }
 
         public String shortName(){
-            return "[#" + color + "]" + localizedName.substring(0,1);
+            return "[#" + color + "]" + localizedName;
         }
 
         public void showEffect(Vec2 pos){
             effect.arcCreate(pos.x, pos.y, 0, color, null);
+        }
+
+        public void sendMessage(Vec2 pos){
+            Call.sendChatMessage(preFixed +
+            "[#" + color + "]" + "<" + localizedName + ">" +
+            "[white]" + ": " +
+            pos.toString());
         }
 
     }
