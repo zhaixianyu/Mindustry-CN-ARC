@@ -36,7 +36,7 @@ public class AboutCN_ARCDialog extends BaseDialog{
         cont.row();
         cont.add("共同制作:");
         cont.row();
-        cont.add("[green]Root[blue]Channel[white]、[blue]MyIndustry2[white]、[blue]xkldklp[white]、[violet]Lucky_Clover、[yellow]miner[white]、blac8、[yellow]wayzer、[brown]Xor");
+        cont.add("v3制作团队：[violet]Lucky_Clover[white]、blac8、[blue]xkldklp[white]、[yellow]miner");
         cont.row();
         cont.add("主负责人：[violet]Lucky_Clover").row();
         cont.add("公开发行版本："+arcVersion).row();

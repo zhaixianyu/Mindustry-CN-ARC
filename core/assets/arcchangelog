@@ -3,14 +3,14 @@
 
 [acid]---------------------[源码声明]-----------------------
 当前学术端已在github  CN-ARC组下公开源码，欢迎各位提出建议或提供pr！如果觉得好用欢迎star！
-[red]如果fork本端，请在arcVersion后面加上你自己的子版本号，或者你私仓版本的代号（如3.0.1selfclient)
+[red]如果fork本端，请<arcVersion+=你自己的子版本>字符，或者你私仓版本的代号（如3.0.1selfclient)
 [orange]135端源码已在CN-ARC组旗下公开
 
 [acid]---------------------[作者声明]-----------------------
 关于更详细的游戏说明/机制，欢迎跟我补充。我们希望做一个[red]真正的核心数据库
 主要负责人：[violet]Lucky_Clover
-代码：[green]Root[blue]Channel[white]、[blue]MyIndustry2[white]、[blue]xkldklp[white]、[violet]Lucky_Clover
-[yellow]miner[white]、blac8、[yellow]wayzer、[brown]Xor
+v3学术端制作团队：[violet]Lucky_Clover[white]、blac8、[blue]xkldklp[white]、[yellow]miner
+v2-支持：[green]Root[blue]Channel[white]、[blue]MyIndustry2[white]、[yellow]wayzer、[brown]Xor
 翻译：
 [sky]Somall_dumpling
 工作元件详细说明：
@@ -20,10 +20,12 @@
 [acid]---------------------[使用说明]-----------------------
 在正式游戏前先进入设置-[cyan]学术端！[white]调整好你需要的设置项
 [orange]首次游玩请设置好后重启一次，大量设置需要重启生效
+[acid]问题反馈：
 本端几乎所有外显和辅助都可以关闭，如果不能通常是[red]你没找到
 请自己仔细试一次调整设置，并阅读更新日志后再在群里提问
-[yellow]不要动不动喊bug，如果不会调群里先问，测试好再@我并说明bug发生情况。
-[red]学术端是给进阶玩家设计的，不适合新人玩家。不会用就不要用！
+[yellow]不要动不动喊bug，如果不会调群里先问，不要@制作团队
+[yellow]如果怀疑有bug，确定更新到最新版本，反馈时请汇报[red]如何复现+报错日志[white]。
+[red]学术端是给进阶玩家设计的，完全不适合入门玩家。不会用就不要用！
 
 [acid]特色
 更多的工厂显示！从超速范围到工作细节！
@@ -119,7 +121,8 @@ https://github.com/CN-ARC/Mindustry-CN-ARC/
 [acid]4/17[white]:
 [violet]Lucky Clover[white]:
 自定义编辑器简单适配巨多队伍（我测试了200个没问题，但依然建议只调30个以内），但过多可能导致[red]游戏崩溃，慎用
-只是很简单的做了框架，ui之类没调，并不建议经常使用。如果你的设备不佳，建议先备份数据以防炸档（若内存溢出无法启动，可通过删除数据文件夹的setting恢复）
+只是很简单的做了框架，ui之类没调，并不建议经常使用。如果你的设备不佳，建议先备份数据以防炸档
+（若内存溢出无法启动，可通过删除数据文件夹的setting恢复）
 
 [acid]4/15[white]:  v2.22.1
 [violet]Lucky Clover[white]:
@@ -153,7 +156,8 @@ https://github.com/CN-ARC/Mindustry-CN-ARC/
 炮塔射程：添加[强制显示]，可在沙盒下使用（留意炮台部分需要重新设置）
 添加选择队伍框的缩小ui
 快捷设置：单位武器射程透明度
-[violet]欢迎大家填写学术端问卷：[cyan]https://www.wjx.cn/vj/e1yyEoa.aspx[violet] 反馈使用情况  [white]可在'关于'处直接点链接
+[violet]欢迎大家填写学术端问卷：[cyan]https://www.wjx.cn/vj/e1yyEoa.aspx[violet] 反馈使用情况
+[white]可在'关于'处直接点链接
 
 [acid]4/7[white]:
 [violet]Lucky Clover[white]:
@@ -327,8 +331,10 @@ team>6时兵种显示队伍id（HEX快乐功能）
 
 [acid]12/3[white]:      [cyan]v2.7.1
 [violet]Lucky Clover[white]:
-设置：单位|建筑详细信息   详细模式显示所有属性，且实时更新。    简略模式只显示改变了的信息，且如果有新的改变不会更新
-[gray]举例：放在单位上，如果单位移速等属性改变，均会更新。但如果是空军转载了物品，只有详细模式会更新，简略模式需要移到其他方块并移回来，才会更新。
+设置：单位|建筑详细信息   详细模式显示所有属性，且实时更新。
+简略模式只显示改变了的信息，且如果有新的改变不会更新
+[gray]举例：放在单位上，如果单位移速等属性改变，均会更新。
+但如果是空军转载了物品，只有详细模式会更新，简略模式需要移到其他方块并移回来，才会更新。
 
 [acid]12/2[white]:      [cyan]v2.7.1
 [violet]Lucky Clover[white]:
@@ -374,7 +380,8 @@ MI2tool更改为双击波次区打开|关闭
 
 [acid]11/20[white]:     [cyan]v2.4.2
 [violet]Lucky Clover[white]:
-地图设置：胜利波次。这是战役属性，调出后其他学术端玩家可以通过这个识别地图进度。        [orange]不影响原版，但谁能确保anuke怎么改呢？
+地图设置：胜利波次。这是战役属性，调出后其他学术端玩家可以通过这个识别地图进度。
+[orange]不影响原版，但谁能确保anuke怎么改呢？
 [brown]Xor[white]:
 修订炮台射程bug
 增加作弊功能：？
