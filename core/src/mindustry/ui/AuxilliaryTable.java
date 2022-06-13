@@ -3,13 +3,15 @@ package mindustry.ui;
 import arc.Core;
 import arc.Events;
 import arc.graphics.Color;
-import arc.scene.style.TextureRegionDrawable;
+import arc.math.geom.*;
+import arc.scene.*;
+import arc.scene.event.*;
 import arc.scene.ui.*;
 import arc.scene.ui.layout.Table;
-import arc.struct.Seq;
 import arc.util.Strings;
 import mindustry.Vars;
 import mindustry.ai.types.*;
+import mindustry.arcModule.Marker.*;
 import mindustry.content.Blocks;
 import mindustry.content.Items;
 import mindustry.content.StatusEffects;
@@ -21,9 +23,10 @@ import mindustry.entities.units.AIController;
 import mindustry.game.*;
 import mindustry.gen.*;
 
+import mindustry.input.*;
 import mindustry.type.StatusEffect;
 
-import mindustry.arcModule.arcMarker;
+import mindustry.arcModule.Marker;
 import mindustry.ui.dialogs.BaseDialog;
 import mindustry.world.Block;
 import mindustry.world.blocks.environment.Floor;
@@ -35,18 +38,20 @@ import static mindustry.content.UnitTypes.*;
 import static mindustry.gen.Tex.underlineWhite;
 import static mindustry.ui.Styles.*;
 
-public class AuxilliaryTable extends Table {
+public class AuxilliaryTable extends Table{
     private boolean show = true;
-    private boolean[] showns = {false, false, false, false ,mobile,false};
+    private boolean[] showns = {false, false, false, false, mobile, false};
     public int waveOffset = 0;
     private float imgSize = 33f;
 
     private float handerSize = 40f;
     private float tableSize = 20f;
 
+    public MarkType markType = Marker.mark;
+    public boolean mobileMark = false;
 
-    public ImageButton.ImageButtonStyle ImageHander,ImageHanderNC;
-    public TextButton.TextButtonStyle textBasic,textHander,textHanderNC;
+    public ImageButton.ImageButtonStyle ImageHander, ImageHanderNC;
+    public TextButton.TextButtonStyle textBasic, textHander, textHanderNC;
 
     private MapInfoDialog mapInfoDialog = new MapInfoDialog();
     private WaveInfoDialog waveInfoDialog = new WaveInfoDialog();
@@ -96,13 +101,38 @@ public class AuxilliaryTable extends Table {
         }};
 
         Events.run(EventType.Trigger.update, () -> {
-            if (playerAI != null) {
+            if(playerAI != null){
                 playerAI.unit(player.unit());
                 playerAI.updateUnit();
             }
         });
 
+        setup();
+
         toggle();
+    }
+
+    public void setup(){
+        ui.hudGroup.fill(t -> {
+            if(mobile){
+                t.addListener(new ElementGestureListener(){
+                    @Override
+                    public boolean longPress(Element actor, float x, float y){
+                        if(!mobileMark) return false;
+
+                        Marker.mark(markType, Core.input.mouseWorld());
+
+                        return true;
+                    }
+                });
+            }else{
+                t.update(() -> {
+                    if(Core.input.keyTap(Binding.point) && !Core.scene.hasField()){
+                        Marker.mark(markType, Core.input.mouseWorld());
+                    }
+                });
+            }
+        });
     }
 
     public void toggle(){
@@ -112,7 +142,7 @@ public class AuxilliaryTable extends Table {
         else buildHide();
         if(mobile){
             Events.run(EventType.Trigger.update, () -> {
-                if(!player.dead() && (player.unit().type.flying || !player.unit().type.canBoost))playerBoost = false;
+                if(!player.dead() && (player.unit().type.flying || !player.unit().type.canBoost)) playerBoost = false;
                 else player.boosting = playerBoost;
             });
         }
@@ -280,9 +310,6 @@ public class AuxilliaryTable extends Table {
                     player.buildDestroyedBlocks();
                 }).size(handerSize).tooltip("在建造列表加入被摧毁建筑");
 
-                t.button(Blocks.message.emoji(), textHanderNC, () -> {
-                    if (arcMarker.markList.size>0) arcMarker.markList.peek().reviewEffect();
-                }).size(handerSize).tooltip("锁定上个标记点");
                 /*
                 t.button(Icon.modeAttack, ImageHanderNC, imgSize, () -> {
                     boolean at = settings.getBool("autotarget");
@@ -338,8 +365,9 @@ public class AuxilliaryTable extends Table {
 
             body.collapser(t -> {
                 if(mobile){
-                    t.button("♐ >", textHanderNC, () -> {arcMarker.mobileMark = !arcMarker.mobileMark;
-                        if(arcMarker.mobileMark) ui.announce("[cyan]你已进入标记点模式，长按屏幕可进行标记。");
+                    t.button("♐ >", textHanderNC, () -> {
+                        mobileMark = !mobileMark;
+                        if(mobileMark) ui.announce("[cyan]你已进入标记点模式，长按屏幕可进行标记。");
                         else ui.announce("[cyan]你已退出标记点模式");
                     }).height(handerSize).width(70f).tooltip("开启手机标记");
                 }else{
@@ -347,16 +375,10 @@ public class AuxilliaryTable extends Table {
                 }
 
 
-                t.button("[#eab678]标", textHander, () -> settings.put("markType",0))
-                        .checked(b -> settings.getInt("markType") == 0).size(handerSize).tooltip("标记位置");
-                t.button("[#00ffff]集", textHander, () -> settings.put("markType",1))
-                        .checked(b -> settings.getInt("markType") == 1).size(handerSize).tooltip("标记集合点");
-                t.button("[#ff0000]攻", textHander, () -> settings.put("markType",2))
-                        .checked(b -> settings.getInt("markType") == 2).size(handerSize).tooltip("标记攻击点");
-                t.button("[#7fff00]守", textHander, () -> settings.put("markType",3))
-                        .checked(b -> settings.getInt("markType") == 3).size(handerSize).tooltip("标记防守点");
-                t.button("[#ee82ee]?", textHander, () -> settings.put("markType",4))
-                        .checked(b -> settings.getInt("markType") == 4).size(handerSize).tooltip("问号");
+                for(MarkType type : Marker.markTypes){
+                    t.button(type.shortName(), textHander, () -> markType = type)
+                     .checked(b -> markType == type).size(handerSize).tooltip(type.describe);
+                }
 
             }, () -> showns[5]).left();
 

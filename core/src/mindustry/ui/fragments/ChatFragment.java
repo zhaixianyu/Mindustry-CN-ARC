@@ -15,7 +15,6 @@ import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.*;
-import mindustry.arcModule.arcMarker;
 import mindustry.gen.*;
 import mindustry.input.*;
 import mindustry.ui.*;
@@ -275,12 +274,13 @@ public class ChatFragment extends Table{
     public void addMessage(String message){
         if(message == null) return;
 
-        arcMarker.newMsgMarker(message);
+        Marker.resolveMessage(message);
+
         messages.insert(0, message);
 
         fadetime += 1f;
         fadetime = Math.min(fadetime, messagesShown) + 1f;
-        
+
         if(scrollPos > 0) scrollPos++;
     }
 
