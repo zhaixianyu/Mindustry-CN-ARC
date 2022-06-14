@@ -160,6 +160,7 @@ public class CustomRulesDialog extends BaseDialog{
         number("@rules.deconstructrefundmultiplier", false, f -> rules.deconstructRefundMultiplier = f, () -> rules.deconstructRefundMultiplier, () -> !rules.infiniteResources);
         number("@rules.blockhealthmultiplier", f -> rules.blockHealthMultiplier = f, () -> rules.blockHealthMultiplier);
         number("@rules.blockdamagemultiplier", f -> rules.blockDamageMultiplier = f, () -> rules.blockDamageMultiplier);
+        number("@rules.solarmultiplier", f -> rules.solarMultiplier = f, () -> rules.solarMultiplier);
 
         main.button("@configure",
             () -> loadoutDialog.show(999999, rules.loadout,
@@ -200,6 +201,14 @@ public class CustomRulesDialog extends BaseDialog{
         check("@rules.fog", b -> rules.fog = b, () -> rules.fog);
         check("@rules.staticFog", b -> rules.staticFog = b, () -> rules.staticFog);
         check("@rules.lighting", b -> rules.lighting = b, () -> rules.lighting);
+
+        if(experimental){
+            check("@rules.limitarea", b -> rules.limitMapArea = b, () -> rules.limitMapArea);
+            numberi("x", x -> state.rules.limitX = x, () -> state.rules.limitX, () -> state.rules.limitMapArea, 0, 10000);
+            numberi("y", y -> state.rules.limitY = y, () -> state.rules.limitY, () -> state.rules.limitMapArea, 0, 10000);
+            numberi("w", w -> state.rules.limitWidth = w, () -> state.rules.limitWidth, () -> state.rules.limitMapArea, 0, 10000);
+            numberi("h", h -> state.rules.limitHeight = h, () -> state.rules.limitHeight, () -> state.rules.limitMapArea, 0, 10000);
+        }
 
         main.button(b -> {
             b.left();
@@ -245,7 +254,7 @@ public class CustomRulesDialog extends BaseDialog{
         numberi("w", w -> state.rules.limitWidth = w, () -> state.rules.limitWidth, () -> state.rules.limitMapArea, 0, 10000);
         numberi("h", h -> state.rules.limitHeight = h, () -> state.rules.limitHeight, () -> state.rules.limitMapArea, 0, 10000);
         check("@rules.disableOutsideArea",b -> rules.disableOutsideArea = b, () -> rules.disableOutsideArea);
-    
+
         title("@rules.title.planet");
 
         main.table(Tex.button, t -> {
