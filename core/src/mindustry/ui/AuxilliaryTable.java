@@ -328,6 +328,27 @@ public class AuxilliaryTable extends Table{
 
             body.row();
 
+            body.collapser(t -> {
+                if(mobile){
+                    t.button("♐ >", textHanderNC, () -> {
+                        mobileMark = !mobileMark;
+                        if(mobileMark) ui.announce("[cyan]你已进入标记点模式，长按屏幕可进行标记。");
+                        else ui.announce("[cyan]你已退出标记点模式");
+                    }).height(handerSize).width(70f).tooltip("开启手机标记");
+                }else{
+                    t.button("♐ >", textHanderNC, () -> showns[5] = !showns[5]).height(handerSize).width(70f).tooltip("标记");
+                }
+
+
+                for(MarkType type : Marker.markTypes){
+                    t.button(type.shortName(), textHander, () -> markType = type)
+                            .checked(b -> markType == type).size(handerSize).tooltip(type.describe);
+                }
+
+            }, () -> showns[5]).left();
+
+            body.row();
+
             /* <手机>控制器 */
             body.collapser(t -> {
                 t.button(emanate.emoji() + " >", textHanderNC, () -> showns[4] = !showns[4]).size(handerSize).tooltip("手机控制器");
@@ -361,27 +382,6 @@ public class AuxilliaryTable extends Table{
                 }).tooltip("进入传送带");
 
             }, () -> showns[4]).left();
-
-            body.row();
-
-            body.collapser(t -> {
-                if(mobile){
-                    t.button("♐ >", textHanderNC, () -> {
-                        mobileMark = !mobileMark;
-                        if(mobileMark) ui.announce("[cyan]你已进入标记点模式，长按屏幕可进行标记。");
-                        else ui.announce("[cyan]你已退出标记点模式");
-                    }).height(handerSize).width(70f).tooltip("开启手机标记");
-                }else{
-                    t.button("♐ >", textHanderNC, () -> showns[5] = !showns[5]).height(handerSize).width(70f).tooltip("标记");
-                }
-
-
-                for(MarkType type : Marker.markTypes){
-                    t.button(type.shortName(), textHander, () -> markType = type)
-                     .checked(b -> markType == type).size(handerSize).tooltip(type.describe);
-                }
-
-            }, () -> showns[5]).left();
 
             body.row();
 
