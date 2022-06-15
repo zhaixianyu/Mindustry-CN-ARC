@@ -64,7 +64,8 @@ public class AchievementsDialog extends BaseDialog{
             for (SStat stat : SStat.values()){
                 String name = Core.bundle.get("sstat." + stat.name() + ".name");
                 t.add(name).left();
-                t.add("                 "+stat.get()).left();
+                if(stat.name() == "arcPlayTime") t.add("                 "+ formatTime(stat.get())).left();
+                else t.add("                 "+stat.get()).left();
                 t.row();
             }
         });
@@ -140,5 +141,14 @@ public class AchievementsDialog extends BaseDialog{
 
         });
 
+    }
+
+    private String formatTime(int time){
+        StringBuilder outTime = new StringBuilder();
+        int h = time / 3600;
+        int m = (time % 60) / 60;
+        int s = time % 60;
+        outTime.append(h).append(" : ").append(m).append(" : ").append(s);
+        return outTime.toString();
     }
 }
