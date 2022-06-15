@@ -146,7 +146,7 @@ public class AchievementsDialog extends BaseDialog{
     private String formatTime(int time){
         StringBuilder outTime = new StringBuilder();
         int h = time / 3600;
-        int m = (time % 60) / 60;
+        int m = (time / 60) % 60;
         int s = time % 60;
         outTime.append(h).append(" : ").append(m).append(" : ").append(s);
         return outTime.toString();
