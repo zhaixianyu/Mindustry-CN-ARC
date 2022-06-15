@@ -982,7 +982,7 @@ public class UnitType extends UnlockableContent{
             }
 
             for(Weapon weapon : weapons){
-                if(!weapon.name.isEmpty()){
+                if(!weapon.name.isEmpty() && (minfo.mod == null || weapon.name.startsWith(minfo.mod.name))){
                     //TODO makeNew isn't really necessary here is it
                     makeOutline(PageType.main, packer, weapon.region, separateOutline, outlineColor, outlineRadius);
                 }
