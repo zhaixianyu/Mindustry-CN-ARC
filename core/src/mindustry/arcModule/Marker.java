@@ -7,6 +7,7 @@ import arc.struct.*;
 import arc.util.*;
 import mindustry.*;
 import mindustry.content.*;
+import mindustry.core.*;
 import mindustry.entities.*;
 import mindustry.game.EventType.*;
 import mindustry.gen.*;
@@ -49,7 +50,7 @@ public class Marker{
 
     public static void mark(MarkType type, Vec2 pos, boolean sendMessage){
         if(time != heatTime){
-            Vars.ui.announce("冷却时间未到");
+            Vars.ui.announce("请不要频繁标记!");
             return;
         }
 
@@ -136,7 +137,7 @@ public class Marker{
             Call.sendChatMessage(preFixed +
             "[#" + color + "]" + "<" + localizedName + ">" +
             "[white]" + ": " +
-            pos.toString());
+            Tmp.v1.set(World.toTile(pos.x), World.toTile(pos.y)));
         }
 
     }
