@@ -64,6 +64,17 @@ public class AboutCN_ARCDialog extends BaseDialog{
                 }
             }).width(100f).height(30f);
         });
+        cont.row();
+        cont.table(t->{
+            t.add("共同编辑").height(30f);
+            t.button("[cyan]成就翻译",cleart,()->{
+                String link = "https://docs.qq.com/doc/DVHBUd3d4eWdNQWpo";
+                if(!Core.app.openURI(link)){
+                    ui.showErrorMessage("@linkfail");
+                    Core.app.setClipboardText(link);
+                }
+            }).width(100f).height(30f);
+        });
 
         cont.row();
         for(String log : changelogs){
