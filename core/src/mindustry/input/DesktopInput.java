@@ -540,7 +540,10 @@ public class DesktopInput extends InputHandler{
 
         if(Core.input.keyTap(Binding.rtsSelectWound)){
             control.input.selectedUnits.removeAll(unit -> unit.health > unit.maxHealth * (float)Core.settings.getInt("rtsWoundUnit")/100f);
+        }
 
+        if(Core.input.keyTap(Binding.rtsSelectAll)){
+            control.input.selectedUnits = player.team().data().units.select(Unitc::isCommandable);
         }
 
         if(Core.input.keyTap(Binding.showRTSAi)){

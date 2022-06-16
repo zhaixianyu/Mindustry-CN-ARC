@@ -76,7 +76,9 @@ public enum Binding implements KeyBind{
     showRTSAi(KeyCode.l),
     console(KeyCode.f8),
     rtsSelectWound(KeyCode.f12),
-    rtsSelectHealth(KeyCode.f12)
+    rtsSelectHealth(KeyCode.f12),
+
+    rtsSelectAll(KeyCode.f2)
     ;
 
     private final KeybindValue defaultValue;
