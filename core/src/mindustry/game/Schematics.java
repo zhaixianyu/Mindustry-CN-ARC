@@ -517,7 +517,7 @@ public class Schematics implements Loadable{
         try(DataInputStream stream = new DataInputStream(new InflaterInputStream(input))){
             short width = stream.readShort(), height = stream.readShort();
 
-            if(width > 128 || height > 128) throw new IOException("Invalid schematic: Too large (max possible size is 128x128)");
+            if(width > 1024 || height > 1024) throw new IOException("Invalid schematic: Too large (max possible size is 128x128)");
 
             StringMap map = new StringMap();
             int tags = stream.readUnsignedByte();
