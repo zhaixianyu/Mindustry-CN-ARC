@@ -47,7 +47,7 @@ public class AuxilliaryTable extends Table{
     private float handerSize = 40f;
     private float tableSize = 20f;
 
-    public MarkType markType = Marker.mark;
+    public MarkType markType = Vars.marker.mark;
     public boolean mobileMark = false;
 
     public ImageButton.ImageButtonStyle ImageHander, ImageHanderNC;
@@ -120,15 +120,15 @@ public class AuxilliaryTable extends Table{
                     public boolean longPress(Element actor, float x, float y){
                         if(!mobileMark) return false;
 
-                        Marker.mark(markType, Core.input.mouseWorld());
+                        Vars.marker.mark(markType, Core.input.mouseWorld());
 
                         return true;
                     }
                 });
             }else{
                 t.update(() -> {
-                    if(Core.input.keyTap(Binding.point) && !Core.scene.hasField()){
-                        Marker.mark(markType, Core.input.mouseWorld());
+                    if(Core.input.keyTap(Binding.point)){
+                        Vars.marker.mark(markType, Core.input.mouseWorld());
                     }
                 });
             }
@@ -174,8 +174,7 @@ public class AuxilliaryTable extends Table{
             /* 地图信息界面 */
             body.collapser(t -> {
                 t.button(Icon.map, ImageHanderNC, () -> mapInfoDialog.show()).size(handerSize).tooltip("地图信息");
-                t.button(Items.copper.emoji(), textHanderNC, () -> floorStatisticDialog()).size(handerSize).tooltip("矿物信息");
-                t.button(Icon.starSmall, ImageHanderNC, ui.achievements::show).size(handerSize).tooltip("统计与成就");
+                t.button(Items.copper.emoji(), textHanderNC, () -> floorStatisticDialog()).size(handerSize).tooltip("地图信息");
             }, () -> showns[0]).left();
 
             body.row();
@@ -328,27 +327,6 @@ public class AuxilliaryTable extends Table{
 
             body.row();
 
-            body.collapser(t -> {
-                if(mobile){
-                    t.button("♐ >", textHanderNC, () -> {
-                        mobileMark = !mobileMark;
-                        if(mobileMark) ui.announce("[cyan]你已进入标记点模式，长按屏幕可进行标记。");
-                        else ui.announce("[cyan]你已退出标记点模式");
-                    }).height(handerSize).width(70f).tooltip("开启手机标记");
-                }else{
-                    t.button("♐ >", textHanderNC, () -> showns[5] = !showns[5]).height(handerSize).width(70f).tooltip("标记");
-                }
-
-
-                for(MarkType type : Marker.markTypes){
-                    t.button(type.shortName(), textHander, () -> markType = type)
-                            .checked(b -> markType == type).size(handerSize).tooltip(type.describe);
-                }
-
-            }, () -> showns[5]).left();
-
-            body.row();
-
             /* <手机>控制器 */
             body.collapser(t -> {
                 t.button(emanate.emoji() + " >", textHanderNC, () -> showns[4] = !showns[4]).size(handerSize).tooltip("手机控制器");
@@ -382,6 +360,27 @@ public class AuxilliaryTable extends Table{
                 }).tooltip("进入传送带");
 
             }, () -> showns[4]).left();
+
+            body.row();
+
+            body.collapser(t -> {
+                if(mobile){
+                    t.button("♐ >", textHanderNC, () -> {
+                        mobileMark = !mobileMark;
+                        if(mobileMark) ui.announce("[cyan]你已进入标记点模式，长按屏幕可进行标记。");
+                        else ui.announce("[cyan]你已退出标记点模式");
+                    }).height(handerSize).width(70f).tooltip("开启手机标记");
+                }else{
+                    t.button("♐ >", textHanderNC, () -> showns[5] = !showns[5]).height(handerSize).width(70f).tooltip("标记");
+                }
+
+
+                for(MarkType type : Marker.markTypes){
+                    t.button(type.shortName(), textHander, () -> markType = type)
+                     .checked(b -> markType == type).size(handerSize).tooltip(type.describe);
+                }
+
+            }, () -> showns[5]).left();
 
             body.row();
 
