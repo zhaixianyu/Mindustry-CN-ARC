@@ -42,6 +42,7 @@ public class HudFragment{
     public boolean shown = true;
 
     private ImageButton flip;
+    private Slider minimapSlider;
     private CoreItemsDisplay coreItems = new CoreItemsDisplay();
     private OtherCoreItemDisplay otherCoreItemDisplay = new OtherCoreItemDisplay();
     private AuxilliaryTable auxilliaryTable = new AuxilliaryTable();
@@ -105,6 +106,9 @@ public class HudFragment{
             otherCoreItemDisplay.updateTeamList();
             auxilliaryTable.toggle();
             hideObjectives = false;
+            if(minimapSlider != null){
+                minimapSlider.setRange(0.1f, Math.min(world.width(), world.height()) / 16f / 2f);
+            }
         });
 
         //paused table
@@ -132,18 +136,13 @@ public class HudFragment{
             t.row();
             if(mobile){
                 t.table(tt -> {
-                    tt.button("M", Styles.cleart, () -> {
+                    tt.button(Icon.play, cleari, () -> {
                         ui.minimapfrag.toggle();
-                    }).left().size(30f);
+                    }).left();
 
-                    tt.button("+", Styles.cleart, () -> {
-                        renderer.minimap.setZoom(renderer.minimap.getZoom() * 1.2f);
-                    }).left().size(30f);
-
-                    tt.button("-", Styles.cleart, () -> {
-                        renderer.minimap.setZoom(renderer.minimap.getZoom() * 0.8f);
-                    }).left().size(30f);
-
+                    minimapSlider = tt.slider(1, 1, 0.1f, (n) -> {
+                        renderer.minimap.setZoom(n);
+                    }).fillX().get();
                 }).fillX().row();
             }
 

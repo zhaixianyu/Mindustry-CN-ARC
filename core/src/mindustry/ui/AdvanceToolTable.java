@@ -317,7 +317,7 @@ public class AdvanceToolTable extends Table{
 
                     unitLoc.set(World.toTile(Marker.markList.peek().markPos.x),World.toTile(Marker.markList.peek().markPos.y));
                     rebuild[0].run();
-                }).tooltip(Marker.markList.size>0 ? "[red]未标记" : ("选择上个标记点：" + World.toTile(Marker.markList.peek().markPos.x) + "," +  World.toTile(Marker.markList.peek().markPos.y))).height(50f);
+                }).tooltip(Marker.markList.size==0 ? "[red]未标记" : ("选择上个标记点：" + World.toTile(Marker.markList.peek().markPos.x) + "," +  World.toTile(Marker.markList.peek().markPos.y))).height(50f);
             });
 
             table.row();
