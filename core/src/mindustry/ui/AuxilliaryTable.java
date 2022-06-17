@@ -38,7 +38,7 @@ public class AuxilliaryTable extends Table{
     private float handerSize = 40f;
     private float tableSize = 20f;
 
-    public MarkType markType = Vars.marker.mark;
+    public MarkType markType = Marker.mark;
     public boolean mobileMark = false;
 
     public ImageButton.ImageButtonStyle ImageHander, ImageHanderNC;
@@ -111,15 +111,15 @@ public class AuxilliaryTable extends Table{
                     public boolean longPress(Element actor, float x, float y){
                         if(!mobileMark) return false;
 
-                        Vars.marker.mark(markType, Core.input.mouseWorld());
+                        Marker.mark(markType, Core.input.mouseWorld());
 
                         return true;
                     }
                 });
             }else{
                 t.update(() -> {
-                    if(Core.input.keyTap(Binding.point)){
-                        Vars.marker.mark(markType, Core.input.mouseWorld());
+                    if(Core.input.keyTap(Binding.point) && !Core.scene.hasField()){
+                        Marker.mark(markType, Core.input.mouseWorld());
                     }
                 });
             }

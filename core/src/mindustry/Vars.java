@@ -257,8 +257,6 @@ public class Vars implements Loadable{
 
     public static Player player;
 
-    public static Marker marker;
-
     @Override
     public void loadAsync(){
         loadSettings();
@@ -325,8 +323,6 @@ public class Vars implements Loadable{
         "java";
 
         state = new GameState();
-
-        marker = new Marker();
 
         mobile = Core.app.isMobile() || testMobile;
         ios = Core.app.isIOS();
