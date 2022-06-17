@@ -13,9 +13,10 @@ import mindustry.game.EventType.*;
 import mindustry.gen.*;
 
 public class Marker{
-    public static final float heatTime = 35f;
+    public static final float heatTime = 60f;
 
-    public static final String preFixed = "<ARC" + Vars.arcVersion + ">";
+    public static final String preFixed = "<ARC";
+    public static final String versionFixed = preFixed + Vars.arcVersion + ">";
 
     public static MarkType mark, gatherMark, attackMark, defenseMark, quesMark;
 
@@ -27,8 +28,8 @@ public class Marker{
     quesMark = new MarkType("question", Fx.arcQuesMarker)
     );
 
-    public static Vec2 lastPos;
     public static float time;
+    public static Vec2 lastPos;
     public static boolean isLocal;
 
     static{
@@ -56,7 +57,12 @@ public class Marker{
         }
 
         time = 0f;
+        if(lastPos == null){
+            lastPos = new Vec2();
+        }
+
         lastPos.set(pos);
+
         type.showEffect(pos);
 
         if(sendMessage){
@@ -74,11 +80,11 @@ public class Marker{
         int preFixedIndex = text.indexOf(preFixed);
 
         if(preFixedIndex != -1){
-            int s = preFixedIndex + preFixed.length() + 1;
+            int s = text.indexOf(">", preFixedIndex) + 1;
 
             String typeLocalized = text.substring(text.indexOf('<', s) + 1, text.indexOf('>', s));
 
-            MarkType markType = findType(typeLocalized);
+            MarkType markType = findLocalizedName(typeLocalized);
 
             if(markType == null){
                 Log.err("Cannot resolve mark type from " + typeLocalized);
@@ -104,6 +110,10 @@ public class Marker{
 
     public static MarkType findType(String name){
         return markTypes.find(maskType -> maskType.name.equals(name));
+    }
+
+    public static MarkType findLocalizedName(String localizedName){
+        return markTypes.find(maskType -> maskType.localizedName.equals(localizedName));
     }
 
     public static class MarkType{
@@ -137,7 +147,7 @@ public class Marker{
         }
 
         public void sendMessage(Vec2 pos){
-            Call.sendChatMessage(preFixed +
+            Call.sendChatMessage(versionFixed +
             "[#" + color + "]" + "<" + localizedName + ">" +
             "[white]" + ": " +
             Tmp.v1.set(World.toTile(pos.x), World.toTile(pos.y)));
