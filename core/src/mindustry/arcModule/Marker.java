@@ -27,6 +27,7 @@ public class Marker{
     quesMark = new MarkType("question", Fx.arcQuesMarker)
     );
 
+    public static Vec2 lastPos;
     public static float time;
     public static boolean isLocal;
 
@@ -55,6 +56,7 @@ public class Marker{
         }
 
         time = 0f;
+        lastPos.set(pos);
         type.showEffect(pos);
 
         if(sendMessage){

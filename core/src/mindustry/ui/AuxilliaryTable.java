@@ -1,36 +1,27 @@
 package mindustry.ui;
 
-import arc.Core;
-import arc.Events;
-import arc.graphics.Color;
-import arc.math.geom.*;
+import arc.*;
+import arc.graphics.*;
 import arc.scene.*;
 import arc.scene.event.*;
 import arc.scene.ui.*;
-import arc.scene.ui.layout.Table;
-import arc.util.Strings;
-import mindustry.Vars;
+import arc.scene.ui.layout.*;
+import arc.util.*;
+import mindustry.*;
 import mindustry.ai.types.*;
+import mindustry.arcModule.*;
 import mindustry.arcModule.Marker.*;
-import mindustry.content.Blocks;
-import mindustry.content.Items;
-import mindustry.content.StatusEffects;
-import mindustry.core.UI;
-import mindustry.editor.MapInfoDialog;
-import mindustry.editor.WaveInfoDialog;
-import mindustry.editor.arcWaveInfoDialog;
-import mindustry.entities.units.AIController;
+import mindustry.content.*;
+import mindustry.core.*;
+import mindustry.editor.*;
+import mindustry.entities.units.*;
 import mindustry.game.*;
 import mindustry.gen.*;
-
 import mindustry.input.*;
-import mindustry.type.StatusEffect;
-
-import mindustry.arcModule.Marker;
-import mindustry.ui.dialogs.BaseDialog;
-import mindustry.world.Block;
-import mindustry.world.blocks.environment.Floor;
-import mindustry.world.blocks.environment.StaticWall;
+import mindustry.type.*;
+import mindustry.ui.dialogs.*;
+import mindustry.world.*;
+import mindustry.world.blocks.environment.*;
 
 import static arc.Core.settings;
 import static mindustry.Vars.*;
