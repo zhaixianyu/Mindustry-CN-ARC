@@ -33,6 +33,8 @@ public class ShieldWall extends Wall{
         super.setStats();
 
         stats.add(Stat.shieldHealth, shieldHealth);
+        stats.add(Stat.cooldownTime, breakCooldown / Time.toSeconds, StatUnit.seconds);
+        stats.add(Stat.regenSpeed, regenSpeed * Time.toSeconds, StatUnit.perSecond);
     }
 
     @Override
