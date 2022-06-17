@@ -128,9 +128,11 @@ public class MinimapRenderer{
             float rx = !withLabels ? (unit.x - rect.x) / rect.width * w : unit.x / (world.width() * tilesize) * w;
             float ry = !withLabels ? (unit.y - rect.y) / rect.width * h : unit.y / (world.height() * tilesize) * h;
 
-            Draw.mixcol(unit.team.color, 1f);
-            float scale = Scl.scl(1f) / 2f * scaling * 32f;
+            float scale = Scl.scl(1f) / 2f * scaling * 32f * unit.hitSize / tilesize / 2;
             var region = unit.icon();
+            Draw.rect(region, x + rx, y + ry, scale, scale * (float)region.height / region.width, unit.rotation() - 90);
+            Draw.reset();
+            Draw.mixcol(unit.team.color, 0.3f);
             Draw.rect(region, x + rx, y + ry, scale, scale * (float)region.height / region.width, unit.rotation() - 90);
             Draw.reset();
         }

@@ -47,7 +47,7 @@ public class Minimap extends Table{
 
                 if(renderer.minimap.getTexture() != null){
                     Draw.alpha(parentAlpha);
-                    renderer.minimap.drawEntities(x, y, width, height, 0.75f, false);
+                    renderer.minimap.drawEntities(x, y, width, height, renderer.minimap.getZoom(), false);
                 }
 
                 clipEnd();
@@ -157,7 +157,7 @@ public class Minimap extends Table{
 
                 if(renderer.minimap.getTexture() != null){
                     Draw.alpha(parentAlpha);
-                    renderer.minimap.drawEntities(x, y, width, height, 0.75f, false);
+                    renderer.minimap.drawEntities(x, y, width, height, 3f / renderer.minimap.getZoom(), false);
                 }
 
                 clipEnd();
