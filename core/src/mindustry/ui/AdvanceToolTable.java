@@ -138,23 +138,22 @@ public class AdvanceToolTable extends Table{
                                 timeAcce /= 2;
                                 Time.setDeltaProvider(() -> Math.min(Core.graphics.getDeltaTime() * 60 * timeAcce, 3 * timeAcce));
                                 ui.announce("当前时间倍率：" + timeAcce);
-                            }).size(40f, 30f);
+                            }).tooltip("[acid]将时间流速放慢到一半").size(40f, 30f);
                             tBox.button("×2", cleart, () -> {
                                 timeAcce *= 2;
                                 Time.setDeltaProvider(() -> Math.min(Core.graphics.getDeltaTime() * 60 * timeAcce, 3 * timeAcce));
                                 ui.announce("当前时间倍率：" + timeAcce);
-                            }).size(40f, 30f);
+                            }).tooltip("[acid]将时间流速加快到两倍").size(40f, 30f);
                             tBox.button("[red]S", cleart, () -> {
                                 timeAcce = 0;
                                 Time.setDeltaProvider(() -> Math.min(Core.graphics.getDeltaTime() * 60 * timeAcce, 3 * timeAcce));
-
                                 ui.announce("当前时间倍率：" + timeAcce);
-                            }).size(30f, 30f);
+                            }).tooltip("[acid]暂停时间").size(30f, 30f);
                             tBox.button("[green]N", cleart, () -> {
                                 timeAcce = 1;
                                 Time.setDeltaProvider(() -> Math.min(Core.graphics.getDeltaTime() * 60 * timeAcce, 3 * timeAcce));
                                 ui.announce("当前时间倍率：" + timeAcce);
-                            }).size(30f, 30f);
+                            }).tooltip("[acid]恢复原速").size(30f, 30f);
                                 /*tBox.button("[orange]||", cleart, () -> {
                                     if(state.is(GameState.State.playing)) {state.set(GameState.State.paused);}
                                     else if(state.is(GameState.State.paused)){
