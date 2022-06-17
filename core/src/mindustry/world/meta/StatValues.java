@@ -455,7 +455,7 @@ public class StatValues{
                         else if (type instanceof LaserBulletType || type instanceof ContinuousLaserBulletType || type instanceof ShrapnelBulletType) {
                             sep(bt, " [stat]电性穿透");
                         }
-                        else if (!type.pierceBuilding) {
+                        else if (!type.pierceBuilding && !(type instanceof ContinuousFlameBulletType)) {
                             sep(bt, " [stat]不能穿透建筑");
                         }
                     }
