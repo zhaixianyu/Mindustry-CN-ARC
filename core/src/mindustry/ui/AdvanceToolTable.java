@@ -18,6 +18,7 @@ import mindustry.content.Blocks;
 import mindustry.content.Items;
 import mindustry.content.StatusEffects;
 import mindustry.content.UnitTypes;
+import mindustry.core.World;
 import mindustry.game.Team;
 import mindustry.gen.Icon;
 import mindustry.gen.Payloadc;
@@ -314,9 +315,9 @@ public class AdvanceToolTable extends Table{
                 t.button(StatusEffects.blasted.emoji(), () -> {
                     if(Marker.lastPos == null) return;
 
-                    unitLoc.set(Marker.lastPos);
+                    unitLoc.set(World.toTile(Marker.lastPos.x),World.toTile(Marker.lastPos.y));
                     rebuild[0].run();
-                }).tooltip(Marker.lastPos == null ? "[red]未标记" : ("选择上个标记点：" + Marker.lastPos)).height(50f);
+                }).tooltip(Marker.lastPos == null ? "[red]未标记" : ("选择上个标记点：" + World.toTile(Marker.lastPos.x) + "," +  World.toTile(Marker.lastPos.y))).height(50f);
             });
 
             table.row();

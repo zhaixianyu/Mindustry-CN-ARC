@@ -25,11 +25,12 @@ public class Marker{
     gatherMark = new MarkType("gather", Fx.arcGatherMarker, Color.red),
     attackMark = new MarkType("attack", Fx.arcAttackMarker, Color.cyan),
     defenseMark = new MarkType("defense", Fx.arcDefenseMarker, Color.acid),
-    quesMark = new MarkType("question", Fx.arcQuesMarker)
+    quesMark = new MarkType("question", Fx.arcQuesMarker, Color.pink)
     );
 
     public static float time;
     public static Vec2 lastPos;
+    public static MarkType lastMarkTypes;
     public static boolean isLocal;
 
     static{
@@ -62,6 +63,7 @@ public class Marker{
         }
 
         lastPos.set(pos);
+        lastMarkTypes = type;
 
         type.showEffect(pos);
 
@@ -140,6 +142,10 @@ public class Marker{
 
         public String shortName(){
             return "[#" + color + "]" + localizedName;
+        }
+
+        public String tinyName(){
+            return "[#" + color + "]" + localizedName.substring(0,1);
         }
 
         public void showEffect(Vec2 pos){

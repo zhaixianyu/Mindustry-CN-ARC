@@ -308,7 +308,13 @@ public class AuxilliaryTable extends Table{
                 t.button(Blocks.buildTower.emoji(), textHanderNC, () -> {
                     player.buildDestroyedBlocks();
                 }).size(handerSize).tooltip("在建造列表加入被摧毁建筑");
-
+                t.button(Blocks.message.emoji(), textHanderNC, () -> {
+                    if(control.input instanceof DesktopInput){
+                        ((DesktopInput) control.input).panning = true;
+                    }
+                    Core.camera.position.set(Marker.lastPos);
+                    if (Marker.lastPos!=null) Marker.mark(Marker.lastMarkTypes,Marker.lastPos);
+                }).size(handerSize).tooltip("锁定上个标记点");
                 /*
                 t.button(Icon.modeAttack, ImageHanderNC, imgSize, () -> {
                     boolean at = settings.getBool("autotarget");
@@ -340,7 +346,7 @@ public class AuxilliaryTable extends Table{
 
 
                 for(MarkType type : Marker.markTypes){
-                    t.button(type.shortName(), textHander, () -> markType = type)
+                    t.button(type.tinyName(), textHander, () -> markType = type)
                      .checked(b -> markType == type).size(handerSize).tooltip(type.describe);
                 }
 
