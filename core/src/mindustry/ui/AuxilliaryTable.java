@@ -309,11 +309,12 @@ public class AuxilliaryTable extends Table{
                     player.buildDestroyedBlocks();
                 }).size(handerSize).tooltip("在建造列表加入被摧毁建筑");
                 t.button(Blocks.message.emoji(), textHanderNC, () -> {
+                    if (Marker.markList.size==0) return;
                     if(control.input instanceof DesktopInput){
                         ((DesktopInput) control.input).panning = true;
                     }
-                    Core.camera.position.set(Marker.lastPos);
-                    if (Marker.lastPos!=null) Marker.mark(Marker.lastMarkTypes,Marker.lastPos);
+                    Core.camera.position.set(Marker.markList.peek().markPos);
+                    Marker.mark(Marker.markList.peek().markType,Marker.markList.peek().markPos);
                 }).size(handerSize).tooltip("锁定上个标记点");
                 /*
                 t.button(Icon.modeAttack, ImageHanderNC, imgSize, () -> {

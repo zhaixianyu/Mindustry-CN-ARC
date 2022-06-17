@@ -31,14 +31,13 @@ public class Marker{
     quesMark = new MarkType("question", Fx.arcQuesMarker, Color.pink)
     );
 
-    public static float time;
-    public static Vec2 lastPos;
-    public static MarkType lastMarkTypes;
     public static boolean isLocal;
 
+    public static Seq<MarkElement> markList = new Seq<>();
+
     static{
-        Events.run(Trigger.update, () -> {
-            time += Time.delta;
+        Events.run(WorldLoadEvent.class, () -> {
+            markList = new Seq<>();
         });
     }
 
@@ -55,18 +54,12 @@ public class Marker{
     }
 
     public static void mark(MarkType type, Vec2 pos, boolean sendMessage){
-        if(time < heatTime){
+        if(markList.size>0 && (Time.time - markList.peek().time)<heatTime){
             Vars.ui.announce("请不要频繁标记!");
             return;
         }
 
-        time = 0f;
-        if(lastPos == null){
-            lastPos = new Vec2();
-        }
-
-        lastPos.set(pos);
-        lastMarkTypes = type;
+        markList.add(new MarkElement(type,pos));
 
         type.showEffect(pos);
 
@@ -164,4 +157,26 @@ public class Marker{
 
     }
 
+    public static class MarkElement{
+        public MarkType markType;
+        public float time;
+        public String player;
+        public Vec2 markPos;
+
+        public MarkElement(MarkType markType,Vec2 markPos){
+            this(markType,"",markPos);
+        }
+
+        public MarkElement(MarkType markType,String player,Vec2 markPos){
+            this(markType,Time.time,player,markPos);
+        }
+
+        public MarkElement(MarkType markType,float time,String player,Vec2 markPos){
+            this.markType = markType;
+            this.time = time;
+            this.player = player;
+            this.markPos = new Vec2().set(markPos);
+        }
+
+    }
 }

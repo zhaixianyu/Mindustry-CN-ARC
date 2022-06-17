@@ -313,11 +313,11 @@ public class AdvanceToolTable extends Table{
                 }).tooltip("选择玩家当前位置：" + player.tileX() + "," + player.tileY()).height(50f);
 
                 t.button(StatusEffects.blasted.emoji(), () -> {
-                    if(Marker.lastPos == null) return;
+                    if(Marker.markList.size == 0) return;
 
-                    unitLoc.set(World.toTile(Marker.lastPos.x),World.toTile(Marker.lastPos.y));
+                    unitLoc.set(World.toTile(Marker.markList.peek().markPos.x),World.toTile(Marker.markList.peek().markPos.y));
                     rebuild[0].run();
-                }).tooltip(Marker.lastPos == null ? "[red]未标记" : ("选择上个标记点：" + World.toTile(Marker.lastPos.x) + "," +  World.toTile(Marker.lastPos.y))).height(50f);
+                }).tooltip(Marker.markList.size>0 ? "[red]未标记" : ("选择上个标记点：" + World.toTile(Marker.markList.peek().markPos.x) + "," +  World.toTile(Marker.markList.peek().markPos.y))).height(50f);
             });
 
             table.row();

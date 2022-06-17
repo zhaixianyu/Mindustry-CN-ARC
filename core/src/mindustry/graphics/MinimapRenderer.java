@@ -115,18 +115,21 @@ public class MinimapRenderer{
             Groups.unit.copy(units);
         }
 
-        if(Marker.lastPos!=null && Marker.time<Marker.retainTime) {
-            Draw.color(Marker.lastMarkTypes.color);
-            Lines.stroke(Scl.scl(3f) * (1 - (Marker.time % 180 + 30) / 210));
+        if(Marker.markList.size>0) {
+            Marker.markList.each(a->{
+                if((Time.time - a.time)>Marker.retainTime) return;
+                Draw.color(a.markType.color);
+                Lines.stroke(Scl.scl(3f) * (1 - (Time.time % 180 + 30) / 210));
 
-            float rx = !withLabels ? (Marker.lastPos.x - rect.x) / rect.width * w : Marker.lastPos.x / (world.width() * tilesize) * w;
-            float ry = !withLabels ? (Marker.lastPos.y - rect.y) / rect.width * h : Marker.lastPos.y / (world.height() * tilesize) * h;
+                float rx = !withLabels ? (a.markPos.x - rect.x) / rect.width * w : a.markPos.x / (world.width() * tilesize) * w;
+                float ry = !withLabels ? (a.markPos.y - rect.y) / rect.width * h : a.markPos.y / (world.height() * tilesize) * h;
 
-
-            Lines.circle(x + rx, y + ry, scale(100f) * (Marker.time % 180) / 180);
-            Lines.stroke(Scl.scl(3f));
-            Lines.circle(x + rx, y + ry, scale(20f));
-            Draw.reset();
+                Lines.circle(x + rx, y + ry, scale(100f) * (Time.time % 180) / 180);
+                Lines.stroke(Scl.scl(3f));
+                Lines.circle(x + rx, y + ry, scale(20f));
+                Lines.arc(x + rx, y + ry, scale(18f),1 - (Time.time - a.time)/Marker.retainTime);
+                Draw.reset();
+            });
         }
 
         float sz = baseSize * zoom;
