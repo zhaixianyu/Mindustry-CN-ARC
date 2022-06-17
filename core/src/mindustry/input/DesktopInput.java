@@ -20,7 +20,6 @@ import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.ui.*;
 import mindustry.world.*;
-import mindustry.arcModule.Marker;
 
 import static arc.Core.*;
 import static mindustry.Vars.net;

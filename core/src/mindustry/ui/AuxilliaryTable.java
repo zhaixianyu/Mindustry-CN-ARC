@@ -1,36 +1,27 @@
 package mindustry.ui;
 
-import arc.Core;
-import arc.Events;
-import arc.graphics.Color;
-import arc.math.geom.*;
+import arc.*;
+import arc.graphics.*;
 import arc.scene.*;
 import arc.scene.event.*;
 import arc.scene.ui.*;
-import arc.scene.ui.layout.Table;
-import arc.util.Strings;
-import mindustry.Vars;
+import arc.scene.ui.layout.*;
+import arc.util.*;
+import mindustry.*;
 import mindustry.ai.types.*;
+import mindustry.arcModule.*;
 import mindustry.arcModule.Marker.*;
-import mindustry.content.Blocks;
-import mindustry.content.Items;
-import mindustry.content.StatusEffects;
-import mindustry.core.UI;
-import mindustry.editor.MapInfoDialog;
-import mindustry.editor.WaveInfoDialog;
-import mindustry.editor.arcWaveInfoDialog;
-import mindustry.entities.units.AIController;
+import mindustry.content.*;
+import mindustry.core.*;
+import mindustry.editor.*;
+import mindustry.entities.units.*;
 import mindustry.game.*;
 import mindustry.gen.*;
-
 import mindustry.input.*;
-import mindustry.type.StatusEffect;
-
-import mindustry.arcModule.Marker;
-import mindustry.ui.dialogs.BaseDialog;
-import mindustry.world.Block;
-import mindustry.world.blocks.environment.Floor;
-import mindustry.world.blocks.environment.StaticWall;
+import mindustry.type.*;
+import mindustry.ui.dialogs.*;
+import mindustry.world.*;
+import mindustry.world.blocks.environment.*;
 
 import static arc.Core.settings;
 import static mindustry.Vars.*;
@@ -61,9 +52,9 @@ public class AuxilliaryTable extends Table{
 
     private boolean playerBoost = false;
 
-    public AuxilliaryTable() {
+    public AuxilliaryTable(){
 
-        textBasic = new TextButton.TextButtonStyle() {{
+        textBasic = new TextButton.TextButtonStyle(){{
             font = Fonts.def;
             fontColor = Color.white;
             down = flatOver;
@@ -153,16 +144,19 @@ public class AuxilliaryTable extends Table{
         button("[cyan]辅助器", textHander, this::toggle).width(80f).height(handerSize).tooltip("开启辅助器");
     }
 
-    void buildShow() {
+    void buildShow(){
         clear();
         Table hander = table().fillX().get();
 
         hander.button("[acid]辅助器", textHander, this::toggle).width(80f).height(handerSize).tooltip("关闭辅助器");
-        hander.button(Icon.map, ImageHander, () -> showns[0] = !showns[0]).checked(a->showns[0]).size(handerSize).tooltip("地图信息");
-        hander.button(Icon.waves, ImageHander, () -> showns[1] = !showns[1]).checked(a->showns[1]).size(handerSize).tooltip("波次信息");
-        hander.button(Blocks.microProcessor.emoji(), textHander, () -> showns[2] = !showns[2]).checked(a->showns[2]).size(handerSize).tooltip("玩家AI");
-        hander.button(gamma.emoji(), textHander, () -> {showns[3] = !showns[3];showns[5] = false;}).checked(a->showns[3]).size(handerSize).tooltip("控制器");
-        hander.button(emanate.emoji(), textHander, () -> showns[4] = !showns[4]).checked(a->showns[4]).size(handerSize).tooltip("<手机>控制器").visible(true);
+        hander.button(Icon.map, ImageHander, () -> showns[0] = !showns[0]).checked(a -> showns[0]).size(handerSize).tooltip("地图信息");
+        hander.button(Icon.waves, ImageHander, () -> showns[1] = !showns[1]).checked(a -> showns[1]).size(handerSize).tooltip("波次信息");
+        hander.button(Blocks.microProcessor.emoji(), textHander, () -> showns[2] = !showns[2]).checked(a -> showns[2]).size(handerSize).tooltip("玩家AI");
+        hander.button(gamma.emoji(), textHander, () -> {
+            showns[3] = !showns[3];
+            showns[5] = false;
+        }).checked(a -> showns[3]).size(handerSize).tooltip("控制器");
+        hander.button(emanate.emoji(), textHander, () -> showns[4] = !showns[4]).checked(a -> showns[4]).size(handerSize).tooltip("<手机>控制器").visible(true);
 
         row();
 
@@ -181,7 +175,8 @@ public class AuxilliaryTable extends Table{
 
             /* 波次信息界面 */
             body.collapser(t -> {
-                t.button(Icon.waves, ImageHanderNC, () -> {arcWaveInfoDialog.show();
+                t.button(Icon.waves, ImageHanderNC, () -> {
+                    arcWaveInfoDialog.show();
                 }).size(handerSize).tooltip("波次信息");
 
                 t.table(buttons -> {
@@ -213,17 +208,17 @@ public class AuxilliaryTable extends Table{
 
                 }).left().row();
                 t.table(setWave -> {
-                    setWave.label(() -> "" + (state.wave + waveOffset)).get().setFontScale(tableSize/30f);
+                    setWave.label(() -> "" + (state.wave + waveOffset)).get().setFontScale(tableSize / 30f);
                     setWave.row();
-                    setWave.button(Icon.settingsSmall,ImageHanderNC,imgSize * 0.7f,()->{
+                    setWave.button(Icon.settingsSmall, ImageHanderNC, imgSize * 0.7f, () -> {
                         Dialog lsSet = new BaseDialog("波次设定");
                         lsSet.cont.add("设定查询波次").padRight(5f).left();
                         TextField field = lsSet.cont.field(state.wave + waveOffset + "", text -> {
                             waveOffset = Integer.parseInt(text) - state.wave;
                         }).size(320f, 54f).valid(Strings::canParsePositiveInt).maxTextLength(100).get();
                         lsSet.cont.row();
-                        lsSet.cont.slider(1,new arcWaveInfoDialog().calWinWave(),1,res->{
-                            waveOffset = (int) res - state.wave;
+                        lsSet.cont.slider(1, new arcWaveInfoDialog().calWinWave(), 1, res -> {
+                            waveOffset = (int)res - state.wave;
                             field.setText((int)res + "");
                         });
                         lsSet.addCloseButton();
@@ -262,10 +257,10 @@ public class AuxilliaryTable extends Table{
                                 waveInfo.table(groupT -> {
                                     groupT.image(group.type.uiIcon).size(tableSize).row();
 
-                                    groupT.add("" + amount, tableSize/30f).center();
+                                    groupT.add("" + amount, tableSize / 30f).center();
                                     groupT.row();
 
-                                    if(shield > 0f) groupT.add("" + UI.formatAmount((long)shield), tableSize/30f).center();
+                                    if(shield > 0f) groupT.add("" + UI.formatAmount((long)shield), tableSize / 30f).center();
                                     groupT.row();
                                     if(effect != null && effect != StatusEffects.none) groupT.image(effect.uiIcon).size(tableSize);
                                 }).padLeft(4).top();
@@ -304,7 +299,10 @@ public class AuxilliaryTable extends Table{
 
             /* 控制器 */
             body.collapser(t -> {
-                t.button(gamma.emoji() + " >", textHanderNC, () -> {showns[3] = !showns[3];showns[5] = false;}).size(handerSize).tooltip("控制器");
+                t.button(gamma.emoji() + " >", textHanderNC, () -> {
+                    showns[3] = !showns[3];
+                    showns[5] = false;
+                }).size(handerSize).tooltip("控制器");
 
                 t.button(Blocks.buildTower.emoji(), textHanderNC, () -> {
                     player.buildDestroyedBlocks();
@@ -321,7 +319,8 @@ public class AuxilliaryTable extends Table{
                 }).tooltip("助推").size(handerSize).checked(playerBoost);
 
                 t.button("♐", textHander,
-                    () -> showns[5] = !showns[5]).checked(a->showns[5]).size(handerSize).tooltip("标记器");
+                () -> showns[5] = !showns[5]
+                ).checked(a -> showns[5]).size(handerSize).tooltip("标记器");
 
             }, () -> showns[3]).left();
 
@@ -341,7 +340,7 @@ public class AuxilliaryTable extends Table{
 
                 for(MarkType type : Marker.markTypes){
                     t.button(type.shortName(), textHander, () -> markType = type)
-                            .checked(b -> markType == type).size(handerSize).tooltip(type.describe);
+                     .checked(b -> markType == type).size(handerSize).tooltip(type.describe);
                 }
 
             }, () -> showns[5]).left();
@@ -352,11 +351,11 @@ public class AuxilliaryTable extends Table{
             body.collapser(t -> {
                 t.button(emanate.emoji() + " >", textHanderNC, () -> showns[4] = !showns[4]).size(handerSize).tooltip("手机控制器");
 
-                t.button(Icon.unitsSmall, ImageHanderNC,imgSize, () -> {
+                t.button(Icon.unitsSmall, ImageHanderNC, imgSize, () -> {
                     control.input.commandMode = !control.input.commandMode;
                 }).tooltip("指挥模式").checked(control.input.commandMode);
 
-                t.button(Icon.pause, ImageHanderNC,imgSize, () -> {
+                t.button(Icon.pause, ImageHanderNC, imgSize, () -> {
                     control.input.isBuilding = !control.input.isBuilding;
                 }).tooltip("暂停建造").checked(control.input.isBuilding);
 
@@ -366,18 +365,19 @@ public class AuxilliaryTable extends Table{
                     settings.put("viewMode", !view);
                 }).size(handerSize).tooltip("原地静止").checked(settings.getBool("viewMode"));
 
-                t.button(Icon.up, ImageHanderNC,imgSize, () -> {
+                t.button(Icon.up, ImageHanderNC, imgSize, () -> {
                     control.input.tryPickupPayload();
                 }).tooltip("捡起载荷");
 
-                t.button(Icon.down, ImageHanderNC,imgSize, () -> {
+                t.button(Icon.down, ImageHanderNC, imgSize, () -> {
                     control.input.tryDropPayload();
                 }).tooltip("丢下载荷");
 
                 t.button(Blocks.payloadConveyor.emoji(), textHanderNC, () -> {
                     Building build = world.buildWorld(player.unit().x, player.unit().y);
                     if(build != null && player.unit().team() == build.team && build.canControlSelect(player.unit())){
-                        Call.unitBuildingControlSelect(player.unit(), build);}
+                        Call.unitBuildingControlSelect(player.unit(), build);
+                    }
                 }).tooltip("进入传送带");
 
             }, () -> showns[4]).left();
@@ -452,28 +452,28 @@ public class AuxilliaryTable extends Table{
                 c.add("<---[cyan]地表矿[]--->").row();
                 c.table(list -> {
                     int i = 0;
-                    for (Block block : content.blocks().select(b -> b instanceof Floor f && !f.wallOre && f.itemDrop != null)) {
-                        if(indexer.floorOresCount[block.id]==0) continue;
-                        if (i++ % 4 == 0) list.row();
-                        list.add(block.emoji() +" "+ block.localizedName + "\n" + indexer.floorOresCount[block.id]).width(100f).height(50f);
+                    for(Block block : content.blocks().select(b -> b instanceof Floor f && !f.wallOre && f.itemDrop != null)){
+                        if(indexer.floorOresCount[block.id] == 0) continue;
+                        if(i++ % 4 == 0) list.row();
+                        list.add(block.emoji() + " " + block.localizedName + "\n" + indexer.floorOresCount[block.id]).width(100f).height(50f);
                     }
                 }).row();
                 c.add("<---[cyan]墙矿[]--->").row();
                 c.table(list -> {
                     int i = 0;
-                    for (Block block : content.blocks().select(b -> ((b instanceof Floor f && f.wallOre) || b instanceof StaticWall) && b.itemDrop != null)) {
-                        if(indexer.wallOresCount[block.id]==0) continue;
-                        if (i++ % 4 == 0) list.row();
-                        list.add(block.emoji() +" "+ block.localizedName + "\n" + indexer.wallOresCount[block.id]).width(100f).height(50f);
+                    for(Block block : content.blocks().select(b -> ((b instanceof Floor f && f.wallOre) || b instanceof StaticWall) && b.itemDrop != null)){
+                        if(indexer.wallOresCount[block.id] == 0) continue;
+                        if(i++ % 4 == 0) list.row();
+                        list.add(block.emoji() + " " + block.localizedName + "\n" + indexer.wallOresCount[block.id]).width(100f).height(50f);
                     }
                 }).row();
                 c.add("<---[cyan]液体[]--->").row();
                 c.table(list -> {
                     int i = 0;
-                    for (Block block : content.blocks().select(b -> ((b instanceof Floor f && f.liquidDrop!=null)))) {
-                        if(indexer.floorOresCount[block.id]==0) continue;
-                        if (i++ % 4 == 0) list.row();
-                        list.add(block.emoji() +" "+ block.localizedName + "\n" + indexer.floorOresCount[block.id]).width(100f).height(50f);
+                    for(Block block : content.blocks().select(b -> ((b instanceof Floor f && f.liquidDrop != null)))){
+                        if(indexer.floorOresCount[block.id] == 0) continue;
+                        if(i++ % 4 == 0) list.row();
+                        list.add(block.emoji() + " " + block.localizedName + "\n" + indexer.floorOresCount[block.id]).width(100f).height(50f);
                     }
                 }).row();
                 c.row();
