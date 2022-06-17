@@ -448,15 +448,31 @@ public class StatValues{
                     }
 
                     if(type.pierce || type.pierceCap != -1){
-                        sep(bt, type.pierceCap == -1 ? "@bullet.infinitepierce" : Core.bundle.format("bullet.pierce", type.pierceCap));
+                        boolean laserPierce = type instanceof LaserBulletType || type instanceof ContinuousLaserBulletType || type instanceof ShrapnelBulletType;
+                        boolean pierceBuilding = laserPierce || type instanceof ContinuousFlameBulletType || type instanceof RailBulletType || type.pierceBuilding;
+                        boolean pierceUnit = type.pierce;
+                        boolean infinitePierce = type.pierceCap == -1;
+                        String str = "[stat]";
+                        if (infinitePierce && !(type instanceof RailBulletType)) {
+                            str += "无限";
+                        }
+                        str += "穿透";
+                        if (pierceBuilding && pierceUnit) {
+                            str += "建筑与单位";
+                        }
+                        else {
+                            str += pierceBuilding ? "建筑" : "单位";
+                        }
+                        if (!infinitePierce && !(type instanceof RailBulletType)) {
+                            str += type.pierceCap + "次";
+                        }
+
+                        sep(bt, str);
+                        if (laserPierce) {
+                            sep(bt, " [stat]会被塑钢墙阻挡");
+                        }
                         if (type instanceof RailBulletType rail) {
-                            sep(bt, " [stat]" + Strings.autoFixed(rail.pierceDamageFactor * 100, 1) + "%[lightgray]衰减");
-                        }
-                        else if (type instanceof LaserBulletType || type instanceof ContinuousLaserBulletType || type instanceof ShrapnelBulletType) {
-                            sep(bt, " [stat]电性穿透");
-                        }
-                        else if (!type.pierceBuilding && !(type instanceof ContinuousFlameBulletType)) {
-                            sep(bt, " [stat]不能穿透建筑");
+                            sep(bt, " [stat]" + Strings.autoFixed(rail.pierceDamageFactor * 100f, 1) + "%[lightgray]衰减");
                         }
                     }
 
