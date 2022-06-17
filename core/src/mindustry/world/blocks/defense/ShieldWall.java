@@ -7,6 +7,7 @@ import arc.util.*;
 import arc.util.io.*;
 import mindustry.annotations.Annotations.*;
 import mindustry.graphics.*;
+import mindustry.ui.Bar;
 import mindustry.world.meta.*;
 
 import static mindustry.Vars.*;
@@ -32,6 +33,12 @@ public class ShieldWall extends Wall{
         super.setStats();
 
         stats.add(Stat.shieldHealth, shieldHealth);
+    }
+
+    @Override
+    public void setBars(){
+        super.setBars();
+        addBar("charge", (ShieldWallBuild entity) -> new Bar(() -> ("护盾: " + (int)entity.shield + " / " + shieldHealth), () -> Pal.shield, () -> (entity.shield / shieldHealth)));
     }
 
     public class ShieldWallBuild extends WallBuild{
