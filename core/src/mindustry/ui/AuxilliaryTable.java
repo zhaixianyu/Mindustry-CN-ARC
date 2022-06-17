@@ -168,7 +168,8 @@ public class AuxilliaryTable extends Table{
             /* 地图信息界面 */
             body.collapser(t -> {
                 t.button(Icon.map, ImageHanderNC, () -> mapInfoDialog.show()).size(handerSize).tooltip("地图信息");
-                t.button(Items.copper.emoji(), textHanderNC, () -> floorStatisticDialog()).size(handerSize).tooltip("地图信息");
+                t.button(Items.copper.emoji(), textHanderNC, () -> floorStatisticDialog()).size(handerSize).tooltip("矿物信息");
+                t.button(Icon.starSmall, ImageHanderNC, ui.achievements::show).size(handerSize).tooltip("统计与成就");
             }, () -> showns[0]).left();
 
             body.row();

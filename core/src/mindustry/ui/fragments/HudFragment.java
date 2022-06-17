@@ -262,7 +262,7 @@ public class HudFragment{
                 wavesMain.table(s -> {
                     //wave info button with text
                     s.add(makeStatusTableArc()).grow().name("status");
-                }).width(dsize * 5 + 4f).name("statustable");
+                }).width(dsize * 5 + 4f).name("statustable").left();
             }
             else{
                 wavesMain.table(s -> {
@@ -284,7 +284,7 @@ public class HudFragment{
                     }
 
 
-                }).width(dsize * 5 + 4f).name("statustable");
+                }).width(dsize * 5 + 4f).name("statustable").left();
             }
 
             wavesMain.row();
@@ -389,7 +389,7 @@ public class HudFragment{
                 info.row();
                 info.label(() -> "缩放: " + String.format("%.2f", Vars.renderer.getScale())).left().style(Styles.outlineLabel);
                 info.row();
-                info.add("ARC-Client   "+arcVersion).color(getThemeColor()).left();
+                info.add("ARC   "+arcVersion).color(getThemeColor()).left();
                 info.row();
 
                 info.label(() -> ping.get(netClient.getPing())).visible(net::client).left().style(Styles.outlineLabel).name("ping").row();
