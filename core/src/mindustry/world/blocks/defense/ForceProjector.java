@@ -1,5 +1,6 @@
 package mindustry.world.blocks.defense;
 
+import arc.Core;
 import arc.func.*;
 import arc.graphics.*;
 import arc.graphics.g2d.*;
@@ -14,6 +15,8 @@ import mindustry.game.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.logic.*;
+import mindustry.type.Item;
+import mindustry.type.Liquid;
 import mindustry.ui.*;
 import mindustry.world.*;
 import mindustry.world.consumers.*;
@@ -94,10 +97,38 @@ public class ForceProjector extends Block{
         super.setStats();
         stats.add(Stat.shieldHealth, shieldHealth, StatUnit.none);
         stats.add(Stat.cooldownTime, (int) (shieldHealth / cooldownBrokenBase / 60f), StatUnit.seconds);
+        stats.add(Stat.regenSpeed, cooldownNormal * Time.toSeconds, StatUnit.perSecond);
+        if (consumeCoolant || consItems) {
+            stats.add(Stat.booster, table -> {
+                table.row();
+                table.table(c -> {
+                    if (consumeCoolant) {
+                        for(Liquid liquid : content.liquids()){
+                            if(!consumesLiquid(liquid)) continue;
 
-        if(consItems){
-            stats.add(Stat.boostEffect, phaseRadiusBoost / tilesize, StatUnit.blocks);
-            stats.add(Stat.boostEffect, phaseShieldBoost, StatUnit.shieldHealth);
+                            c.image(liquid.uiIcon).size(3 * 8).padRight(4).right().top();
+                            c.add(liquid.localizedName).padRight(10).left().top();
+                            c.table(Tex.underline, bt -> {
+                                bt.left().defaults().padRight(3).left();
+                                bt.add(Core.bundle.format("shield.regenspeed", cooldownLiquid * (1f + (liquid.heatCapacity - 0.4f) * 0.9f)));
+                            }).left().padTop(-9);
+                            c.row();
+                        }
+                    }
+                    if (consItems) {
+                        if (itemConsumer instanceof ConsumeItems ci) {
+                            Item item = ci.items[0].item;
+                            c.image(item.uiIcon).size(3 * 8).padRight(4).right().top();
+                            c.add(item.localizedName).padRight(10).left().top();
+                            c.table(Tex.underline, bt -> {
+                                bt.left().defaults().padRight(3).left();
+                                bt.add(Core.bundle.format("shield.phaseboost", phaseRadiusBoost / tilesize, phaseShieldBoost));
+                            }).left().padTop(-9);
+                            c.row();
+                        }
+                    }
+                }).colspan(table.getColumns());
+            });
         }
     }
 
