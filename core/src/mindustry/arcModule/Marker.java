@@ -13,7 +13,10 @@ import mindustry.game.EventType.*;
 import mindustry.gen.*;
 
 public class Marker{
+    /** 冷却时间*/
     public static final float heatTime = 60f;
+    /** 滞留时间*/
+    public static final float retainTime = 1800f;
 
     public static final String preFixed = "<ARC";
     public static final String versionFixed = preFixed + Vars.arcVersion + ">";
@@ -22,8 +25,8 @@ public class Marker{
 
     public static Seq<MarkType> markTypes = Seq.with(
     mark = new MarkType("mark", Fx.arcMarker, Color.valueOf("eab678")),
-    gatherMark = new MarkType("gather", Fx.arcGatherMarker, Color.red),
-    attackMark = new MarkType("attack", Fx.arcAttackMarker, Color.cyan),
+    gatherMark = new MarkType("gather", Fx.arcGatherMarker, Color.cyan),
+    attackMark = new MarkType("attack", Fx.arcAttackMarker, Color.red),
     defenseMark = new MarkType("defense", Fx.arcDefenseMarker, Color.acid),
     quesMark = new MarkType("question", Fx.arcQuesMarker, Color.pink)
     );
@@ -35,7 +38,7 @@ public class Marker{
 
     static{
         Events.run(Trigger.update, () -> {
-            time = Math.min(heatTime, time + Time.delta);
+            time += Time.delta;
         });
     }
 
@@ -52,7 +55,7 @@ public class Marker{
     }
 
     public static void mark(MarkType type, Vec2 pos, boolean sendMessage){
-        if(time != heatTime){
+        if(time < heatTime){
             Vars.ui.announce("请不要频繁标记!");
             return;
         }
@@ -125,7 +128,7 @@ public class Marker{
         public String describe;
 
         private final Effect effect;
-        private final Color color;
+        public final Color color;
 
         public MarkType(String name, Effect effect){
             this(name, effect, Color.white);

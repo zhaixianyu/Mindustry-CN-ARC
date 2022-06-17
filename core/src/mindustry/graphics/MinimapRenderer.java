@@ -10,6 +10,7 @@ import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
 import arc.util.pooling.*;
+import mindustry.arcModule.Marker;
 import mindustry.content.*;
 import mindustry.entities.*;
 import mindustry.game.EventType.*;
@@ -112,6 +113,20 @@ public class MinimapRenderer{
         }else{
             units.clear();
             Groups.unit.copy(units);
+        }
+
+        if(Marker.lastPos!=null && Marker.time<Marker.retainTime) {
+            Draw.color(Marker.lastMarkTypes.color);
+            Lines.stroke(Scl.scl(3f) * (1 - (Marker.time % 180 + 30) / 210));
+
+            float rx = !withLabels ? (Marker.lastPos.x - rect.x) / rect.width * w : Marker.lastPos.x / (world.width() * tilesize) * w;
+            float ry = !withLabels ? (Marker.lastPos.y - rect.y) / rect.width * h : Marker.lastPos.y / (world.height() * tilesize) * h;
+
+
+            Lines.circle(x + rx, y + ry, scale(100f) * (Marker.time % 180) / 180);
+            Lines.stroke(Scl.scl(3f));
+            Lines.circle(x + rx, y + ry, scale(20f));
+            Draw.reset();
         }
 
         float sz = baseSize * zoom;
