@@ -449,6 +449,15 @@ public class StatValues{
 
                     if(type.pierce || type.pierceCap != -1){
                         sep(bt, type.pierceCap == -1 ? "@bullet.infinitepierce" : Core.bundle.format("bullet.pierce", type.pierceCap));
+                        if (type instanceof RailBulletType rail) {
+                            sep(bt, " [stat]" + Strings.autoFixed(rail.pierceDamageFactor * 100, 1) + "%[lightgray]衰减");
+                        }
+                        else if (type instanceof LaserBulletType || type instanceof ContinuousLaserBulletType || type instanceof ShrapnelBulletType) {
+                            sep(bt, " [stat]电性穿透");
+                        }
+                        else if (!type.pierceBuilding) {
+                            sep(bt, " [stat]不能穿透建筑");
+                        }
                     }
 
                     if(type.incendAmount > 0){
