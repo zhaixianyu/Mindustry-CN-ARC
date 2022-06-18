@@ -35,11 +35,11 @@ public class Marker{
 
     public static boolean isLocal;
 
-    public static Seq<MarkElement> markList = new Seq<>();
+    public static final Seq<MarkElement> markList = new Seq<>();
 
     static{
         Events.run(WorldLoadEvent.class, () -> {
-            markList = new Seq<>();
+            markList.clear()
         });
     }
 
