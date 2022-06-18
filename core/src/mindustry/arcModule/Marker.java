@@ -79,8 +79,16 @@ public class Marker{
 
         if(preFixedIndex != -1){
             int s = text.indexOf(">", preFixedIndex) + 1;
+            
+            int typeStart = text.indexOf('<', s);
+            int typeEnd = text.indexOf('>', s);
 
-            String typeLocalized = text.substring(text.indexOf('<', s) + 1, text.indexOf('>', s));
+            if(typeStart == -1 || typeEnd == -1){
+                return;
+            }
+
+
+            String typeLocalized = text.substring(typeStart + 1, typeEnd);
 
             MarkType markType = findLocalizedName(typeLocalized);
 
