@@ -106,13 +106,12 @@ public class Marker{
 
             try{
                 pos.fromString(posStr);
-                pos = new Vec2(pos.x * tilesize,pos.y * tilesize);
             }catch(Throwable e){
                 Log.err("Cannot resolve position from " + posStr);
                 return;
             }
 
-            mark(markType, pos, false);
+            mark(markType, pos.scl(tilesize), false);
         }
 
     }
