@@ -551,6 +551,7 @@ public class Block extends UnlockableContent implements Senseable{
         for(var c : consumers){
             c.display(stats);
         }
+        stats.add(Stat.canOverdrive, canOverdrive);
 
         //Note: Power stats are added by the consumers.
         if(hasLiquids) stats.add(Stat.liquidCapacity, liquidCapacity, StatUnit.liquidUnits);

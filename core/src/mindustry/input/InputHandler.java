@@ -236,8 +236,9 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
                 }else if(posTarget != null){
                     ai.commandPosition(posTarget);
                 }
+                unit.lastCommanded = player.coloredName();
             }
-            unit.lastCommanded = player.coloredName();
+
         }
 
         if(unitIds.length > 0 && player == Vars.player){

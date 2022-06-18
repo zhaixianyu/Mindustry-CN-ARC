@@ -17,6 +17,7 @@ public class Stat implements Comparable<Stat>{
     displaySize = new Stat("displaySize"),
     buildTime = new Stat("buildTime"),
     buildCost = new Stat("buildCost"),
+    canOverdrive = new Stat("canOverdrive"),
     memoryCapacity = new Stat("memoryCapacity"),
     explosiveness = new Stat("explosiveness"),
     flammability = new Stat("flammability"),
