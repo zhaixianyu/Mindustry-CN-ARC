@@ -481,7 +481,7 @@ public class StatValues{
                     }
 
                     if(type.homingPower > 0.01f){
-                        sep(bt, "[stat]追踪[lightgray]~[]"+Strings.autoFixed(type.homingPower * 50, 1)+"°/s[lightgray]~[]"+Strings.fixed(type.homingRange / tilesize,1)+"[lightgray]格");
+                        sep(bt, "[stat]追踪[lightgray]~[]"+Strings.autoFixed(type.homingPower * 50 * Time.toSeconds, 1)+"°/s[lightgray]~[]"+Strings.fixed(type.homingRange / tilesize,1)+"[lightgray]格");
                     }
 
                     if(type.lightning > 0){
