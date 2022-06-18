@@ -583,10 +583,22 @@ public class UnitType extends UnlockableContent{
             arcdisplayStatus(unit, bars);
         }).growX();
 
-        UnitController controller = unit.controller();
-        if(controller instanceof LogicAI control && control.controller != null){
+        if(unit.controller() instanceof LogicAI ai){
             table.row();
-            table.add(Blocks.microProcessor.emoji() + " (" + control.controller.x / tilesize + ", " + control.controller.y / tilesize + ")").growX().wrap().left();
+            table.add(Blocks.microProcessor.emoji() + " " + Core.bundle.get("units.processorcontrol")).growX().wrap().left();
+            if(ai.controller != null && (Core.settings.getBool("mouseposition") || Core.settings.getBool("position"))){
+                table.row();
+                table.add("[lightgray](" + ai.controller.tileX() + ", " + ai.controller.tileY() + ")").growX().wrap().left();
+            }
+        table.row();
+            table.label(() -> Iconc.settings + " " + (long)unit.flag + "").color(Color.lightGray).growX().wrap().left();
+            if(net.active() && ai.controller != null && ai.controller.lastAccessed != null){
+                table.row();
+                table.add(Core.bundle.format("lastaccessed", ai.controller.lastAccessed)).growX().wrap().left();
+            }
+        }else if(net.active() && unit.lastCommanded != null){
+            table.row();
+            table.add(Core.bundle.format("lastcommanded", unit.lastCommanded)).growX().wrap().left();
         }
 
         table.row();
@@ -949,8 +961,6 @@ public class UnitType extends UnlockableContent{
         var toOutline = new Seq<TextureRegion>();
         getRegionsToOutline(toOutline);
 
-        boolean separateOutline = weapons.contains(w -> !w.top);
-
         for(var region : toOutline){
             if(region instanceof AtlasRegion atlas){
                 String regionName = atlas.name;
@@ -982,9 +992,8 @@ public class UnitType extends UnlockableContent{
             }
 
             for(Weapon weapon : weapons){
-                if(!weapon.name.isEmpty() && (minfo.mod == null || weapon.name.startsWith(minfo.mod.name))){
-                    //TODO makeNew isn't really necessary here is it
-                    makeOutline(PageType.main, packer, weapon.region, separateOutline, outlineColor, outlineRadius);
+                if(!weapon.name.isEmpty() && (minfo.mod == null || weapon.name.startsWith(minfo.mod.name)) && !(!weapon.top && packer.isOutlined(weapon.name))){
+                    makeOutline(PageType.main, packer, weapon.region, !weapon.top, outlineColor, outlineRadius);
                 }
             }
         }
