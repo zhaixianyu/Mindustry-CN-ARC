@@ -12,6 +12,8 @@ import mindustry.entities.*;
 import mindustry.game.EventType.*;
 import mindustry.gen.*;
 
+import static mindustry.Vars.tilesize;
+
 public class Marker{
     /** 冷却时间*/
     public static final float heatTime = 60f;
@@ -24,11 +26,11 @@ public class Marker{
     public static MarkType mark, gatherMark, attackMark, defenseMark, quesMark;
 
     public static Seq<MarkType> markTypes = Seq.with(
-    mark = new MarkType("mark", Fx.arcMarker, Color.valueOf("eab678")),
-    gatherMark = new MarkType("gather", Fx.arcGatherMarker, Color.cyan),
-    attackMark = new MarkType("attack", Fx.arcAttackMarker, Color.red),
-    defenseMark = new MarkType("defense", Fx.arcDefenseMarker, Color.acid),
-    quesMark = new MarkType("question", Fx.arcQuesMarker, Color.pink)
+            mark = new MarkType("mark", Fx.arcMarker, Color.valueOf("eab678")),
+            gatherMark = new MarkType("gather", Fx.arcGatherMarker, Color.cyan),
+            attackMark = new MarkType("attack", Fx.arcAttackMarker, Color.red),
+            defenseMark = new MarkType("defense", Fx.arcDefenseMarker, Color.acid),
+            quesMark = new MarkType("question", Fx.arcQuesMarker, Color.pink)
     );
 
     public static boolean isLocal;
@@ -79,7 +81,7 @@ public class Marker{
 
         if(preFixedIndex != -1){
             int s = text.indexOf(">", preFixedIndex) + 1;
-            
+
             int typeStart = text.indexOf('<', s);
             int typeEnd = text.indexOf('>', s);
 
@@ -104,6 +106,7 @@ public class Marker{
 
             try{
                 pos.fromString(posStr);
+                pos = new Vec2(pos.x * tilesize,pos.y * tilesize);
             }catch(Throwable e){
                 Log.err("Cannot resolve position from " + posStr);
                 return;
@@ -158,9 +161,10 @@ public class Marker{
 
         public void sendMessage(Vec2 pos){
             Call.sendChatMessage(versionFixed +
-            "[#" + color + "]" + "<" + localizedName + ">" +
-            "[white]" + ": " +
-            Tmp.v1.set(World.toTile(pos.x), World.toTile(pos.y)));
+                    "[#" + color + "]" + "<" + localizedName + ">" +
+                    "[white]" + ": " +
+                    "(" + World.toTile(pos.x) + "," + World.toTile(pos.y)+")");
+            //Tmp.v1.set(World.toTile(pos.x), World.toTile(pos.y)));
         }
 
     }
@@ -184,6 +188,10 @@ public class Marker{
             this.time = time;
             this.player = player;
             this.markPos = new Vec2().set(markPos);
+        }
+
+        public void showEffect(){
+            markType.showEffect(markPos);
         }
 
     }

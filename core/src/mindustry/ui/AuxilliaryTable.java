@@ -314,7 +314,7 @@ public class AuxilliaryTable extends Table{
                         ((DesktopInput) control.input).panning = true;
                     }
                     Core.camera.position.set(Marker.markList.peek().markPos);
-                    Marker.mark(Marker.markList.peek().markType,Marker.markList.peek().markPos);
+                    Marker.markList.peek().showEffect();
                 }).size(handerSize).tooltip("锁定上个标记点");
                 /*
                 t.button(Icon.modeAttack, ImageHanderNC, imgSize, () -> {
