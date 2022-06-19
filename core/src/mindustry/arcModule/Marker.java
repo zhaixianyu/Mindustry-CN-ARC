@@ -39,7 +39,7 @@ public class Marker{
 
     static{
         Events.run(WorldLoadEvent.class, () -> {
-            markList.clear()
+            markList.clear();
         });
     }
 
