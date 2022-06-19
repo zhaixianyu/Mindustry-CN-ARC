@@ -238,6 +238,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
                 }
                 unit.lastCommanded = player.coloredName();
             }
+        }
 
         }
 

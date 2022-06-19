@@ -481,6 +481,8 @@ public class UnitType extends UnlockableContent{
 
     }
 
+    public void killed(Unit unit){}
+
     public void landed(Unit unit){}
 
     private String getStatustext(Unit unit){
