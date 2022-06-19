@@ -1115,8 +1115,8 @@ public class HudFragment{
             }
 
             table.update(()->{
-                if(showSkipwave != Core.settings.getBool("overrideSkipWave") && !canSkipWave())
-                {showSkipwave = Core.settings.getBool("overrideSkipWave") && !canSkipWave();rebuild[0].run();}
+                if(showSkipwave != (Core.settings.getBool("overrideSkipWave") || canSkipWave()))
+                {showSkipwave = Core.settings.getBool("overrideSkipWave") || canSkipWave();rebuild[0].run();}
             });
         };
         rebuild[0].run();
