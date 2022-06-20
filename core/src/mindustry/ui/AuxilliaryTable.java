@@ -40,6 +40,7 @@ public class AuxilliaryTable extends Table{
 
     public MarkType markType = Marker.mark;
     public boolean mobileMark = false;
+    public Element mobileHitter = new Element();
 
     public ImageButton.ImageButtonStyle ImageHander, ImageHanderNC;
     public TextButton.TextButtonStyle textBasic, textHander, textHanderNC;
@@ -104,26 +105,26 @@ public class AuxilliaryTable extends Table{
     }
 
     public void setup(){
-        ui.hudGroup.fill(t -> {
-            if(mobile){
-                t.addListener(new ElementGestureListener(){
-                    @Override
-                    public boolean longPress(Element actor, float x, float y){
-                        if(!mobileMark) return false;
+        mobileHitter.addListener(new ElementGestureListener(20, 0.4f, Marker.heatTime / 60f, 0.15f){
+            @Override
+            public boolean longPress(Element actor, float x, float y){
+                Marker.mark(markType, Core.input.mouseWorld());
 
-                        Marker.mark(markType, Core.input.mouseWorld());
+                mobileMark = false;
 
-                        return true;
-                    }
-                });
-            }else{
-                t.update(() -> {
-                    if(Core.input.keyTap(Binding.point) && !Core.scene.hasField()){
-                        Marker.mark(markType, Core.input.mouseWorld());
-                    }
-                });
+                return true;
             }
         });
+
+        mobileHitter.fillParent = true;
+
+        if(!mobile){
+            update(() -> {
+                if(Core.input.keyTap(Binding.point) && !Core.scene.hasField()){
+                    Marker.mark(markType, Core.input.mouseWorld());
+                }
+            });
+        }
     }
 
     public void toggle(){
@@ -338,8 +339,14 @@ public class AuxilliaryTable extends Table{
                 if(mobile){
                     t.button("♐ >", textHanderNC, () -> {
                         mobileMark = !mobileMark;
-                        if(mobileMark) ui.announce("[cyan]你已进入标记点模式，长按屏幕可进行标记。");
-                        else ui.announce("[cyan]你已退出标记点模式");
+
+                        if(mobileMark){
+                            ui.hudGroup.addChild(mobileHitter);
+                            ui.announce("[cyan]你已进入标记点模式，长按屏幕可进行标记。");
+                        }else{
+                            mobileHitter.remove();
+                            ui.announce("[cyan]你已退出标记点模式");
+                        }
                     }).height(handerSize).width(70f).tooltip("开启手机标记");
                 }else{
                     t.button("♐ >", textHanderNC, () -> showns[5] = !showns[5]).height(handerSize).width(70f).tooltip("标记");
