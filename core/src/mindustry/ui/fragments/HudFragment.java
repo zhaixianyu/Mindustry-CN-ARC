@@ -388,7 +388,7 @@ public class HudFragment{
                 info.row();
                 info.label(() -> "缩放: " + String.format("%.2f", Vars.renderer.getScale())).left().style(Styles.outlineLabel);
                 info.row();
-                info.add("ARC   "+arcVersion).color(getThemeColor()).left();
+                info.add("ARC~"+arcVersion).color(getThemeColor()).left();
                 info.row();
 
                 info.label(() -> ping.get(netClient.getPing())).visible(net::client).left().style(Styles.outlineLabel).name("ping").row();
