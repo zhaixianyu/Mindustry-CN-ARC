@@ -107,6 +107,7 @@ public class Stat implements Comparable<Stat>{
     ammoUse = new Stat("ammoUse", StatCat.function),
     shieldHealth = new Stat("shieldHealth", StatCat.function),
     cooldownTime = new Stat("cooldownTime", StatCat.function),
+    moduleTier = new Stat("moduletier", StatCat.function),
     regenSpeed = new Stat("regenSpeed", StatCat.function),
 
     booster = new Stat("booster", StatCat.optional),

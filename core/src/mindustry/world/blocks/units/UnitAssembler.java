@@ -139,7 +139,9 @@ public class UnitAssembler extends PayloadBlock{
         stats.add(Stat.output, table -> {
             table.row();
 
+            int tier = 0;
             for(var plan : plans){
+                int ttier = tier;
                 table.table(t -> {
                     t.setBackground(Tex.whiteui);
                     t.setColor(Pal.darkestGray);
@@ -152,9 +154,14 @@ public class UnitAssembler extends PayloadBlock{
                     if(plan.unit.unlockedNow()){
                         t.image(plan.unit.uiIcon).size(40).pad(10f).left();
                         t.table(info -> {
-                            info.add(plan.unit.localizedName).left();
+                            info.defaults().left();
+                            info.add(plan.unit.localizedName);
                             info.row();
                             info.add(Strings.autoFixed(plan.time / 60f, 1) + " " + Core.bundle.get("unit.seconds")).color(Color.lightGray);
+                            if(ttier > 0){
+                                info.row();
+                                info.add(Stat.moduleTier.localized() + ": " + ttier).color(Color.lightGray);
+                            }
                         }).left();
 
                         t.table(req -> {
@@ -173,6 +180,7 @@ public class UnitAssembler extends PayloadBlock{
                     }
                 }).growX().pad(5);
                 table.row();
+                tier++;
             }
         });
     }
