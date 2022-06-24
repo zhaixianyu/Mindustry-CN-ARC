@@ -456,7 +456,7 @@ public class StatValues{
                         sep(bt, Core.bundle.format("bullet.healamount", Strings.autoFixed(type.healAmount, 2)));
                     }
 
-                    if(type.pierce || type.pierceCap != -1){
+                    if((type.pierce || type.pierceCap != -1) && !(type instanceof PointLaserBulletType)){
                         boolean laserPierce = type instanceof LaserBulletType || type instanceof ContinuousLaserBulletType || type instanceof ShrapnelBulletType;
                         boolean pierceBuilding = laserPierce || type instanceof ContinuousFlameBulletType || type instanceof RailBulletType || type.pierceBuilding;
                         boolean pierceUnit = type.pierce;
