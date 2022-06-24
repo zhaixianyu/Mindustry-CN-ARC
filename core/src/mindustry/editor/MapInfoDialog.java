@@ -1,5 +1,6 @@
 package mindustry.editor;
 
+import arc.Core;
 import arc.scene.ui.*;
 import arc.struct.*;
 import mindustry.*;

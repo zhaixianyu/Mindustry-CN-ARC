@@ -589,11 +589,11 @@ public class UnitType extends UnlockableContent{
             table.row();
             table.add(Blocks.microProcessor.emoji() + " " + Core.bundle.get("units.processorcontrol")).growX().wrap().left();
             if(ai.controller != null && (Core.settings.getBool("mouseposition") || Core.settings.getBool("position"))){
-                table.row();
+                //table.row();
                 table.add("[lightgray](" + ai.controller.tileX() + ", " + ai.controller.tileY() + ")").growX().wrap().left();
             }
         table.row();
-            table.label(() -> Iconc.settings + " " + (long)unit.flag + "").color(Color.lightGray).growX().wrap().left();
+            //table.label(() -> Iconc.settings + " " + (long)unit.flag + "").color(Color.lightGray).growX().wrap().left();
             if(net.active() && ai.controller != null && ai.controller.lastAccessed != null){
                 table.row();
                 table.add(Core.bundle.format("lastaccessed", ai.controller.lastAccessed)).growX().wrap().left();
