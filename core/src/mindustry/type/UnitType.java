@@ -587,12 +587,14 @@ public class UnitType extends UnlockableContent{
 
         if(unit.controller() instanceof LogicAI ai){
             table.row();
-            table.add(Blocks.microProcessor.emoji() + " " + Core.bundle.get("units.processorcontrol")).growX().wrap().left();
-            if(ai.controller != null && (Core.settings.getBool("mouseposition") || Core.settings.getBool("position"))){
-                //table.row();
-                table.add("[lightgray](" + ai.controller.tileX() + ", " + ai.controller.tileY() + ")").growX().wrap().left();
-            }
-        table.row();
+            table.table(tt->{
+                tt.add(Blocks.microProcessor.emoji() + " " + Core.bundle.get("units.processorcontrol")).growX().left();
+                if(ai.controller != null && (Core.settings.getBool("mouseposition") || Core.settings.getBool("position"))){
+                    //table.row();
+                    tt.add("[lightgray](" + ai.controller.tileX() + ", " + ai.controller.tileY() + ")").growX().right();
+                }
+            }).growX().wrap().left();
+            table.row();
             //table.label(() -> Iconc.settings + " " + (long)unit.flag + "").color(Color.lightGray).growX().wrap().left();
             if(net.active() && ai.controller != null && ai.controller.lastAccessed != null){
                 table.row();
