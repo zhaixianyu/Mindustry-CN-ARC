@@ -62,6 +62,7 @@ public class Stat implements Comparable<Stat>{
     tiles = new Stat("tiles", StatCat.crafting),
     input = new Stat("input", StatCat.crafting),
     output = new Stat("output", StatCat.crafting),
+    sepOutput = new Stat("sepOutput", StatCat.crafting),
     productionTime = new Stat("productionTime", StatCat.crafting),
     maxEfficiency = new Stat("maxEfficiency", StatCat.crafting),
     Tier = new Stat("Tier", StatCat.crafting),

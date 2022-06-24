@@ -41,7 +41,8 @@ public class Separator extends Block{
         stats.timePeriod = craftTime;
         super.setStats();
 
-        stats.add(Stat.output, StatValues.items(item -> Structs.contains(results, i -> i.item == item)));
+        //stats.add(Stat.output, StatValues.items(item -> Structs.contains(results, i -> i.item == item)));
+        stats.add(Stat.sepOutput,StatValues.arcSeparator(this));
         stats.add(Stat.productionTime, craftTime / 60f, StatUnit.seconds);
     }
 

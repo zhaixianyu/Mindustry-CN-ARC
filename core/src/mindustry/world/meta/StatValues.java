@@ -21,6 +21,7 @@ import mindustry.world.blocks.defense.turrets.*;
 import mindustry.world.blocks.environment.*;
 import mindustry.world.blocks.production.BurstDrill;
 import mindustry.world.blocks.production.Drill;
+import mindustry.world.blocks.production.Separator;
 
 import static mindustry.Vars.*;
 
@@ -252,7 +253,15 @@ public class StatValues{
 
             }
         });}
+    }
 
+    public static StatValue arcSeparator(Separator separator){
+        return table -> {
+            for(ItemStack stack : separator.results){
+                table.add(new ItemDisplay(stack.item, stack.amount, true)).padRight(5);
+                table.add("  ");
+            }
+        };
     }
 
     public static StatValue drillUnit(UnitType unit){
