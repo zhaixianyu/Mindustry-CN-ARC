@@ -1,4 +1,4 @@
-package mindustry.ui;
+package mindustry.arcModule.ui;
 
 import arc.*;
 import arc.graphics.*;
@@ -19,6 +19,7 @@ import mindustry.game.*;
 import mindustry.gen.*;
 import mindustry.input.*;
 import mindustry.type.*;
+import mindustry.ui.Fonts;
 import mindustry.ui.dialogs.*;
 import mindustry.world.*;
 import mindustry.world.blocks.environment.*;

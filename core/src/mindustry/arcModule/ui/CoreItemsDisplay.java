@@ -1,4 +1,4 @@
-package mindustry.ui;
+package mindustry.arcModule.ui;
 
 import arc.scene.ui.layout.*;
 import arc.struct.*;
@@ -6,6 +6,7 @@ import arc.util.Interval;
 import mindustry.*;
 import mindustry.core.*;
 import mindustry.type.*;
+import mindustry.ui.Styles;
 import mindustry.world.blocks.storage.CoreBlock;
 import mindustry.world.blocks.storage.CoreBlock.*;
 import arc.Core;

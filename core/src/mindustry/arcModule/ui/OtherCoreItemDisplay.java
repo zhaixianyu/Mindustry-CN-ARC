@@ -1,7 +1,6 @@
-package mindustry.ui;
+package mindustry.arcModule.ui;
 
 import arc.graphics.Color;
-import arc.scene.ui.ImageButton;
 import arc.scene.ui.TextButton;
 import arc.scene.ui.layout.Table;
 import arc.struct.Seq;
@@ -14,22 +13,20 @@ import mindustry.core.*;
 import mindustry.game.Teams;
 import mindustry.type.Item;
 import mindustry.type.UnitType;
+import mindustry.ui.Fonts;
+import mindustry.ui.Styles;
 
 import static mindustry.Vars.content;
 import static mindustry.Vars.state;
 import static mindustry.gen.Tex.*;
-import static mindustry.ui.Styles.clearNonei;
 import static mindustry.ui.Styles.*;
 
-
-//code by MI2 now
 public class OtherCoreItemDisplay extends Table {
     private Seq<Teams.TeamData> teams = null, teams0 = null;
 
     private float lastUpd = 0f, fontScl = 0.8f;
     private int showTeams = 6, showStart = 0;
     private boolean show = false, showStat = true, showItem = true, showUnit = true;
-    //TODO Stats
 
     private Table teamsTable;
 

@@ -1,4 +1,4 @@
-package mindustry.ui;
+package mindustry.arcModule.ui;
 
 import arc.struct.Seq;
 import arc.Core;
@@ -19,6 +19,8 @@ import mindustry.input.*;
 import mindustry.entities.Lightning;
 import mindustry.gen.*;
 import mindustry.graphics.*;
+import mindustry.ui.Fonts;
+import mindustry.ui.Styles;
 
 import static mindustry.Vars.*;
 import static arc.Core.bundle;

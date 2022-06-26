@@ -1,4 +1,4 @@
-package mindustry.ui;
+package mindustry.arcModule.ui;
 
 import arc.Core;
 import arc.graphics.Color;
@@ -10,9 +10,6 @@ import arc.struct.ObjectMap;
 import arc.util.Strings;
 import arc.util.Time;
 import arc.util.Tmp;
-import mindustry.ai.types.BuilderAI;
-import mindustry.ai.types.MinerAI;
-import mindustry.ai.types.RepairAI;
 import mindustry.arcModule.*;
 import mindustry.content.Blocks;
 import mindustry.content.Items;
@@ -29,6 +26,7 @@ import mindustry.input.MobileInput;
 import mindustry.type.Item;
 import mindustry.type.StatusEffect;
 import mindustry.type.UnitType;
+import mindustry.ui.Styles;
 import mindustry.ui.dialogs.BaseDialog;
 import mindustry.world.Block;
 import mindustry.world.blocks.payloads.BuildPayload;
@@ -41,7 +39,6 @@ import java.util.Objects;
 import static mindustry.Vars.*;
 import static mindustry.content.UnitTypes.*;
 import static mindustry.ui.Styles.*;
-
 
 public class AdvanceToolTable extends Table{
     private boolean show = false;

@@ -1,4 +1,4 @@
-package mindustry.ui;
+package mindustry.arcModule.ui;
 
 import arc.*;
 import arc.math.*;

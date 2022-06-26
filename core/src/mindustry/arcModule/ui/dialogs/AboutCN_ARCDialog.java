@@ -1,14 +1,15 @@
-package mindustry.ui.dialogs;
+package mindustry.arcModule.ui.dialogs;
 
 import arc.Core;
 import arc.scene.ui.ScrollPane;
 import arc.scene.ui.layout.Table;
 import arc.struct.Seq;
+import mindustry.ui.dialogs.BaseDialog;
 
 import static mindustry.Vars.*;
 import static mindustry.ui.Styles.cleart;
 
-public class AboutCN_ARCDialog extends BaseDialog{
+public class AboutCN_ARCDialog extends BaseDialog {
     Seq<String> changelogs = new Seq<>();
 
     public AboutCN_ARCDialog() {

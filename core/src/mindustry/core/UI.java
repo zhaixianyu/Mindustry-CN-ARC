@@ -20,6 +20,7 @@ import arc.scene.ui.Tooltip.*;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
+import mindustry.arcModule.ui.dialogs.AboutCN_ARCDialog;
 import mindustry.editor.*;
 import mindustry.game.EventType.*;
 import mindustry.gen.*;
