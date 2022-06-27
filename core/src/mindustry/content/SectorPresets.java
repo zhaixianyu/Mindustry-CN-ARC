@@ -192,7 +192,7 @@ public class SectorPresets{
                     ),
                     new DestroyBlockObjective(Blocks.largeShieldProjector, 210, 278, Team.malis).withMarkers(
                         new TextMarker("敌人被护盾保护着。\n在该区块中探测到一台实验性的护盾破坏器。\n找到它，并输入钨启动它。", 276f * 8f, 164f * 8f),
-                        new MinimapMarker(23f, 137f, Pal.accent)
+                        new MinimapMarker(23, 137, Pal.accent)
                     )
                 );
             };
