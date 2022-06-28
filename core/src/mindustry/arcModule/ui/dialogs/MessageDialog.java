@@ -140,7 +140,7 @@ public class MessageDialog extends BaseDialog {
     }
 
     public boolean resolveMarkMsg(String message){
-        if (message.contains(arcVersionPrefix) && message.contains("标记了第")) {addMsg(new MessageDialog.advanceMsg(arcMsgType.markWave,message));return true;}
+        if (message.contains("<ARC") && message.contains("标记了第")) {addMsg(new MessageDialog.advanceMsg(arcMsgType.markWave,message));return true;}
         return false;
     }
 
