@@ -62,8 +62,8 @@ public class MessageDialog extends BaseDialog {
         });
 
         Events.on(EventType.WaveEvent.class, e->{
-            if(state.wavetime<30f) return;
-            addMsg(new MessageDialog.advanceMsg(arcMsgType.eventWave,"波次发生： "+state.wave));
+            if(state.wavetime<60f) return;
+            addMsg(new MessageDialog.advanceMsg(arcMsgType.eventWave,"波次： "+state.wave +" | "+ ui.hudfrag.auxilliaryTable.arcWaveInfo(state.wave-1)));
         });
 
         Events.on(EventType.BlockDestroyEvent.class, e->{
@@ -145,7 +145,7 @@ public class MessageDialog extends BaseDialog {
     }
 
     public boolean resolveServerMsg(String message){
-        Seq<String> serverMsg = Seq.with("加入了服务器","离开了服务器","自动存档完成","登录成功","经验+","[YELLOW]本局游戏时长:","[YELLOW]单人快速投票" ,
+        Seq<String> serverMsg = Seq.with("加入了服务器","离开了服务器","自动存档完成","登录成功","经验+","[YELLOW]本局游戏时长:","[YELLOW]单人快速投票" ,"[GREEN]回档成功",
                 "[YELLOW]PVP保护时间, 全力进攻吧" , "[YELLOW]发起","[YELLOW]你可以在投票结束前使用","[GREEN]投票成功","[GREEN]换图成功,当前地图","[RED]本地图禁用单位");
         for (int i=0;i<serverMsg.size;i++){
             if (message.contains(serverMsg.get(i))) {addMsg(new MessageDialog.advanceMsg(arcMsgType.serverMsg,message));return true;}
@@ -229,9 +229,9 @@ public class MessageDialog extends BaseDialog {
         logicNotify = new arcMsgType("逻辑","通报",Color.valueOf("#ffccff")),
         logicAnnounce = new arcMsgType("逻辑","公告",Color.valueOf("#ffccff")),
 
-        eventWorldLoad =  new arcMsgType("事件","载入地图",Color.valueOf("#ffb399")),
+        eventWorldLoad =  new arcMsgType("事件","载入地图",Color.valueOf("#ff9999")),
         eventCoreDestory = new arcMsgType("事件","核心摧毁",Color.valueOf("#ffcccc")),
-        eventWave =  new arcMsgType("事件","波次",Color.valueOf("#D2691E"))
+        eventWave =  new arcMsgType("事件","波次",Color.valueOf("#ffcc99"))
         ;
 
         public String name;

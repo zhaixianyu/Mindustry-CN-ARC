@@ -46,7 +46,7 @@ public class HudFragment{
     private Slider minimapSlider;
     private CoreItemsDisplay coreItems = new CoreItemsDisplay();
     private OtherCoreItemDisplay otherCoreItemDisplay = new OtherCoreItemDisplay();
-    private AuxilliaryTable auxilliaryTable = new AuxilliaryTable();
+    public AuxilliaryTable auxilliaryTable = new AuxilliaryTable();
     private AdvanceToolTable advanceToolTable = new AdvanceToolTable();
     private HudSettingsTable hudSettingsTable = new HudSettingsTable();
 

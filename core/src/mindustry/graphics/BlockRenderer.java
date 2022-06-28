@@ -449,7 +449,8 @@ public class BlockRenderer{
                             build.drawTeam();
                             Draw.z(Layer.block);
                         }
-                    }else if(renderer.drawStatus && block.hasConsumers && (build.team == player.team()|| Core.settings.getBool("showOtherTeamState"))){
+                    }
+                    if(renderer.drawStatus && block.hasConsumers && (build.team == player.team()|| Core.settings.getBool("showOtherTeamState"))){
                         build.drawStatus();
                     }
 

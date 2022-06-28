@@ -417,11 +417,17 @@ public class AuxilliaryTable extends Table{
             builder.append("[").append(fixedTime(timer)).append("]。");
         }
 
+        builder.append(arcWaveInfo(waves));
+        return builder.toString();
+    }
+
+    public String arcWaveInfo(int waves){
+        StringBuilder builder = new StringBuilder();
         if(state.rules.attackMode){
             int sum = Math.max(state.teams.present.sum(t -> t.team != player.team() ? t.cores.size : 0), 1) + Vars.spawner.countSpawns();
-            builder.append("其包含(×").append(sum).append(")");
+            builder.append("包含(×").append(sum).append(")");
         }else{
-            builder.append("其包含(×").append(Vars.spawner.countSpawns()).append("):");
+            builder.append("包含(×").append(Vars.spawner.countSpawns()).append("):");
         }
         for(SpawnGroup group : state.rules.spawns){
             if(group.getSpawned(waves - 1) > 0){
@@ -437,6 +443,7 @@ public class AuxilliaryTable extends Table{
         }
         return builder.toString();
     }
+
 
     private String fixedTime(int timer){
         StringBuilder str = new StringBuilder();
