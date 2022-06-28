@@ -14,6 +14,7 @@ import arc.struct.Seq;
 import arc.util.Strings;
 import arc.util.Time;
 import arc.util.Tmp;
+import mindustry.Vars;
 import mindustry.arcModule.Marker;
 import mindustry.core.World;
 import mindustry.game.EventType;
@@ -57,17 +58,17 @@ public class MessageDialog extends BaseDialog {
         onResize(this::build);
 
         Events.on(EventType.WorldLoadEvent.class, e->{
-            addMsg(new MessageDialog.advanceMsg(arcMsgType.eventWorldLoad,"载入地图"));
+            addMsg(new MessageDialog.advanceMsg(arcMsgType.eventWorldLoad,"载入地图： " + state.map.name()));
         });
 
         Events.on(EventType.WaveEvent.class, e->{
             if(state.wavetime<30f) return;
-            addMsg(new MessageDialog.advanceMsg(arcMsgType.eventWave,"波次发生:"+state.wave));
+            addMsg(new MessageDialog.advanceMsg(arcMsgType.eventWave,"波次发生： "+state.wave));
         });
 
         Events.on(EventType.BlockDestroyEvent.class, e->{
             if(e.tile.build instanceof CoreBlock.CoreBuild)
-            addMsg(new MessageDialog.advanceMsg(arcMsgType.eventCoreDestory,"核心摧毁:"+"(" + World.toTile(e.tile.x) + "," + World.toTile(e.tile.y)+")"));
+            addMsg(new MessageDialog.advanceMsg(arcMsgType.eventCoreDestory,"核心摧毁： "+"(" + World.toTile(e.tile.x) + "," + World.toTile(e.tile.y)+")"));
         });
     }
 
@@ -113,11 +114,11 @@ public class MessageDialog extends BaseDialog {
                     tt.marginLeft(4);
                     tt.setColor(thisMsg.msgType.color);
                     if(fieldMode) tt.field(thisMsg.message,nodeArea,text->{}).growX();
-                    else tt.add(thisMsg.message).growX();
+                    else tt.labelWrap(thisMsg.message).growX();
                 }).pad(4).padTop(2).growX().grow();
 
                 t.marginBottom(7);
-            }).growX().padBottom(15f).row();
+            }).growX().maxWidth(1000f).padBottom(15f).row();
         }
     }
 
@@ -130,6 +131,7 @@ public class MessageDialog extends BaseDialog {
     public boolean resolveMsg(String message){
 
         if (Marker.resolveMessage(message)) return true;
+        if (resolveMarkMsg(message)) return true;
         if (resolveServerMsg(message)) return true;
 
         addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.normal,message));
@@ -137,8 +139,14 @@ public class MessageDialog extends BaseDialog {
         return true;
     }
 
+    public boolean resolveMarkMsg(String message){
+        if (message.contains(arcVersionPrefix) && message.contains("标记了第")) {addMsg(new MessageDialog.advanceMsg(arcMsgType.markWave,message));return true;}
+        return false;
+    }
+
     public boolean resolveServerMsg(String message){
-        Seq<String> serverMsg = Seq.with("加入了服务器","离开了服务器","自动存档完成","登录成功","经验+","[YELLOW]本局游戏时长:","[YELLOW]单人快速投票");
+        Seq<String> serverMsg = Seq.with("加入了服务器","离开了服务器","自动存档完成","登录成功","经验+","[YELLOW]本局游戏时长:","[YELLOW]单人快速投票" ,
+                "[YELLOW]PVP保护时间, 全力进攻吧" , "[YELLOW]发起","[YELLOW]你可以在投票结束前使用","[GREEN]投票成功","[GREEN]换图成功,当前地图","[RED]本地图禁用单位");
         for (int i=0;i<serverMsg.size;i++){
             if (message.contains(serverMsg.get(i))) {addMsg(new MessageDialog.advanceMsg(arcMsgType.serverMsg,message));return true;}
         }
@@ -168,7 +176,7 @@ public class MessageDialog extends BaseDialog {
 
         StringBuilder messageLs = new StringBuilder();
         int messageCount = 0;
-        for (int i = msgInit; i <msgFinal; i++) {
+        for (int i = 0; i <msgList.size; i++) {
             String msg = msgList.get(i).message;
             messageLs.insert(0,msg + "\n");
             messageCount +=1;
@@ -184,6 +192,7 @@ public class MessageDialog extends BaseDialog {
         public String message;
         public Date time;
         public String sender;
+        public boolean selected;
 
         public advanceMsg(arcMsgType msgType, String message, Date time, String sender){
             this.msgType = msgType;
@@ -200,10 +209,6 @@ public class MessageDialog extends BaseDialog {
             this(msgType,message,time,"null");
         }
 
-        public String getFullInfo(){
-            return message;
-        }
-
         public advanceMsg sendMessage(){
             ui.chatfrag.addMessage(msgType.arcMsgPreFix() + message,false);
             return this;
@@ -218,14 +223,14 @@ public class MessageDialog extends BaseDialog {
         markWave = new arcMsgType("标记","波次",Color.valueOf("#7FFFD4")),
 
         serverTips = new arcMsgType("服务器","小贴士",Color.valueOf("#98FB98")),
-        serverMsg =  new arcMsgType("服务器","信息",Color.valueOf("#00FA9A")),
+        serverMsg =  new arcMsgType("服务器","信息",Color.valueOf("#cefdce")),
         serverToast =  new arcMsgType("服务器","通报",Color.valueOf("#00FA9A")),
 
-        logicNotify = new arcMsgType("逻辑","通报",Color.violet),
-        logicAnnounce = new arcMsgType("逻辑","公告",Color.valueOf("#DA70D6")),
+        logicNotify = new arcMsgType("逻辑","通报",Color.valueOf("#ffccff")),
+        logicAnnounce = new arcMsgType("逻辑","公告",Color.valueOf("#ffccff")),
 
-        eventWorldLoad =  new arcMsgType("事件","载入地图",Color.valueOf("#D2691E")),
-        eventCoreDestory = new arcMsgType("事件","核心摧毁",Color.valueOf("#B22222")),
+        eventWorldLoad =  new arcMsgType("事件","载入地图",Color.valueOf("#ffb399")),
+        eventCoreDestory = new arcMsgType("事件","核心摧毁",Color.valueOf("#ffcccc")),
         eventWave =  new arcMsgType("事件","波次",Color.valueOf("#D2691E"))
         ;
 

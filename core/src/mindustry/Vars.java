@@ -40,6 +40,7 @@ import static arc.Core.*;
 
 public class Vars implements Loadable{
     public static String arcVersion = "3.6.2";
+    public static String arcVersionPrefix = "<ARC" + Vars.arcVersion + ">";
     public static int changeLogRead = 18;
     /** pr-5921  Used in blocks with selection menus such sorters for how large the menu should be */
     public static int blockSelectionRows = 5,blockSelectionColumns = 6;

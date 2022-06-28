@@ -174,7 +174,7 @@ public class AuxilliaryTable extends Table{
                 t.button(Icon.map, ImageHanderNC, () -> mapInfoDialog.show()).size(handerSize).tooltip("地图信息");
                 t.button(Items.copper.emoji(), textHanderNC, () -> floorStatisticDialog()).size(handerSize).tooltip("矿物信息");
                 t.button(Icon.starSmall, ImageHanderNC, ui.achievements::show).size(handerSize).tooltip("统计与成就");
-                t.button(Icon.chatSmall, ImageHanderNC, ()->ui.MessageDialog.show()).size(handerSize).tooltip("统计与成就");
+                t.button(Icon.chatSmall, ImageHanderNC, ()->ui.MessageDialog.show()).size(handerSize).tooltip("中央监控室");
             }, () -> showns[0]).left();
 
             body.row();
@@ -405,7 +405,7 @@ public class AuxilliaryTable extends Table{
     private String arcShareWaveInfo(int waves){
         if(!state.rules.waves) return " ";
         StringBuilder builder = new StringBuilder();
-        builder.append("[ARC").append(arcVersion).append("]");
+        builder.append(arcVersionPrefix);
         builder.append("标记了第").append(waves).append("波");
         if(waves < state.wave){
             builder.append("。");
