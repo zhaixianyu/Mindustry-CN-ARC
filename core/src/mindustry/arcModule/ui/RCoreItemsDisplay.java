@@ -6,7 +6,7 @@ import arc.util.Interval;
 import mindustry.*;
 import mindustry.core.*;
 import mindustry.type.*;
-import mindustry.ui.Styles;
+import mindustry.ui.*;
 import mindustry.world.blocks.storage.CoreBlock;
 import mindustry.world.blocks.storage.CoreBlock.*;
 import arc.Core;
@@ -14,7 +14,7 @@ import arc.scene.event.*;
 
 import static mindustry.Vars.*;
 
-public class CoreItemsDisplay extends Table{
+public class RCoreItemsDisplay extends CoreItemsDisplay{
     private Interval timer = new Interval();
     private final ObjectSet<Item> usedItems = new ObjectSet<>();
     private final ObjectSet<UnitType> usedUnits = new ObjectSet<>();
@@ -22,13 +22,14 @@ public class CoreItemsDisplay extends Table{
     private int[] lastItems = new int[content.items().size];
     private ItemSeq planItems = new ItemSeq();
     private CoreBuild core;
-    private int arccoreitems=-1;
+    private int arccoreitems = -1;
 
-    public CoreItemsDisplay(){
+    public RCoreItemsDisplay(){
         arccoreitems = Core.settings.getInt("arccoreitems");
         rebuild();
     }
 
+    @Override
     public void resetUsed(){
         usedItems.clear();
         usedUnits.clear();
@@ -48,7 +49,7 @@ public class CoreItemsDisplay extends Table{
         control.input.allPlans().each(plan -> {
             if(plan.block instanceof CoreBlock) return;
             for(ItemStack stack : plan.block.requirements){
-                int planAmount = (int) (plan.breaking ? -1 * state.rules.buildCostMultiplier *state.rules.deconstructRefundMultiplier * stack.amount * plan.progress : state.rules.buildCostMultiplier * stack.amount * (1 - plan.progress));
+                int planAmount = (int)(plan.breaking ? -1 * state.rules.buildCostMultiplier * state.rules.deconstructRefundMultiplier * stack.amount * plan.progress : state.rules.buildCostMultiplier * stack.amount * (1 - plan.progress));
                 planItems.add(stack.item, planAmount);
             }
         });
@@ -68,7 +69,7 @@ public class CoreItemsDisplay extends Table{
             if(timer.get(60f)) updateItems();
             updatePlanItems();
 
-            if (arccoreitems != Core.settings.getInt("arccoreitems")){
+            if(arccoreitems != Core.settings.getInt("arccoreitems")){
                 arccoreitems = Core.settings.getInt("arccoreitems");
                 rebuild();
             }
@@ -85,37 +86,36 @@ public class CoreItemsDisplay extends Table{
         });
 
         int i = 0;
-        if (arccoreitems== 1 || arccoreitems== 3){
+        if(arccoreitems == 1 || arccoreitems == 3){
             for(Item item : content.items()){
                 if(usedItems.contains(item)){
                     if(mobile){
                         stack(
-                            new Table(t -> {
-                                t.image(item.uiIcon).size(iconSmall).padRight(3).tooltip(tooltip -> tooltip.background(Styles.black6).margin(4f).add(item.localizedName).style(Styles.outlineLabel));
-                            }),
+                        new Table(t -> {
+                            t.image(item.uiIcon).size(iconSmall).padRight(3).tooltip(tooltip -> tooltip.background(Styles.black6).margin(4f).add(item.localizedName).style(Styles.outlineLabel));
+                        }),
 
-                            new Table(t -> {
-                                t.label(() -> {
-                                    int update = updateItems[item.id];
-                                    if(update == 0) return "";
-                                    return (update < 0 ? "[red]" : "[green]+") + update;
-                                }).get().setFontScale(0.85f);
-                            }).top().left()
+                        new Table(t -> {
+                            t.label(() -> {
+                                int update = updateItems[item.id];
+                                if(update == 0) return "";
+                                return (update < 0 ? "[red]" : "[green]+") + update;
+                            }).get().setFontScale(0.85f);
+                        }).top().left()
                         );
-                    }
-                    else{
+                    }else{
                         stack(
-                            new Table(t -> {
-                                t.image(item.uiIcon).size(iconSmall).padRight(3).tooltip(tooltip -> tooltip.background(Styles.black6).margin(4f).add(item.localizedName).style(Styles.outlineLabel));
-                            }),
+                        new Table(t -> {
+                            t.image(item.uiIcon).size(iconSmall).padRight(3).tooltip(tooltip -> tooltip.background(Styles.black6).margin(4f).add(item.localizedName).style(Styles.outlineLabel));
+                        }),
 
-                            new Table(t -> {
-                                t.label(() -> {
-                                    int update = updateItems[item.id];
-                                    if(update == 0) return "";
-                                    return (update < 0 ? "[red]" : "[green]+") + update;
-                                }).get().setFontScale(0.85f);
-                            }).top().left()
+                        new Table(t -> {
+                            t.label(() -> {
+                                int update = updateItems[item.id];
+                                if(update == 0) return "";
+                                return (update < 0 ? "[red]" : "[green]+") + update;
+                            }).get().setFontScale(0.85f);
+                        }).top().left()
                         );
                     }
 
@@ -137,7 +137,7 @@ public class CoreItemsDisplay extends Table{
             }
         }
 
-        if (arccoreitems== 2 || arccoreitems== 3){
+        if(arccoreitems == 2 || arccoreitems == 3){
             for(UnitType unit : content.units()){
                 if(usedUnits.contains(unit)){
                     image(unit.uiIcon).size(iconSmall).padRight(3).tooltip(t -> t.background(Styles.black6).margin(4f).add(unit.localizedName).style(Styles.outlineLabel));
