@@ -50,7 +50,7 @@ public class MessageDialog extends BaseDialog {
 
         addCloseButton();
         buttons.button("模式切换",()->{fieldMode = !fieldMode;build();});
-        buttons.button("清空", ()-> clearMsg());
+        buttons.button("清空", ()-> {clearMsg();build();});
         buttons.button("导出", Icon.upload, ()-> exportMsg()).name("导出聊天记录");
 
         init();
