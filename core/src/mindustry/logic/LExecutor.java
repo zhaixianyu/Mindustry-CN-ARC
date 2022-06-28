@@ -9,6 +9,7 @@ import arc.util.*;
 import mindustry.*;
 import mindustry.ai.types.*;
 import mindustry.annotations.Annotations.*;
+import mindustry.arcModule.ui.dialogs.MessageDialog;
 import mindustry.content.*;
 import mindustry.core.*;
 import mindustry.ctype.*;
@@ -1506,9 +1507,8 @@ public class LExecutor{
             }
 
             switch(type){
-                case notify -> {ui.hudfrag.showToast(Icon.info, text);ui.chatfrag.addMessage("[violet][逻辑-通报]"+"[white]"+text);}
-                case announce -> {ui.announce(text, exec.numf(duration));ui.chatfrag.addMessage("[violet][逻辑-公告]"+"("+duration+"s)[white]"+text);}
-                //case toast -> {ui.showInfoToast(text, exec.numf(duration));ui.chatfrag.addMessage("[violet][逻辑-告示]"+"("+duration+"s)[white]"+text);}
+                case notify -> {ui.hudfrag.showToast(Icon.info, text);ui.MessageDialog.addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.logicNotify,text).sendMessage());}
+                case announce -> {ui.announce(text, exec.numf(duration));ui.MessageDialog.addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.logicAnnounce,text).sendMessage());}
                 case toast -> ui.showInfoToast(text, exec.numf(duration));
                 //TODO desync?
                 case mission -> state.rules.mission = text;

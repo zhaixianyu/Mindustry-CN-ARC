@@ -21,6 +21,7 @@ import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.arcModule.ui.dialogs.AboutCN_ARCDialog;
+import mindustry.arcModule.ui.dialogs.MessageDialog;
 import mindustry.editor.*;
 import mindustry.game.EventType.*;
 import mindustry.gen.*;
@@ -82,6 +83,7 @@ public class UI implements ApplicationListener, Loadable{
     public CustomRulesDialog customrules;
     public AchievementsDialog achievements;
     //public MindustryWikiDialog mindustrywiki;
+    public mindustry.arcModule.ui.dialogs.MessageDialog MessageDialog;
 
     private @Nullable Element lastAnnouncement;
 
@@ -211,6 +213,7 @@ public class UI implements ApplicationListener, Loadable{
         customrules = new CustomRulesDialog();
         achievements = new AchievementsDialog();
         //mindustrywiki = new MindustryWikiDialog();
+        MessageDialog = new MessageDialog();
 
         Group group = Core.scene.root;
 

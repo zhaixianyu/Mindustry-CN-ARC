@@ -6,6 +6,7 @@ import arc.math.geom.*;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.*;
+import mindustry.arcModule.ui.dialogs.MessageDialog;
 import mindustry.content.*;
 import mindustry.core.*;
 import mindustry.entities.*;
@@ -13,6 +14,7 @@ import mindustry.game.EventType.*;
 import mindustry.gen.*;
 
 import static mindustry.Vars.tilesize;
+import static mindustry.Vars.ui;
 
 public class Marker{
     /** 冷却时间*/
@@ -71,10 +73,10 @@ public class Marker{
         }
     }
 
-    public static void resolveMessage(String text){
+    public static boolean resolveMessage(String text){
         if(isLocal){
             isLocal = false;
-            return;
+            return true;
         }
 
         int preFixedIndex = text.indexOf(preFixed);
@@ -86,7 +88,7 @@ public class Marker{
             int typeEnd = text.indexOf('>', s);
 
             if(typeStart == -1 || typeEnd == -1){
-                return;
+                return false;
             }
 
 
@@ -96,7 +98,7 @@ public class Marker{
 
             if(markType == null){
                 Log.err("Cannot resolve mark type from " + typeLocalized);
-                return;
+                return false;
             }
 
             /* Parse position */
@@ -108,11 +110,14 @@ public class Marker{
                 pos.fromString(posStr);
             }catch(Throwable e){
                 Log.err("Cannot resolve position from " + posStr);
-                return;
+                return false;
             }
 
             mark(markType, pos.scl(tilesize), false);
+            ui.MessageDialog.addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.markLoc,text));
+            return true;
         }
+        return false;
 
     }
 
@@ -159,11 +164,12 @@ public class Marker{
         }
 
         public void sendMessage(Vec2 pos){
-            Call.sendChatMessage(versionFixed +
+            String text = versionFixed +
                     "[#" + color + "]" + "<" + localizedName + ">" +
                     "[white]" + ": " +
-                    "(" + World.toTile(pos.x) + "," + World.toTile(pos.y)+")");
-            //Tmp.v1.set(World.toTile(pos.x), World.toTile(pos.y)));
+                    "(" + World.toTile(pos.x) + "," + World.toTile(pos.y)+")";
+            Call.sendChatMessage(text);
+            ui.MessageDialog.addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.markLoc,text));
         }
 
     }
