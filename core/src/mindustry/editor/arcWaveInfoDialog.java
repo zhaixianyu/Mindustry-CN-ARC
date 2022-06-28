@@ -57,6 +57,9 @@ public class arcWaveInfoDialog extends BaseDialog{
 
     public int arcWaveIndex = 0;
     private float handerSize = 40f;
+    /** 是否显示波次界面。如果否，则显示原图*/
+    private boolean waveInfo = true;
+    private float waveMulti = 1f;
 
     //波次生成
     Float difficult = 1f;
@@ -78,26 +81,6 @@ public class arcWaveInfoDialog extends BaseDialog{
         addCloseListener();
 
         onResize(this::setup);
-        buttons.button(Icon.filter, () -> {
-            BaseDialog dialog = new BaseDialog("@waves.sort");
-            dialog.setFillParent(false);
-            dialog.cont.table(Tex.button, t -> {
-                for(Sort s : Sort.all){
-                    t.button("@waves.sort." + s, Styles.flatTogglet, () -> {
-                        sort = s;
-                        dialog.hide();
-                        buildGroups();
-                    }).size(150f, 60f).checked(s == sort);
-                }
-            }).row();
-            dialog.cont.check("@waves.sort.reverse", b -> {
-                reverseSort = b;
-                buildGroups();
-            }).padTop(4).checked(reverseSort).padBottom(8f);
-            dialog.addCloseButton();
-            dialog.show();
-            buildGroups();
-        }).size(60f, 64f);
 
         addCloseButton();
 
@@ -144,34 +127,9 @@ public class arcWaveInfoDialog extends BaseDialog{
 
         buttons.defaults().width(60f);
 
-        buttons.button("<", () -> {}).update(t -> {
-            if(t.getClickListener().isPressed()){
-                shift(-graphSpeed);
-            }
-        });
-        buttons.button(">", () -> {}).update(t -> {
-            if(t.getClickListener().isPressed()){
-                shift(graphSpeed);
-            }
-        });
-
-        buttons.button("-", () -> {}).update(t -> {
-            if(t.getClickListener().isPressed()){
-                view(-graphSpeed);
-            }
-        });
-        buttons.button("+", () -> {}).update(t -> {
-            if(t.getClickListener().isPressed()){
-                view(graphSpeed);
-            }
-        });
+        buttons.button("切换显示",()->{waveInfo = !waveInfo;waveMulti=1;setup();}).size(250f, 64f);
 
         if(true){
-            buttons.button("x" + graphSpeed, () -> {
-                graphSpeed *= 2;
-                if(graphSpeed > maxGraphSpeed) graphSpeed = 1;
-            }).update(b -> b.setText("x" + graphSpeed)).width(100f);
-
             buttons.button("随机", Icon.refresh, () -> arcSpawner()).width(200f);
         }
     }
@@ -250,6 +208,7 @@ public class arcWaveInfoDialog extends BaseDialog{
             setAlignment(Align.center, Align.center);
         }}).width(390f).growY();
         cont.table(tb->{
+            if(waveInfo){
             tb.table(t -> {
                 t.table(buttons -> {
                     buttons.clear();
@@ -335,7 +294,105 @@ public class arcWaveInfoDialog extends BaseDialog{
             }).growX();
             tb.row();
             tb.add(graph = new WaveGraph()).grow();
+            tb.row();
+            tb.table(tbt -> {
+                tbt.button("<", () -> {}).update(t -> {
+                    if(t.getClickListener().isPressed()){
+                        shift(-graphSpeed);
+                    }
+                }).width(150f);
+                tbt.button(">", () -> {}).update(t -> {
+                    if(t.getClickListener().isPressed()){
+                        shift(graphSpeed);
+                    }
+                }).width(150f);
+
+                tbt.button("-", () -> {}).update(t -> {
+                    if(t.getClickListener().isPressed()){
+                        view(-graphSpeed);
+                    }
+                }).width(150f);
+                tbt.button("+", () -> {}).update(t -> {
+                    if(t.getClickListener().isPressed()){
+                        view(graphSpeed);
+                    }
+                }).width(150f);
+
+                tbt.button("x" + graphSpeed, () -> {
+                    graphSpeed *= 2;
+                    if(graphSpeed > maxGraphSpeed) graphSpeed = 1;
+                }).update(b -> b.setText("x" + graphSpeed)).width(150f);
+            }).growX();}
+            else{
+            tb.pane(p->{
+                for (int wave = 0;wave <calWinWave()*waveMulti;wave++){
+                    int finalWave = wave;
+                    p.table(t->{
+                        t.add("第" + finalWave + "波").width(100f).left();
+                        int totalAmount = 0;
+                        int totalHealth = 0;
+                        int totalEffHealth = 0;
+                        for(SpawnGroup group : state.rules.spawns){
+                            int amount = group.getSpawned(finalWave);
+                            if (amount>0){
+                                totalAmount += amount;
+                                totalHealth += (group.type.health + group.getShield(finalWave)) * amount;
+                                if(group.effect == null) totalEffHealth += (group.type.health + group.getShield(finalWave)) * amount;
+                                else totalEffHealth += group.effect.healthMultiplier * (group.type.health + group.getShield(finalWave)) * amount;
+                            }
+                        }
+                        t.add("数量：" + totalAmount + "\n血盾：" + UI.formatAmount(totalHealth) +"\n有效：" + UI.formatAmount(totalEffHealth)).width(150f).left();
+                        t.pane(wi -> {
+                            int curInfoWave = finalWave;
+                            for(SpawnGroup group : state.rules.spawns){
+                                int amount = group.getSpawned(curInfoWave);
+                                if(amount > 0) {
+                                    StringBuilder groupInfo = new StringBuilder();
+                                    groupInfo.append(group.type.emoji()).append("\n");
+                                    groupInfo.append(amount).append("\n");
+                                    if(group.getShield(curInfoWave) > 0f) groupInfo.append(UI.formatAmount((long)group.getShield(curInfoWave))).append("\n");
+                                    if(group.effect != null && group.effect != StatusEffects.none) groupInfo.append(group.effect.emoji()).append("\n");
+                                    wi.button(groupInfo.toString(),cleart,() -> {
+                                        BaseDialog dialog = new BaseDialog("@waves.group");
+                                        dialog.setFillParent(false);
+                                        dialog.cont.table(Tex.button, a -> iTable = a).row();
+                                        dialog.cont.table(c -> {
+                                            c.defaults().size(210f, 64f).pad(2f);
+                                            c.button("@waves.duplicate", Icon.copy, () -> {
+                                                SpawnGroup newGroup = group.copy();
+                                                groups.add(newGroup);
+                                                expandedGroup = newGroup;
+                                                buildGroups();
+                                                dialog.hide();
+                                            });
+                                            c.button("@settings.resetKey", Icon.refresh, () -> ui.showConfirm("@confirm", "@settings.clear.confirm", () -> {
+                                                group.effect = StatusEffects.none;
+                                                group.payloads = Seq.with();
+                                                group.items = null;
+                                                buildGroups();
+                                                dialog.hide();
+                                            }));
+                                        });
+                                        buildGroups();
+                                        updateIcons(group);
+                                        dialog.addCloseButton();
+                                        dialog.show();
+                                    }).height(130f).width(50f).left();
+                                }
+                            }}).scrollX(true).scrollY(false).maxWidth(mobile?500f:1000f).growX();
+                    }).growX().left().row();
+                }
+            }).scrollX(false).growX().row();
+            tb.table(tbb->{
+                tbb.button("更多波次显示",()->setup()).width(200f);
+                TextField sField = tbb.field(waveMulti + "", text -> {
+                    waveMulti = Float.parseFloat(text);
+                    setup();
+                }).valid(Strings::canParsePositiveFloat).width(200f).get();
+                tbb.slider(0.25f,10f,0.25f,1f,t->{waveMulti=t;sField.setText(waveMulti + "");}).width(300f);
+            });}
         }).grow();
+
 
         buildGroups();
     }
@@ -1104,6 +1161,7 @@ public class arcWaveInfoDialog extends BaseDialog{
             maxwave = Math.max(maxwave ,group.end);
         }
         if (maxwave > 99999) return 200;
+        if(maxwave <2 && state.rules.waveSpacing>30f) return (int) (1800000/state.rules.waveSpacing);
         return maxwave + 1;
     }
 }
