@@ -15,7 +15,7 @@ import arc.util.Strings;
 import arc.util.Time;
 import arc.util.Tmp;
 import mindustry.Vars;
-import mindustry.arcModule.Marker;
+import mindustry.arcModule.*;
 import mindustry.core.World;
 import mindustry.game.EventType;
 import mindustry.gen.Icon;
@@ -32,43 +32,49 @@ import static mindustry.Vars.*;
 import static mindustry.ui.Styles.flatToggleMenut;
 import static mindustry.ui.Styles.nodeArea;
 
-public class MessageDialog extends BaseDialog {
-    /**选择的第一个|最后一个记录*/
-    private int msgInit,msgFinal;
-    /**存储的所有事件记录*/
+public class MessageDialog extends BaseDialog{
+    /** 选择的第一个|最后一个记录 */
+    private int msgInit, msgFinal;
+    /** 存储的所有事件记录 */
     public static Seq<advanceMsg> msgList = new Seq<>();
 
     private Table historyTable;
     private Boolean fieldMode = false;
 
-    public MessageDialog() {
+    public MessageDialog(){
         super("arc-中央监控室");
 
-        cont.pane(t->{
+        cont.pane(t -> {
             historyTable = t;
         }).growX().scrollX(false);
 
         addCloseButton();
-        buttons.button("模式切换",()->{fieldMode = !fieldMode;build();});
-        buttons.button("清空", ()-> {clearMsg();build();});
-        buttons.button("导出", Icon.upload, ()-> exportMsg()).name("导出聊天记录");
+        buttons.button("模式切换", () -> {
+            fieldMode = !fieldMode;
+            build();
+        });
+        buttons.button("清空", () -> {
+            clearMsg();
+            build();
+        });
+        buttons.button("导出", Icon.upload, this::exportMsg).name("导出聊天记录");
 
         init();
         shown(this::build);
         onResize(this::build);
 
-        Events.on(EventType.WorldLoadEvent.class, e->{
-            addMsg(new MessageDialog.advanceMsg(arcMsgType.eventWorldLoad,"载入地图： " + state.map.name()));
+        Events.on(EventType.WorldLoadEvent.class, e -> {
+            addMsg(new MessageDialog.advanceMsg(arcMsgType.eventWorldLoad, "载入地图： " + state.map.name()));
         });
 
-        Events.on(EventType.WaveEvent.class, e->{
-            if(state.wavetime<60f) return;
-            addMsg(new MessageDialog.advanceMsg(arcMsgType.eventWave,"波次： "+state.wave +" | "+ ui.hudfrag.auxilliaryTable.arcWaveInfo(state.wave-1)));
+        Events.on(EventType.WaveEvent.class, e -> {
+            if(state.wavetime < 60f) return;
+            addMsg(new MessageDialog.advanceMsg(arcMsgType.eventWave, "波次： " + state.wave + " | " + RFuncs.arcWaveInfo(state.wave - 1)));
         });
 
-        Events.on(EventType.BlockDestroyEvent.class, e->{
+        Events.on(EventType.BlockDestroyEvent.class, e -> {
             if(e.tile.build instanceof CoreBlock.CoreBuild)
-            addMsg(new MessageDialog.advanceMsg(arcMsgType.eventCoreDestory,"核心摧毁： "+"(" + World.toTile(e.tile.x) + "," + World.toTile(e.tile.y)+")"));
+                addMsg(new MessageDialog.advanceMsg(arcMsgType.eventCoreDestory, "核心摧毁： " + "(" + World.toTile(e.tile.x) + "," + World.toTile(e.tile.y) + ")"));
         });
     }
 
@@ -79,8 +85,8 @@ public class MessageDialog extends BaseDialog {
     void build(){
         historyTable.clear();
         historyTable.setWidth(800f);
-        if (msgList.size == 0) return;
-        for(int i=msgList.size - 1;i>=0;i--){
+        if(msgList.size == 0) return;
+        for(int i = msgList.size - 1; i >= 0; i--){
             int finalI = i;
             historyTable.table(Tex.whiteui, t -> {
                 advanceMsg thisMsg = msgList.get(finalI);
@@ -99,7 +105,10 @@ public class MessageDialog extends BaseDialog {
                     tt.add().growX();
                     tt.add("    " + (msgList.size - finalI) + "").style(Styles.outlineLabel).color(thisMsg.msgType.color).padRight(10);
 
-                    tt.button(Icon.copy, Styles.logici, () ->{Core.app.setClipboardText(thisMsg.message);ui.announce("已导出本条聊天记录");}).size(24f).padRight(6);
+                    tt.button(Icon.copy, Styles.logici, () -> {
+                        Core.app.setClipboardText(thisMsg.message);
+                        ui.announce("已导出本条聊天记录");
+                    }).size(24f).padRight(6);
                     tt.button(Icon.cancel, Styles.logici, () -> {
                         msgList.remove(finalI);
                         build();
@@ -113,7 +122,8 @@ public class MessageDialog extends BaseDialog {
                     tt.left();
                     tt.marginLeft(4);
                     tt.setColor(thisMsg.msgType.color);
-                    if(fieldMode) tt.field(thisMsg.message,nodeArea,text->{}).growX();
+                    if(fieldMode) tt.field(thisMsg.message, nodeArea, text -> {
+                    }).growX();
                     else tt.labelWrap(thisMsg.message).growX();
                 }).pad(4).padTop(2).growX().grow();
 
@@ -130,29 +140,42 @@ public class MessageDialog extends BaseDialog {
 
     public boolean resolveMsg(String message){
 
-        if (Marker.resolveMessage(message)) return true;
-        if (resolveMarkMsg(message)) return true;
-        if (resolveServerMsg(message)) return true;
+        if(Marker.resolveMessage(message)) return true;
+        if(resolveMarkMsg(message)) return true;
+        if(resolveServerMsg(message)) return true;
 
-        addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.normal,message));
+        addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.normal, message));
 
         return true;
     }
 
     public boolean resolveMarkMsg(String message){
-        if (message.contains("<ARC") && message.contains("标记了第")) {addMsg(new MessageDialog.advanceMsg(arcMsgType.markWave,message));return true;}
+        if(message.contains("<ARC") && message.contains("标记了第")){
+            addMsg(new MessageDialog.advanceMsg(arcMsgType.markWave, message));
+            return true;
+        }
         return false;
     }
 
     public boolean resolveServerMsg(String message){
-        Seq<String> serverMsg = Seq.with("加入了服务器","离开了服务器","自动存档完成","登录成功","经验+","[YELLOW]本局游戏时长:","[YELLOW]单人快速投票" ,"[GREEN]回档成功",
-                "[YELLOW]PVP保护时间, 全力进攻吧" , "[YELLOW]发起","[YELLOW]你可以在投票结束前使用","[GREEN]投票成功","[GREEN]换图成功,当前地图","[RED]本地图禁用单位");
-        for (int i=0;i<serverMsg.size;i++){
-            if (message.contains(serverMsg.get(i))) {addMsg(new MessageDialog.advanceMsg(arcMsgType.serverMsg,message));return true;}
+        Seq<String> serverMsg = Seq.with("加入了服务器", "离开了服务器", "自动存档完成", "登录成功", "经验+", "[YELLOW]本局游戏时长:", "[YELLOW]单人快速投票", "[GREEN]回档成功",
+        "[YELLOW]PVP保护时间, 全力进攻吧", "[YELLOW]发起", "[YELLOW]你可以在投票结束前使用", "[GREEN]投票成功", "[GREEN]换图成功,当前地图", "[RED]本地图禁用单位"
+        );
+        for(int i = 0; i < serverMsg.size; i++){
+            if(message.contains(serverMsg.get(i))){
+                addMsg(new MessageDialog.advanceMsg(arcMsgType.serverMsg, message));
+                return true;
+            }
         }
 
-        if (message.contains("小贴士")) {addMsg(new MessageDialog.advanceMsg(arcMsgType.serverTips,message));return true;}
-        if (message.contains("[acid][公屏][white]")) {addMsg(new MessageDialog.advanceMsg(arcMsgType.serverToast,message));return true;}
+        if(message.contains("小贴士")){
+            addMsg(new MessageDialog.advanceMsg(arcMsgType.serverTips, message));
+            return true;
+        }
+        if(message.contains("[acid][公屏][white]")){
+            addMsg(new MessageDialog.advanceMsg(arcMsgType.serverToast, message));
+            return true;
+        }
 
         return false;
     }
@@ -176,10 +199,10 @@ public class MessageDialog extends BaseDialog {
 
         StringBuilder messageLs = new StringBuilder();
         int messageCount = 0;
-        for (int i = 0; i <msgList.size; i++) {
+        for(int i = 0; i < msgList.size; i++){
             String msg = msgList.get(i).message;
-            messageLs.insert(0,msg + "\n");
-            messageCount +=1;
+            messageLs.insert(0, msg + "\n");
+            messageCount += 1;
         }
 
         messageHis.append("成功选取共 ").append(messageCount).append(" 条记录，如下：\n");
@@ -202,60 +225,59 @@ public class MessageDialog extends BaseDialog {
         }
 
         public advanceMsg(arcMsgType msgType, String message){
-            this(msgType,message,new Date());
+            this(msgType, message, new Date());
         }
 
         public advanceMsg(arcMsgType msgType, String message, Date time){
-            this(msgType,message,time,"null");
+            this(msgType, message, time, "null");
         }
 
         public advanceMsg sendMessage(){
-            ui.chatfrag.addMessage(msgType.arcMsgPreFix() + message,false);
+            ui.chatfrag.addMessage(msgType.arcMsgPreFix() + message, false);
             return this;
         }
     }
 
     public static class arcMsgType{
         public static arcMsgType
-        normal = new arcMsgType("消息",Color.gray),
+        normal = new arcMsgType("消息", Color.gray),
 
-        markLoc = new arcMsgType("标记","坐标",Color.valueOf("#7FFFD4")),
-        markWave = new arcMsgType("标记","波次",Color.valueOf("#7FFFD4")),
+        markLoc = new arcMsgType("标记", "坐标", Color.valueOf("#7FFFD4")),
+        markWave = new arcMsgType("标记", "波次", Color.valueOf("#7FFFD4")),
 
-        serverTips = new arcMsgType("服务器","小贴士",Color.valueOf("#98FB98")),
-        serverMsg =  new arcMsgType("服务器","信息",Color.valueOf("#cefdce")),
-        serverToast =  new arcMsgType("服务器","通报",Color.valueOf("#00FA9A")),
+        serverTips = new arcMsgType("服务器", "小贴士", Color.valueOf("#98FB98")),
+        serverMsg = new arcMsgType("服务器", "信息", Color.valueOf("#cefdce")),
+        serverToast = new arcMsgType("服务器", "通报", Color.valueOf("#00FA9A")),
 
-        logicNotify = new arcMsgType("逻辑","通报",Color.valueOf("#ffccff")),
-        logicAnnounce = new arcMsgType("逻辑","公告",Color.valueOf("#ffccff")),
+        logicNotify = new arcMsgType("逻辑", "通报", Color.valueOf("#ffccff")),
+        logicAnnounce = new arcMsgType("逻辑", "公告", Color.valueOf("#ffccff")),
 
-        eventWorldLoad =  new arcMsgType("事件","载入地图",Color.valueOf("#ff9999")),
-        eventCoreDestory = new arcMsgType("事件","核心摧毁",Color.valueOf("#ffcccc")),
-        eventWave =  new arcMsgType("事件","波次",Color.valueOf("#ffcc99"))
-        ;
+        eventWorldLoad = new arcMsgType("事件", "载入地图", Color.valueOf("#ff9999")),
+        eventCoreDestory = new arcMsgType("事件", "核心摧毁", Color.valueOf("#ffcccc")),
+        eventWave = new arcMsgType("事件", "波次", Color.valueOf("#ffcc99"));
 
         public String name;
         public String type;
         public String subClass;
         public Color color = Color.gray;
 
-        arcMsgType(String type,String subClass,Color color){
+        arcMsgType(String type, String subClass, Color color){
             this.name = subClass == "" ? type : (type + "~" + subClass);
             this.type = type;
             this.subClass = subClass;
             this.color = color;
         }
 
-        arcMsgType(String type,Color color){
-            this(type,"",color);
+        arcMsgType(String type, Color color){
+            this(type, "", color);
         }
 
         arcMsgType(String type){
-            this(type,Color.gray);
+            this(type, Color.gray);
         }
 
-        arcMsgType(String type,String subClass){
-            this(type,subClass,Color.gray);
+        arcMsgType(String type, String subClass){
+            this(type, subClass, Color.gray);
         }
 
         public String arcMsgPreFix(){

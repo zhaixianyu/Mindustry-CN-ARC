@@ -25,12 +25,8 @@ public class MapInfoTable extends BaseToolsTable{
 
         button(Icon.map, clearAccentNonei, mapInfoDialog::show).tooltip("地图信息");
         button(Items.copper.emoji(), clearLineNonet, this::floorStatisticDialog).tooltip("矿物信息");
-        button(
-        Icon.starSmall,
-        clearAccentNonei,
-        ui.achievements::show
-        )
-        .tooltip("统计与成就");
+        button(Icon.starSmall, clearAccentNonei, ui.achievements::show).tooltip("统计与成就");
+        button(Icon.chatSmall, clearAccentNonei, () -> ui.MessageDialog.show()).tooltip("中央监控室");
     }
 
     private void floorStatisticDialog(){

@@ -5,6 +5,7 @@ import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
 import arc.util.*;
 import mindustry.*;
+import mindustry.arcModule.*;
 import mindustry.content.*;
 import mindustry.core.*;
 import mindustry.editor.*;
@@ -73,7 +74,7 @@ public class WaveInfoTable extends BaseToolsTable{
             });
 
             buttons.button("♐", clearLineNonet, () -> {
-                String message = arcShareWaveInfo(state.wave + waveOffset);
+                String message = RFuncs.arcShareWaveInfo(state.wave + waveOffset);
                 int seperator = 145;
                 for(int i = 0; i < message.length() / (float)seperator; i++){
                     Call.sendChatMessage(message.substring(i * seperator, Math.min(message.length(), (i + 1) * seperator)));
@@ -133,57 +134,6 @@ public class WaveInfoTable extends BaseToolsTable{
         }
     }
 
-    private String arcShareWaveInfo(int waves){
-        if(!state.rules.waves) return " ";
-        StringBuilder builder = new StringBuilder();
-        builder.append("[ARC").append(arcVersion).append("]");
-        builder.append("标记了第").append(waves).append("波");
-        if(waves < state.wave){
-            builder.append("。");
-        }else{
-            if(waves > state.wave){
-                builder.append("，还有").append(waves - state.wave).append("波");
-            }
-            int timer = (int)(state.wavetime + (waves - state.wave) * state.rules.waveSpacing);
-            builder.append("[").append(fixedTime(timer)).append("]。");
-        }
 
-        if(state.rules.attackMode){
-            int sum = Math.max(state.teams.present.sum(t -> t.team != player.team() ? t.cores.size : 0), 1) + Vars.spawner.countSpawns();
-            builder.append("其包含(×").append(sum).append(")");
-        }else{
-            builder.append("其包含(×").append(Vars.spawner.countSpawns()).append("):");
-        }
-        for(SpawnGroup group : state.rules.spawns){
-            if(group.getSpawned(waves - 1) > 0){
-                builder.append((char)Fonts.getUnicode(group.type.name)).append("(");
-                if(group.effect != StatusEffects.invincible && group.effect != StatusEffects.none && group.effect != null){
-                    builder.append((char)Fonts.getUnicode(group.effect.name)).append("|");
-                }
-                if(group.getShield(waves - 1) > 0){
-                    builder.append(UI.whiteformatAmount((int)group.getShield(waves - 1))).append("|");
-                }
-                builder.append(group.getSpawned(waves - 1)).append(")");
-            }
-        }
-        return builder.toString();
-    }
-
-    private String fixedTime(int timer){
-        StringBuilder str = new StringBuilder();
-        int m = timer / 60 / 60;
-        int s = timer / 60 % 60;
-        int ms = timer % 60;
-        if(m > 0){
-            str.append(m).append(": ");
-            if(s < 10){
-                str.append("0");
-            }
-            str.append(s).append("min");
-        }else{
-            str.append(s).append(".").append(ms).append('s');
-        }
-        return str.toString();
-    }
 
 }
