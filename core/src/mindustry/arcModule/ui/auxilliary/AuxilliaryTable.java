@@ -1,11 +1,14 @@
 package mindustry.arcModule.ui.auxilliary;
 
 import arc.*;
+import arc.input.*;
 import arc.scene.*;
 import arc.scene.event.*;
 import arc.scene.ui.layout.*;
 import mindustry.arcModule.*;
 import mindustry.arcModule.Marker.*;
+import mindustry.arcModule.ui.*;
+import mindustry.gen.*;
 import mindustry.input.*;
 import mindustry.ui.*;
 
@@ -16,7 +19,6 @@ public class AuxilliaryTable extends Table{
     private boolean show = true;
 
     public MarkType markType = Marker.mark;
-    public boolean mobileMark = false;
     public Element mobileHitter = new Element();
 
     private final BaseToolsTable[] toolsTables = new BaseToolsTable[]{
@@ -27,19 +29,21 @@ public class AuxilliaryTable extends Table{
         setup();
 
         rebuild();
-    }
 
-    public void setup(){
         mobileHitter.addListener(new ElementGestureListener(20, 0.4f, Marker.heatTime / 60f, 0.15f){
             @Override
             public boolean longPress(Element actor, float x, float y){
                 Marker.mark(markType, Core.input.mouseWorld());
 
-                mobileMark = false;
-
                 mobileHitter.remove();
 
                 return true;
+            }
+
+            @Override
+            public void fling(InputEvent event, float velocityX, float velocityY, KeyCode button){
+                mobileHitter.remove();
+                ui.announce("[yellow]你已退出标记模式");
             }
         });
 
@@ -52,7 +56,9 @@ public class AuxilliaryTable extends Table{
                 }
             });
         }
+    }
 
+    public void setup(){
         for(BaseToolsTable table : toolsTables){
             table.setup();
         }
@@ -87,10 +93,8 @@ public class AuxilliaryTable extends Table{
                 body.table(t -> {
                     if(mobile){
                         t.button("♐ >", clearLineNonet, () -> {
-                            mobileMark = true;
-
                             ui.hudGroup.addChild(mobileHitter);
-                            ui.announce("[cyan]你已进入标记点模式，长按屏幕可进行一次标记。");
+                            ui.announce("[cyan]你已进入标记模式,长按屏幕可进行一次标记(外划可以退出).");
                         }).height(40).width(70f).tooltip("开启手机标记");
                     }
 
