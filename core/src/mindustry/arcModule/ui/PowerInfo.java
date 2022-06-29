@@ -52,8 +52,6 @@ public class PowerInfo {
     }
 
 
-    public static void initialize() {}
-
     public static void update() {
         if (PowerGraph.activeGraphs == null) return;
         PowerInfo newInfo = new PowerInfo();
@@ -89,7 +87,7 @@ public class PowerInfo {
         power.row();
         power.add(batteryBar).height(18).growX().padBottom(1);
 
-		power.update(() -> update());
+		power.update(PowerInfo::update);
         return power;
     }
 }

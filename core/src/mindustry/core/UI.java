@@ -20,6 +20,7 @@ import arc.scene.ui.Tooltip.*;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
+import mindustry.arcModule.ui.*;
 import mindustry.arcModule.ui.dialogs.AboutCN_ARCDialog;
 import mindustry.editor.*;
 import mindustry.game.EventType.*;
@@ -112,7 +113,10 @@ public class UI implements ApplicationListener, Loadable{
 
         Tex.load();
         Icon.load();
+
         Styles.load();
+        RStyles.load();
+
         Tex.loadStyles();
         Fonts.loadContentIcons();
 
