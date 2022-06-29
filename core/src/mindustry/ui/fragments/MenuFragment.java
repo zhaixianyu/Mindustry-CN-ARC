@@ -34,6 +34,11 @@ public class MenuFragment{
         if (!Core.settings.getBool("arcDisableModWarning")){
             ui.aboutcn_arc.show();
         }
+        Core.settings.put("locale", "zh_ARC");
+        /*
+        if(Core.settings.getString("locale") != "zh_ARC"){
+            ui.showConfirm("语言包警告","检测到语言包并未支持学术端，可能导致大部分内容无法正常显示。\n是否切换成学术语言包？",()->{Core.settings.put("locale", "zh_ARC");Core.app.exit();});
+        }*/
 
         Group group = new WidgetGroup();
         group.setFillParent(true);
