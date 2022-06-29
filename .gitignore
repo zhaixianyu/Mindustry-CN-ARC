@@ -168,3 +168,4 @@ core/assets/logicids.dat
 
 .bat
 /buildAndRun.bat
+/release.bat
