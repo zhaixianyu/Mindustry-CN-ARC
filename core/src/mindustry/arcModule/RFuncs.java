@@ -52,7 +52,7 @@ public class RFuncs{
         return builder.toString();
     }
 
-    public static String fixedTime(int timer){
+    public static String fixedTime(int timer,boolean units){
         StringBuilder str = new StringBuilder();
         int m = timer / 60 / 60;
         int s = timer / 60 % 60;
@@ -62,11 +62,18 @@ public class RFuncs{
             if(s < 10){
                 str.append("0");
             }
-            str.append(s).append("min");
+
+            str.append(s);
+            if(units) str.append("min");
         }else{
-            str.append(s).append(".").append(ms).append('s');
+            str.append(s).append(".").append(ms);
+            if(units) str.append('s');
         }
         return str.toString();
+    }
+
+    public static String fixedTime(int timer){
+        return fixedTime(timer,true);
     }
 
 }

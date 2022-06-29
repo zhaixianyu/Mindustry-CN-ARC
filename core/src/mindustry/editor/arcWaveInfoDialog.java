@@ -3,7 +3,6 @@ package mindustry.editor;
 import arc.*;
 import arc.func.Intc;
 import arc.func.Intp;
-import arc.graphics.*;
 import arc.math.*;
 import arc.math.geom.*;
 import arc.scene.event.*;
@@ -13,7 +12,6 @@ import arc.scene.ui.TextField.*;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
-import mindustry.*;
 import mindustry.ai.types.BuilderAI;
 import mindustry.ai.types.MinerAI;
 import mindustry.ai.types.RepairAI;
@@ -31,8 +29,8 @@ import mindustry.ui.dialogs.*;
 
 import java.util.*;
 
-import static arc.Core.settings;
 import static mindustry.Vars.*;
+import static mindustry.arcModule.RFuncs.fixedTime;
 import static mindustry.content.UnitTypes.*;
 import static mindustry.game.SpawnGroup.*;
 import static mindustry.ui.Styles.*;
@@ -328,7 +326,12 @@ public class arcWaveInfoDialog extends BaseDialog{
                 for (int wave = 0;wave <calWinWave()*waveMulti;wave++){
                     int finalWave = wave;
                     p.table(t->{
-                        t.add("第[accent]" + (finalWave + 1) + "[]波").width(100f).left();
+                        t.table(tt->{
+                            tt.add("第[accent]" + (finalWave + 1) + "[]波").fillX();
+                            tt.row();
+                            tt.add(fixedTime((int)(finalWave * state.rules.waveSpacing + (state.rules.initialWaveSpacing<=0?(2 * state.rules.waveSpacing) :state.rules.initialWaveSpacing)),false));
+                        }).width(100f).left();
+
                         int totalAmount = 0;
                         int totalHealth = 0;
                         int totalEffHealth = 0;
