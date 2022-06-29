@@ -158,6 +158,7 @@ public class MessageDialog extends BaseDialog{
     }
 
     private String getPlayerMsg(advanceMsg msgElement){
+        if(msgElement.msgType != arcMsgType.normal) return msgElement.message;
         int typeStart = msgElement.message.indexOf("[coral][");
         int typeEnd = msgElement.message.indexOf("[coral]]");
         if(typeStart == -1 || typeEnd == -1 || typeEnd<=typeStart){
