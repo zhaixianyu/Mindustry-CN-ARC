@@ -14,7 +14,6 @@ import static mindustry.arcModule.ui.RStyles.*;
 
 public class AuxilliaryTable extends Table{
     private boolean show = true;
-    private boolean showMarker = mobile;
 
     public MarkType markType = Marker.mark;
     public boolean mobileMark = false;
@@ -85,7 +84,7 @@ public class AuxilliaryTable extends Table{
                     body.collapser(table, table::shown).padTop(3).left().row();
                 }
 
-                body.collapser(t -> {
+                body.table(t -> {
                     if(mobile){
                         t.button("♐ >", clearLineNonet, () -> {
                             mobileMark = true;
@@ -93,9 +92,6 @@ public class AuxilliaryTable extends Table{
                             ui.hudGroup.addChild(mobileHitter);
                             ui.announce("[cyan]你已进入标记点模式，长按屏幕可进行一次标记。");
                         }).height(40).width(70f).tooltip("开启手机标记");
-                    }else{
-                        t.button("♐ >", clearLineNonet, () -> showMarker = !showMarker)
-                         .height(40).width(70f).tooltip("标记");
                     }
 
                     for(MarkType type : Marker.markTypes){
@@ -103,7 +99,7 @@ public class AuxilliaryTable extends Table{
                          .checked(b -> markType == type).size(40).tooltip(type.describe);
                     }
 
-                }, () -> showMarker).left();
+                }).left();
             }).fillX().left();
         }
     }
