@@ -9,6 +9,7 @@ import arc.scene.event.HandCursorListener;
 import arc.scene.event.InputEvent;
 import arc.scene.event.InputListener;
 import arc.scene.event.Touchable;
+import arc.scene.ui.CheckBox;
 import arc.scene.ui.layout.Table;
 import arc.struct.Seq;
 import arc.util.Strings;
@@ -21,6 +22,7 @@ import mindustry.game.EventType;
 import mindustry.gen.Icon;
 import mindustry.gen.Tex;
 import mindustry.logic.LCanvas;
+import mindustry.logic.LLocate;
 import mindustry.ui.Styles;
 import mindustry.ui.dialogs.BaseDialog;
 import mindustry.world.blocks.storage.CoreBlock;
@@ -28,6 +30,7 @@ import mindustry.world.blocks.storage.CoreBlock;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import static arc.Core.settings;
 import static mindustry.Vars.*;
 import static mindustry.ui.Styles.flatToggleMenut;
 import static mindustry.ui.Styles.nodeArea;
@@ -49,10 +52,8 @@ public class MessageDialog extends BaseDialog{
         }).growX().scrollX(false);
 
         addCloseButton();
-        buttons.button("模式切换", () -> {
-            fieldMode = !fieldMode;
-            build();
-        });
+        buttons.button("设置", () -> arcMsgSettingTable());
+
         buttons.button("清空", () -> {
             clearMsg();
             build();
@@ -88,6 +89,7 @@ public class MessageDialog extends BaseDialog{
         if(msgList.size == 0) return;
         for(int i = msgList.size - 1; i >= 0; i--){
             int finalI = i;
+            if(!msgList.get(finalI).msgType.show) continue;
             historyTable.table(Tex.whiteui, t -> {
                 advanceMsg thisMsg = msgList.get(finalI);
                 t.background(Tex.whitePane);
@@ -131,6 +133,39 @@ public class MessageDialog extends BaseDialog{
         }
     }
 
+    private void arcMsgSettingTable(){
+        BaseDialog setDialog = new BaseDialog("中央监控室-设置");
+
+        setDialog.cont.table(t->{
+
+            t.check("信息编辑模式",fieldMode,a->{fieldMode = a; build();}).left().width(200f);
+            t.row();
+
+            t.add("调整显示的信息").height(50f);
+            t.row();
+            int i=0;
+            for (arcMsgType type : arcMsgType.values()){
+
+                CheckBox box = new CheckBox("[#" +type.color.toString() + "]" + type.name);
+
+                box.update(() -> box.setChecked(type.show));
+                box.changed(() -> {
+                    type.show = !type.show;
+                    build();
+                });
+
+                box.left();
+                t.add(box).left().padTop(3f);
+
+                t.row();
+            }
+        });
+
+        setDialog.addCloseButton();
+
+        setDialog.show();
+    }
+
     public String formatTime(Date time){
         SimpleDateFormat sdf = new SimpleDateFormat();// 格式化时间
         sdf.applyPattern("HH:mm:ss");// a为am/pm的标记
@@ -158,7 +193,8 @@ public class MessageDialog extends BaseDialog{
 
     public boolean resolveServerMsg(String message){
         Seq<String> serverMsg = Seq.with("加入了服务器", "离开了服务器", "自动存档完成", "登录成功", "经验+", "[YELLOW]本局游戏时长:", "[YELLOW]单人快速投票", "[GREEN]回档成功",
-        "[YELLOW]PVP保护时间, 全力进攻吧", "[YELLOW]发起", "[YELLOW]你可以在投票结束前使用", "[GREEN]投票成功", "[GREEN]换图成功,当前地图", "[RED]本地图禁用单位"
+        "[YELLOW]PVP保护时间, 全力进攻吧", "[YELLOW]发起", "[YELLOW]你可以在投票结束前使用", "[GREEN]投票成功", "[GREEN]换图成功,当前地图",
+        "[RED]本地图禁用单位","[RED]该地图限制空军,禁止进入敌方领空","[yellow]本地图限制空军"
         );
         for(int i = 0; i < serverMsg.size; i++){
             if(message.contains(serverMsg.get(i))){
@@ -237,28 +273,28 @@ public class MessageDialog extends BaseDialog{
         }
     }
 
-    public static class arcMsgType{
-        public static arcMsgType
-        normal = new arcMsgType("消息", Color.gray),
+    public enum arcMsgType{
+        normal("消息", Color.gray),
 
-        markLoc = new arcMsgType("标记", "坐标", Color.valueOf("#7FFFD4")),
-        markWave = new arcMsgType("标记", "波次", Color.valueOf("#7FFFD4")),
+        markLoc("标记", "坐标", Color.valueOf("#7FFFD4")),
+        markWave("标记", "波次", Color.valueOf("#7FFFD4")),
 
-        serverTips = new arcMsgType("服务器", "小贴士", Color.valueOf("#98FB98")),
-        serverMsg = new arcMsgType("服务器", "信息", Color.valueOf("#cefdce")),
-        serverToast = new arcMsgType("服务器", "通报", Color.valueOf("#00FA9A")),
+        serverTips("服务器", "小贴士", Color.valueOf("#98FB98")),
+        serverMsg("服务器", "信息", Color.valueOf("#cefdce")),
+        serverToast("服务器", "通报", Color.valueOf("#00FA9A")),
 
-        logicNotify = new arcMsgType("逻辑", "通报", Color.valueOf("#ffccff")),
-        logicAnnounce = new arcMsgType("逻辑", "公告", Color.valueOf("#ffccff")),
+        logicNotify("逻辑", "通报", Color.valueOf("#ffccff")),
+        logicAnnounce("逻辑", "公告", Color.valueOf("#ffccff")),
 
-        eventWorldLoad = new arcMsgType("事件", "载入地图", Color.valueOf("#ff9999")),
-        eventCoreDestory = new arcMsgType("事件", "核心摧毁", Color.valueOf("#ffcccc")),
-        eventWave = new arcMsgType("事件", "波次", Color.valueOf("#ffcc99"));
+        eventWorldLoad("事件", "载入地图", Color.valueOf("#ff9999")),
+        eventCoreDestory("事件", "核心摧毁", Color.valueOf("#ffcccc")),
+        eventWave("事件", "波次", Color.valueOf("#ffcc99"));
 
         public String name;
         public String type;
         public String subClass;
         public Color color = Color.gray;
+        public Boolean show = true;
 
         arcMsgType(String type, String subClass, Color color){
             this.name = subClass == "" ? type : (type + "~" + subClass);
