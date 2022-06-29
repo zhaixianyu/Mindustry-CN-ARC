@@ -19,6 +19,7 @@ import mindustry.ui.dialogs.*;
 import static arc.Core.settings;
 import static mindustry.Vars.*;
 import static mindustry.arcModule.ui.RStyles.*;
+import static mindustry.ui.Styles.cleart;
 
 public class WaveInfoTable extends BaseToolsTable{
     private float fontScl = 0.8f;
@@ -28,6 +29,9 @@ public class WaveInfoTable extends BaseToolsTable{
     private Table waveInfo = new Table();
 
     private arcWaveInfoDialog arcWaveInfoDialog = new arcWaveInfoDialog();
+
+    private int showWaves = 0;
+    private final int maxWavesShow = 8;
 
     public WaveInfoTable(){
         super(Icon.waves);
@@ -86,6 +90,10 @@ public class WaveInfoTable extends BaseToolsTable{
         table(setWave -> {
             setWave.label(() -> "" + (state.wave + waveOffset)).get().setFontScale(fontScl);
 
+            setWave.button("∧", cleart, () -> {
+                showWaves = Math.min(showWaves + 5,Math.max(0,state.rules.spawns.size - maxWavesShow));
+                rebuildWaveInfo();
+            }).size(30f);
             setWave.row();
 
             setWave.button(Icon.settingsSmall, clearAccentNonei, 30, () -> {
@@ -102,6 +110,12 @@ public class WaveInfoTable extends BaseToolsTable{
                 lsSet.addCloseButton();
                 lsSet.show();
             });
+
+            setWave.button("∨", cleart, () -> {
+                showWaves = Math.max(0,showWaves - 5);
+                rebuildWaveInfo();
+            }).size(30f);
+
         });
 
         add(waveInfo).left();
@@ -109,12 +123,15 @@ public class WaveInfoTable extends BaseToolsTable{
 
     private void rebuildWaveInfo(){
         waveInfo.clear();
-        waveInfo.pane(wt->{
+        waveInfo.table(wt->{
+            int waveIndex = 0;
             int curInfoWave = state.wave - 1 + waveOffset;
             for(SpawnGroup group : state.rules.spawns){
                 int amount = group.getSpawned(curInfoWave);
 
                 if(amount > 0){
+                    waveIndex +=1;
+                    if(waveIndex< showWaves || waveIndex>=showWaves+maxWavesShow) continue;
                     float shield = group.getShield(curInfoWave);
                     StatusEffect effect = group.effect;
 
@@ -132,7 +149,7 @@ public class WaveInfoTable extends BaseToolsTable{
                 }
             }
 
-        }).maxWidth(300f).scrollY(false).scrollX(true);
+        }).maxWidth(300f);
 
 
     }
