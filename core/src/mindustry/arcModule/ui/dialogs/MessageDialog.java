@@ -92,7 +92,6 @@ public class MessageDialog extends BaseDialog{
                 advanceMsg thisMsg = msgList.get(finalI);
                 t.background(Tex.whitePane);
                 t.setColor(thisMsg.msgType.color);
-                t.touchable = Touchable.enabled;
                 t.marginTop(5);
 
                 t.table(Tex.whiteui, tt -> {
