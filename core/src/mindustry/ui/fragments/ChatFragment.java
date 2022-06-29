@@ -15,6 +15,7 @@ import arc.struct.*;
 import arc.util.*;
 import mindustry.*;
 import mindustry.arcModule.*;
+import mindustry.arcModule.ui.dialogs.MessageDialog;
 import mindustry.gen.*;
 import mindustry.input.*;
 import mindustry.ui.*;
@@ -272,12 +273,24 @@ public class ChatFragment extends Table{
     public void addMessage(String message){
         if(message == null) return;
 
-        Marker.resolveMessage(message);
         messages.insert(0, message);
+        ui.MessageDialog.resolveMsg(message);
 
         fadetime += 1f;
         fadetime = Math.min(fadetime, messagesShown) + 1f;
         
+        if(scrollPos > 0) scrollPos++;
+    }
+
+    public void addMessage(String message,Boolean resolve){
+        if(message == null) return;
+
+        messages.insert(0, message);
+        if(resolve) ui.MessageDialog.resolveMsg(message);
+
+        fadetime += 1f;
+        fadetime = Math.min(fadetime, messagesShown) + 1f;
+
         if(scrollPos > 0) scrollPos++;
     }
 
