@@ -114,11 +114,10 @@ public class Marker{
             }
 
             mark(markType, pos.scl(tilesize), false);
-            ui.MessageDialog.addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.markLoc,text));
+            ui.MessageDialog.addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.markLoc,text,pos));
             return true;
         }
 
-        //[YELLOW][集合][CYAN][WHITE]<>[][violet]11[WHITE]|[gray]/60[][WHITE]发起集合([RED]144,265[WHITE])[WHITE]"[WHITE]",输入"[gold]go[WHITE]"前往
         if(text.contains("[YELLOW][集合]")&& text.contains("[WHITE]\"[WHITE]\",输入\"[gold]go[WHITE]\"前往")){
 
             int typeStart = text.indexOf("[WHITE]发起集合([RED]");
@@ -140,7 +139,7 @@ public class Marker{
             }
 
             mark(findLocalizedName("集合"), pos.scl(tilesize), false);
-            ui.MessageDialog.addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.markLoc,text));
+            ui.MessageDialog.addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.markLoc,text,pos));
             return true;
         }
         return false;
@@ -195,7 +194,7 @@ public class Marker{
                     "[white]" + ": " +
                     "(" + World.toTile(pos.x) + "," + World.toTile(pos.y)+")";
             Call.sendChatMessage(text);
-            ui.MessageDialog.addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.markLoc,text));
+            ui.MessageDialog.addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.markLoc,text,pos));
         }
 
     }

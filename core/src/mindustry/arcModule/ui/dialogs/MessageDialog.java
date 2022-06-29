@@ -17,12 +17,13 @@ import arc.util.Time;
 import arc.util.Tmp;
 import mindustry.Vars;
 import mindustry.arcModule.*;
+import mindustry.content.Fx;
 import mindustry.core.World;
 import mindustry.game.EventType;
 import mindustry.gen.Icon;
 import mindustry.gen.Tex;
-import mindustry.logic.LCanvas;
-import mindustry.logic.LLocate;
+import mindustry.input.DesktopInput;
+
 import mindustry.ui.Styles;
 import mindustry.ui.dialogs.BaseDialog;
 import mindustry.world.blocks.storage.CoreBlock;
@@ -30,9 +31,7 @@ import mindustry.world.blocks.storage.CoreBlock;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import static arc.Core.settings;
 import static mindustry.Vars.*;
-import static mindustry.ui.Styles.flatToggleMenut;
 import static mindustry.ui.Styles.nodeArea;
 
 public class MessageDialog extends BaseDialog{
@@ -43,7 +42,6 @@ public class MessageDialog extends BaseDialog{
 
     private Table historyTable;
     private Boolean fieldMode = false;
-
     public MessageDialog(){
         super("arc-中央监控室");
 
@@ -75,7 +73,7 @@ public class MessageDialog extends BaseDialog{
 
         Events.on(EventType.BlockDestroyEvent.class, e -> {
             if(e.tile.build instanceof CoreBlock.CoreBuild)
-                addMsg(new MessageDialog.advanceMsg(arcMsgType.eventCoreDestory, "核心摧毁： " + "(" + World.toTile(e.tile.x) + "," + World.toTile(e.tile.y) + ")"));
+                addMsg(new MessageDialog.advanceMsg(arcMsgType.eventCoreDestory, "核心摧毁： " + "(" + World.toTile(e.tile.x) + "," + World.toTile(e.tile.y) + ")",new Vec2(World.toTile(e.tile.x),World.toTile(e.tile.y))));
         });
     }
 
@@ -102,6 +100,19 @@ public class MessageDialog extends BaseDialog{
                     tt.add(thisMsg.msgType.name).style(Styles.outlineLabel).color(thisMsg.msgType.color).left().width(200f);
 
                     tt.add(formatTime(thisMsg.time)).style(Styles.outlineLabel).color(thisMsg.msgType.color).left().padLeft(20f).width(100f);
+
+                    if(thisMsg.msgLoc.x != -1){
+                        tt.button("♐： " + (int)(thisMsg.msgLoc.x/tilesize) + "," + (int)(thisMsg.msgLoc.y/tilesize), Styles.logicButton, () -> {
+                            if (Vars.control.input instanceof DesktopInput input) {
+                                input.panning = true;
+                            }
+
+                            Core.camera.position.set(thisMsg.msgLoc);
+
+                            Fx.arcMarker.arcCreate(thisMsg.msgLoc.x, thisMsg.msgLoc.y, 0, color, null);
+                            hide();
+                        }).padLeft(50f).height(24f).width(150f);
+                    }
 
                     tt.add().growX();
                     tt.add("    " + (msgList.size - finalI) + "").style(Styles.outlineLabel).color(thisMsg.msgType.color).padRight(10);
@@ -251,16 +262,27 @@ public class MessageDialog extends BaseDialog{
         public Date time;
         public String sender;
         public boolean selected;
+        public Vec2 msgLoc;
 
-        public advanceMsg(arcMsgType msgType, String message, Date time, String sender){
+        public advanceMsg(arcMsgType msgType, String message, Date time, String sender,Vec2 msgLoc){
             this.msgType = msgType;
             this.message = message;
             this.time = time;
             this.sender = sender;
+            this.msgLoc = new Vec2().set(msgLoc);
         }
+
+        public advanceMsg(arcMsgType msgType, String message, Date time, String sender){
+            this(msgType, message, time, "null",new Vec2(-1,-1));
+        }
+
 
         public advanceMsg(arcMsgType msgType, String message){
             this(msgType, message, new Date());
+        }
+
+        public advanceMsg(arcMsgType msgType, String message,Vec2 msgLoc){
+            this(msgType, message, new Date(),"null",msgLoc);
         }
 
         public advanceMsg(arcMsgType msgType, String message, Date time){
@@ -295,6 +317,7 @@ public class MessageDialog extends BaseDialog{
         public String subClass;
         public Color color = Color.gray;
         public Boolean show = true;
+        public Boolean hasLoc = true;
 
         arcMsgType(String type, String subClass, Color color){
             this.name = subClass == "" ? type : (type + "~" + subClass);

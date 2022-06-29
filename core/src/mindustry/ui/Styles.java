@@ -53,7 +53,10 @@ public class Styles{
     squareTogglet,
 
     /** Special square button for logic dialogs. */
-    logict;
+    logict,
+
+    /** 继承logict，但是是logic显示的字体*/
+    logicButton;
 
     /** Default image button style - gray corners at 45 degrees. */
     public static ImageButtonStyle defaulti,
@@ -153,6 +156,12 @@ public class Styles{
             disabledFontColor = Color.gray;
             down = flatOver;
             up = underlineWhite;
+        }};
+        logicButton = new TextButtonStyle(){{
+            up = none;
+            over = flatOver;
+            font = Fonts.outline;
+            fontColor = Color.white;
         }};
         flatBordert = new TextButtonStyle(){{
             down = flatOver;
