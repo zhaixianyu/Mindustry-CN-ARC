@@ -37,7 +37,7 @@ public class AuxilliaryTable extends Table{
 
                 mobileMark = false;
 
-                remove();
+                mobileHitter.remove();
 
                 return true;
             }
