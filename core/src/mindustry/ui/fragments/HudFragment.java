@@ -17,6 +17,7 @@ import arc.util.*;
 import mindustry.Vars;
 import mindustry.annotations.Annotations.*;
 import mindustry.arcModule.ui.*;
+import mindustry.arcModule.ui.auxilliary.*;
 import mindustry.content.*;
 import mindustry.core.GameState.*;
 import mindustry.core.*;
@@ -44,9 +45,9 @@ public class HudFragment{
 
     private ImageButton flip;
     private Slider minimapSlider;
-    private CoreItemsDisplay coreItems = new CoreItemsDisplay();
+    private CoreItemsDisplay coreItems = new RCoreItemsDisplay();
     private OtherCoreItemDisplay otherCoreItemDisplay = new OtherCoreItemDisplay();
-    public AuxilliaryTable auxilliaryTable = new AuxilliaryTable();
+    private AuxilliaryTable auxilliaryTable;
     private AdvanceToolTable advanceToolTable = new AdvanceToolTable();
     private HudSettingsTable hudSettingsTable = new HudSettingsTable();
 
@@ -64,6 +65,7 @@ public class HudFragment{
     private boolean showSkipwave = Core.settings.getBool("overrideSkipWave");
 
     public void build(Group parent){
+        auxilliaryTable = new AuxilliaryTable();
 
         //warn about guardian/boss waves
         Events.on(WaveEvent.class, e -> {
