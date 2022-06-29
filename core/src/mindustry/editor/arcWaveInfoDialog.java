@@ -328,7 +328,7 @@ public class arcWaveInfoDialog extends BaseDialog{
                 for (int wave = 0;wave <calWinWave()*waveMulti;wave++){
                     int finalWave = wave;
                     p.table(t->{
-                        t.add("第" + (finalWave + 1) + "波").width(100f).left();
+                        t.add("第[accent]" + (finalWave + 1) + "[]波").width(100f).left();
                         int totalAmount = 0;
                         int totalHealth = 0;
                         int totalEffHealth = 0;
@@ -343,8 +343,20 @@ public class arcWaveInfoDialog extends BaseDialog{
                         }
                         if (totalAmount==0) t.add("该波次没有敌人");
                         else{
-                        t.add("数量：" + totalAmount + "\n血+盾：" + UI.formatAmount(totalHealth,2) +"\n有效血量：" + UI.formatAmount(totalEffHealth,2)).width(150f).left();
-                        t.pane(wi -> {
+                            int finalTotalAmount = totalAmount;
+                            int finalTotalHealth = totalHealth;
+                            int finalTotalEffHealth = totalEffHealth;
+                            t.table(tt->{
+                                tt.add("数量：").width(100f);
+                                tt.add("[accent]" + finalTotalAmount).growX().row();
+                                tt.add("血+盾：").width(100f);
+                                tt.add("[accent]" + UI.formatAmount(finalTotalHealth,2)).growX().row();
+                                if(finalTotalEffHealth != finalTotalHealth){
+                                    tt.add("有效血量：").width(100f);
+                                    tt.add("[accent]" + UI.formatAmount(finalTotalEffHealth,2)).growX();
+                                }
+                            }).width(180f).left();;
+                            t.pane(wi -> {
                             int curInfoWave = finalWave;
                             for(SpawnGroup group : state.rules.spawns){
                                 int amount = group.getSpawned(curInfoWave);
