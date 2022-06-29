@@ -73,7 +73,7 @@ public class MessageDialog extends BaseDialog{
 
         Events.on(EventType.BlockDestroyEvent.class, e -> {
             if(e.tile.build instanceof CoreBlock.CoreBuild)
-                addMsg(new MessageDialog.advanceMsg(arcMsgType.eventCoreDestory, "核心摧毁： " + "(" + World.toTile(e.tile.x) + "," + World.toTile(e.tile.y) + ")",new Vec2(e.tile.x,e.tile.y)));
+                addMsg(new MessageDialog.advanceMsg(arcMsgType.eventCoreDestory, "核心摧毁： " + "(" + (int)e.tile.x + "," + (int)e.tile.y + ")",new Vec2(e.tile.x * 8,e.tile.y * 8)));
         });
     }
 
