@@ -328,7 +328,7 @@ public class arcWaveInfoDialog extends BaseDialog{
                 for (int wave = 0;wave <calWinWave()*waveMulti;wave++){
                     int finalWave = wave;
                     p.table(t->{
-                        t.add("第" + finalWave + "波").width(100f).left();
+                        t.add("第" + (finalWave + 1) + "波").width(100f).left();
                         int totalAmount = 0;
                         int totalHealth = 0;
                         int totalEffHealth = 0;
@@ -341,7 +341,9 @@ public class arcWaveInfoDialog extends BaseDialog{
                                 else totalEffHealth += group.effect.healthMultiplier * (group.type.health + group.getShield(finalWave)) * amount;
                             }
                         }
-                        t.add("数量：" + totalAmount + "\n血盾：" + UI.formatAmount(totalHealth) +"\n有效：" + UI.formatAmount(totalEffHealth)).width(150f).left();
+                        if (totalAmount==0) t.add("该波次没有敌人");
+                        else{
+                        t.add("数量：" + totalAmount + "\n血+盾：" + UI.formatAmount(totalHealth,2) +"\n有效血量：" + UI.formatAmount(totalEffHealth,2)).width(150f).left();
                         t.pane(wi -> {
                             int curInfoWave = finalWave;
                             for(SpawnGroup group : state.rules.spawns){
@@ -379,17 +381,17 @@ public class arcWaveInfoDialog extends BaseDialog{
                                         dialog.show();
                                     }).height(130f).width(50f).left();
                                 }
-                            }}).scrollX(true).scrollY(false).maxWidth(mobile?500f:1000f).growX();
+                            }}).scrollX(true).scrollY(false).maxWidth(mobile?500f:1000f).growX();}
                     }).growX().left().row();
                 }
             }).scrollX(false).growX().row();
             tb.table(tbb->{
                 tbb.button("更多波次显示",()->setup()).width(200f);
-                TextField sField = tbb.field(waveMulti + "", text -> {
-                    waveMulti = Float.parseFloat(text);
+                TextField sField = tbb.field(calWinWave()*waveMulti + "", text -> {
+                    waveMulti = Float.parseFloat(text)/calWinWave();
                     setup();
                 }).valid(Strings::canParsePositiveFloat).width(200f).get();
-                tbb.slider(0.25f,10f,0.25f,1f,t->{waveMulti=t;sField.setText(waveMulti + "");}).width(300f);
+                tbb.slider(0.25f,10f,0.25f,1f,t->{waveMulti=t;sField.setText(calWinWave()*waveMulti + "");}).width(300f);
             });}
         }).grow();
 

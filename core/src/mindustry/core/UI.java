@@ -631,6 +631,26 @@ public class UI implements ApplicationListener, Loadable{
         }
     }
 
+    public static String formatAmount(long number,int decimal){
+        //prevent things like bars displaying erroneous representations of casted infinities
+        if(number == Long.MAX_VALUE) return "∞";
+        if(number == Long.MIN_VALUE) return "-∞";
+
+        long mag = Math.abs(number);
+        String sign = number < 0 ? "-" : "";
+        if(mag >= 1_000_000_000){
+            return sign + Strings.fixed(mag / 1_000_000_000f, decimal) + "[gray]" + billions+ "[]";
+        }else if(mag >= 1_000_000){
+            return sign + Strings.fixed(mag / 1_000_000f, decimal) + "[gray]" +millions + "[]";
+        }else if(mag >= 25_000){
+            return number / 1000 + "[gray]" + thousands + "[]";
+        }else if(mag >= 2500){
+            return sign + Strings.fixed(mag / 1000f, decimal) + "[gray]" + thousands + "[]";
+        }else{
+            return number + "";
+        }
+    }
+
     public static String whiteformatAmount(long number){
         //prevent overflow
         if(number == Long.MIN_VALUE) number ++;
