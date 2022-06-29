@@ -47,7 +47,7 @@ public class HudFragment{
     private Slider minimapSlider;
     private CoreItemsDisplay coreItems = new RCoreItemsDisplay();
     private OtherCoreItemDisplay otherCoreItemDisplay = new OtherCoreItemDisplay();
-    private AuxilliaryTable auxilliaryTable = new AuxilliaryTable();
+    private AuxilliaryTable auxilliaryTable;
     private AdvanceToolTable advanceToolTable = new AdvanceToolTable();
     private HudSettingsTable hudSettingsTable = new HudSettingsTable();
 
@@ -65,6 +65,7 @@ public class HudFragment{
     private boolean showSkipwave = Core.settings.getBool("overrideSkipWave");
 
     public void build(Group parent){
+        auxilliaryTable = new AuxilliaryTable();
 
         //warn about guardian/boss waves
         Events.on(WaveEvent.class, e -> {
