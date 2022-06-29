@@ -391,7 +391,7 @@ public class arcWaveInfoDialog extends BaseDialog{
                                         updateIcons(group);
                                         dialog.addCloseButton();
                                         dialog.show();
-                                    }).height(130f).width(50f).left();
+                                    }).height(130f).width(70f).left();
                                 }
                             }}).scrollX(true).scrollY(false).maxWidth(mobile?500f:1000f).growX();}
                     }).growX().left().row();
