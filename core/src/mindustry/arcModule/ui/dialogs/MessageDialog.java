@@ -73,7 +73,7 @@ public class MessageDialog extends BaseDialog{
 
         Events.on(EventType.BlockDestroyEvent.class, e -> {
             if(e.tile.build instanceof CoreBlock.CoreBuild)
-                addMsg(new MessageDialog.advanceMsg(arcMsgType.eventCoreDestory, "核心摧毁： " + "(" + World.toTile(e.tile.x) + "," + World.toTile(e.tile.y) + ")",new Vec2(World.toTile(e.tile.x),World.toTile(e.tile.y))));
+                addMsg(new MessageDialog.advanceMsg(arcMsgType.eventCoreDestory, "核心摧毁： " + "(" + World.toTile(e.tile.x) + "," + World.toTile(e.tile.y) + ")",new Vec2(e.tile.x,e.tile.y)));
         });
     }
 
@@ -97,7 +97,10 @@ public class MessageDialog extends BaseDialog{
                 t.table(Tex.whiteui, tt -> {
                     tt.color.set(thisMsg.msgType.color);
 
-                    tt.add(thisMsg.msgType.name).style(Styles.outlineLabel).color(thisMsg.msgType.color).left().width(200f);
+                    if(msgList.get(finalI).msgType == arcMsgType.normal)
+                        tt.add("" + getPlayerName(thisMsg)).style(Styles.outlineLabel).left().width(300f);
+                    else
+                        tt.add(thisMsg.msgType.name).style(Styles.outlineLabel).color(thisMsg.msgType.color).left().width(300f);
 
                     tt.add(formatTime(thisMsg.time)).style(Styles.outlineLabel).color(thisMsg.msgType.color).left().padLeft(20f).width(100f);
 
@@ -136,12 +139,31 @@ public class MessageDialog extends BaseDialog{
                     tt.setColor(thisMsg.msgType.color);
                     if(fieldMode) tt.field(thisMsg.message, nodeArea, text -> {
                     }).growX();
-                    else tt.labelWrap(thisMsg.message).growX();
+                    else tt.labelWrap(getPlayerMsg(thisMsg)).growX();
                 }).pad(4).padTop(2).growX().grow();
 
                 t.marginBottom(7);
             }).growX().maxWidth(1000f).padBottom(15f).row();
         }
+    }
+
+    private String getPlayerName(advanceMsg msgElement){
+        int typeStart = msgElement.message.indexOf("[coral][");
+        int typeEnd = msgElement.message.indexOf("[coral]]");
+        if(typeStart == -1 || typeEnd == -1 || typeEnd<=typeStart){
+            return msgElement.msgType.name;
+        }
+
+        return msgElement.message.substring(typeStart + 20,typeEnd);
+    }
+
+    private String getPlayerMsg(advanceMsg msgElement){
+        int typeStart = msgElement.message.indexOf("[coral][");
+        int typeEnd = msgElement.message.indexOf("[coral]]");
+        if(typeStart == -1 || typeEnd == -1 || typeEnd<=typeStart){
+            return msgElement.message;
+        }
+        return msgElement.message.substring(typeEnd+9);
     }
 
     private void arcMsgSettingTable(){
@@ -154,7 +176,6 @@ public class MessageDialog extends BaseDialog{
 
             t.add("调整显示的信息").height(50f);
             t.row();
-            int i=0;
             for (arcMsgType type : arcMsgType.values()){
 
                 CheckBox box = new CheckBox("[#" +type.color.toString() + "]" + type.name);
@@ -205,7 +226,7 @@ public class MessageDialog extends BaseDialog{
     public boolean resolveServerMsg(String message){
         Seq<String> serverMsg = Seq.with("加入了服务器", "离开了服务器", "自动存档完成", "登录成功", "经验+", "[YELLOW]本局游戏时长:", "[YELLOW]单人快速投票", "[GREEN]回档成功",
         "[YELLOW]PVP保护时间, 全力进攻吧", "[YELLOW]发起", "[YELLOW]你可以在投票结束前使用", "[GREEN]投票成功", "[GREEN]换图成功,当前地图",
-        "[RED]本地图禁用单位","[RED]该地图限制空军,禁止进入敌方领空","[yellow]本地图限制空军"
+        "[RED]本地图禁用单位","[RED]该地图限制空军,禁止进入敌方领空","[yellow]本地图限制空军","[YELLOW]火焰过多造成服务器卡顿,自动关闭火焰"
         );
         for(int i = 0; i < serverMsg.size; i++){
             if(message.contains(serverMsg.get(i))){
@@ -301,7 +322,7 @@ public class MessageDialog extends BaseDialog{
         markLoc("标记", "坐标", Color.valueOf("#7FFFD4")),
         markWave("标记", "波次", Color.valueOf("#7FFFD4")),
 
-        serverTips("服务器", "小贴士", Color.valueOf("#98FB98")),
+        serverTips("服务器", "小贴士", Color.valueOf("#98FB98"),false),
         serverMsg("服务器", "信息", Color.valueOf("#cefdce")),
         serverToast("服务器", "通报", Color.valueOf("#00FA9A")),
 
@@ -317,13 +338,17 @@ public class MessageDialog extends BaseDialog{
         public String subClass;
         public Color color = Color.gray;
         public Boolean show = true;
-        public Boolean hasLoc = true;
 
-        arcMsgType(String type, String subClass, Color color){
+        arcMsgType(String type, String subClass, Color color,Boolean show){
             this.name = subClass == "" ? type : (type + "~" + subClass);
             this.type = type;
             this.subClass = subClass;
             this.color = color;
+            this.show = show;
+        }
+
+        arcMsgType(String type, String subClass, Color color){
+            this(type, subClass, color,true);
         }
 
         arcMsgType(String type, Color color){

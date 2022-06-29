@@ -109,29 +109,32 @@ public class WaveInfoTable extends BaseToolsTable{
 
     private void rebuildWaveInfo(){
         waveInfo.clear();
+        waveInfo.pane(wt->{
+            int curInfoWave = state.wave - 1 + waveOffset;
+            for(SpawnGroup group : state.rules.spawns){
+                int amount = group.getSpawned(curInfoWave);
 
-        int curInfoWave = state.wave - 1 + waveOffset;
-        for(SpawnGroup group : state.rules.spawns){
-            int amount = group.getSpawned(curInfoWave);
+                if(amount > 0){
+                    float shield = group.getShield(curInfoWave);
+                    StatusEffect effect = group.effect;
 
-            if(amount > 0){
-                float shield = group.getShield(curInfoWave);
-                StatusEffect effect = group.effect;
+                    wt.table(groupT -> {
+                        groupT.image(group.type.uiIcon).size(20).row();
 
-                waveInfo.table(groupT -> {
-                    groupT.image(group.type.uiIcon).size(20).row();
+                        groupT.add("" + amount, fontScl).center().row();
 
-                    groupT.add("" + amount, fontScl).center().row();
+                        groupT.add((shield > 0 ? UI.formatAmount((long)shield) : ""), fontScl).center().row();
 
-                    groupT.add((shield > 0 ? UI.formatAmount((long)shield) : ""), fontScl).center().row();
-
-                    if(effect != null && effect != StatusEffects.none){
-                        groupT.image(effect.uiIcon).size(20);
-                    }
-                }).padLeft(4).top();
-
+                        if(effect != null && effect != StatusEffects.none){
+                            groupT.image(effect.uiIcon).size(20);
+                        }
+                    }).padLeft(4).top();
+                }
             }
-        }
+
+        }).maxWidth(300f).scrollY(false).scrollX(true);
+
+
     }
 
 
