@@ -117,6 +117,32 @@ public class Marker{
             ui.MessageDialog.addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.markLoc,text));
             return true;
         }
+
+        //[YELLOW][集合][CYAN][WHITE]<>[][violet]11[WHITE]|[gray]/60[][WHITE]发起集合([RED]144,265[WHITE])[WHITE]"[WHITE]",输入"[gold]go[WHITE]"前往
+        if(text.contains("[YELLOW][集合]")&& text.contains("[WHITE]\"[WHITE]\",输入\"[gold]go[WHITE]\"前往")){
+
+            int typeStart = text.indexOf("[WHITE]发起集合([RED]");
+            int typeEnd = text.indexOf("[WHITE])[WHITE]");
+            if(typeStart == -1 || typeEnd == -1){
+                return false;
+            }
+
+            /* Parse position */
+            String posStr = text.substring(typeStart + 17 , typeEnd);
+
+            Vec2 pos = Tmp.v1;
+
+            try{
+                pos.fromString("(" + posStr + ")");
+            }catch(Throwable e){
+                Log.err("Cannot resolve position from " + posStr);
+                return false;
+            }
+
+            mark(findLocalizedName("集合"), pos.scl(tilesize), false);
+            ui.MessageDialog.addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.markLoc,text));
+            return true;
+        }
         return false;
 
     }
