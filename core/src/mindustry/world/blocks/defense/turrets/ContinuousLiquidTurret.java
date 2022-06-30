@@ -4,9 +4,13 @@ import arc.struct.*;
 import mindustry.content.*;
 import mindustry.entities.bullet.*;
 import mindustry.gen.*;
+import mindustry.graphics.Drawf;
+import mindustry.graphics.Pal;
 import mindustry.type.*;
 import mindustry.world.consumers.*;
 import mindustry.world.meta.*;
+
+import static mindustry.Vars.tilesize;
 
 public class ContinuousLiquidTurret extends ContinuousTurret{
     public ObjectMap<Liquid, BulletType> ammoTypes = new ObjectMap<>();
@@ -35,6 +39,15 @@ public class ContinuousLiquidTurret extends ContinuousTurret{
         //TODO looks bad
         stats.add(Stat.ammo, StatValues.number(liquidConsumed * 60f, StatUnit.perSecond, true));
         stats.add(Stat.ammo, StatValues.ammo(ammoTypes));
+    }
+
+    @Override
+    public void drawPlace(int x, int y, int rotation, boolean valid){
+        super.drawPlace(x, y, rotation, valid);
+
+        ammoTypes.each((Item, BulletType)->{
+            if(BulletType.rangeChange>0 && Item.unlockedNow()) Drawf.dashCircle(x * tilesize + offset, y * tilesize + offset, range + BulletType.rangeChange, Pal.placing);
+        });
     }
 
     @Override
