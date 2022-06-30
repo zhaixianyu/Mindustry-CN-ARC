@@ -398,7 +398,7 @@ public class Turret extends ReloadTurret{
                     Draw.reset();
                 }
                 if(targetPos.x !=0 && targetPos.y != 0 && Core.settings.getBool("blockWeaponTargetLine") && Mathf.len(targetPos.x - x, targetPos.y - y) <= 1500f){
-                    if(isShooting()){
+                    if(isShooting() || isControlled()){
                         Draw.color(1f, 0.2f, 0.2f, 0.8f);
                         Lines.stroke(1.5f);
                         Lines.line(x, y, targetPos.x, targetPos.y);
