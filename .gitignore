@@ -169,3 +169,5 @@ core/assets/logicids.dat
 .bat
 /buildAndRun.bat
 /release.bat
+
+/core/assets/bundles/bundle_zh_CN.properties
