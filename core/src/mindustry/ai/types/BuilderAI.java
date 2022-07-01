@@ -2,10 +2,12 @@ package mindustry.ai.types;
 
 import arc.struct.*;
 import arc.util.*;
+import mindustry.Vars;
 import mindustry.entities.*;
 import mindustry.entities.units.*;
 import mindustry.game.Teams.*;
 import mindustry.gen.*;
+import mindustry.input.DesktopInput;
 import mindustry.world.*;
 import mindustry.world.blocks.ConstructBlock.*;
 
@@ -75,6 +77,7 @@ public class BuilderAI extends AIController{
         }
 
         if(unit.buildPlan() != null){
+            if(unit.controller() == Vars.player && control.input instanceof DesktopInput di) di.isBuilding = true;
             if(!alwaysFlee) retreatTimer = 0f;
             //approach plan if building
             BuildPlan req = unit.buildPlan();
@@ -134,6 +137,7 @@ public class BuilderAI extends AIController{
 
             //TODO this is bad, rebuild time should not depend on AI here
             float rebuildTime = (unit.team.rules().rtsAi ? 12f : 2f) * 60f;
+            if(unit.controller() == Vars.player) rebuildTime = 20f;
 
             //find new plan
             if(!unit.team.data().plans.isEmpty() && following == null && timer.get(timerTarget3, rebuildTime)){
