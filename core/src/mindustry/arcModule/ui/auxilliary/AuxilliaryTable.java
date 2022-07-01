@@ -17,6 +17,7 @@ import static mindustry.arcModule.ui.RStyles.*;
 
 public class AuxilliaryTable extends Table{
     private boolean show = true;
+    private boolean showMark = true;
 
     public MarkType markType = Marker.mark;
     public Element mobileHitter = new Element();
@@ -79,12 +80,13 @@ public class AuxilliaryTable extends Table{
                 for(BaseToolsTable table : toolsTables){
                     table.addButton(buttons);
                 }
+                buttons.button("♐",clearLineNoneTogglet,()->{showMark = !showMark;rebuild();}).size(40f, 40f).tooltip("标记");
             }
         }).fillX();
 
         row();
 
-        if(show){
+        if(show && showMark){
             table(black1, body -> {
                 for(BaseToolsTable table : toolsTables){
                     body.collapser(table, table::shown).padTop(3).left().row();
