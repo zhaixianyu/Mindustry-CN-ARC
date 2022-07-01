@@ -1,4 +1,4 @@
-package mindustry.ai.types;
+package mindustry.arcModule.ai;
 
 import arc.scene.ui.layout.Table;
 import arc.struct.Seq;
@@ -27,10 +27,10 @@ import static mindustry.ui.Styles.black;
 import static mindustry.ui.Styles.flatToggleMenut;
 
 public class arcMinerAI extends AIController {
-    private final Seq<Block> oreAllList = content.blocks().select(b -> b instanceof Floor f && !f.wallOre && f.itemDrop != null);
-    private final Seq<Block> oreAllWallList = content.blocks().select(b -> ((b instanceof Floor f && f.wallOre) || b instanceof StaticWall) && b.itemDrop != null);
-    private Seq<Block> oreList = content.blocks().select(b -> b instanceof Floor f && !f.wallOre && f.itemDrop != null);
-    private Seq<Block> oreWallList = content.blocks().select(b -> ((b instanceof Floor f && f.wallOre) || b instanceof StaticWall) && b.itemDrop != null);
+    public static final Seq<Block> oreAllList = content.blocks().select(b -> b instanceof Floor f && !f.wallOre && f.itemDrop != null);
+    public static final Seq<Block> oreAllWallList = content.blocks().select(b -> ((b instanceof Floor f && f.wallOre) || b instanceof StaticWall) && b.itemDrop != null);
+    public static Seq<Block> oreList = content.blocks().select(b -> b instanceof Floor f && !f.wallOre && f.itemDrop != null);
+    public static Seq<Block> oreWallList = content.blocks().select(b -> ((b instanceof Floor f && f.wallOre) || b instanceof StaticWall) && b.itemDrop != null);
     public Seq<Item> canMineList;
     public boolean mining = true;
     public Item targetItem;
@@ -49,6 +49,11 @@ public class arcMinerAI extends AIController {
 
     private Item updateTargetItem(boolean canMineNonBuildable) {
         //reverse是因为min取最后一个最小的
+        if (unit.type.mineFloor) {
+            canMineList = oreList.map(b -> b.itemDrop).select(i -> unit.canMine(i));
+        } else if (unit.type.mineWalls) {
+            canMineList = oreWallList.map(b -> b.itemDrop).select(i -> unit.canMine(i));
+        }
         return canMineList.select(i -> (unit.type.mineFloor ? indexer.hasOre(i) : indexer.hasOreWall(i))
                 && (canMineNonBuildable || i.buildable)
                 && unit.core().acceptItem(null, i)
@@ -133,47 +138,5 @@ public class arcMinerAI extends AIController {
 
     @Override
     public void updateVisuals() {
-    }
-
-    public void editorTable(){
-        BaseDialog dialog = new BaseDialog("矿物选择器");
-        Table table = dialog.cont;
-        Runnable[] rebuild = {null};
-        rebuild[0] = () -> {
-            table.clear();
-
-            table.table(c -> {
-                c.add("地表矿").row();
-                c.table(list -> {
-                    int i = 0;
-                    for (Block block : oreAllList) {
-                        if(indexer.floorOresCount[block.id]==0) continue;
-                        if (i++ % 3 == 0) list.row();
-                        list.button(block.emoji() + "\n" + indexer.floorOresCount[block.id], flatToggleMenut, () -> {
-                            if(oreList.contains(block)) oreList.remove(block);
-                            else if(!oreList.contains(block)) oreList.add(block);
-                            rebuild[0].run();
-                        }).tooltip(block.localizedName).checked(oreList.contains(block)).width(100f).height(50f);
-                    }
-                }).row();
-                c.add("墙矿").row();
-                c.table(list -> {
-                    int i = 0;
-                    for (Block block : oreAllWallList) {
-                        if(indexer.wallOresCount[block.id]==0) continue;
-                        if (i++ % 3 == 0) list.row();
-                        list.button(block.emoji() + "\n" + indexer.wallOresCount[block.id], flatToggleMenut, () -> {
-                            if(oreWallList.contains(block)) oreWallList.remove(block);
-                            else if(!oreWallList.contains(block)) oreWallList.add(block);
-                            rebuild[0].run();
-                        }).tooltip(block.localizedName).checked(oreWallList.contains(block)).width(100f).height(50f);
-                    }
-                }).row();
-                c.row();
-            });
-        };
-        rebuild[0].run();
-        dialog.addCloseButton();
-        dialog.show();
     }
 }

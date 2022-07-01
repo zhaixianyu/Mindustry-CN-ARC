@@ -1,4 +1,4 @@
-package mindustry.ui.dialogs;
+package mindustry.arcModule.ui.dialogs;
 
 import arc.*;
 import arc.func.*;
@@ -23,6 +23,7 @@ import mindustry.graphics.*;
 import mindustry.service.Achievement;
 import mindustry.service.SStat;
 import mindustry.ui.*;
+import mindustry.ui.dialogs.BaseDialog;
 
 import java.io.*;
 import java.text.*;
@@ -31,7 +32,7 @@ import java.util.*;
 import static arc.Core.bundle;
 import static mindustry.Vars.*;
 
-public class AchievementsDialog extends BaseDialog{
+public class AchievementsDialog extends BaseDialog {
     private ObjectMap<String, TextureRegion> textureCache = new ObjectMap<>();
     private String searchTxt = "";
     private Table browserTable;
