@@ -49,10 +49,6 @@ public class MobileToolTable extends BaseToolsTable{
             control.input.tryDropPayload();
         });
 
-        toolButton(Icon.down, "丢下载荷", () -> {
-            control.input.tryDropPayload();
-        });
-
         toolButton(Blocks.payloadConveyor.uiIcon, "进入传送带", () -> {
             Building build = world.buildWorld(player.unit().x, player.unit().y);
             if(build != null && player.unit().team() == build.team && build.canControlSelect(player.unit())){
