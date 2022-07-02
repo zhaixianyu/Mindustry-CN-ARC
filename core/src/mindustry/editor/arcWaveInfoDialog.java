@@ -325,7 +325,7 @@ public class arcWaveInfoDialog extends BaseDialog{
             tb.pane(p->{
                 for (int wave = 0;wave <calWinWave()*waveMulti;wave++){
                     int finalWave = wave;
-                    p.table(t->{
+                    p.table(Tex.button,t->{
                         t.table(tt->{
                             tt.add("第[accent]" + (finalWave + 1) + "[]波").fillX();
                             tt.row();
@@ -394,10 +394,11 @@ public class arcWaveInfoDialog extends BaseDialog{
                                         updateIcons(group);
                                         dialog.addCloseButton();
                                         dialog.show();
-                                    }).height(130f).width(70f).left();
+                                    }).height(100f).width(70f).left();
                                 }
                             }}).scrollX(true).scrollY(false).maxWidth(mobile?500f:1000f).growX();}
                     }).growX().left().row();
+                    p.row();
                 }
             }).scrollX(false).growX().row();
             tb.table(tbb->{
@@ -409,6 +410,7 @@ public class arcWaveInfoDialog extends BaseDialog{
                 tbb.slider(0.25f,10f,0.25f,1f,t->{waveMulti=t;sField.setText(calWinWave()*waveMulti + "");}).width(300f);
             });}
         }).grow();
+
 
 
         buildGroups();
