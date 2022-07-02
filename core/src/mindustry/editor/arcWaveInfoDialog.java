@@ -365,10 +365,12 @@ public class arcWaveInfoDialog extends BaseDialog{
                                 int amount = group.getSpawned(curInfoWave);
                                 if(amount > 0) {
                                     StringBuilder groupInfo = new StringBuilder();
-                                    groupInfo.append(group.type.emoji()).append("\n");
-                                    groupInfo.append(amount).append("\n");
-                                    if(group.getShield(curInfoWave) > 0f) groupInfo.append(UI.formatAmount((long)group.getShield(curInfoWave))).append("\n");
-                                    if(group.effect != null && group.effect != StatusEffects.none) groupInfo.append(group.effect.emoji()).append("\n");
+                                    groupInfo.append(group.type.emoji());
+                                    groupInfo.append("\n").append(amount);
+                                    groupInfo.append("\n");
+                                    if(group.getShield(curInfoWave) > 0f) groupInfo.append(UI.formatAmount((long)group.getShield(curInfoWave)));
+                                    groupInfo.append("\n");
+                                    if(group.effect != null && group.effect != StatusEffects.none) groupInfo.append(group.effect.emoji());
                                     wi.button(groupInfo.toString(),cleart,() -> {
                                         BaseDialog dialog = new BaseDialog("@waves.group");
                                         dialog.setFillParent(false);
@@ -394,15 +396,15 @@ public class arcWaveInfoDialog extends BaseDialog{
                                         updateIcons(group);
                                         dialog.addCloseButton();
                                         dialog.show();
-                                    }).height(100f).width(70f).left();
+                                    }).height(80f).width(70f).left();
                                 }
                             }}).scrollX(true).scrollY(false).maxWidth(mobile?500f:1000f).growX();}
-                    }).growX().left().row();
-                    p.row();
+                    }).growX().row();
+                    p.margin(0).defaults().pad(5).growX();
                 }
             }).scrollX(false).growX().row();
             tb.table(tbb->{
-                tbb.button("更多波次显示",()->setup()).width(200f);
+                tbb.button("刷新波次显示",()->setup()).width(200f);
                 TextField sField = tbb.field(calWinWave()*waveMulti + "", text -> {
                     waveMulti = Float.parseFloat(text)/calWinWave();
                     setup();
