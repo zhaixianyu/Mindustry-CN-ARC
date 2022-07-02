@@ -40,7 +40,7 @@ public class arcWaveInfoDialog extends BaseDialog{
     Seq<SpawnGroup> groups = new Seq<>();
     private SpawnGroup expandedGroup;
 
-    private Table table, iTable, eTable, uTable;
+    private Table table,nTable,oTable, iTable, eTable, uTable;
     private int search = -1, payLeft, maxVisible = 30;
     private int filterHealth, filterBegin = -1, filterEnd = -1, filterAmount, filterAmountWave;
     private boolean expandPane = false, filterHealthMode = false, filterStrict = false;
@@ -125,7 +125,7 @@ public class arcWaveInfoDialog extends BaseDialog{
 
         buttons.defaults().width(60f);
 
-        buttons.button("切换显示",()->{waveInfo = !waveInfo;waveMulti=1;setup();}).size(250f, 64f);
+        buttons.button("切换显示模式",()->{waveInfo = !waveInfo;waveMulti=1;setup();}).size(250f, 64f);
 
         if(true){
             buttons.button("随机", Icon.refresh, () -> arcSpawner()).width(200f);
@@ -260,32 +260,7 @@ public class arcWaveInfoDialog extends BaseDialog{
                                 groupInfo.append(amount).append("\n");
                                 if(group.getShield(curInfoWave) > 0f) groupInfo.append(UI.formatAmount((long)group.getShield(curInfoWave))).append("\n");
                                 if(group.effect != null && group.effect != StatusEffects.none) groupInfo.append(group.effect.emoji()).append("\n");
-                                wi.button(groupInfo.toString(),cleart,() -> {
-                                    BaseDialog dialog = new BaseDialog("@waves.group");
-                                    dialog.setFillParent(false);
-                                    dialog.cont.table(Tex.button, a -> iTable = a).row();
-                                    dialog.cont.table(c -> {
-                                        c.defaults().size(210f, 64f).pad(2f);
-                                        c.button("@waves.duplicate", Icon.copy, () -> {
-                                            SpawnGroup newGroup = group.copy();
-                                            groups.add(newGroup);
-                                            expandedGroup = newGroup;
-                                            buildGroups();
-                                            dialog.hide();
-                                        });
-                                        c.button("@settings.resetKey", Icon.refresh, () -> ui.showConfirm("@confirm", "@settings.clear.confirm", () -> {
-                                            group.effect = StatusEffects.none;
-                                            group.payloads = Seq.with();
-                                            group.items = null;
-                                            buildGroups();
-                                            dialog.hide();
-                                        }));
-                                    });
-                                    buildGroups();
-                                    updateIcons(group);
-                                    dialog.addCloseButton();
-                                    dialog.show();
-                                }).height(130f).width(50f);
+                                wi.button(groupInfo.toString(),cleart,() -> unitSettingDialog(group)).height(130f).width(50f);
                             }
                         }});
                     }).scrollY(false).left();
@@ -371,32 +346,7 @@ public class arcWaveInfoDialog extends BaseDialog{
                                     if(group.getShield(curInfoWave) > 0f) groupInfo.append(UI.formatAmount((long)group.getShield(curInfoWave)));
                                     groupInfo.append("\n");
                                     if(group.effect != null && group.effect != StatusEffects.none) groupInfo.append(group.effect.emoji());
-                                    wi.button(groupInfo.toString(),cleart,() -> {
-                                        BaseDialog dialog = new BaseDialog("@waves.group");
-                                        dialog.setFillParent(false);
-                                        dialog.cont.table(Tex.button, a -> iTable = a).row();
-                                        dialog.cont.table(c -> {
-                                            c.defaults().size(210f, 64f).pad(2f);
-                                            c.button("@waves.duplicate", Icon.copy, () -> {
-                                                SpawnGroup newGroup = group.copy();
-                                                groups.add(newGroup);
-                                                expandedGroup = newGroup;
-                                                buildGroups();
-                                                dialog.hide();
-                                            });
-                                            c.button("@settings.resetKey", Icon.refresh, () -> ui.showConfirm("@confirm", "@settings.clear.confirm", () -> {
-                                                group.effect = StatusEffects.none;
-                                                group.payloads = Seq.with();
-                                                group.items = null;
-                                                buildGroups();
-                                                dialog.hide();
-                                            }));
-                                        });
-                                        buildGroups();
-                                        updateIcons(group);
-                                        dialog.addCloseButton();
-                                        dialog.show();
-                                    }).height(80f).width(70f).left();
+                                    wi.button(groupInfo.toString(),cleart,() -> unitSettingDialog(group)).height(80f).width(70f).left();
                                 }
                             }}).scrollX(true).scrollY(false).maxWidth(mobile?500f:1000f).growX();}
                     }).growX().row();
@@ -455,32 +405,7 @@ public class arcWaveInfoDialog extends BaseDialog{
                             return builder.append("  ").toString();
                         }).minWidth(45f).labelAlign(Align.left).left();
 
-                        b.button(Icon.settingsSmall, Styles.emptyi, () -> {
-                            BaseDialog dialog = new BaseDialog("@waves.group");
-                            dialog.setFillParent(false);
-                            dialog.cont.table(Tex.button, a -> iTable = a).row();
-                            dialog.cont.table(c -> {
-                                c.defaults().size(210f, 64f).pad(2f);
-                                c.button("@waves.duplicate", Icon.copy, () -> {
-                                    SpawnGroup newGroup = group.copy();
-                                    groups.add(newGroup);
-                                    expandedGroup = newGroup;
-                                    buildGroups();
-                                    dialog.hide();
-                                });
-                                c.button("@settings.resetKey", Icon.refresh, () -> ui.showConfirm("@confirm", "@settings.clear.confirm", () -> {
-                                    group.effect = StatusEffects.none;
-                                    group.payloads = Seq.with();
-                                    group.items = null;
-                                    buildGroups();
-                                    dialog.hide();
-                                }));
-                            });
-                            buildGroups();
-                            updateIcons(group);
-                            dialog.addCloseButton();
-                            dialog.show();
-                        }).pad(-6).size(46f);
+                        b.button(Icon.settingsSmall, Styles.emptyi, () -> unitSettingDialog(group)).pad(-6).size(46f);
                         b.button(Icon.unitsSmall, Styles.emptyi, () -> showUpdate(group, false)).pad(-6).size(46f);
                         b.button(Icon.cancel, Styles.emptyi, () -> {
                             if(expandedGroup == group) expandedGroup = null;
@@ -658,13 +583,14 @@ public class arcWaveInfoDialog extends BaseDialog{
                         updateIcons(group);
                     }else{
                         group.type = lastType = type;
+                        updateIcons(group);
                         dialog.hide();
                     }
                     if(group.payloads != null && group.type.payloadCapacity <= 8) group.payloads.clear();
                     if(group.items != null) group.items.amount = Mathf.clamp(group.items.amount, 0, group.type.itemCapacity);
                     buildGroups();
                 }).pad(2).margin(12f).fillX();
-                if(++i % 3 == 0) p.row();
+                if(++i % 5 == 0) p.row();
             }
         });
         dialog.addCloseButton();
@@ -803,26 +729,206 @@ public class arcWaveInfoDialog extends BaseDialog{
         dialog.show();
     }
 
+    void unitSettingDialog(SpawnGroup group){
+        BaseDialog dialog = new BaseDialog("设置出怪组");
+        dialog.setFillParent(false);
+        dialog.cont.table(Tex.button, a -> nTable = a).row();
+        dialog.cont.table(Tex.button, a -> oTable = a).row();
+        dialog.cont.table(Tex.button, a -> iTable = a).row();
+        dialog.cont.table(c -> {
+            c.defaults().size(210f, 64f).pad(2f);
+            c.button("@waves.duplicate", Icon.copy, () -> {
+                SpawnGroup newGroup = group.copy();
+                groups.add(newGroup);
+                expandedGroup = newGroup;
+                buildGroups();
+                dialog.hide();
+            });
+            c.button("@settings.resetKey", Icon.refresh, () -> ui.showConfirm("@confirm", "@settings.clear.confirm", () -> {
+                group.effect = StatusEffects.none;
+                group.payloads = Seq.with();
+                group.items = null;
+                buildGroups();
+                dialog.hide();
+            }));
+        });
+        buildGroups();
+        updateIcons(group);
+        dialog.addCloseButton();
+        dialog.show();
+    }
+
     void updateIcons(SpawnGroup group){
+        if(nTable != null && group !=null){
+            nTable.clear();
+            nTable.defaults().size(400f, 50f).pad(2f);
+            nTable.table(t->{
+                t.image(group.type.uiIcon).size(32f).padRight(5).scaling(Scaling.fit).get();
+                //if(group.effect != null && group.effect != StatusEffects.none) b.image(group.effect.uiIcon).size(20f).padRight(3).scaling(Scaling.fit);
+                t.add(group.type.localizedName).padRight(20).color(Pal.accent);
+                t.button(Icon.units, Styles.emptyi, () -> showUpdate(group, false)).pad(-6).size(50f);
+            }).growX().row();
+        }
+
+        if(oTable != null && group !=null){
+            oTable.clear();
+            oTable.defaults().size(400f, 250f).pad(2f);
+            oTable.table(t->{
+                t.table(spawns -> {
+                    spawns.field("" + (group.begin + 1), TextFieldFilter.digitsOnly, text -> {
+                        if(Strings.canParsePositiveInt(text)){
+                            group.begin = Strings.parseInt(text) - 1;
+                            updateWaves();
+                        }
+                    }).width(100f);
+                    spawns.add("@waves.to").padLeft(4).padRight(4);
+                    spawns.field(group.end == never ? "" : (group.end + 1) + "", TextFieldFilter.digitsOnly, text -> {
+                        if(Strings.canParsePositiveInt(text)){
+                            group.end = Strings.parseInt(text) - 1;
+                            updateWaves();
+                        }else if(text.isEmpty()){
+                            group.end = never;
+                            updateWaves();
+                        }
+                    }).width(100f).get().setMessageText("∞");
+                }).row();
+
+                t.table(p -> {
+                    p.add("@waves.every").padRight(4);
+                    p.field(group.spacing + "", TextFieldFilter.digitsOnly, text -> {
+                        if(Strings.canParsePositiveInt(text) && Strings.parseInt(text) > 0){
+                            group.spacing = Strings.parseInt(text);
+                            updateWaves();
+                        }
+                    }).width(100f);
+                    p.add("@waves.waves").padLeft(4);
+                }).row();
+
+                t.table(a -> {
+                    a.field(group.unitAmount + "", TextFieldFilter.digitsOnly, text -> {
+                        if(Strings.canParsePositiveInt(text)){
+                            group.unitAmount = Strings.parseInt(text);
+                            updateWaves();
+                        }
+                    }).width(80f);
+
+                    a.add(" + ");
+                    a.field(Strings.fixed(Math.max((Mathf.zero(group.unitScaling) ? 0 : 1f / group.unitScaling), 0), 2), TextFieldFilter.floatsOnly, text -> {
+                        if(Strings.canParsePositiveFloat(text)){
+                            group.unitScaling = 1f / Strings.parseFloat(text);
+                            updateWaves();
+                        }
+                    }).width(80f);
+                    a.add("@waves.perspawn").padLeft(4);
+                }).row();
+
+                t.table(a -> {
+                    a.field(group.max + "", TextFieldFilter.digitsOnly, text -> {
+                        if(Strings.canParsePositiveInt(text)){
+                            group.max = Strings.parseInt(text);
+                            updateWaves();
+                        }
+                    }).width(80f);
+
+                    a.add("@waves.max").padLeft(5);
+                }).row();
+
+                t.table(a -> {
+                    a.field((int)group.shields + "", TextFieldFilter.digitsOnly, text -> {
+                        if(Strings.canParsePositiveInt(text)){
+                            group.shields = Strings.parseInt(text);
+                            updateWaves();
+                        }
+                    }).width(80f);
+
+                    a.add(" + ");
+                    a.field((int)group.shieldScaling + "", TextFieldFilter.digitsOnly, text -> {
+                        if(Strings.canParsePositiveInt(text)){
+                            group.shieldScaling = Strings.parseInt(text);
+                            updateWaves();
+                        }
+                    }).width(80f);
+                    a.add("@waves.shields").padLeft(4);
+                }).row();
+
+                t.table(a -> {
+                    a.add("@waves.spawn").padRight(8);
+
+                    a.button("", () -> {
+                        if(!checkedSpawns){
+                            //recalculate waves when changed
+                            spawner.reset();
+                            checkedSpawns = true;
+                        }
+
+                        BaseDialog dialog = new BaseDialog("@waves.spawn.select");
+                        dialog.cont.pane(p -> {
+                            p.background(Tex.button).margin(10f);
+                            int i = 0;
+                            int cols = 4;
+                            int max = 20;
+
+                            if(spawner.getSpawns().size >= max){
+                                p.add("[lightgray](first " + max + ")").colspan(cols).padBottom(4).row();
+                            }
+
+                            for(var spawn : spawner.getSpawns()){
+                                p.button(spawn.x + ", " + spawn.y, Styles.flatTogglet, () -> {
+                                    group.spawn = Point2.pack(spawn.x, spawn.y);
+                                    dialog.hide();
+                                }).size(110f, 45f).checked(spawn.pos() == group.spawn);
+
+                                if(++i % cols == 0){
+                                    p.row();
+                                }
+
+                                //only display first 20 spawns, you don't need to see more.
+                                if(i >= 20){
+                                    break;
+                                }
+                            }
+
+                            p.button("@waves.spawn.all", Styles.flatTogglet, () -> {
+                                group.spawn = -1;
+                                dialog.hide();
+                            }).size(110f, 45f).checked(-1 == group.spawn);
+
+                            if(spawner.getSpawns().isEmpty()){
+                                p.add("@waves.spawn.none");
+                            }
+                        });
+                        dialog.setFillParent(false);
+                        dialog.addCloseButton();
+                        dialog.show();
+                    }).width(160f).height(36f).get().getLabel().setText(() -> group.spawn == -1 ? "@waves.spawn.all" : Point2.x(group.spawn) + ", " + Point2.y(group.spawn));
+
+                }).padBottom(8f).row();
+
+
+            }).growX().row();
+        }
+
         if(iTable != null && group != null){
             iTable.clear();
             iTable.defaults().size(200f, 60f).pad(2f);
             iTable.button(icon -> {
+                icon.add("状态");
                 if(group.effect != null && group.effect != StatusEffects.none){
-                    icon.image(group.effect.uiIcon).padRight(6f);
+                    icon.image(group.effect.uiIcon).padLeft(6f);
                 }else{
-                    icon.image(Icon.logic).padRight(6f);
+                    icon.image(Icon.logic).padLeft(6f);
                 }
-                icon.add("@waves.group.effect");
             }, Styles.cleart, () -> showEffect(group));
             iTable.button("@waves.group.payloads", Icon.defense, Styles.cleart, () -> showUpdate(group, true)).disabled(c -> group.type.payloadCapacity <= 8);
             iTable.button(icon -> {
+                icon.add("物品");
                 if(group.items != null){
-                    icon.image(group.items.item.uiIcon).padRight(6f);
+                    icon.image(group.items.item.uiIcon).padLeft(6f);
+                    icon.add("" + group.items.amount).padLeft(6f);
                 }else{
-                    icon.image(Icon.effect).padRight(6f);
+                    icon.image(Icon.effect).padLeft(6f);
                 }
-                icon.add("@waves.group.items");
+
             }, Styles.cleart, () -> showItems(group));
         }
 
