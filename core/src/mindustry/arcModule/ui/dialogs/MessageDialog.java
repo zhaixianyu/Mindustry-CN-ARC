@@ -52,13 +52,15 @@ public class MessageDialog extends BaseDialog{
         }).growX().scrollX(false);
 
         addCloseButton();
-        buttons.button("设置", () -> arcMsgSettingTable());
+        buttons.button("设置", Icon.settings, this::arcMsgSettingTable);
 
-        buttons.button("清空", () -> {
+        buttons.button("清空", Icon.trash, () -> {
             clearMsg();
             build();
         });
         buttons.button("导出", Icon.upload, this::exportMsg).name("导出聊天记录");
+
+        buttons.button("刷新", Icon.refresh, this::build);
 
         init();
         shown(this::build);
