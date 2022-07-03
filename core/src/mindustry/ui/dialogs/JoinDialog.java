@@ -139,7 +139,7 @@ public class JoinDialog extends BaseDialog{
                 if(!buttons[0].childrenPressed()){
                     if(server.lastHost != null){
                         Events.fire(new ClientPreConnectEvent(server.lastHost));
-                        safeConnect(server.ip, server.port, server.lastHost.version);
+                        safeConnect(server.lastHost.address, server.lastHost.port, server.lastHost.version);
                     }else{
                         connect(server.ip, server.port);
                     }
@@ -416,7 +416,6 @@ public class JoinDialog extends BaseDialog{
                 int resport = address.contains(":") ? Strings.parseInt(address.split(":")[1]) : port;
                 net.pingHost(resaddress, resport, res -> {
                     if(refreshes != cur) return;
-                    res.port = resport;
 
                     //add header
                     if(groupTable[0] == null){
