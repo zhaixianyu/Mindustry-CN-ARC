@@ -274,7 +274,6 @@ public class ChatFragment extends Table{
         if(message == null) return;
 
         messages.insert(0, message);
-        ui.MessageDialog.resolveMsg(message);
 
         fadetime += 1f;
         fadetime = Math.min(fadetime, messagesShown) + 1f;
@@ -283,15 +282,14 @@ public class ChatFragment extends Table{
     }
 
     public void addMessage(String message,Boolean resolve){
-        if(message == null) return;
+        if(message != null && resolve) ui.MessageDialog.resolveMsg(message);
+        addMessage(message);
+    }
 
-        messages.insert(0, message);
-        if(resolve) ui.MessageDialog.resolveMsg(message);
+    public void addMessage(String message,@Nullable Player playersender){
+        if(message != null) ui.MessageDialog.resolveMsg(message,playersender);
 
-        fadetime += 1f;
-        fadetime = Math.min(fadetime, messagesShown) + 1f;
-
-        if(scrollPos > 0) scrollPos++;
+        addMessage(message);
     }
 
     private boolean arcMessage(String message){

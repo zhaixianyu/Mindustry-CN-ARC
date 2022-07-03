@@ -12,6 +12,7 @@ import arc.scene.event.Touchable;
 import arc.scene.ui.CheckBox;
 import arc.scene.ui.layout.Table;
 import arc.struct.Seq;
+import arc.util.Nullable;
 import arc.util.Strings;
 import arc.util.Time;
 import arc.util.Tmp;
@@ -21,6 +22,7 @@ import mindustry.content.Fx;
 import mindustry.core.World;
 import mindustry.game.EventType;
 import mindustry.gen.Icon;
+import mindustry.gen.Player;
 import mindustry.gen.Tex;
 import mindustry.input.DesktopInput;
 
@@ -213,7 +215,19 @@ public class MessageDialog extends BaseDialog{
 
         addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.normal, message));
 
-        return true;
+        return false;
+    }
+
+    public boolean resolveMsg(String message,@Nullable Player playersender){
+        if(Marker.resolveMessage(message)) return true;
+        if(resolveMarkMsg(message)) return true;
+        if(resolveServerMsg(message)) return true;
+        if(playersender != null){
+            addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.normal,message,playersender.name(),new Vec2(playersender.x,playersender.y)));
+            return true;
+        }
+
+        return false;
     }
 
     public boolean resolveMarkMsg(String message){
@@ -294,22 +308,18 @@ public class MessageDialog extends BaseDialog{
             this.msgLoc = new Vec2().set(msgLoc);
         }
 
-        public advanceMsg(arcMsgType msgType, String message, Date time, String sender){
-            this(msgType, message, time, "null",new Vec2(-1,-1));
-        }
-
-
-        public advanceMsg(arcMsgType msgType, String message){
-            this(msgType, message, new Date());
+        public advanceMsg(arcMsgType msgType, String message,  String sender,Vec2 msgLoc){
+            this(msgType, message, new Date(), sender, msgLoc);
         }
 
         public advanceMsg(arcMsgType msgType, String message,Vec2 msgLoc){
-            this(msgType, message, new Date(),"null",msgLoc);
+            this(msgType, message,"null",msgLoc);
         }
 
-        public advanceMsg(arcMsgType msgType, String message, Date time){
-            this(msgType, message, time, "null");
+        public advanceMsg(arcMsgType msgType, String message){
+            this(msgType, message, new Vec2(-1,-1));
         }
+
 
         public advanceMsg sendMessage(){
             ui.chatfrag.addMessage(msgType.arcMsgPreFix() + message, false);
@@ -326,6 +336,7 @@ public class MessageDialog extends BaseDialog{
         serverTips("服务器", "小贴士", Color.valueOf("#98FB98"),false),
         serverMsg("服务器", "信息", Color.valueOf("#cefdce")),
         serverToast("服务器", "通报", Color.valueOf("#00FA9A")),
+        serverSkill("服务器", "技能", Color.valueOf("#00FA9A")),
 
         logicNotify("逻辑", "通报", Color.valueOf("#ffccff")),
         logicAnnounce("逻辑", "公告", Color.valueOf("#ffccff")),

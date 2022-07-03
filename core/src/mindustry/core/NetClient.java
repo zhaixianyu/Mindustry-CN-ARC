@@ -5,6 +5,7 @@ import arc.audio.*;
 import arc.func.*;
 import arc.graphics.*;
 import arc.math.*;
+import arc.math.geom.Vec2;
 import arc.struct.*;
 import arc.util.*;
 import arc.util.CommandHandler.*;
@@ -12,6 +13,7 @@ import arc.util.io.*;
 import arc.util.serialization.*;
 import mindustry.*;
 import mindustry.annotations.Annotations.*;
+import mindustry.arcModule.ui.dialogs.MessageDialog;
 import mindustry.core.GameState.*;
 import mindustry.entities.*;
 import mindustry.game.EventType.*;
@@ -214,7 +216,7 @@ public class NetClient implements ApplicationListener{
     @Remote(targets = Loc.server, variants = Variant.both)
     public static void sendMessage(String message, @Nullable String unformatted, @Nullable Player playersender){
         if(Vars.ui != null){
-            Vars.ui.chatfrag.addMessage(message);
+            Vars.ui.chatfrag.addMessage(message,playersender);
             Sounds.chatMessage.play();
         }
 
