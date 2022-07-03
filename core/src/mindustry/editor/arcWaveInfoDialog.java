@@ -341,11 +341,14 @@ public class arcWaveInfoDialog extends BaseDialog{
                                 if(amount > 0) {
                                     StringBuilder groupInfo = new StringBuilder();
                                     groupInfo.append(group.type.emoji());
+                                    if(group.spawn!=-1) groupInfo.append("*");
                                     groupInfo.append("\n").append(amount);
                                     groupInfo.append("\n");
                                     if(group.getShield(curInfoWave) > 0f) groupInfo.append(UI.formatAmount((long)group.getShield(curInfoWave)));
                                     groupInfo.append("\n");
                                     if(group.effect != null && group.effect != StatusEffects.none) groupInfo.append(group.effect.emoji());
+                                    if(group.items != null && group.items.amount>0) groupInfo.append(group.items.item.emoji());
+                                    if(group.payloads != null && group.payloads.size>0) groupInfo.append("+");
                                     wi.button(groupInfo.toString(),cleart,() -> unitSettingDialog(group)).height(80f).width(70f).left();
                                 }
                             }}).scrollX(true).scrollY(false).maxWidth(mobile?500f:1000f).growX();}
@@ -780,7 +783,7 @@ public class arcWaveInfoDialog extends BaseDialog{
                             group.begin = Strings.parseInt(text) - 1;
                             updateWaves();
                         }
-                    }).width(100f);
+                    }).width(150f);
                     spawns.add("@waves.to").padLeft(4).padRight(4);
                     spawns.field(group.end == never ? "" : (group.end + 1) + "", TextFieldFilter.digitsOnly, text -> {
                         if(Strings.canParsePositiveInt(text)){
@@ -790,7 +793,7 @@ public class arcWaveInfoDialog extends BaseDialog{
                             group.end = never;
                             updateWaves();
                         }
-                    }).width(100f).get().setMessageText("∞");
+                    }).width(150f).get().setMessageText("∞");
                 }).row();
 
                 t.table(p -> {
@@ -800,7 +803,7 @@ public class arcWaveInfoDialog extends BaseDialog{
                             group.spacing = Strings.parseInt(text);
                             updateWaves();
                         }
-                    }).width(100f);
+                    }).width(150f);
                     p.add("@waves.waves").padLeft(4);
                 }).row();
 
@@ -810,7 +813,7 @@ public class arcWaveInfoDialog extends BaseDialog{
                             group.unitAmount = Strings.parseInt(text);
                             updateWaves();
                         }
-                    }).width(80f);
+                    }).width(150f);
 
                     a.add(" + ");
                     a.field(Strings.fixed(Math.max((Mathf.zero(group.unitScaling) ? 0 : 1f / group.unitScaling), 0), 2), TextFieldFilter.floatsOnly, text -> {
@@ -818,7 +821,7 @@ public class arcWaveInfoDialog extends BaseDialog{
                             group.unitScaling = 1f / Strings.parseFloat(text);
                             updateWaves();
                         }
-                    }).width(80f);
+                    }).width(150f);
                     a.add("@waves.perspawn").padLeft(4);
                 }).row();
 
@@ -828,7 +831,7 @@ public class arcWaveInfoDialog extends BaseDialog{
                             group.max = Strings.parseInt(text);
                             updateWaves();
                         }
-                    }).width(80f);
+                    }).width(150f);
 
                     a.add("@waves.max").padLeft(5);
                 }).row();
@@ -839,7 +842,7 @@ public class arcWaveInfoDialog extends BaseDialog{
                             group.shields = Strings.parseInt(text);
                             updateWaves();
                         }
-                    }).width(80f);
+                    }).width(150f);
 
                     a.add(" + ");
                     a.field((int)group.shieldScaling + "", TextFieldFilter.digitsOnly, text -> {
@@ -847,7 +850,7 @@ public class arcWaveInfoDialog extends BaseDialog{
                             group.shieldScaling = Strings.parseInt(text);
                             updateWaves();
                         }
-                    }).width(80f);
+                    }).width(150f);
                     a.add("@waves.shields").padLeft(4);
                 }).row();
 
