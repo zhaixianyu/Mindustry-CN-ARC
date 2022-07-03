@@ -86,26 +86,27 @@ public class AuxilliaryTable extends Table{
 
         row();
 
-        if(show && showMark){
+        if(show){
             table(black1, body -> {
                 for(BaseToolsTable table : toolsTables){
                     body.collapser(table, table::shown).padTop(3).left().row();
                 }
+                if(showMark){
+                    body.table(t -> {
+                        if(mobile){
+                            t.button("♐ >", clearLineNonet, () -> {
+                                ui.hudGroup.addChild(mobileHitter);
+                                ui.announce("[cyan]你已进入标记模式,长按屏幕可进行一次标记(外划可以退出).");
+                            }).height(40).width(70f).tooltip("开启手机标记");
+                        }
 
-                body.table(t -> {
-                    if(mobile){
-                        t.button("♐ >", clearLineNonet, () -> {
-                            ui.hudGroup.addChild(mobileHitter);
-                            ui.announce("[cyan]你已进入标记模式,长按屏幕可进行一次标记(外划可以退出).");
-                        }).height(40).width(70f).tooltip("开启手机标记");
-                    }
+                        for(MarkType type : Marker.markTypes){
+                            t.button(type.tinyName(), clearLineNoneTogglet, () -> markType = type)
+                                    .checked(b -> markType == type).size(40).tooltip(type.describe);
+                        }
 
-                    for(MarkType type : Marker.markTypes){
-                        t.button(type.tinyName(), clearLineNoneTogglet, () -> markType = type)
-                         .checked(b -> markType == type).size(40).tooltip(type.describe);
-                    }
-
-                }).left();
+                    }).left();
+                }
             }).fillX().left();
         }
     }
