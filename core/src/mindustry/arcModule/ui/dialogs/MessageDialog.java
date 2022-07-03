@@ -242,7 +242,8 @@ public class MessageDialog extends BaseDialog{
     public boolean resolveServerMsg(String message){
         Seq<String> serverMsg = Seq.with("加入了服务器", "离开了服务器", "自动存档完成", "登录成功", "经验+", "[YELLOW]本局游戏时长:", "[YELLOW]单人快速投票", "[GREEN]回档成功",
         "[YELLOW]PVP保护时间, 全力进攻吧", "[YELLOW]发起", "[YELLOW]你可以在投票结束前使用", "[GREEN]投票成功", "[GREEN]换图成功,当前地图",
-        "[RED]本地图禁用单位","[RED]该地图限制空军,禁止进入敌方领空","[yellow]本地图限制空军","[YELLOW]火焰过多造成服务器卡顿,自动关闭火焰"
+        "[RED]本地图禁用单位","[RED]该地图限制空军,禁止进入敌方领空","[yellow]本地图限制空军","[YELLOW]火焰过多造成服务器卡顿,自动关闭火焰",
+        " [GREEN]====","[RED]无效指令","[RED]该技能"
         );
         for(int i = 0; i < serverMsg.size; i++){
             if(message.contains(serverMsg.get(i))){
