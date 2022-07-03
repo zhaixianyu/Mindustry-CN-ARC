@@ -226,6 +226,7 @@ public class MessageDialog extends BaseDialog{
             addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.normal,message,playersender.name(),new Vec2(playersender.x,playersender.y)));
             return true;
         }
+        addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.normal, message));
 
         return false;
     }
@@ -256,6 +257,10 @@ public class MessageDialog extends BaseDialog{
         }
         if(message.contains("[acid][公屏][white]")){
             addMsg(new MessageDialog.advanceMsg(arcMsgType.serverToast, message));
+            return true;
+        }
+        if(message.contains("[YELLOW][技能]")){
+            addMsg(new MessageDialog.advanceMsg(arcMsgType.serverSkill, message));
             return true;
         }
 
@@ -336,7 +341,7 @@ public class MessageDialog extends BaseDialog{
         serverTips("服务器", "小贴士", Color.valueOf("#98FB98"),false),
         serverMsg("服务器", "信息", Color.valueOf("#cefdce")),
         serverToast("服务器", "通报", Color.valueOf("#00FA9A")),
-        serverSkill("服务器", "技能", Color.valueOf("#00FA9A")),
+        serverSkill("服务器", "技能", Color.valueOf("#e6ffcc")),
 
         logicNotify("逻辑", "通报", Color.valueOf("#ffccff")),
         logicAnnounce("逻辑", "公告", Color.valueOf("#ffccff")),

@@ -922,7 +922,7 @@ public class arcWaveInfoDialog extends BaseDialog{
                     icon.image(Icon.logic).padLeft(6f);
                 }
             }, Styles.cleart, () -> showEffect(group));
-            iTable.button("@waves.group.payloads", Icon.defense, Styles.cleart, () -> showUpdate(group, true)).disabled(c -> group.type.payloadCapacity <= 8);
+            if(group.type.payloadCapacity>0) iTable.button("添加载荷", Styles.cleart, () -> showUpdate(group, true));
             iTable.button(icon -> {
                 icon.add("物品");
                 if(group.items != null){
