@@ -258,9 +258,8 @@ public class PlayerListFragment{
     }
 
     private String arcAtPlayer(String name){
-        StringBuilder builder = new StringBuilder();
-        builder.append("[red][ARC").append(arcVersion).append("]");
-        builder.append("[white]戳了").append(name).append("[white]一下，并提醒你留意对话框");
+        StringBuilder builder = new StringBuilder(arcVersionPrefix);
+        builder.append("戳了").append(name).append("[white]一下，并提醒你留意对话框");
         return builder.toString();
     }
 }

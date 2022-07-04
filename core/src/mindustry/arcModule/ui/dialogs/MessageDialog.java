@@ -101,7 +101,7 @@ public class MessageDialog extends BaseDialog{
                 t.table(Tex.whiteui, tt -> {
                     tt.color.set(thisMsg.msgType.color);
 
-                    if(msgList.get(finalI).msgType == arcMsgType.normal)
+                    if(msgList.get(finalI).msgType == arcMsgType.chat)
                         tt.add("" + getPlayerName(thisMsg)).style(Styles.outlineLabel).left().width(300f);
                     else
                         tt.add(thisMsg.msgType.name).style(Styles.outlineLabel).color(thisMsg.msgType.color).left().width(300f);
@@ -223,19 +223,21 @@ public class MessageDialog extends BaseDialog{
     public boolean resolveMsg(String message,@Nullable Player playersender){
         if(Marker.resolveMessage(message)) return true;
         if(resolveMarkMsg(message)) return true;
-        if(resolveServerMsg(message)) return true;
+
         if(playersender != null){
-            addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.normal,message,playersender.name(),new Vec2(playersender.x,playersender.y)));
+            addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.chat,message,playersender.name(),new Vec2(playersender.x,playersender.y)));
             return true;
         }
+        if(resolveServerMsg(message)) return true;
         addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.normal, message));
 
         return false;
     }
 
     public boolean resolveMarkMsg(String message){
-        if(message.contains("<ARC") && message.contains("标记了第")){
-            addMsg(new MessageDialog.advanceMsg(arcMsgType.markWave, message));
+        //除了markType以外的内容
+        if(message.contains("<ARC") && message.contains("标记了")){
+            addMsg(new MessageDialog.advanceMsg(arcMsgType.markInfo, message));
             return true;
         }
         return false;
@@ -338,8 +340,10 @@ public class MessageDialog extends BaseDialog{
     public enum arcMsgType{
         normal("消息", Color.gray),
 
+        chat("聊天",Color.valueOf("#778899")),
+
         markLoc("标记", "坐标", Color.valueOf("#7FFFD4")),
-        markWave("标记", "波次", Color.valueOf("#7FFFD4")),
+        markInfo("标记", "波次", Color.valueOf("#7FFFD4")),
 
         serverTips("服务器", "小贴士", Color.valueOf("#98FB98"),false),
         serverMsg("服务器", "信息", Color.valueOf("#cefdce")),

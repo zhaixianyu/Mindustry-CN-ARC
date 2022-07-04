@@ -129,7 +129,7 @@ public class ContentInfoDialog extends BaseDialog{
     }
 
     private String arcItemInfo(UnlockableContent content,boolean description){
-        String builder = "[ARC"+arcVersion+"]";
+        String builder = arcVersionPrefix;
         builder+="标记了"+content.localizedName+content.emoji();
         builder+="("+content.name+")";
         if(content.description != null && description){

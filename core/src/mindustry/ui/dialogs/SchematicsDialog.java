@@ -362,7 +362,7 @@ public class SchematicsDialog extends BaseDialog{
     }
 
     private String arcSchematicsInfo(Schematic schem,boolean description){
-        String builder = "[ARC"+arcVersion+"]";
+        String builder = arcVersionPrefix;
         builder+="标记了蓝图["+schem.name()+"]";
         builder+="。属性："+schem.width+"x"+schem.height+"，"+schem.tiles.size+"个建筑。";
         if(description){
