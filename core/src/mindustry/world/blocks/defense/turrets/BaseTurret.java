@@ -69,7 +69,7 @@ public class BaseTurret extends Block{
     public void placeBegan(Tile tile, Block previous){
         super.placeBegan(tile,previous);
 
-        if(Core.settings.getBool("arcTurretPlacementItem") && tile.build.health> Core.settings.getInt("blockbarminhealth"))
+        if(Core.settings.getBool("arcTurretPlacementItem") && health> Core.settings.getInt("blockbarminhealth"))
         Fx.placeTurret.at(tile,range,tile.build.team.color);
 
     }
