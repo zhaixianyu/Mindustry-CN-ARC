@@ -118,6 +118,8 @@ public class Turret extends ReloadTurret{
     public float elevation = -1f;
     /** How much the screen shakes per shot. */
     public float shake = 0f;
+    /** arc绘图用 */
+    public int drawIndex = 0;
 
     /** Defines drawing behavior for this turret. */
     public DrawBlock drawer = new DrawTurret();
