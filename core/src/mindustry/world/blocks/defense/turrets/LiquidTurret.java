@@ -75,8 +75,8 @@ public class LiquidTurret extends Turret{
             ammoTypes.each((Liquid, BulletType) -> {
                 drawIndex += 1;
                 if (!Liquid.unlockedNow()) return;
-                for (int i = 0; i < sectors; i++) {
-                    float rot = (i + ((float)drawIndex) / sectors) / sectors * 360f + Time.time * 0.5f;
+                for (int i = 0; i < 4; i++) {
+                    float rot = (i + ((float)drawIndex) / sectors) / 4 * 360f + Time.time * 0.5f;
                     Draw.rect(Liquid.uiIcon,
                             x * tilesize + offset + (Mathf.sin((float) Math.toRadians(rot)) * (range + BulletType.rangeChange + iconSize + 1f)),
                             y * tilesize + offset + (Mathf.cos((float) Math.toRadians(rot)) * (range + BulletType.rangeChange + iconSize + 1f)),
