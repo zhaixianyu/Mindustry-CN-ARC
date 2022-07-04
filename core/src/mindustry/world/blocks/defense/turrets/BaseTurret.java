@@ -1,5 +1,6 @@
 package mindustry.world.blocks.defense.turrets;
 
+import arc.Core;
 import arc.math.*;
 import arc.struct.*;
 import arc.util.*;
@@ -62,6 +63,15 @@ public class BaseTurret extends Block{
         super.drawPlace(x, y, rotation, valid);
 
         Drawf.dashCircle(x * tilesize + offset, y * tilesize + offset, range, Pal.placing);
+    }
+
+    @Override
+    public void placeBegan(Tile tile, Block previous){
+        super.placeBegan(tile,previous);
+
+        if(Core.settings.getBool("arcTurretPlacementItem") && tile.build.health> Core.settings.getInt("blockbarminhealth"))
+        Fx.placeTurret.at(tile,range,tile.build.team.color);
+
     }
 
     @Override

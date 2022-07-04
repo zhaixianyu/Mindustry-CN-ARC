@@ -114,6 +114,10 @@ public class Effect{
         create(pos.getX(), pos.getY(), rotation, Color.white, null);
     }
 
+    public void at(Position pos, float rotation,Color color){
+        create(pos.getX(), pos.getY(), rotation, color, null);
+    }
+
     public void at(float x, float y){
         create(x, y, 0, Color.white, null);
     }
