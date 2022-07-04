@@ -14,7 +14,7 @@ import mindustry.world.blocks.ConstructBlock.*;
 
 import static mindustry.Vars.*;
 
-public class arcBuilderAI extends AIController{
+public class ArcBuilderAI extends AIController{
     public static float buildRadius = 1500, retreatDst = 110f, retreatDelay = Time.toSeconds * 2f;
     public static float rebuildTime = 120f;
 
@@ -28,12 +28,12 @@ public class arcBuilderAI extends AIController{
     boolean found = false;
     float retreatTimer;
 
-    public arcBuilderAI(boolean alwaysFlee, float fleeRange){
+    public ArcBuilderAI(boolean alwaysFlee, float fleeRange){
         this.alwaysFlee = alwaysFlee;
         this.fleeRange = fleeRange;
     }
 
-    public arcBuilderAI(){
+    public ArcBuilderAI(){
     }
 
     @Override
@@ -97,11 +97,11 @@ public class arcBuilderAI extends AIController{
             }
 
             boolean valid =
-                !(lastPlan != null && lastPlan.removed) &&
-                    ((req.tile() != null && req.tile().build instanceof ConstructBuild cons && cons.current == req.block) ||
-                    (req.breaking ?
-                        Build.validBreak(unit.team(), req.x, req.y) :
-                        Build.validPlace(req.block, unit.team(), req.x, req.y, req.rotation)));
+            !(lastPlan != null && lastPlan.removed) &&
+            ((req.tile() != null && req.tile().build instanceof ConstructBuild cons && cons.current == req.block) ||
+            (req.breaking ?
+            Build.validBreak(unit.team(), req.x, req.y) :
+            Build.validPlace(req.block, unit.team(), req.x, req.y, req.rotation)));
 
             if(valid){
                 //move toward the plan
@@ -160,7 +160,7 @@ public class arcBuilderAI extends AIController{
     }
 
     protected boolean nearEnemy(int x, int y){
-        return Units.nearEnemy(unit.team, x * tilesize - fleeRange/2f, y * tilesize - fleeRange/2f, fleeRange, fleeRange);
+        return Units.nearEnemy(unit.team, x * tilesize - fleeRange / 2f, y * tilesize - fleeRange / 2f, fleeRange, fleeRange);
     }
 
     @Override
