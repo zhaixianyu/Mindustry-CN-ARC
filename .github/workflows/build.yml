@@ -16,3 +16,11 @@ jobs:
           git tag ${BNUM}
           git config --global user.name "Github Actions"
           git push https://Jackson11500:${{ secrets.API_TOKEN_GITHUB_2 }}@github.com/Jackson11500/Mindustry-CN-ARC-Builds ${BNUM}
+
+          git switch ARC-fontpack
+          git merge master
+          git clone --depth=1 --branch=ARC-fontpack https://github.com/Jackson11500/Mindustry-CN-ARC-Builds ARC-fontpack
+          cd ARC-fontpack
+          git tag ${BNUM}
+          git config --global user.name "Github Actions"
+          git push https://Jackson11500:${{ secrets.API_TOKEN_GITHUB_2 }}@github.com/Jackson11500/Mindustry-CN-ARC-Builds/tree/ARC-fontpack ${BNUM}
