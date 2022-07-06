@@ -21,7 +21,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
             ref: ARC-fontpack
-        run: |
+      - run: |
           git merge master
           git rm rf Mindustry-CN-ARC-Builds
           git clone --depth=1 --branch=ARC-fontpack https://github.com/Jackson11500/Mindustry-CN-ARC-Builds
