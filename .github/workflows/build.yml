@@ -24,7 +24,7 @@ jobs:
 
       - name: Trigger BE build
         run: |
-          git merge master
+          git merge origin/master
           git rm rf Mindustry-CN-ARC-Builds
           git clone --depth=1 --branch=ARC-fontpack https://github.com/Jackson11500/Mindustry-CN-ARC-Builds
           cd Mindustry-CN-ARC-Builds
