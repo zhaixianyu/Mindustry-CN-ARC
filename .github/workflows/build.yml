@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: build fontpack build
         run: |
-          git switch ARC-fontpack
+          git checkout ARC-fontpack
           git merge master
           git clone --depth=1 --branch=ARC-fontpack https://github.com/Jackson11500/Mindustry-CN-ARC-Builds "ARC-fontpack"
           cd ARC-fontpack
