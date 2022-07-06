@@ -94,6 +94,9 @@ public class BeControl{
 
         if(!headless){
             checkUpdates = false;
+            if(mobile){
+                ui.showInfo("！！！发现了新版本：" + updateBuild + "\n请到群里寻找更新包！");return;
+            }
             ui.showCustomConfirm("！！！发现了新版本：" + updateBuild, "@be.update.confirm", "@ok", "@be.ignore", () -> {
                 try{
                     boolean[] cancel = {false};
