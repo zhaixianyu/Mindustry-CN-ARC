@@ -99,7 +99,7 @@ public class BeControl{
                     boolean[] cancel = {false};
                     float[] progress = {0};
                     int[] length = {0};
-                    Fi file = bebuildDirectory.child("client-be-" + updateBuild + ".jar");
+                    Fi file = bebuildDirectory.child("Mindustry CN-ARC-" + updateBuild + ".jar");
                     Fi fileDest = OS.hasProp("becopy") ?
                         Fi.get(OS.prop("becopy")) :
                         Fi.get(BeControl.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
