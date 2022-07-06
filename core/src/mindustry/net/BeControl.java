@@ -68,7 +68,7 @@ public class BeControl{
             Jval val = Jval.read(res.getResultAsString());
             int newBuild = Strings.parseInt(val.getString("tag_name", "0"));
             if(newBuild > Version.build){
-                Jval asset = val.get("assets").asArray().find(v -> v.getString("name", "").startsWith(headless ? "Mindustry-BE-Server" : "Mindustry-BE-Desktop"));
+                Jval asset = val.get("assets").asArray().find(v -> v.getString("name", "").startsWith("Mindustry-CN-ARC-Desktop"));
                 String url = asset.getString("browser_download_url", "");
                 updateAvailable = true;
                 updateBuild = newBuild;
