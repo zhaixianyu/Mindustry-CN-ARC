@@ -14,7 +14,7 @@ public class ItemImage extends Stack{
 
         add(new Table(o -> {
             o.left();
-            o.add(new Image(region)).size(32f);
+            o.add(new Image(region)).size(32f).scaling(Scaling.fit);
         }));
 
         add(new Table(t -> {
