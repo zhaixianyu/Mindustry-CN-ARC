@@ -15,4 +15,4 @@ jobs:
           BNUM=$(($GITHUB_RUN_NUMBER))
           git tag ${BNUM}
           git config --global user.name "Github Actions"
-          git push https://Jackson11500:${{ secrets.API_TOKEN_GITHUB }}@github.com/Jackson11500/Mindustry-CN-ARC-Builds ${BNUM}
+          git push https://Jackson11500:${{ secrets.API_TOKEN_GITHUB_2 }}@github.com/Jackson11500/Mindustry-CN-ARC-Builds ${BNUM}
