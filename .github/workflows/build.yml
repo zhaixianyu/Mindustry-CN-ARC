@@ -17,10 +17,11 @@ jobs:
           git config --global user.name "Github Actions"
           git push https://Jackson11500:${{ secrets.API_TOKEN_GITHUB_2 }}@github.com/Jackson11500/Mindustry-CN-ARC-Builds ${BNUM}
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: build fontpack build
+      - with:
+          ref: 'ARC-fontpack'
         run: |
-          git checkout ARC-fontpack
           git merge master
           git rm rf Mindustry-CN-ARC-Builds
           git clone --depth=1 --branch=ARC-fontpack https://github.com/Jackson11500/Mindustry-CN-ARC-Builds
