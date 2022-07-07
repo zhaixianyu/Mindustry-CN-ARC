@@ -27,6 +27,7 @@ public class BeControl{
     private boolean checkUpdates = true;
     private boolean updateAvailable;
     private String updateUrl;
+    private String mobileUrl;
     private int updateBuild;
 
     /** @return whether this is a bleeding edge build. */
@@ -73,6 +74,10 @@ public class BeControl{
                 updateAvailable = true;
                 updateBuild = newBuild;
                 updateUrl = url;
+
+                Jval mobileAsset = val.get("assets").asArray().find(v -> v.getString("name", "").startsWith("Mindustry-CN-ARC-Android"));
+                mobileUrl = mobileAsset.getString("browser_download_url", "");
+
                 Core.app.post(() -> {
                     showUpdateDialog();
                     done.get(true);
@@ -94,81 +99,89 @@ public class BeControl{
 
         if(!headless){
             checkUpdates = false;
-            if(mobile){
-                ui.showInfo("！！！发现了新版本：" + updateBuild + "\n请到群里寻找更新包！");return;
-            }
             ui.showCustomConfirm("！！！发现了新版本：" + updateBuild, "@be.update.confirm", "@ok", "@be.ignore", () -> {
                 try{
-                    boolean[] cancel = {false};
-                    float[] progress = {0};
-                    int[] length = {0};
-                    Fi file = bebuildDirectory.child("Mindustry CN-ARC-" + updateBuild + ".jar");
-                    Fi fileDest = OS.hasProp("becopy") ?
-                        Fi.get(OS.prop("becopy")) :
-                        Fi.get(BeControl.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
-
-                    BaseDialog dialog = new BaseDialog("@be.updating");
-                    download(updateUrl, file, i -> length[0] = i, v -> progress[0] = v, () -> cancel[0], () -> {
-                        try{
-                            Runtime.getRuntime().exec(OS.isMac ?
-                                new String[]{javaPath, "-XstartOnFirstThread", "-DlastBuild=" + Version.arcBuild, "-Dberestart", "-Dbecopy=" + fileDest.absolutePath(), "-jar", file.absolutePath()} :
-                                new String[]{javaPath, "-DlastBuild=" + Version.arcBuild, "-Dberestart", "-Dbecopy=" + fileDest.absolutePath(), "-jar", file.absolutePath()}
-                            );
-                            System.exit(0);
-                        }catch(IOException e){
-                            ui.showException(e);
+                    if(true){
+                        if(!Core.app.openURI(mobileUrl)){
+                            ui.showErrorMessage("打开失败，网址已复制到粘贴板\n请自行在阅览器打开");
+                            Core.app.setClipboardText(mobileUrl);
                         }
-                    }, e -> {
-                        dialog.hide();
-                        ui.showException(e);
-                    });
+                        return;
+                    }
+                    else{
+                        boolean[] cancel = {false};
+                        float[] progress = {0};
+                        int[] length = {0};
+                        Fi file = bebuildDirectory.child("Mindustry CN-ARC-" + updateBuild + ".jar");
+                        Fi fileDest = OS.hasProp("becopy") ?
+                                Fi.get(OS.prop("becopy")) :
+                                Fi.get(BeControl.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
 
-                    dialog.cont.add(new Bar(() -> length[0] == 0 ? Core.bundle.get("be.updating") : (int)(progress[0] * length[0]) / 1024/ 1024 + "/" + length[0]/1024/1024 + " MB", () -> Pal.accent, () -> progress[0])).width(400f).height(70f);
-                    dialog.buttons.button("@cancel", Icon.cancel, () -> {
-                        cancel[0] = true;
-                        dialog.hide();
-                    }).size(210f, 64f);
-                    dialog.setFillParent(false);
-                    dialog.show();
+                        BaseDialog dialog = new BaseDialog("@be.updating");
+                        download(updateUrl, file, i -> length[0] = i, v -> progress[0] = v, () -> cancel[0], () -> {
+                            try{
+                                Runtime.getRuntime().exec(OS.isMac ?
+                                        new String[]{javaPath, "-XstartOnFirstThread", "-DlastBuild=" + Version.arcBuild, "-Dberestart", "-Dbecopy=" + fileDest.absolutePath(), "-jar", file.absolutePath()} :
+                                        new String[]{javaPath, "-DlastBuild=" + Version.arcBuild, "-Dberestart", "-Dbecopy=" + fileDest.absolutePath(), "-jar", file.absolutePath()}
+                                );
+                                System.exit(0);
+                            }catch(IOException e){
+                                ui.showException(e);
+                            }
+                        }, e -> {
+                            dialog.hide();
+                            ui.showException(e);
+                        });
+
+                        dialog.cont.add(new Bar(() -> length[0] == 0 ? Core.bundle.get("be.updating") : (int)(progress[0] * length[0]) / 1024/ 1024 + "/" + length[0]/1024/1024 + " MB", () -> Pal.accent, () -> progress[0])).width(400f).height(70f);
+                        dialog.buttons.button("@cancel", Icon.cancel, () -> {
+                            cancel[0] = true;
+                            dialog.hide();
+                        }).size(210f, 64f);
+                        dialog.setFillParent(false);
+                        dialog.show();
+                    }
+
                 }catch(Exception e){
                     ui.showException(e);
                 }
             }, () -> checkUpdates = false);
-        }else{
-            Log.info("&lcA new update is available: &lyBleeding Edge build @", updateBuild);
-            if(Config.autoUpdate.bool()){
-                Log.info("&lcAuto-downloading next version...");
+            }else{
+                Log.info("&lcA new update is available: &lyBleeding Edge build @", updateBuild);
+                if(Config.autoUpdate.bool()){
+                    Log.info("&lcAuto-downloading next version...");
 
-                try{
-                    //download new file from github
-                    Fi source = Fi.get(BeControl.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
-                    Fi dest = source.sibling("server-be-" + updateBuild + ".jar");
+                    try{
+                        //download new file from github
+                        Fi source = Fi.get(BeControl.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
+                        Fi dest = source.sibling("server-be-" + updateBuild + ".jar");
 
-                    download(updateUrl, dest,
-                    len -> Core.app.post(() -> Log.info("&ly| Size: @ MB.", Strings.fixed((float)len / 1024 / 1024, 2))),
-                    progress -> {},
-                    () -> false,
-                    () -> Core.app.post(() -> {
-                        Log.info("&lcSaving...");
-                        SaveIO.save(saveDirectory.child("autosavebe." + saveExtension));
-                        Log.info("&lcAutosaved.");
+                        download(updateUrl, dest,
+                        len -> Core.app.post(() -> Log.info("&ly| Size: @ MB.", Strings.fixed((float)len / 1024 / 1024, 2))),
+                        progress -> {},
+                        () -> false,
+                        () -> Core.app.post(() -> {
+                            Log.info("&lcSaving...");
+                            SaveIO.save(saveDirectory.child("autosavebe." + saveExtension));
+                            Log.info("&lcAutosaved.");
 
-                        netServer.kickAll(KickReason.serverRestarting);
-                        Threads.sleep(32);
+                            netServer.kickAll(KickReason.serverRestarting);
+                            Threads.sleep(32);
 
-                        Log.info("&lcVersion downloaded, exiting. Note that if you are not using a auto-restart script, the server will not restart automatically.");
-                        //replace old file with new
-                        dest.copyTo(source);
-                        dest.delete();
-                        System.exit(2); //this will cause a restart if using the script
-                    }),
-                    Throwable::printStackTrace);
-                }catch(Exception e){
-                    e.printStackTrace();
+                            Log.info("&lcVersion downloaded, exiting. Note that if you are not using a auto-restart script, the server will not restart automatically.");
+                            //replace old file with new
+                            dest.copyTo(source);
+                            dest.delete();
+                            System.exit(2); //this will cause a restart if using the script
+                        }),
+                        Throwable::printStackTrace);
+                    }catch(Exception e){
+                        e.printStackTrace();
+                    }
                 }
+                checkUpdates = false;
             }
-            checkUpdates = false;
-        }
+
     }
 
     private void download(String furl, Fi dest, Intc length, Floatc progressor, Boolp canceled, Runnable done, Cons<Throwable> error){

@@ -39,7 +39,7 @@ import java.util.concurrent.*;
 import static arc.Core.*;
 
 public class Vars implements Loadable{
-    public static String arcVersion = "3.7.8";
+    public static String arcVersion = "3.7.9";
     public static String arcVersionPrefix = "<ARC" + Vars.arcVersion + ">";
     public static int changeLogRead = 18;
     /** pr-5921  Used in blocks with selection menus such sorters for how large the menu should be */
