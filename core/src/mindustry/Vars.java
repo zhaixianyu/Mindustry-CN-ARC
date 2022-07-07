@@ -39,14 +39,18 @@ import java.util.concurrent.*;
 import static arc.Core.*;
 
 public class Vars implements Loadable{
+    /** ARC */
     public static String arcVersion = "3.7.5";
     public static String arcVersionPrefix = "<ARC" + Vars.arcVersion + ">";
     public static int changeLogRead = 18;
+
+    public static String userContentURL = "https://raw.fastgit.org";
+
     /** pr-5921  Used in blocks with selection menus such sorters for how large the menu should be */
-    public static int blockSelectionRows = 5,blockSelectionColumns = 6;
+    public static int blockSelectionRows = 5, blockSelectionColumns = 6;
     /** Whether the game failed to launch last time. */
     public static boolean failedToLaunch = false;
-    /** Whether to load locales.*/
+    /** Whether to load locales. */
     public static boolean loadLocales = true;
     /** Whether the logger is loaded. */
     public static boolean loadedLogger = false, loadedFileLogger = false;
@@ -76,14 +80,14 @@ public class Vars implements Loadable{
     public static final String ghApi = "https://api.github.com";
     /** URL for discord invite. */
     public static final String discordURL = "https://discord.gg/mindustry";
-    /** URL the links to the wiki's modding guide.*/
+    /** URL the links to the wiki's modding guide. */
     public static final String modGuideURL = "https://mindustrygame.github.io/wiki/modding/1-modding/";
     /** URL to the JSON file containing all the BE servers. Only queried in BE. */
-    public static final String serverJsonBeURL = "https://raw.githubusercontent.com/Anuken/Mindustry/master/servers_be.json";
-    /** URL to the JSON file containing all the stable servers.  */
+    public static final String serverJsonBeURL = userContentURL + "/Anuken/Mindustry/master/servers_be.json";
+    /** URL to the JSON file containing all the stable servers. */
     //TODO merge with v6 list upon release
-    public static final String serverJsonURL = "https://raw.githubusercontent.com/Anuken/Mindustry/master/servers_v7.json";
-    /** URL of the github issue report template.*/
+    public static final String serverJsonURL = userContentURL + "/Anuken/Mindustry/master/servers_v7.json";
+    /** URL of the github issue report template. */
     public static final String reportIssueURL = "https://github.com/Anuken/Mindustry/issues/new?labels=bug&template=bug_report.md";
     /** list of built-in servers.*/
     public static final Seq<ServerGroup> defaultServers = Seq.with();
