@@ -102,7 +102,6 @@ public class MenuFragment{
         }));
 
 
-        //String versionText = ((Version.build == -1) ? "[#fc8140aa]" : "[#ffffffba]") + Version.combined();
         String versionText = ((Version.build == -1) ? "[#fc8140aa]" : "[cyan]") + Version.combined();
         String arcversionText = "\n[orange]ARC version "+arcVersion + "  (" + Version.arcBuild + ")";
         parent.fill((x, y, w, h) -> {
