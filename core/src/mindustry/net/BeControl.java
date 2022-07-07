@@ -101,7 +101,7 @@ public class BeControl{
             checkUpdates = false;
             ui.showCustomConfirm("！！！发现了新版本：" + updateBuild, "@be.update.confirm", "@ok", "@be.ignore", () -> {
                 try{
-                    if(true){
+                    if(mobile){
                         if(!Core.app.openURI(mobileUrl)){
                             ui.showErrorMessage("打开失败，网址已复制到粘贴板\n请自行在阅览器打开");
                             Core.app.setClipboardText(mobileUrl);
