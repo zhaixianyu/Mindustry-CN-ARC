@@ -36,7 +36,7 @@ public class HudSettingsTable extends Table{
     private int unitTransparency = Core.settings.getInt("unitTransparency");
     private Boolean unitHide = false;
 
-    private TextButton.TextButtonStyle textStyle,circleStyle;
+    private TextButton.TextButtonStyle textStyle,NCtextStyle;
 
     public HudSettingsTable(){
         textStyle = new TextButton.TextButtonStyle(){{
@@ -49,15 +49,13 @@ public class HudSettingsTable extends Table{
             checked = flatDown;
         }};
 
-        circleStyle = new TextButton.TextButtonStyle(){{
-            over = buttonOver;
-            disabled = buttonDisabled;
+        NCtextStyle = new TextButton.TextButtonStyle(){{
+            down = flatOver;
+            up = pane;
+            over = flatDownBase;
             font = Fonts.def;
             fontColor = Color.white;
             disabledFontColor = Color.gray;
-            down = buttonDown;
-            up = button;
-            checked = flatDown;
         }};
 
         rebuild();
@@ -107,20 +105,19 @@ public class HudSettingsTable extends Table{
             ScrollPane pane = pane(sp -> {
                 sp.background(Styles.black6);
                 sp.table(t -> {
-                    t.button("[cyan]S",textStyle, () ->{
+                    t.button("[cyan]S",NCtextStyle, () ->{
                         Call.sendChatMessage("/sync");
                     }).size(30,30).name("sync").tooltip("sync");
-                    t.button("[cyan]观",textStyle, () -> {
+                    t.button("[cyan]观",NCtextStyle, () -> {
                         Call.sendChatMessage("/ob");
                     }).size(30,30).name("ob").tooltip("观察者模式");
-                    t.button("[cyan]版",textStyle, () -> {
+                    t.button("[cyan]版",NCtextStyle, () -> {
                         Call.sendChatMessage("/broad");
                     }).size(30,30).tooltip("服务器信息版");
                     t.button("[red]版",textStyle, () -> {
                         Core.settings.put("ShowInfoPopup", !Core.settings.getBool("ShowInfoPopup"));
                     }).checked(a->Core.settings.getBool("ShowInfoPopup")).size(30,30).tooltip("关闭所有信息版");
-                    t.button("[white]法",textStyle, () -> {
-                        Call.sendChatMessage("/vote gameover");
+                    t.button("[white]法",NCtextStyle, () -> {ui.showConfirm("受不了，直接投降？",()->Call.sendChatMessage("/vote gameover"));
                     }).size(30,30).tooltip("法国模式");
                 }).left();
                 sp.row();

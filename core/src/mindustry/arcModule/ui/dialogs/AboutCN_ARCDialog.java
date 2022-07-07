@@ -41,7 +41,7 @@ public class AboutCN_ARCDialog extends BaseDialog {
         cont.row();
         cont.add("主负责人：[violet]Lucky_Clover").row();
         cont.add("公开发行版本："+arcVersion).row();
-        cont.add("获取最新版本，请加入[yellow]猫猫的数据库[white]").row();
+        cont.add("提议更新或反馈bug，请加入[yellow]猫猫的数据库[white]").row();
         cont.add("讨论学术端更新|提议源码|共同编辑，请加入[yellow]mindustry PVP交流群[white]:931790051[orange]不欢迎萌新，仅限大佬加入").row();
         cont.row();
         cont.table(t->{

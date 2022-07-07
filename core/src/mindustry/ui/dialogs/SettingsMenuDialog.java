@@ -534,6 +534,7 @@ public class SettingsMenuDialog extends BaseDialog{
         arc.checkPref("arcdrillmode", false);
         arc.checkPref("arcchoiceuiIcon", false);
         arc.checkPref("arclogicbordershow", true);
+        arc.checkPref("arcPlacementEffect",false);
 
         arc.addCategory("arcMassDriverInfo");
         arc.sliderPref("mass_driver_line_alpha",100,0,100,1, i -> i > 0 ? i + "%" : "关闭");
