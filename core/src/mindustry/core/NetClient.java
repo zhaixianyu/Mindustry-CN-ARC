@@ -114,6 +114,10 @@ public class NetClient implements ApplicationListener{
             public void run(){
                 Call.serverPacketReliable("ARC",arcVersion);
             }},1000);
+            timer.schedule(new TimerTask(){
+                public void run(){
+                    Call.serverPacketReliable("ARC-build",Version.arcBuild + "");
+                }},1000);
 
         });
 
