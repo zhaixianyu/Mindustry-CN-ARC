@@ -70,13 +70,13 @@ public class BeControl{
             int newBuild = Strings.parseInt(val.getString("tag_name", "0"));
             if(newBuild > Version.arcBuild){
                 Jval asset = val.get("assets").asArray().find(v -> v.getString("name", "").startsWith("Mindustry-CN-ARC-Desktop"));
-                String url = asset.getString("browser_download_url", "");
+                String url = gitDownloadURL + "/" + asset.getString("browser_download_url", "");
                 updateAvailable = true;
                 updateBuild = newBuild;
                 updateUrl = url;
 
                 Jval mobileAsset = val.get("assets").asArray().find(v -> v.getString("name", "").startsWith("Mindustry-CN-ARC-Android"));
-                mobileUrl = mobileAsset.getString("browser_download_url", "");
+                mobileUrl = gitDownloadURL + "/" + mobileAsset.getString("browser_download_url", "");
 
                 Core.app.post(() -> {
                     showUpdateDialog();
