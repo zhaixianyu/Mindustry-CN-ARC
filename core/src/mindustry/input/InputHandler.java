@@ -595,6 +595,10 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
             logicCutsceneZoom = -1f;
         }
 
+        if(commandBuild != null && !commandBuild.isValid()){
+            commandBuild = null;
+        }
+
         if(!commandMode){
             commandRect = false;
         }
