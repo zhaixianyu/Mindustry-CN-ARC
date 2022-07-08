@@ -103,7 +103,7 @@ public class MenuFragment{
 
 
         String versionText = ((Version.build == -1) ? "[#fc8140aa]" : "[cyan]") + Version.combined();
-        String arcversionText = "\n[orange]ARC version "+arcVersion + "  (" + Version.arcBuild + ")";
+        String arcversionText = "\n[cyan]ARC version:" + Version.arcBuild;
         parent.fill((x, y, w, h) -> {
             TextureRegion logo = Core.atlas.find("logo");
             float width = Core.graphics.getWidth(), height = Core.graphics.getHeight() - Core.scene.marginTop;
