@@ -47,6 +47,9 @@ public class Vars implements Loadable{
     public static String userContentURL = "https://raw.fastgit.org";
     public static String gitDownloadURL = "https://gh.api.99988866.xyz/";
 
+    /** 服务器远程控制允许或移除作弊功能 */
+    public static Boolean arcCheatServer = false;
+
     /** pr-5921  Used in blocks with selection menus such sorters for how large the menu should be */
     public static int blockSelectionRows = 5, blockSelectionColumns = 6;
     /** Whether the game failed to launch last time. */
@@ -513,6 +516,15 @@ public class Vars implements Loadable{
         }catch(Exception e){
             return Color.valueOf("ffd37f");
         }
+    }
+
+    public static Boolean arcInfoControl(Team team){
+        return team == player.team() || arcInfoControl();
+    }
+
+    public static Boolean arcInfoControl(){
+        return   (!arcCheatServer && (Core.settings.getBool("showOtherTeamState") ||
+                        player.team().id == 255 || state.rules.mode() != Gamemode.pvp));
     }
 
 }

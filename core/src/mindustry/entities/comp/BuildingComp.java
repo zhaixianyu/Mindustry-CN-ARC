@@ -1373,7 +1373,7 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
         table.row();
 
         //only display everything else if the team is the same LC modified
-        if(team == player.team() || Core.settings.getBool("showOtherTeamState")){
+        if(arcInfoControl(team)){
             table.table(bars -> {
                 bars.defaults().growX().height(18f).pad(4);
 

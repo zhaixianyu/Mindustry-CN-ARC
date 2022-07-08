@@ -1191,127 +1191,136 @@ public class UnitType extends UnlockableContent{
             unitTrans = 0f;
             draw_minunithealthbar = false;
         }
+        if(arcInfoControl(unit.team())) {
+            //玩家操控的单位具有炫酷特效
+            if (Core.settings.getInt("superUnitEffect") != 0 && unit.controller() == Vars.player) {
+                unitTrans = 100f;
+                draw_minunithealthbar = true;
 
-        //玩家操控的单位具有炫酷特效
-        if(Core.settings.getInt("superUnitEffect") != 0 && unit.controller() == Vars.player){
-            unitTrans = 100f;
-            draw_minunithealthbar = true;
+                float curStroke = (float) Core.settings.getInt("playerEffectCurStroke") / 10f;
+                Color effectcolor = getPlayerEffectColor();
 
-            float curStroke = (float)Core.settings.getInt("playerEffectCurStroke") / 10f;
-            Color effectcolor = getPlayerEffectColor();
+                float sectorRad = 0.14f, rotateSpeed = 0.5f;
+                int sectors = 5;
 
-            float sectorRad = 0.14f, rotateSpeed = 0.5f;
-            int sectors = 5;
+                Lines.stroke(Lines.getStroke() * curStroke);
 
-            Lines.stroke(Lines.getStroke() * curStroke);
+                Draw.z(Layer.effect - 2f);
+                Draw.color(effectcolor);
 
-            Draw.z(Layer.effect - 2f);
-            Draw.color(effectcolor);
+                Tmp.v1.trns(unit.rotation - 90, unit.x, unit.y).add(unit.x, unit.y);
+                float rx = Tmp.v1.x, ry = Tmp.v1.y;
 
-            Tmp.v1.trns(unit.rotation - 90, unit.x, unit.y).add(unit.x, unit.y);
-            float rx = Tmp.v1.x, ry = Tmp.v1.y;
-
-            if(curStroke > 0){
-                for(int i = 0; i < sectors; i++){
-                    float rot = unit.rotation + i * 360f / sectors + Time.time * rotateSpeed;
-                    Lines.arc(unit.x, unit.y, maxRange, sectorRad, rot);
+                if (curStroke > 0) {
+                    for (int i = 0; i < sectors; i++) {
+                        float rot = unit.rotation + i * 360f / sectors + Time.time * rotateSpeed;
+                        Lines.arc(unit.x, unit.y, maxRange, sectorRad, rot);
+                    }
                 }
-            }
+                Draw.reset();
+            } else if (Core.settings.getInt("superUnitEffect") == 2 && unit.controller() instanceof Player) {
+                unitTrans = 100f;
+                draw_minunithealthbar = true;
 
-            Draw.reset();
+                float curStroke = (float) Core.settings.getInt("playerEffectCurStroke") / 10f;
+                Color effectcolor = unit.team.color;
 
-        }else if(Core.settings.getInt("superUnitEffect") == 2 && unit.controller() instanceof Player){
-            unitTrans = 100f;
-            draw_minunithealthbar = true;
+                float sectorRad = 0.14f, rotateSpeed = 0.5f;
+                int sectors = 5;
 
-            float curStroke = (float)Core.settings.getInt("playerEffectCurStroke") / 10f;
-            Color effectcolor = unit.team.color;
+                Lines.stroke(Lines.getStroke() * curStroke);
 
-            float sectorRad = 0.14f, rotateSpeed = 0.5f;
-            int sectors = 5;
+                Draw.z(Layer.effect - 2f);
+                Draw.color(effectcolor);
 
-            Lines.stroke(Lines.getStroke() * curStroke);
+                Tmp.v1.trns(unit.rotation - 90, unit.x, unit.y).add(unit.x, unit.y);
+                float rx = Tmp.v1.x, ry = Tmp.v1.y;
 
-            Draw.z(Layer.effect - 2f);
-            Draw.color(effectcolor);
-
-            Tmp.v1.trns(unit.rotation - 90, unit.x, unit.y).add(unit.x, unit.y);
-            float rx = Tmp.v1.x, ry = Tmp.v1.y;
-
-            if(curStroke > 0){
-                for(int i = 0; i < sectors; i++){
-                    float rot = unit.rotation + i * 360f / sectors + Time.time * rotateSpeed;
-                    Lines.arc(unit.x, unit.y, maxRange, sectorRad, rot,(int)(50 + maxRange/10));
+                if (curStroke > 0) {
+                    for (int i = 0; i < sectors; i++) {
+                        float rot = unit.rotation + i * 360f / sectors + Time.time * rotateSpeed;
+                        Lines.arc(unit.x, unit.y, maxRange, sectorRad, rot, (int) (50 + maxRange / 10));
+                    }
                 }
-            }
 
 
-            Draw.reset();
+                Draw.reset();
 
-        }else if(Core.settings.getBool("alwaysShowPlayerUnit") && (unit.controller() instanceof Player || unit.controller().isBeingControlled(player.unit()))){
-            unitTrans = 100f;
-            draw_minunithealthbar = true;
-            Draw.color(unit.team.color);
-            Draw.alpha((float)Core.settings.getInt("unitweapon_range") / 100f);
-            Lines.dashCircle(unit.x, unit.y, maxRange);
-        }else if(draw_minunithealthbar){
-            float alertRange = (float)Core.settings.getInt("unitAlertRange");
-            boolean turretAlert = alertRange > 0 && (alertRange >= 30f ||
-                    ((!player.unit().isNull() && player.unit().targetable(unit.team)) || (control.input.commandMode && control.input.selectedUnits.size>0)));
-            boolean canHitPlayer = player.unit().isFlying() ? targetAir : targetGround;
-            boolean canHitCommand = control.input.commandMode && (control.input.selectedUnits.size>0);
-            boolean showHitPlayer = unit.team != player.team() && canHitPlayer && (player.unit().dst(unit.x,unit.y) <= (maxRange+ (float)Core.settings.getInt("unitAlertRange") * tilesize));
-            boolean showHitCommand = unit.team != player.team() && canHitCommand &&
-                    Core.input.mouseWorld().dst(unit.x,unit.y) <= (maxRange+ (float)Core.settings.getInt("unitAlertRange") * tilesize);
-
-            Draw.color(unit.team.color);
-            float unitRangeAlpha = turretAlert &&(showHitPlayer||showHitCommand)? 1f: Core.settings.getInt("unitweapon_range") / 100f;
-            Draw.alpha(unitRangeAlpha);
-            Lines.dashCircle(unit.x, unit.y, maxRange);
-        }
-
-
-        if(Core.settings.getInt("unitTargetType")>0 && unit.controller() instanceof Player){
-            Draw.reset();
-            Draw.z(Layer.effect);
-            Color effectColor = unit.controller() == Vars.player? getPlayerEffectColor(): unit.team.color;
-            Draw.color(effectColor,0.8f);
-            Lines.stroke(1f);
-            Lines.line(unit.x, unit.y, unit.aimX, unit.aimY);
-
-            switch (Core.settings.getInt("unitTargetType")){
-                case 1: Lines.dashCircle(unit.aimX, unit.aimY, 8);break;
-                case 2: Drawf.target(unit.aimX, unit.aimY, 6f,0.7f, effectColor);break;
-                case 3: Drawf.target2(unit.aimX, unit.aimY, 6f,0.7f, effectColor);break;
-                case 4: Drawf.targetc(unit.aimX, unit.aimY, 6f,0.7f, effectColor);break;
-                case 5: Drawf.targetd(unit.aimX, unit.aimY, 6f,0.7f, effectColor);break;
-            }
-        }
-
-        if(!control.input.commandMode && Core.settings.getBool("alwaysShowUnitRTSAi") && unit.isCommandable() && (unit.team() == player.team() || !state.rules.pvp ) ){
-            Draw.z(Layer.effect);
-            CommandAI ai = unit.command();
-            //draw target line
-            if(ai.targetPos != null){
-                Position lineDest = ai.attackTarget != null ? ai.attackTarget : ai.targetPos;
+            } else if (Core.settings.getBool("alwaysShowPlayerUnit") && (unit.controller() instanceof Player || unit.controller().isBeingControlled(player.unit()))) {
+                unitTrans = 100f;
+                draw_minunithealthbar = true;
                 Draw.color(unit.team.color);
-                Drawf.limitLineColor(unit, lineDest, unit.hitSize / 2f, 3.5f,unit.team.color);
+                Draw.alpha((float) Core.settings.getInt("unitweapon_range") / 100f);
+                Lines.dashCircle(unit.x, unit.y, maxRange);
+            } else if (draw_minunithealthbar) {
+                float alertRange = (float) Core.settings.getInt("unitAlertRange");
+                boolean turretAlert = alertRange > 0 && (alertRange >= 30f ||
+                        ((!player.unit().isNull() && player.unit().targetable(unit.team)) || (control.input.commandMode && control.input.selectedUnits.size > 0)));
+                boolean canHitPlayer = player.unit().isFlying() ? targetAir : targetGround;
+                boolean canHitCommand = control.input.commandMode && (control.input.selectedUnits.size > 0);
+                boolean showHitPlayer = unit.team != player.team() && canHitPlayer && (player.unit().dst(unit.x, unit.y) <= (maxRange + (float) Core.settings.getInt("unitAlertRange") * tilesize));
+                boolean showHitCommand = unit.team != player.team() && canHitCommand &&
+                        Core.input.mouseWorld().dst(unit.x, unit.y) <= (maxRange + (float) Core.settings.getInt("unitAlertRange") * tilesize);
 
-                if(ai.attackTarget == null){
+                Draw.color(unit.team.color);
+                float unitRangeAlpha = turretAlert && (showHitPlayer || showHitCommand) ? 1f : Core.settings.getInt("unitweapon_range") / 100f;
+                Draw.alpha(unitRangeAlpha);
+                Lines.dashCircle(unit.x, unit.y, maxRange);
+            }
+
+
+            if (Core.settings.getInt("unitTargetType") > 0 && unit.controller() instanceof Player) {
+                Draw.reset();
+                Draw.z(Layer.effect);
+                Color effectColor = unit.controller() == Vars.player ? getPlayerEffectColor() : unit.team.color;
+                Draw.color(effectColor, 0.8f);
+                Lines.stroke(1f);
+                Lines.line(unit.x, unit.y, unit.aimX, unit.aimY);
+
+                switch (Core.settings.getInt("unitTargetType")) {
+                    case 1:
+                        Lines.dashCircle(unit.aimX, unit.aimY, 8);
+                        break;
+                    case 2:
+                        Drawf.target(unit.aimX, unit.aimY, 6f, 0.7f, effectColor);
+                        break;
+                    case 3:
+                        Drawf.target2(unit.aimX, unit.aimY, 6f, 0.7f, effectColor);
+                        break;
+                    case 4:
+                        Drawf.targetc(unit.aimX, unit.aimY, 6f, 0.7f, effectColor);
+                        break;
+                    case 5:
+                        Drawf.targetd(unit.aimX, unit.aimY, 6f, 0.7f, effectColor);
+                        break;
+                }
+            }
+
+            if (!control.input.commandMode && Core.settings.getBool("alwaysShowUnitRTSAi") && unit.isCommandable() && arcInfoControl()) {
+                Draw.z(Layer.effect);
+                CommandAI ai = unit.command();
+                //draw target line
+                if (ai.targetPos != null) {
+                    Position lineDest = ai.attackTarget != null ? ai.attackTarget : ai.targetPos;
                     Draw.color(unit.team.color);
-                    Drawf.square(lineDest.getX(), lineDest.getY(), 3.5f, unit.team.color);
+                    Drawf.limitLineColor(unit, lineDest, unit.hitSize / 2f, 3.5f, unit.team.color);
+
+                    if (ai.attackTarget == null) {
+                        Draw.color(unit.team.color);
+                        Drawf.square(lineDest.getX(), lineDest.getY(), 3.5f, unit.team.color);
+                    }
                 }
+
+                //Drawf.square(unit.x, unit.y, unit.hitSize / 1.4f + 1f);
+
+                if (ai.attackTarget != null) {
+                    Draw.color(unit.team.color);
+                    Drawf.target(ai.attackTarget.getX(), ai.attackTarget.getY(), 6f, unit.team.color);
+                }
+                Draw.color();
             }
 
-            //Drawf.square(unit.x, unit.y, unit.hitSize / 1.4f + 1f);
-
-            if(ai.attackTarget != null){
-                Draw.color(unit.team.color);
-                Drawf.target(ai.attackTarget.getX(), ai.attackTarget.getY(), 6f, unit.team.color);
-            }
-            Draw.color();
         }
-
         if(unit.controller().isBeingControlled(player.unit())){
             drawControl(unit);
         }

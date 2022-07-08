@@ -450,11 +450,11 @@ public class BlockRenderer{
                             Draw.z(Layer.block);
                         }
                     }
-                    if(renderer.drawStatus && block.hasConsumers && (build.team == player.team()|| Core.settings.getBool("showOtherTeamState"))){
+                    if(renderer.drawStatus && block.hasConsumers && arcInfoControl(build.team)){
                         build.drawStatus();
                     }
 
-                    if(Core.settings.getBool("blockdisabled") && (build.team == player.team()|| Core.settings.getBool("showOtherTeamState")) && !build.enabled()){
+                    if(Core.settings.getBool("blockdisabled") && arcInfoControl(build.team) && !build.enabled()){
                         build.drawDisabled();
                     }
 

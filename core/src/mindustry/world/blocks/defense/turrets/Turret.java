@@ -352,7 +352,7 @@ public class Turret extends ReloadTurret{
                 }
                 Draw.reset();
             }
-            if ( (hasAmmo()) && (!state.rules.pvp || team == player.team()) ){
+            if ( (hasAmmo()) && arcInfoControl(team) ){
                 boolean canHitCommand = (control.input.block!=null && targetGround) || (control.input.commandMode && (control.input.selectedUnits.size>0));
                 boolean turretAlert = Core.settings.getInt("turretAlertRange") > 0f &&
                         ((!player.unit().isNull() && player.unit().targetable(team)) || canHitCommand);

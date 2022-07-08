@@ -16,8 +16,7 @@ import mindustry.type.UnitType;
 import mindustry.ui.Fonts;
 import mindustry.ui.Styles;
 
-import static mindustry.Vars.content;
-import static mindustry.Vars.state;
+import static mindustry.Vars.*;
 import static mindustry.gen.Tex.*;
 import static mindustry.ui.Styles.*;
 
@@ -128,6 +127,7 @@ public class OtherCoreItemDisplay extends Table {
         teamsTable.label(() -> "").get().setFontScale(fontScl);
         teams0 = Vars.state.teams.getActive();
         teams0.sort(team -> -team.cores.size);
+        teams0.filter(team -> arcInfoControl(team.team));
 
         teams = new Seq<>();
         for(int ii = 0; ii < showTeams; ii++){
