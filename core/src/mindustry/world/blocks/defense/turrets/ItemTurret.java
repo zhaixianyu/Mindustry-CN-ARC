@@ -64,7 +64,7 @@ public class ItemTurret extends Turret{
 
         });
 
-        if(Core.settings.getBool("arcTurretPlacementItem") && ammoTypes.size>=2) {
+        if(Core.settings.getBool("arcTurretPlacementItem")) {
             int sectors = ammoTypes.size;
             drawIndex = 0;
             float iconSize = 6f + 2f * size;
