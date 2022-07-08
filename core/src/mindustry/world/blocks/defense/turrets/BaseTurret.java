@@ -1,6 +1,7 @@
 package mindustry.world.blocks.defense.turrets;
 
 import arc.Core;
+import arc.graphics.g2d.Draw;
 import arc.math.*;
 import arc.struct.*;
 import arc.util.*;
@@ -63,6 +64,11 @@ public class BaseTurret extends Block{
         super.drawPlace(x, y, rotation, valid);
 
         Drawf.dashCircle(x * tilesize + offset, y * tilesize + offset, range, Pal.placing);
+        if(state.rules.placeRangeCheck && Core.settings.getBool("arcTurretPlaceCheck")){
+            Draw.alpha(0.5f);
+            Drawf.dashCircle(x * tilesize + offset, y * tilesize + offset, placeOverlapRange, Pal.remove);
+        }
+
     }
 
     @Override

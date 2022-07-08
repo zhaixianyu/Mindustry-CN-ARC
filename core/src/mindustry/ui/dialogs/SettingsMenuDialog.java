@@ -545,6 +545,7 @@ public class SettingsMenuDialog extends BaseDialog{
         arc.checkPref("showTurretAmmo", false);
         arc.checkPref("showTurretAmmoAmount", false);
         arc.checkPref("arcTurretPlacementItem", false);
+        arc.checkPref("arcTurretPlaceCheck",false);
         arc.sliderPref("turretShowRange", 0, 0, 3, 1, s -> {
             if(s==0){return "关闭";}
             else if(s==1){return "仅对地";}
