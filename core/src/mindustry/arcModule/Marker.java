@@ -79,44 +79,32 @@ public class Marker{
             return true;
         }
 
-        int preFixedIndex = text.indexOf(preFixed);
+            MarkType markType = null;
+            int Indexer = -1;
 
-        if(preFixedIndex != -1){
-            int s = text.indexOf(">", preFixedIndex) + 1;
+            for(MarkType markType1 : markTypes){
+                if (text.contains("<" + markType1.localizedName + ">")) {markType = markType1;Indexer = text.indexOf("<" + markType1.localizedName + ">");}
+            }
+            if(Indexer>10 && markType!=null){
+                /* Parse position */
+                String posStr = text.substring(text.indexOf('(', Indexer + 1));
 
-            int typeStart = text.indexOf('<', s);
-            int typeEnd = text.indexOf('>', s);
+                Vec2 pos = Tmp.v1;
 
-            if(typeStart == -1 || typeEnd == -1){
-                return false;
+                try{
+                    pos.fromString(posStr);
+                }catch(Throwable e){
+                    Log.err("Cannot resolve position from " + posStr);
+                    return false;
+                }
+
+                mark(markType, pos.scl(tilesize), false);
+                ui.MessageDialog.addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.markLoc,text,pos));
+                return true;
             }
 
 
-            String typeLocalized = text.substring(typeStart + 1, typeEnd);
 
-            MarkType markType = findLocalizedName(typeLocalized);
-
-            if(markType == null){
-                Log.err("Cannot resolve mark type from " + typeLocalized);
-                return false;
-            }
-
-            /* Parse position */
-            String posStr = text.substring(text.indexOf('(', s + 1));
-
-            Vec2 pos = Tmp.v1;
-
-            try{
-                pos.fromString(posStr);
-            }catch(Throwable e){
-                Log.err("Cannot resolve position from " + posStr);
-                return false;
-            }
-
-            mark(markType, pos.scl(tilesize), false);
-            ui.MessageDialog.addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.markLoc,text,pos));
-            return true;
-        }
 
         if(text.contains("[YELLOW][集合]")&& text.contains("[WHITE]\"[WHITE]\",输入\"[gold]go[WHITE]\"前往")){
 
