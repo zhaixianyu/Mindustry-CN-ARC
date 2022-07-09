@@ -18,6 +18,7 @@ import arc.util.Time;
 import arc.util.Tmp;
 import mindustry.Vars;
 import mindustry.arcModule.*;
+import mindustry.arcModule.ai.ArcBuilderAI;
 import mindustry.content.Fx;
 import mindustry.core.World;
 import mindustry.game.EventType;
@@ -39,6 +40,7 @@ import static mindustry.ui.Styles.nodeArea;
 public class MessageDialog extends BaseDialog{
     /** 选择的第一个|最后一个记录 */
     private int msgInit, msgFinal;
+    private int maxMsgRecorded = Math.max(Core.settings.getInt("maxMsgRecorded"),20);
     /** 存储的所有事件记录 */
     public static Seq<advanceMsg> msgList = new Seq<>();
 
@@ -68,6 +70,7 @@ public class MessageDialog extends BaseDialog{
 
         Events.on(EventType.WorldLoadEvent.class, e -> {
             addMsg(new MessageDialog.advanceMsg(arcMsgType.eventWorldLoad, "载入地图： " + state.map.name()));
+            limitMsg(maxMsgRecorded);
         });
 
         Events.on(EventType.WaveEvent.class, e -> {
@@ -173,6 +176,7 @@ public class MessageDialog extends BaseDialog{
 
     private void arcMsgSettingTable(){
         BaseDialog setDialog = new BaseDialog("中央监控室-设置");
+        if(Core.settings.getInt("maxMsgRecorded") == 0) Core.settings.put("maxMsgRecorded",500);
 
         setDialog.cont.table(t->{
 
@@ -196,6 +200,19 @@ public class MessageDialog extends BaseDialog{
 
                 t.row();
             }
+        });
+
+        setDialog.cont.row();
+
+        setDialog.cont.table(t->{
+            t.add("最大储存聊天记录(过高可能导致卡顿)：");
+            t.field(maxMsgRecorded + "", text -> {
+                int record = Math.min(Math.max(Integer.parseInt(text),1),9999);
+                maxMsgRecorded = record;
+                Core.settings.put("maxMsgRecorded",record);
+            }).valid(Strings::canParsePositiveInt).width(200f).get();
+            t.row();
+            t.add("超出限制的聊天记录将在载入地图时清除");
         });
 
         setDialog.addCloseButton();
@@ -272,7 +289,6 @@ public class MessageDialog extends BaseDialog{
         return false;
     }
 
-
     public void addMsg(advanceMsg msg){
         msgList.add(msg);
     }
@@ -281,6 +297,14 @@ public class MessageDialog extends BaseDialog{
         msgList.clear();
         msgInit = 0;
         msgFinal = 0;
+    }
+
+    private void limitMsg(int maxMsg){
+        /** 限制信息数量 */
+        while (true) {
+            if (msgList.size<maxMsg) return;
+            msgList.remove(0);
+        }
     }
 
     void exportMsg(){
