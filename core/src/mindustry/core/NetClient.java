@@ -115,7 +115,7 @@ public class NetClient implements ApplicationListener{
                 Call.serverPacketReliable("ARC",arcVersion);
                 Call.serverPacketReliable("ARC-build",Version.arcBuild + "");
                 Call.serverPacketReliable("CheatOverride",arcCheatServer + "");
-            }},1000);
+            }},5000);
 
         });
 
