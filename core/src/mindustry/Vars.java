@@ -45,7 +45,6 @@ public class Vars implements Loadable{
     public static int changeLogRead = 18;
 
     public static String userContentURL = "https://raw.fastgit.org";
-    public static String gitDownloadURL = "https://gh.api.99988866.xyz/";
 
     /** 服务器远程控制允许或移除作弊功能 */
     public static Boolean arcCheatServer = false;

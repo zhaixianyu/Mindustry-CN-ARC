@@ -3,9 +3,13 @@ package mindustry.net;
 import arc.*;
 import arc.files.*;
 import arc.func.*;
+import arc.scene.ui.CheckBox;
+import arc.scene.ui.TextField;
+import arc.scene.ui.layout.Table;
 import arc.util.*;
 import arc.util.serialization.*;
 import mindustry.*;
+import mindustry.arcModule.ui.dialogs.MessageDialog;
 import mindustry.core.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
@@ -29,6 +33,10 @@ public class BeControl{
     private String updateUrl;
     private String mobileUrl;
     private int updateBuild;
+    public static String gitDownloadURL = "gh.tinylake.tk/";
+
+    private Table beTable;
+    private TextField URLField;
 
     /** @return whether this is a bleeding edge build. */
     public boolean active(){
@@ -56,6 +64,47 @@ public class BeControl{
                 e.printStackTrace();
             }
         }
+    }
+
+    private void BeControlTable(){
+        BaseDialog beDialog = new BaseDialog("自动更新设置");
+
+        beDialog.cont.table(a -> beTable = a
+        );
+        buildTable();
+
+        beDialog.addCloseButton();
+
+        beDialog.show();
+    }
+
+    private void buildTable(){
+        beTable.clear();
+        beTable.table(t->{
+            t.add("下载镜像站，不填表示直连github(通常需要梯子)\n你可选择自行输入或者直接点下面的可选按钮");
+            t.row();
+            URLField = t.field(gitDownloadURL, text->{
+                gitDownloadURL = text;
+            }).get();
+            t.button("wz提供镜像",()->{
+                gitDownloadURL = "gh.tinylake.tk/";
+                URLField.setText(gitDownloadURL);
+            }).height(50f).width(100f);
+        });
+
+        beTable.image().width(150f).padTop(6f);
+
+        beTable.add("下载链接");
+
+        beTable.table(t->{
+            t.add("PC:");
+            t.field(updateUrl,text->{}).width(100f);
+            t.button("打开",()->Core.app.openURI(updateUrl));
+            t.row();
+            t.add("PE:");
+            t.field(mobileUrl,text->{}).width(100f);
+            t.button("打开",()->Core.app.openURI(mobileUrl));
+        });
     }
 
     /** asynchronously checks for updates. */
