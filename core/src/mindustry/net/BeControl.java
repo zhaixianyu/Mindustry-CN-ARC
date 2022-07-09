@@ -33,7 +33,7 @@ public class BeControl{
     private String updateUrl;
     private String mobileUrl;
     private int updateBuild;
-    public static String gitDownloadURL = "gh.tinylake.tk/";
+    public static String gitDownloadURL = "https://gh.tinylake.tk/";
 
     private Table beTable;
     private TextField URLField;
