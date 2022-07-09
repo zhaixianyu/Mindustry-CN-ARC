@@ -28,11 +28,11 @@ public class Marker{
     public static MarkType mark, gatherMark, attackMark, defenseMark, quesMark;
 
     public static Seq<MarkType> markTypes = Seq.with(
-            mark = new MarkType("mark", Fx.arcMarker, Color.valueOf("eab678")),
-            gatherMark = new MarkType("gather", Fx.arcGatherMarker, Color.cyan),
-            attackMark = new MarkType("attack", Fx.arcAttackMarker, Color.red),
-            defenseMark = new MarkType("defense", Fx.arcDefenseMarker, Color.acid),
-            quesMark = new MarkType("question", Fx.arcQuesMarker, Color.pink)
+            mark = new MarkType("Mark", Fx.arcMarker, Color.valueOf("eab678")),
+            gatherMark = new MarkType("Gather", Fx.arcGatherMarker, Color.cyan),
+            attackMark = new MarkType("Attack", Fx.arcAttackMarker, Color.red),
+            defenseMark = new MarkType("Defend", Fx.arcDefenseMarker, Color.acid),
+            quesMark = new MarkType("What", Fx.arcQuesMarker, Color.pink)
     );
 
     public static boolean isLocal;
@@ -83,7 +83,7 @@ public class Marker{
             int Indexer = -1;
 
             for(MarkType markType1 : markTypes){
-                if (text.contains("<" + markType1.localizedName + ">")) {markType = markType1;Indexer = text.indexOf("<" + markType1.localizedName + ">");}
+                if (text.contains("<" + markType1.name + ">") || text.contains("<" + markType1.localizedName + ">")) {markType = markType1;Indexer = text.indexOf("<" + markType1.name + ">");}
             }
             if(Indexer>10 && markType!=null){
                 /* Parse position */
@@ -178,7 +178,7 @@ public class Marker{
 
         public void sendMessage(Vec2 pos){
             String text = versionFixed +
-                    "[#" + color + "]" + "<" + localizedName + ">" +
+                    "[#" + color + "]" + "<" + name + ">" +
                     "[white]" + ": " +
                     "(" + World.toTile(pos.x) + "," + World.toTile(pos.y)+")";
             Call.sendChatMessage(text);
