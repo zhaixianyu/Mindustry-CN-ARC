@@ -113,6 +113,43 @@ public class ItemTurret extends Turret{
     public class ItemTurretBuild extends TurretBuild{
 
         @Override
+        public void drawSelect(){
+
+            if(Core.settings.getBool("arcTurretPlacementItem")) {
+                if (ammo.isEmpty()) {
+                    int sectors = ammoTypes.size;
+                    drawIndex = 0;
+                    float iconSize = 6f + 2f * size;
+                    ammoTypes.each((Item, BulletType) -> {
+                        drawIndex += 1;
+                        if (!Item.unlockedNow()) return;
+                        for (int i = 0; i < 4; i++) {
+                            float rot = (i + ((float) drawIndex) / sectors) / 4 * 360f + Time.time * 0.5f;
+                            Draw.rect(Item.uiIcon,
+                                    x + offset + (Mathf.sin((float) Math.toRadians(rot)) * (range + BulletType.rangeChange + iconSize + 1f)),
+                                    y + offset + (Mathf.cos((float) Math.toRadians(rot)) * (range + BulletType.rangeChange + iconSize + 1f)),
+                                    iconSize, iconSize, -rot);
+                        }
+                    });
+                }
+                else{
+                    float iconSize = 6f + 2f * size;
+                    ItemTurret.ItemEntry entry = (ItemTurret.ItemEntry) ammo.peek();
+                    Item lastAmmo = entry.item;
+                    for (int i = 0; i < 4; i++) {
+                        float rot = i / 4f * 360f + Time.time * 0.5f;
+                        Draw.rect(lastAmmo.uiIcon,
+                                x + offset + (Mathf.sin((float) Math.toRadians(rot)) * (range + entry.type().rangeChange + iconSize + 1f)),
+                                y + offset + (Mathf.cos((float) Math.toRadians(rot)) * (range + entry.type().rangeChange + iconSize + 1f)),
+                                iconSize, iconSize, -rot);
+                    }
+                }
+            }
+
+            super.drawSelect();
+        }
+
+        @Override
         public void onProximityAdded(){
             super.onProximityAdded();
 

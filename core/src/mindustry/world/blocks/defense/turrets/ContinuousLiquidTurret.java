@@ -95,6 +95,39 @@ public class ContinuousLiquidTurret extends ContinuousTurret{
     public class ContinuousLiquidTurretBuild extends ContinuousTurretBuild{
 
         @Override
+        public void drawSelect(){
+            super.drawSelect();
+            if(Core.settings.getBool("arcTurretPlacementItem")){
+                if(liquids.currentAmount()==0){
+                    int sectors = ammoTypes.size;
+                    drawIndex = 0;
+                    float iconSize = 6f + 2f * size;
+                    ammoTypes.each((Item, BulletType) -> {
+                        drawIndex += 1;
+                        if (!Item.unlockedNow()) return;
+                        for (int i = 0; i < 4; i++) {
+                            float rot = (i + ((float)drawIndex) / sectors) / 4 * 360f + Time.time * 0.5f;
+                            Draw.rect(Item.uiIcon,
+                                    x + offset + (Mathf.sin((float) Math.toRadians(rot)) * (range + BulletType.rangeChange + iconSize + 1f)),
+                                    y + offset + (Mathf.cos((float) Math.toRadians(rot)) * (range + BulletType.rangeChange + iconSize + 1f)),
+                                    iconSize, iconSize, -rot);
+                        }
+                    });
+                }
+                else{
+                    float iconSize = 6f + 2f * size;
+                    for (int i = 0; i < 4; i++) {
+                        float rot = i / 4f * 360f + Time.time * 0.5f;
+                        Draw.rect(liquids.current().uiIcon,
+                                x + offset + (Mathf.sin((float) Math.toRadians(rot)) * (range + ammoTypes.get(liquids.current()).rangeChange + iconSize + 1f)),
+                                y + offset + (Mathf.cos((float) Math.toRadians(rot)) * (range + ammoTypes.get(liquids.current()).rangeChange + iconSize + 1f)),
+                                iconSize, iconSize, -rot);
+                    }
+                }
+            }
+        }
+
+        @Override
         public boolean shouldActiveSound(){
             return wasShooting && enabled;
         }
