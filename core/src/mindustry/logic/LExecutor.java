@@ -1293,7 +1293,7 @@ public class LExecutor{
                         if(b instanceof Floor f && tile.floor() != f && !f.isOverlay()) tile.setFloorNet(f);
                     }
                     case block -> {
-                        if(!b.isFloor()){
+                        if(!b.isFloor() || b == Blocks.air){
                             Team t = exec.team(team);
                             if(t == null) t = Team.derelict;
 
