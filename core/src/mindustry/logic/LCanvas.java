@@ -18,6 +18,7 @@ import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.logic.LStatements.*;
 import mindustry.ui.*;
+import mindustry.ui.dialogs.BaseDialog;
 
 public class LCanvas extends Table{
     public static final int maxJumpsDrawn = 100;
@@ -343,6 +344,9 @@ public class LCanvas extends Table{
 
                 addressLabel = t.add(index + "").style(Styles.outlineLabel).color(color).padRight(8).get();
 
+                t.button(Icon.add, Styles.logici, () -> {
+                }).size(24f).padRight(6).get().tapped(this::arcAppend);
+
                 t.button(Icon.copy, Styles.logici, () -> {
                 }).size(24f).padRight(6).get().tapped(this::copy);
 
@@ -426,6 +430,52 @@ public class LCanvas extends Table{
                 copy.elem = s;
                 copy.setupUI();
             }
+        }
+
+        public void arcAppend(){
+            BaseDialog dialog = new BaseDialog("@add");
+            dialog.cont.table(table -> {
+                table.background(Tex.button);
+                table.pane(t -> {
+                    for(Prov<LStatement> prov : LogicIO.allStatements){
+                        LStatement example = prov.get();
+                        if(example instanceof InvalidStatement || example.hidden() || (example.privileged() && !privileged) || (example.nonPrivileged() && privileged)) continue;
+
+                        LCategory category = example.category();
+                        Table cat = t.find(category.name);
+                        if(cat == null){
+                            t.table(s -> {
+                                if(category.icon != null){
+                                    s.image(category.icon, Pal.darkishGray).left().size(15f).padRight(10f);
+                                }
+                                s.add(category.localized()).color(Pal.darkishGray).left().tooltip(category.description());
+                                s.image(Tex.whiteui, Pal.darkishGray).left().height(5f).growX().padLeft(10f);
+                            }).growX().pad(5f).padTop(10f);
+
+                            t.row();
+
+                            cat = t.table(c -> {
+                                c.top().left();
+                            }).name(category.name).top().left().growX().fillY().get();
+                            t.row();
+                        }
+
+                        TextButton.TextButtonStyle style = new TextButton.TextButtonStyle(Styles.flatt);
+                        style.fontColor = category.color;
+                        style.font = Fonts.outline;
+
+                        cat.button(example.name(), style, () -> {
+                            statements.addChildAt(statements.getChildren().indexOf(this) + 1,new StatementElem(prov.get()));
+                            statements.layout();
+                            dialog.hide();
+                        }).size(130f, 50f).self(c -> tooltip(c, "lst." + example.name())).top().left();
+
+                        if(cat.getChildren().size % 3 == 0) cat.row();
+                    }
+                }).grow();
+            }).fill().maxHeight(Core.graphics.getHeight() * 0.8f);
+            dialog.addCloseButton();
+            dialog.show();
         }
 
         @Override
