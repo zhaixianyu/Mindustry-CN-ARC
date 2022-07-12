@@ -145,11 +145,13 @@ public class Build{
     public static boolean validPlace(Block type, Team team, int x, int y, int rotation, boolean checkVisible){
         //the wave team can build whatever they want as long as it's visible - banned blocks are not applicable
         if (Core.settings.getBool("worldCreator")) {
+            Tile tile = world.tile(x, y);
+            if (tile == null) return false;
             if (type instanceof OverlayFloor of) {
-                return !(world.tile(x, y).overlay == of);
+                return !(tile.overlay == of);
             }
             if (type instanceof Floor f) {
-                return !(world.floor(x, y) == f);
+                return !(tile.floor == f);
             }
         }
         if(type == null || (checkVisible && (!type.environmentBuildable() || (!type.isPlaceable() && !(state.rules.waves && team == state.rules.waveTeam && type.isVisible()))))){
