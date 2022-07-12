@@ -92,7 +92,7 @@ public class Blocks{
     //defense - erekir
     radar,
     buildTower,
-    regenProjector, barrierProjector,
+    regenProjector, barrierProjector, shockwaveTower,
     //campaign only
     shieldProjector,
     largeShieldProjector,
@@ -1826,6 +1826,13 @@ public class Blocks{
             consumePower(4f);
         }};
 
+        shockwaveTower = new ShockwaveTower("shockwave-tower"){{
+            requirements(Category.effect, with(Items.surgeAlloy, 50, Items.silicon, 150, Items.oxide, 30, Items.tungsten, 100));
+            size = 3;
+            consumeLiquids(LiquidStack.with(Liquids.cyanogen, 1f / 60f));
+            consumePower(80f / 60f);
+        }};
+
         //TODO 5x5??
         shieldProjector = new BaseShield("shield-projector"){{
             requirements(Category.effect, BuildVisibility.editorOnly, with());
@@ -2438,8 +2445,11 @@ public class Blocks{
             size = 3;
             ambientSound = Sounds.hum;
             ambientSoundVolume = 0.06f;
-            spinSpeed = 0.6f;
-            spinners = true;
+
+            drawer = new DrawMulti(new DrawDefault(), new DrawBlurSpin("-rotator", 0.6f * 9f){{
+                blurThresh = 0.01f;
+            }});
+
             hasLiquids = true;
             outputLiquid = new LiquidStack(Liquids.water, 5f / 60f / 9f);
             liquidCapacity = 20f;
@@ -2469,9 +2479,7 @@ public class Blocks{
             ambientSoundVolume = 0.06f;
         }};
 
-        //TODO cooler name?
         pyrolysisGenerator = new ConsumeGenerator("pyrolysis-generator"){{
-            //TODO requirements
             requirements(Category.power, with(Items.graphite, 50, Items.carbide, 50, Items.oxide, 60f, Items.silicon, 50));
             powerProduction = 27f;
 
@@ -2492,7 +2500,7 @@ public class Blocks{
 
             liquidCapacity = 30f * 5;
 
-            liquidOutput = new LiquidStack(Liquids.water, 20f / 60f);
+            outputLiquid = new LiquidStack(Liquids.water, 20f / 60f);
 
             generateEffect = Fx.none;
 
