@@ -33,7 +33,8 @@ public class BeControl{
     private String updateUrl;
     private String mobileUrl;
     private int updateBuild;
-    public static String gitDownloadURL = "https://gh.tinylake.tk/";
+    public static String gitDownloadURL = "https://gh.tinylake.tk//";
+    private String directDesktopURL,directMobileURL;
 
     private Table beTable;
     private TextField URLField;
@@ -71,6 +72,7 @@ public class BeControl{
 
         beDialog.cont.table(a -> beTable = a
         );
+
         buildTable();
 
         beDialog.addCloseButton();
@@ -80,30 +82,103 @@ public class BeControl{
 
     private void buildTable(){
         beTable.clear();
+
+        beTable.table(t->{
+            t.add("[violet]！！！发现了新版本：" + updateBuild +"，你的版本为：" + arcVersion);
+        });
+
+        beTable.row();
+        beTable.add("镜像设置").color(getThemeColor()).colspan(4).pad(10).padTop(15).padBottom(4).row();
+        beTable.image().color(getThemeColor()).fillX().height(3).colspan(4).padTop(0).padBottom(10).row();
+
         beTable.table(t->{
             t.add("下载镜像站，不填表示直连github(通常需要梯子)\n你可选择自行输入或者直接点下面的可选按钮");
             t.row();
-            URLField = t.field(gitDownloadURL, text->{
-                gitDownloadURL = text;
-            }).get();
+            t.table(tt->{
+                URLField = tt.field(gitDownloadURL, text->{
+                    gitDownloadURL = text;
+                    updateUrl = gitDownloadURL + directDesktopURL;
+                    mobileUrl = gitDownloadURL + directMobileURL;
+                }).width(250f).get();
+                tt.button(Icon.refreshSmall,()->buildTable());
+            });
+            t.row();
             t.button("wz提供镜像",()->{
-                gitDownloadURL = "gh.tinylake.tk/";
-                URLField.setText(gitDownloadURL);
-            }).height(50f).width(100f);
+                gitDownloadURL = "https://gh.tinylake.tk//";
+                updateUrl = gitDownloadURL + directDesktopURL;
+                mobileUrl = gitDownloadURL + directMobileURL;
+                buildTable();
+            }).height(50f).width(300f);
         });
 
-        beTable.image().width(150f).padTop(6f);
-
-        beTable.add("下载链接");
+        beTable.row();
+        beTable.add("PC端").color(getThemeColor()).colspan(4).pad(10).padTop(15).padBottom(4).row();
+        beTable.image().color(getThemeColor()).fillX().height(3).colspan(4).padTop(0).padBottom(10).row();
 
         beTable.table(t->{
-            t.add("PC:");
-            t.field(updateUrl,text->{}).width(100f);
-            t.button("打开",()->Core.app.openURI(updateUrl));
+            t.table(tt->{
+                tt.field(updateUrl,text->{
+                    updateUrl = text;
+                }).width(300f);
+                tt.button("♐",()-> {
+                    if(!Core.app.openURI(updateUrl)){
+                        ui.showErrorMessage("打开失败，网址已复制到粘贴板\n请自行在阅览器打开");
+                        Core.app.setClipboardText(updateUrl);
+                    }
+                }).width(50f);
+            });
             t.row();
-            t.add("PE:");
-            t.field(mobileUrl,text->{}).width(100f);
-            t.button("打开",()->Core.app.openURI(mobileUrl));
+            t.button("PC-自动下载安装",()->{
+                boolean[] cancel = {false};
+                float[] progress = {0};
+                int[] length = {0};
+                Fi file = bebuildDirectory.child("Mindustry CN-ARC-" + updateBuild + ".jar");
+                Fi fileDest = OS.hasProp("becopy") ?
+                        Fi.get(OS.prop("becopy")) :
+                        Fi.get(BeControl.class.getProtectionDomain().getCodeSource().getLocation().getPath());
+
+                BaseDialog dialog = new BaseDialog("@be.updating");
+                download(updateUrl, file, i -> length[0] = i, v -> progress[0] = v, () -> cancel[0], () -> {
+                    try{
+                        Runtime.getRuntime().exec(OS.isMac ?
+                                new String[]{javaPath, "-XstartOnFirstThread", "-DlastBuild=" + Version.arcBuild, "-Dberestart", "-Dbecopy=" + fileDest.absolutePath(), "-jar", file.absolutePath()} :
+                                new String[]{javaPath, "-DlastBuild=" + Version.arcBuild, "-Dberestart", "-Dbecopy=" + fileDest.absolutePath(), "-jar", file.absolutePath()}
+                        );
+                        System.exit(0);
+                    }catch(IOException e){
+                        ui.showException(e);
+                    }
+                }, e -> {
+                    dialog.hide();
+                    ui.showException(e);
+                });
+
+                dialog.cont.add(new Bar(() -> length[0] == 0 ? Core.bundle.get("be.updating") : (int)(progress[0] * length[0]) / 1024/ 1024 + "/" + length[0]/1024/1024 + " MB", () -> Pal.accent, () -> progress[0])).width(400f).height(70f);
+                dialog.buttons.button("@cancel", Icon.cancel, () -> {
+                    cancel[0] = true;
+                    dialog.hide();
+                }).size(210f, 64f);
+                dialog.setFillParent(false);
+                dialog.show();
+            }).width(300f);
+        });
+
+        beTable.row();
+        beTable.add("PE端").color(getThemeColor()).colspan(4).pad(10).padTop(15).padBottom(4).row();
+        beTable.image().color(getThemeColor()).fillX().height(3).colspan(4).padTop(0).padBottom(10).row();
+
+        beTable.table(t->{
+            t.table(tt->{
+                tt.field(mobileUrl,text->{
+                    mobileUrl = text;
+                }).width(300f);
+                tt.button("♐",()-> {
+                    if(!Core.app.openURI(mobileUrl)){
+                        ui.showErrorMessage("打开失败，网址已复制到粘贴板\n请自行在阅览器打开");
+                        Core.app.setClipboardText(mobileUrl);
+                    }
+                }).width(50f);
+            });
         });
     }
 
@@ -119,16 +194,18 @@ public class BeControl{
             int newBuild = Strings.parseInt(val.getString("tag_name", "0"));
             if(newBuild > Version.arcBuild){
                 Jval asset = val.get("assets").asArray().find(v -> v.getString("name", "").startsWith("Mindustry-CN-ARC-Desktop"));
+                directDesktopURL = asset.getString("browser_download_url", "");
                 String url = gitDownloadURL + "/" + asset.getString("browser_download_url", "");
                 updateAvailable = true;
                 updateBuild = newBuild;
                 updateUrl = url;
 
                 Jval mobileAsset = val.get("assets").asArray().find(v -> v.getString("name", "").startsWith("Mindustry-CN-ARC-Android"));
+                directMobileURL = mobileAsset.getString("browser_download_url", "");
                 mobileUrl = gitDownloadURL + "/" + mobileAsset.getString("browser_download_url", "");
 
                 Core.app.post(() -> {
-                    showUpdateDialog();
+                    BeControlTable();
                     done.get(true);
                 });
             }else{
