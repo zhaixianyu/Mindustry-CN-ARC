@@ -1067,8 +1067,8 @@ public class HudFragment{
             if (arcShowObjectives) {
                 table.labelWrap(() -> {
                     //不清楚地图是否会中途添加任务系统，所以只能随时rebuild
-                    if (arcShowObjectives != (state.rules.objectives.size > 0 || state.rules.mission != null)) {
-                        arcShowObjectives = (state.rules.objectives.size > 0 || state.rules.mission != null);
+                    if (arcShowObjectives != (state.rules.objectives.any() || state.rules.mission != null)) {
+                        arcShowObjectives = (state.rules.objectives.any() || state.rules.mission != null);
                         rebuild[0].run();
                     }
 
@@ -1136,8 +1136,8 @@ public class HudFragment{
                             () -> Calwaveshower(),
                             () -> Color.valueOf("ccffcc"),
                             () -> {
-                                if (arcShowObjectives != (state.rules.objectives.size > 0 || state.rules.mission != null)) {
-                                    arcShowObjectives = (state.rules.objectives.size > 0 || state.rules.mission != null);
+                                if (arcShowObjectives != (state.rules.objectives.any() || state.rules.mission != null)) {
+                                    arcShowObjectives = (state.rules.objectives.any() || state.rules.mission != null);
                                     rebuild[0].run();
                                 }
 
