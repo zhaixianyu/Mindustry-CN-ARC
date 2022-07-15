@@ -915,13 +915,21 @@ public class HudFragment{
             builder.setLength(0);
 
             //objectives override mission?
-            if(state.rules.objectives.size > 0){
-                var first = state.rules.objectives.first();
-                String text = first.text();
-                if(text != null){
-                    builder.append(text);
-                    return builder;
+            if(state.rules.objectives.any()){
+                boolean first = true;
+                for(var obj : state.rules.objectives){
+                    if(!obj.qualified()) continue;
+
+                    String text = obj.text();
+                    if(text != null){
+                        if(!first) builder.append('\n');
+                        builder.append(text);
+
+                        first = false;
+                    }
                 }
+
+                return builder;
             }
 
             //mission overrides everything
@@ -970,6 +978,28 @@ public class HudFragment{
         }).growX().pad(8f);
 
         table.row();
+
+        table.clicked(() -> {
+            if(state.rules.objectives.any()){
+                StringBuilder text = new StringBuilder();
+
+                boolean first = true;
+                for(var obj : state.rules.objectives){
+                    if(!obj.qualified()) continue;
+
+                    String details = obj.details();
+                    if(details != null){
+                        if(!first) text.append('\n');
+                        text.append(details);
+
+                        first = false;
+                    }
+                }
+
+                //TODO this, as said before, could be much better.
+                ui.showInfo(text.toString());
+            }
+        });
 
         return table;
     }
@@ -1042,16 +1072,30 @@ public class HudFragment{
                         rebuild[0].run();
                     }
 
-                    if (state.rules.objectives.size > 0) {
-                        var first = state.rules.objectives.first();
-                        String text = first.text();
-                        if (text != null) {
-                            if (hideObjectives && state.rules.objectives.first().text().length()>25){
-                                return state.rules.objectives.first().text().substring(0,20) + "...";
+                        if(state.rules.objectives.any()){
+                            StringBuilder objBuilder  = new StringBuilder();
+                            boolean first = true;
+                            for(var obj : state.rules.objectives){
+                                if(!obj.qualified()) continue;
+
+                                String text = obj.text();
+                                if(text != null){
+                                    if(!first) objBuilder.append('\n');
+                                    objBuilder.append(text);
+
+                                    first = false;
+                                }
                             }
-                            return state.rules.objectives.first().text();
+                            if (objBuilder != null) {
+                                if (hideObjectives && objBuilder.length()>25){
+                                    return objBuilder.substring(0,20) + "...";
+                                }
+                                return objBuilder;
+                            }
+
+                            return objBuilder;
                         }
-                    }
+
                     //mission overrides everything
                     if (state.rules.mission != null) {
                         if (hideObjectives && state.rules.mission.length()>25){
@@ -1064,6 +1108,25 @@ public class HudFragment{
                 ).growX().pad(8f);
                 table.clicked(() -> {
                     hideObjectives = !hideObjectives;
+                    if(state.rules.objectives.any()){
+                        StringBuilder text = new StringBuilder();
+
+                        boolean first = true;
+                        for(var obj : state.rules.objectives){
+                            if(!obj.qualified()) continue;
+
+                            String details = obj.details();
+                            if(details != null){
+                                if(!first) text.append('\n');
+                                text.append(details);
+
+                                first = false;
+                            }
+                        }
+
+                        //TODO this, as said before, could be much better.
+                        ui.showInfo(text.toString());
+                    }
                     rebuild[0].run();
                 });
 
