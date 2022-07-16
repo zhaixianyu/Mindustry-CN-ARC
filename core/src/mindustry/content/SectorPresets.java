@@ -1,9 +1,5 @@
 package mindustry.content;
 
-import arc.math.geom.*;
-import mindustry.game.*;
-import mindustry.game.MapObjectives.*;
-import mindustry.graphics.*;
 import mindustry.type.*;
 
 import static mindustry.content.Planets.*;
@@ -16,7 +12,7 @@ public class SectorPresets{
     impact0078, desolateRift, nuclearComplex, planetaryTerminal,
     coastline, navalFortress,
 
-    onset, two, lake, three, four, atlas, split;
+    onset, aegis, lake, intersect, basin, atlas, split;
 
     public static void load(){
         //region serpulo
@@ -117,7 +113,7 @@ public class SectorPresets{
             difficulty = 1;
         }};
 
-        two = new SectorPreset("two", erekir, 88){{
+        aegis = new SectorPreset("aegis", erekir, 88){{
             difficulty = 3;
         }};
 
@@ -125,7 +121,7 @@ public class SectorPresets{
             difficulty = 4;
         }};
 
-        three = new SectorPreset("three", erekir, 36){{
+        intersect = new SectorPreset("intersect", erekir, 36){{
             difficulty = 5;
             captureWave = 9;
         }};
@@ -138,7 +134,7 @@ public class SectorPresets{
             difficulty = 5;
         }};
 
-        four = new SectorPreset("four", erekir, 29){{
+        basin = new SectorPreset("basin", erekir, 29){{
             difficulty = 6;
         }};
 

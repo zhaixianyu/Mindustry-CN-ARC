@@ -70,6 +70,7 @@ public class MapObjectives implements Iterable<MapObjective>, Eachable<MapObject
             allObjectiveTypes.add(prov);
 
             Class<? extends MapObjective> type = prov.get().getClass();
+            JsonIO.classTag(Strings.camelize(type.getSimpleName().replace("Objective", "")), type);
             JsonIO.classTag(type.getSimpleName().replace("Objective", ""), type);
         }
     }
@@ -80,6 +81,7 @@ public class MapObjectives implements Iterable<MapObjective>, Eachable<MapObject
             allMarkerTypes.add(prov);
 
             Class<? extends ObjectiveMarker> type = prov.get().getClass();
+            JsonIO.classTag(Strings.camelize(type.getSimpleName().replace("Marker", "")), type);
             JsonIO.classTag(type.getSimpleName().replace("Marker", ""), type);
         }
     }
@@ -99,8 +101,6 @@ public class MapObjectives implements Iterable<MapObjective>, Eachable<MapObject
 
     /** Updates all objectives this executor contains. */
     public void update(){
-        //TODO am i doing this correctly
-        if(net.client()) return;
         eachRunning(obj -> {
             for(var marker : obj.markers){
                 if(!marker.wasAdded){
@@ -109,7 +109,8 @@ public class MapObjectives implements Iterable<MapObjective>, Eachable<MapObject
                 }
             }
 
-            if(obj.update()){
+            //objectives cannot get completed on the client, but they do try to update for timers and such
+            if(obj.update() && !net.client()){
                 obj.completed = true;
                 obj.done();
                 for(var marker : obj.markers){
@@ -160,7 +161,7 @@ public class MapObjectives implements Iterable<MapObjective>, Eachable<MapObject
 
     /** Base abstract class for any in-map objective. */
     public static abstract class MapObjective{
-        public @Nullable String details;
+        public @Nullable @Multiline String details;
         public @Unordered String[] flagsAdded = {};
         public @Unordered String[] flagsRemoved = {};
         public ObjectiveMarker[] markers = {};
@@ -428,7 +429,7 @@ public class MapObjectives implements Iterable<MapObjective>, Eachable<MapObject
     }
 
     public static class TimerObjective extends MapObjective{
-        public String text;
+        public @Multiline String text;
         public @Second float duration = 60f * 30f;
 
         protected float countup;
@@ -555,7 +556,8 @@ public class MapObjectives implements Iterable<MapObjective>, Eachable<MapObject
 
     /** Wait until a logic flag is set. */
     public static class FlagObjective extends MapObjective{
-        public String flag = "flag", text;
+        public String flag = "flag";
+        public @Multiline String text;
 
         public FlagObjective(String flag, String text){
             this.flag = flag;
@@ -591,7 +593,7 @@ public class MapObjectives implements Iterable<MapObjective>, Eachable<MapObject
     /** Marker used for drawing UI to indicate something along with an objective. */
     public static abstract class ObjectiveMarker{
         /** Makes sure markers are only added once. */
-        private transient boolean wasAdded;
+        public transient boolean wasAdded;
 
         /** Called in the overlay draw layer.*/
         public void draw(){}
@@ -611,7 +613,7 @@ public class MapObjectives implements Iterable<MapObjective>, Eachable<MapObject
 
     /** Displays text above a shape. */
     public static class ShapeTextMarker extends ObjectiveMarker{
-        public String text = "frog";
+        public @Multiline String text = "frog";
         public @TilePos Vec2 pos = new Vec2();
         public float fontSize = 1f, textHeight = 7f;
         public @LabelFlag byte flags = WorldLabel.flagBackground | WorldLabel.flagOutline;
@@ -748,7 +750,7 @@ public class MapObjectives implements Iterable<MapObjective>, Eachable<MapObject
 
     /** Displays text at a location. */
     public static class TextMarker extends ObjectiveMarker{
-        public String text = "uwu";
+        public @Multiline String text = "uwu";
         public @TilePos Vec2 pos = new Vec2();
         public float fontSize = 1f;
         public @LabelFlag byte flags = WorldLabel.flagBackground | WorldLabel.flagOutline;
@@ -798,6 +800,11 @@ public class MapObjectives implements Iterable<MapObjective>, Eachable<MapObject
     @Target(FIELD)
     @Retention(RUNTIME)
     public @interface Synthetic{}
+
+    /** For {@link String}; indicates that a text area should be used. */
+    @Target(FIELD)
+    @Retention(RUNTIME)
+    public @interface Multiline{}
 
     /** For {@code float}; multiplies the UI input by 60. */
     @Target(FIELD)

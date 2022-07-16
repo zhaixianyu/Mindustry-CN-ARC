@@ -9,6 +9,7 @@ import arc.scene.ui.layout.Scl;
 import arc.struct.*;
 import arc.util.*;
 import arc.util.io.*;
+import mindustry.*;
 import mindustry.Vars;
 import mindustry.annotations.Annotations.*;
 import mindustry.content.*;
@@ -60,7 +61,7 @@ public class ConstructBlock extends Block{
     @Remote(called = Loc.server)
     public static void deconstructFinish(Tile tile, Block block, Unit builder){
         Team team = tile.team();
-        if(fogControl.isVisibleTile(team, tile.x, tile.y)){
+        if(!headless && fogControl.isVisibleTile(Vars.player.team(), tile.x, tile.y)){
             block.breakEffect.at(tile.drawx(), tile.drawy(), block.size, block.mapColor);
             if(shouldPlay()) block.breakSound.at(tile, block.breakPitchChange ? calcPitch(false) : 1f);
         }
