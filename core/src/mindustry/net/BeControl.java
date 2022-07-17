@@ -31,10 +31,11 @@ public class BeControl{
     private boolean checkUpdates = true;
     private boolean updateAvailable;
     private String updateUrl;
+    private String steamUrl;
     private String mobileUrl;
     private int updateBuild;
     public static String gitDownloadURL = "https://gh.tinylake.tk//";
-    private String directDesktopURL,directMobileURL;
+    private String directDesktopURL,directMobileURL,directSteamURL;
 
     private Table beTable;
     private TextField URLField;
@@ -92,12 +93,13 @@ public class BeControl{
         beTable.image().color(getThemeColor()).fillX().height(3).colspan(4).padTop(0).padBottom(10).row();
 
         beTable.table(t->{
-            t.add("下载镜像站，不填表示直连github(通常需要梯子)\n你可选择自行输入或者直接点下面的可选按钮");
+            t.add("下载镜像站，不填表示直连github(通常需要梯子)\n你可选择自行输入或者直接点下面的可选按钮\n输入完成后需要点击刷新按钮以更新");
             t.row();
             t.table(tt->{
                 URLField = tt.field(gitDownloadURL, text->{
                     gitDownloadURL = text;
                     updateUrl = gitDownloadURL + directDesktopURL;
+                    steamUrl = gitDownloadURL + directSteamURL;
                     mobileUrl = gitDownloadURL + directMobileURL;
                 }).width(250f).get();
                 tt.button(Icon.refreshSmall,()->buildTable());
@@ -106,6 +108,7 @@ public class BeControl{
             t.button("wz提供镜像",()->{
                 gitDownloadURL = "https://gh.tinylake.tk//";
                 updateUrl = gitDownloadURL + directDesktopURL;
+                steamUrl = gitDownloadURL + directSteamURL;
                 mobileUrl = gitDownloadURL + directMobileURL;
                 buildTable();
             }).height(50f).width(300f);
@@ -139,6 +142,57 @@ public class BeControl{
 
                 BaseDialog dialog = new BaseDialog("@be.updating");
                 download(updateUrl, file, i -> length[0] = i, v -> progress[0] = v, () -> cancel[0], () -> {
+                    try{
+                        Runtime.getRuntime().exec(OS.isMac ?
+                                new String[]{javaPath, "-XstartOnFirstThread", "-DlastBuild=" + Version.arcBuild, "-Dberestart", "-Dbecopy=" + fileDest.absolutePath(), "-jar", file.absolutePath()} :
+                                new String[]{javaPath, "-DlastBuild=" + Version.arcBuild, "-Dberestart", "-Dbecopy=" + fileDest.absolutePath(), "-jar", file.absolutePath()}
+                        );
+                        System.exit(0);
+                    }catch(IOException e){
+                        ui.showException(e);
+                    }
+                }, e -> {
+                    dialog.hide();
+                    ui.showException(e);
+                });
+
+                dialog.cont.add(new Bar(() -> length[0] == 0 ? Core.bundle.get("be.updating") : (int)(progress[0] * length[0]) / 1024/ 1024 + "/" + length[0]/1024/1024 + " MB", () -> Pal.accent, () -> progress[0])).width(400f).height(70f);
+                dialog.buttons.button("@cancel", Icon.cancel, () -> {
+                    cancel[0] = true;
+                    dialog.hide();
+                }).size(210f, 64f);
+                dialog.setFillParent(false);
+                dialog.show();
+            }).width(300f);
+        });
+
+        beTable.add("steam端").color(getThemeColor()).colspan(4).pad(10).padTop(15).padBottom(4).row();
+        beTable.image().color(getThemeColor()).fillX().height(3).colspan(4).padTop(0).padBottom(10).row();
+
+        beTable.table(t->{
+            t.table(tt->{
+                tt.field(steamUrl,text->{
+                    steamUrl = text;
+                }).width(300f);
+                tt.button("♐",()-> {
+                    if(!Core.app.openURI(steamUrl)){
+                        ui.showErrorMessage("打开失败，网址已复制到粘贴板\n请自行在阅览器打开");
+                        Core.app.setClipboardText(steamUrl);
+                    }
+                }).width(50f);
+            });
+            t.row();
+            t.button("steam-自动下载安装",()->{
+                boolean[] cancel = {false};
+                float[] progress = {0};
+                int[] length = {0};
+                Fi file = bebuildDirectory.child("Mindustry CN-ARC-" + updateBuild + ".jar");
+                Fi fileDest = OS.hasProp("becopy") ?
+                        Fi.get(OS.prop("becopy")) :
+                        Fi.get(BeControl.class.getProtectionDomain().getCodeSource().getLocation().getPath());
+
+                BaseDialog dialog = new BaseDialog("@be.updating");
+                download(steamUrl, file, i -> length[0] = i, v -> progress[0] = v, () -> cancel[0], () -> {
                     try{
                         Runtime.getRuntime().exec(OS.isMac ?
                                 new String[]{javaPath, "-XstartOnFirstThread", "-DlastBuild=" + Version.arcBuild, "-Dberestart", "-Dbecopy=" + fileDest.absolutePath(), "-jar", file.absolutePath()} :
@@ -199,6 +253,10 @@ public class BeControl{
                 updateAvailable = true;
                 updateBuild = newBuild;
                 updateUrl = url;
+
+                Jval steamAsset = val.get("assets").asArray().find(v -> v.getString("name", "").startsWith("Mindustry-CN-ARC-Steam"));
+                directSteamURL = asset.getString("browser_download_url", "");
+                steamUrl = gitDownloadURL + "/" + asset.getString("browser_download_url", "");
 
                 Jval mobileAsset = val.get("assets").asArray().find(v -> v.getString("name", "").startsWith("Mindustry-CN-ARC-Android"));
                 directMobileURL = mobileAsset.getString("browser_download_url", "");
