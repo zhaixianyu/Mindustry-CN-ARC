@@ -166,6 +166,7 @@ public class BeControl{
             }).width(300f);
         });
 
+        beTable.row();
         beTable.add("steam端").color(getThemeColor()).colspan(4).pad(10).padTop(15).padBottom(4).row();
         beTable.image().color(getThemeColor()).fillX().height(3).colspan(4).padTop(0).padBottom(10).row();
 
