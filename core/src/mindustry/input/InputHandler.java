@@ -55,6 +55,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
     final static Rect r1 = new Rect(), r2 = new Rect();
     final static Seq<Unit> tmpUnits = new Seq<>(false);
     public static Player follow;
+    public static int followIndex = 0;
 
     /** If true, there is a cutscene currently occurring in logic. */
     public boolean logicCutscene;

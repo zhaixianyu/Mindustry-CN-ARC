@@ -80,7 +80,7 @@ public class AuxilliaryTable extends Table{
                 for(BaseToolsTable table : toolsTables){
                     table.addButton(buttons);
                 }
-                buttons.button("♐",clearLineNoneTogglet,()->{showMark = !showMark;rebuild();}).size(40f, 40f).tooltip("标记");
+                buttons.button("♐",clearLineNoneTogglet,()->{showMark = !showMark;rebuild();}).checked(showMark).size(40f, 40f).tooltip("标记");
             }
         }).fillX();
 

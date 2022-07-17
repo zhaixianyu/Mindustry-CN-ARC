@@ -25,7 +25,7 @@ public class PlayerListFragment{
     private boolean visible = false;
     private Interval timer = new Interval();
     private TextField search;
-    private Seq<Player> players = new Seq<>();
+    public Seq<Player> players = new Seq<>();
 
     public void build(Group parent){
         content.name = "players";

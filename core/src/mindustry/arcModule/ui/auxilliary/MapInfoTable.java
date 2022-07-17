@@ -1,16 +1,19 @@
 package mindustry.arcModule.ui.auxilliary;
 
-import arc.scene.style.*;
+
 import arc.scene.ui.layout.*;
 import mindustry.content.*;
 import mindustry.editor.*;
 import mindustry.gen.*;
+import mindustry.input.DesktopInput;
 import mindustry.ui.dialogs.*;
 import mindustry.world.*;
 import mindustry.world.blocks.environment.*;
 
 import static mindustry.Vars.*;
 import static mindustry.arcModule.ui.RStyles.*;
+import static mindustry.input.InputHandler.follow;
+import static mindustry.input.InputHandler.followIndex;
 
 public class MapInfoTable extends BaseToolsTable{
     private final MapInfoDialog mapInfoDialog = new MapInfoDialog();
@@ -27,6 +30,17 @@ public class MapInfoTable extends BaseToolsTable{
         button(Items.copper.emoji(), clearLineNonet, this::floorStatisticDialog).tooltip("矿物信息");
         button(Icon.starSmall, clearAccentNonei, ui.achievements::show).tooltip("统计与成就");
         button(Icon.chatSmall, clearAccentNonei, () -> ui.MessageDialog.show()).tooltip("中央监控室");
+        button(Icon.playersSmall,clearAccentNonei,()->{
+            if(ui.listfrag.players.size>1){
+                if(control.input instanceof DesktopInput){
+                    ((DesktopInput) control.input).panning = true;
+                }
+                if(follow == null) follow = ui.listfrag.players.get(0);
+                followIndex = (followIndex + 1)>=ui.listfrag.players.size?  0 : followIndex + 1;
+                follow = ui.listfrag.players.get(followIndex);
+                ui.announce("视角追踪：" + follow.name,3f);
+            }
+        }).tooltip("切换跟踪玩家");
     }
 
     private void floorStatisticDialog(){
