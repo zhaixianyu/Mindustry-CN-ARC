@@ -93,7 +93,7 @@ public class BeControl{
         beTable.image().color(getThemeColor()).fillX().height(3).colspan(4).padTop(0).padBottom(10).row();
 
         beTable.table(t->{
-            t.add("下载镜像站，不填表示直连github(通常需要梯子)\n你可选择自行输入或者直接点下面的可选按钮\n输入完成后需要点击刷新按钮以更新");
+            t.add("下载镜像站，留空表示直连github(通常需要梯子)\n你可选择自行输入或者直接点下面的可选按钮\n输入完成后需要点击刷新按钮以更新");
             t.row();
             t.table(tt->{
                 URLField = tt.field(gitDownloadURL, text->{
