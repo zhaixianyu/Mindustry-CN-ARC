@@ -85,7 +85,7 @@ public class LogicBlock extends Block{
 
     public boolean accessible(){
         //return !privileged || state.rules.editor|| state.playtestingMap != null;
-        return arcInfoControl();
+        return !privileged || state.rules.editor|| state.playtestingMap != null || arcInfoControl();
     }
 
     @Override
