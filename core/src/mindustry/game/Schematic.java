@@ -16,6 +16,8 @@ import mindustry.world.consumers.ConsumeItems;
 import mindustry.world.consumers.ConsumeLiquid;
 import mindustry.world.consumers.ConsumeLiquids;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import static mindustry.Vars.*;
 
 public class Schematic implements Publishable, Comparable<Schematic>{
@@ -37,6 +39,15 @@ public class Schematic implements Publishable, Comparable<Schematic>{
         this.tags = tags;
         this.width = width;
         this.height = height;
+    }
+
+    public boolean containsBlock(Block block){
+        AtomicBoolean contains = new AtomicBoolean(false);
+        tiles.each(t -> {
+            if(t.block == block) contains.set(true);
+        });
+        return contains.get();
+
     }
 
     public float powerProduction(){

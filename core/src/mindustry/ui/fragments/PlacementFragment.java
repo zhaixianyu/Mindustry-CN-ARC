@@ -38,7 +38,7 @@ public class PlacementFragment{
     Seq<Block> returnArray = new Seq<>(), returnArray2 = new Seq<>();
     Seq<Category> returnCatArray = new Seq<>();
     boolean[] categoryEmpty = new boolean[Category.all.length];
-    ObjectMap<Category,Block> selectedBlocks = new ObjectMap<>();
+    public ObjectMap<Category,Block> selectedBlocks = new ObjectMap<>();
     ObjectFloatMap<Category> scrollPositions = new ObjectFloatMap<>();
     @Nullable Block menuHoverBlock;
     @Nullable Displayable hover,hover2;

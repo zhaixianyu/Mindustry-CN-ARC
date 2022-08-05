@@ -87,6 +87,7 @@ public class SchematicsDialog extends BaseDialog{
         });
         shown(this::setup);
         onResize(this::setup);
+
     }
 
     void setup(){
@@ -203,6 +204,8 @@ public class SchematicsDialog extends BaseDialog{
                     if(selectedTags.any() && !s.labels.containsAll(selectedTags)) continue;
                     //make sure search fits
                     if(!search.isEmpty() && !ignoreSymbols.matcher(s.name().toLowerCase()).replaceAll("").contains(searchString)) continue;
+
+                    if(Core.settings.getBool("autoSelSchematic") && control.input.block!=null && !s.containsBlock(control.input.block)) continue;
                     if(firstSchematic == null) firstSchematic = s;
 
                     Button[] sel = {null};
@@ -316,6 +319,10 @@ public class SchematicsDialog extends BaseDialog{
 
             rebuildPane.run();
         }).grow().scrollX(false);
+
+        if(Core.settings.getBool("autoSelSchematic") && control.input.block!=null){
+            ui.arcInfo("[orange]蓝图筛选模式[white]:蓝图必须包含 "+control.input.block.emoji(),5f);
+        }
     }
 
     public void showInfo(Schematic schematic){
