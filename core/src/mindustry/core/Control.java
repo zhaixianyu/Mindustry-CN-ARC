@@ -11,6 +11,7 @@ import arc.scene.ui.*;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.*;
+import mindustry.arcModule.DrawUtilities;
 import mindustry.audio.*;
 import mindustry.content.*;
 import mindustry.content.TechTree.*;
@@ -38,6 +39,7 @@ import java.util.*;
 
 import static arc.Core.*;
 import static mindustry.Vars.*;
+import static mindustry.arcModule.DrawUtilities.arcBuildEffect;
 
 /**
  * Control module.
@@ -245,6 +247,7 @@ public class Control implements ApplicationListener, Loadable{
                                     //when already hosting, instantly build everything. this looks bad but it's better than a desync
                                     Fx.coreBuildBlock.at(build.x, build.y, 0f, build.block);
                                     Fx.placeBlock.at(build.x, build.y, build.block.size);
+                                    arcBuildEffect(build).at(build.x,build.y);
                                 }
                             }
                         }
@@ -280,6 +283,7 @@ public class Control implements ApplicationListener, Loadable{
 
         Fx.coreBuildBlock.at(build.x, build.y, 0f, build.block);
         Fx.placeBlock.at(build.x, build.y, build.block.size);
+        arcBuildEffect(build).at(build.x,build.y);
     }
 
     @Override

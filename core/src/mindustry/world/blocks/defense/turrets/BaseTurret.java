@@ -72,15 +72,6 @@ public class BaseTurret extends Block{
     }
 
     @Override
-    public void placeBegan(Tile tile, Block previous){
-        super.placeBegan(tile,previous);
-
-        if(Core.settings.getBool("arcPlacementEffect") && health> Core.settings.getInt("blockbarminhealth"))
-        Fx.placeTurret.at(tile,range,tile.build.team.color);
-
-    }
-
-    @Override
     public void setStats(){
         super.setStats();
 

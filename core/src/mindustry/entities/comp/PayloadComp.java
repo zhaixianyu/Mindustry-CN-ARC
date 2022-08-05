@@ -18,6 +18,8 @@ import mindustry.world.*;
 import mindustry.world.blocks.payloads.*;
 import mindustry.world.blocks.power.*;
 
+import static mindustry.arcModule.DrawUtilities.arcBuildEffect;
+
 /** An entity that holds a payload. */
 @Component
 abstract class PayloadComp implements Posc, Rotc, Hitboxc, Unitc{
@@ -181,6 +183,7 @@ abstract class PayloadComp implements Posc, Rotc, Hitboxc, Unitc{
 
             Fx.unitDrop.at(tile);
             Fx.placeBlock.at(on.drawx(), on.drawy(), on.block().size);
+            arcBuildEffect(payload.build).at(on.drawx(), on.drawy());
             return true;
         }
 

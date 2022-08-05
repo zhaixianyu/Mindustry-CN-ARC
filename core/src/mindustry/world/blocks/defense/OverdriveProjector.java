@@ -86,14 +86,6 @@ public class OverdriveProjector extends Block{
         addBar("boost", (OverdriveBuild entity) -> new Bar(() -> Core.bundle.format("bar.boost", Mathf.round(Math.max((entity.realBoost() * 100 - 100), 0))), () -> Pal.accent, () -> entity.realBoost() / (hasBoost ? speedBoost + speedBoostPhase : speedBoost)));
     }
 
-    @Override
-    public void placeBegan(Tile tile, Block previous){
-        super.placeBegan(tile,previous);
-
-        if(Core.settings.getBool("arcPlacementEffect"))
-            Fx.placeTurret.at(tile,range,baseColor);
-    }
-
     public class OverdriveBuild extends Building implements Ranged{
         public float heat, charge = Mathf.random(reload), phaseHeat, smoothEfficiency;
 

@@ -244,15 +244,6 @@ public class Fx{
         Lines.square(e.x, e.y, tilesize / 2f * e.rotation + e.fin() * 3f);
     }),
 
-    placeTurret = new Effect(120, e -> {
-        color(e.color);
-        stroke((1.5f - e.fin() * 1f) * (e.rotation/100));
-        if(e.finpow()<0.8f) Lines.circle(e.x, e.y, e.finpow()/0.8f * e.rotation);
-        else {
-            Draw.alpha((1-e.fin()) *5f);
-            Lines.circle(e.x, e.y, e.rotation);}
-    }),
-
     coreLaunchConstruct = new Effect(35, e -> {
         color(Pal.accent);
         stroke(4f - e.fin() * 3f);

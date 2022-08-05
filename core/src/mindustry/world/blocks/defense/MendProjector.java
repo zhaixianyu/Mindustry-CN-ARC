@@ -78,14 +78,6 @@ public class MendProjector extends Block{
         indexer.eachBlock(player.team(), x * tilesize + offset, y * tilesize + offset, range, other -> true, other -> Drawf.selected(other, Tmp.c1.set(baseColor).a(Mathf.absin(4f, 1f))));
     }
 
-    @Override
-    public void placeBegan(Tile tile, Block previous){
-        super.placeBegan(tile,previous);
-
-        if(Core.settings.getBool("arcPlacementEffect") && health> Core.settings.getInt("blockbarminhealth"))
-            Fx.placeTurret.at(tile,range,baseColor);
-    }
-
     public class MendBuild extends Building implements Ranged{
         public float heat, charge = Mathf.random(reload), phaseHeat, smoothEfficiency;
 
