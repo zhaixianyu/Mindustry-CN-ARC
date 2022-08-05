@@ -163,6 +163,7 @@ public class HudFragment{
                         tt.button("+",cleart,()->Core.settings.put("minimapSize",(int)(Core.settings.getInt("minimapSize") * 1.2))).size(30,30).tooltip("增加小地图大小");
                         tt.button("-",cleart,()->Core.settings.put("minimapSize",(int)(Core.settings.getInt("minimapSize") / 1.2))).size(30,30).tooltip("减少小地图大小");
                         tt.button(Iconc.players + "",cleart,()-> renderer.minimap.forceShowPlayer = !renderer.minimap.forceShowPlayer).size(30,30).tooltip("开关玩家名显示");
+                        tt.button(Iconc.alphaaaa + "",cleart,() -> renderer.minimap.unitDetailsIcon = !renderer.minimap.unitDetailsIcon).size(30,30).tooltip("单位图标细节");
                     }
                     tt.button("♐",cleart,()->Marker.lockonLastMark()).size(30,30).tooltip("锁定上个标记点");
             }).style(Styles.outlineLabel);
