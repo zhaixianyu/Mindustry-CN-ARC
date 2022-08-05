@@ -121,6 +121,7 @@ public class MessageDialog extends BaseDialog{
 
                             Core.camera.position.set(thisMsg.msgLoc);
 
+                            Fx.arcMarker.arcCreate(thisMsg.msgLoc.x, thisMsg.msgLoc.y, 0, color, null);
                             hide();
                         }).padLeft(50f).height(24f).width(150f);
                     }
