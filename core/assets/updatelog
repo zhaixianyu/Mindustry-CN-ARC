@@ -1,3 +1,61 @@
+[cyan]------------------------[v137]---------------------------
+Fixed boosting units jittering when near obstacles [Mobile]
+Fixed command UI not refreshing when switching single units
+Fixed shielded walls being available on Serpulo
+Fixed core schematics not connecting bridges on launch
+Fixed some random network errors
+Fixed various resource duping bugs in launch UI
+Fixed certain Serpulo generators not displaying liquids
+Fixed lightning not being able to damage conveyors
+Fixed seams in tiles on certain mobile devices
+Fixed various duct-related blending issues
+Fixed stack router not outputting evenly
+Fixed legged units being able to drown even when the body is on land
+Fixed certain icons being squished
+Added Flux Reactor block (unbalanced!)
+Added Neoplasia Reactor block (unbalanced!)
+Added Heat Source block for sandbox
+Added command order system for Serpulo support units
+Made Neoplasm liquid accessible in liquid sources/core database
+Made drills only display mine-able resources from current map
+
+[cyan]------------------------[v136.1]---------------------------
+Fixed some menus being cut off in portrait mode [Mobile]
+Fixed Erekir core units being able to target enemies [Mobile]
+Fixed Erekir tutorial mentioning "shift key" on mobile devices
+Fixed objective display showing empty dialog box on click
+Fixed various minor crashes
+Fixed certain crafters always requiring power even with no input
+Fixed Erekir sector launch dialog showing copper/lead when Serpulo sector is loaded
+Fixed unit repair beams still drawing when unit boosts
+Fixed Arkycite floor applying wet status effect
+Added hint for controlling unit factory output locations
+Made mod browser filter out mods that don't have minGameVersion >= 136
+Disabled resource sharing in campaign
+Various minor tweaks and improvements to campaign maps
+
+[cyan]------------------------[v136]---------------------------
+The first Erekir build is finally here.
+
+This is a massive update that brings with it an entirely new planet - Erekir - with a completely new tech tree. It would take too long to list all the changes and additions in this build, but here are the highlights:
+
+A new, separate (but incomplete) campaign on the planet Erekir with its own mechanics
+100+ new blocks
+New units
+New items
+New factories, turrets, distribution blocks, support structures, etc
+New systems for "scripting" maps with logic blocks and objectives
+A fog-of-war system, available as a custom map rule and enabled on Erekir
+Countless tweaks, improvements and QoL changes
+Countless bugfixes... and probably even more new bugs
+The old command center and formation mechanics have been replaced with a 'RTS' command system. On desktop, holding [Shift] places you in 'Command Mode', which gives you RTS-like control over your units. Left-click to select groups of units, and right-click to order them to locations or targets.
+
+Note that there is currently no way to RTS-control builder/support units present on Serpulo, like Poly or Mega.
+
+Please keep in mind that the Erekir campaign is still completely unfinished, and covers less than half of the tech tree. While Erekir is nearly completely in terms of block/unit content, most things not covered in the campaign are completely unbalanced, and should be treated as such! Damage/speed/reload/etc values of end-game content are essentially untested placeholder values.
+
+For an introduction to the new systems introduced in this build, play the campaign first. The content added in this update has not been properly tested in custom maps or PvP yet.
+
 [cyan]------------------------[v136test 5/8]---------------------------
 下列更新由[yellow]carrot[white]提供
 单位

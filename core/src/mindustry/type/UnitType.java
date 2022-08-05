@@ -492,27 +492,6 @@ public class UnitType extends UnlockableContent{
 
     public void landed(Unit unit){}
 
-    private String getStatustext(Unit unit){
-        String statustext = "";
-        int count = 0;
-        if(unit.damageMultiplier() != 1f){
-            statustext += " [red]伤[white]：" + String.format("%.1f", unit.damageMultiplier());
-            count += 1;
-        }
-        if(unit.reloadMultiplier() != 1f){
-            statustext += " [violet]攻速[white]：" + String.format("%.1f", unit.reloadMultiplier());
-            count += 1;
-        }
-        if(unit.speedMultiplier() != 1f){
-            statustext += " [cyan]移[white]：" + String.format("%.1f", unit.speedMultiplier());
-            count += 1;
-        }
-        if(unit.healthMultiplier() != 1f){
-            statustext += " [acid]血[white]：" + ((unit.healthMultiplier() == Float.POSITIVE_INFINITY) ? "Inf" : String.format("%.1f", unit.healthMultiplier()));
-        }
-        return statustext;
-    }
-
     private String getInfStatusEffect(Unit unit){
         StringBuilder builder = new StringBuilder();
         for(StatusEffect eff : Vars.content.statusEffects()){
@@ -526,10 +505,6 @@ public class UnitType extends UnlockableContent{
     }
 
     private void arcdisplayStatus(Unit unit, Table bars){
-        if(!getStatustext(unit).equals("")){
-            bars.add(new Bar(() -> getStatustext(unit), () -> Pal.accent, () -> 1f));
-            bars.row();
-        }
         if(!getInfStatusEffect(unit).equals("")){
             bars.add(new Bar(() -> "[orange]永久[white]：" + getInfStatusEffect(unit), () -> Pal.accent, () -> 1f));
             bars.row();
@@ -543,6 +518,27 @@ public class UnitType extends UnlockableContent{
                 }
             }
         }
+    }
+
+    private String getStatustext(Unit unit){
+        StringBuilder statusText = new StringBuilder(">>");
+        int count = 0;
+        if(unit.damageMultiplier() != 1f){
+            count += 1;
+            statusText.append(" [red]伤[white]: ").append(Strings.autoFixed(unit.damageMultiplier(),1)).append(" |");
+        }
+        if(unit.reloadMultiplier() != 1f){
+            count += 1;
+            statusText.append(" [violet]攻速[white]: ").append(Strings.autoFixed(unit.reloadMultiplier(),1)).append(" |");
+        }
+        if(unit.speedMultiplier() != 1f){
+            //if (count==2) statusText.append("\n");
+            statusText.append(" [cyan]移[white]: ").append(Strings.autoFixed(unit.speedMultiplier(),1)).append(" |");
+        }
+        if(unit.healthMultiplier() != 1f){
+            statusText.append(" [acid]血[white]: ").append((unit.healthMultiplier() == Float.POSITIVE_INFINITY) ? "Inf" : Strings.autoFixed(unit.healthMultiplier(),1)).append(" |");
+        }
+        return statusText.toString().substring(0,statusText.length()-2);
     }
 
     public void display(Unit unit, Table table){
@@ -591,6 +587,12 @@ public class UnitType extends UnlockableContent{
             }
             arcdisplayStatus(unit, bars);
         }).growX();
+
+        String statusText = getStatustext(unit);
+        if(statusText.length()>0){
+            table.row();
+            table.add(statusText).growX().wrap().left();
+        }
 
         if(unit.controller() instanceof LogicAI ai){
             table.row();
