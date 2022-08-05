@@ -109,8 +109,6 @@ public class Minimap extends Table{
                 }
 
                 Core.camera.position.set(pos);
-                Marker.markTypes.first().showEffect(pos);
-
             }
         });
 
