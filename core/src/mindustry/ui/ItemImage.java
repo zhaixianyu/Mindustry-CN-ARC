@@ -1,6 +1,8 @@
 package mindustry.ui;
 
+import arc.func.Prov;
 import arc.graphics.g2d.*;
+import arc.scene.Element;
 import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
 import arc.util.*;
@@ -26,7 +28,6 @@ public class ItemImage extends Stack{
             t.left().top();
             t.add(curAmount + "").get().setFontScale(0.6f);
             t.pack();
-            //}).visible(() -> !player.team().rules().cheat));//无法判断工厂队伍
         }));
     }
 
@@ -44,6 +45,30 @@ public class ItemImage extends Stack{
                 t.pack();
             }));
         }
+    }
+
+    public ItemImage(TextureRegion region, String text){
+        add(new Table(o -> {
+            o.left();
+            o.add(new Image(region)).size(32f).scaling(Scaling.fit);
+        }));
+
+        add(new Table(t -> {
+            t.left().bottom();
+            t.add(text).get().setFontScale(1f);
+            t.pack();
+        }));
+    }
+
+    public Element itemImage(TextureRegion region, Prov<CharSequence> text){
+        Stack stack = new Stack();
+
+        Table t = new Table().left().bottom();
+        t.label(text);
+
+        stack.add(new Image(region));
+        stack.add(t);
+        return stack;
     }
 
     public ItemImage(ItemStack stack){

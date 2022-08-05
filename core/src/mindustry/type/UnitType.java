@@ -28,7 +28,6 @@ import mindustry.game.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.graphics.MultiPacker.*;
-import mindustry.input.InputHandler;
 import mindustry.type.ammo.*;
 import mindustry.ui.*;
 import mindustry.world.*;
@@ -37,7 +36,8 @@ import mindustry.world.blocks.payloads.*;
 import mindustry.world.blocks.units.*;
 import mindustry.world.consumers.*;
 import mindustry.world.meta.*;
-import mindustry.input.*;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static arc.graphics.g2d.Draw.*;
 import static mindustry.Vars.*;
@@ -492,53 +492,43 @@ public class UnitType extends UnlockableContent{
 
     public void landed(Unit unit){}
 
-    private String getInfStatusEffect(Unit unit){
-        StringBuilder builder = new StringBuilder();
-        for(StatusEffect eff : Vars.content.statusEffects()){
-            if(unit.hasEffect(eff)){
-                if(unit.getEffectTime(eff) <= 0f || unit.getEffectTime(eff) >= 100000f){
-                    builder.append(eff.emoji()).append(" ");
-                }
+    private void displayStatusEffect(Unit unit,Table table){
+        for(StatusEffect e : content.statusEffects()){
+            if(unit.hasEffect(e) && unit.getEffectTime(e) > 0f){
+                table.row();
+                table.table(t->{
+                    int i = 0;
+                    for(StatusEffect eff : content.statusEffects()){
+                        if(unit.hasEffect(eff) && unit.getEffectTime(eff) > 0f){
+                            i+=1;
+                            if((i-1) % 5 != 0) t.add("|");
+                            t.add(new ItemImage(eff.uiIcon,unit.getEffectTime(eff) >= 100000f?"inf" : UI.formatTime(unit.getEffectTime(eff))));
+                            if(i % 5==0)
+                                t.row();
+                        }
+                    }
+                }).growX().left();
+                break;
             }
         }
-        return builder.toString();
-    }
 
-    private void arcdisplayStatus(Unit unit, Table bars){
-        if(!getInfStatusEffect(unit).equals("")){
-            bars.add(new Bar(() -> "[orange]永久[white]：" + getInfStatusEffect(unit), () -> Pal.accent, () -> 1f));
-            bars.row();
-        }
-
-        for(StatusEffect eff : Vars.content.statusEffects()){
-            if(unit.hasEffect(eff)){
-                if(unit.getEffectTime(eff) > 0f && unit.getEffectTime(eff) < 100000f){
-                    bars.add(new Bar(() -> eff.emoji() + eff.localizedName + ": " + UI.formatTime(unit.getEffectTime(eff)), () -> Pal.accent, () -> 1f));
-                    bars.row();
-                }
-            }
-        }
     }
 
     private String getStatustext(Unit unit){
         StringBuilder statusText = new StringBuilder(">>");
-        int count = 0;
         if(unit.damageMultiplier() != 1f){
-            count += 1;
             statusText.append(" [red]伤[white]: ").append(Strings.autoFixed(unit.damageMultiplier(),1)).append(" |");
         }
         if(unit.reloadMultiplier() != 1f){
-            count += 1;
             statusText.append(" [violet]攻速[white]: ").append(Strings.autoFixed(unit.reloadMultiplier(),1)).append(" |");
         }
         if(unit.speedMultiplier() != 1f){
-            //if (count==2) statusText.append("\n");
             statusText.append(" [cyan]移[white]: ").append(Strings.autoFixed(unit.speedMultiplier(),1)).append(" |");
         }
         if(unit.healthMultiplier() != 1f){
             statusText.append(" [acid]血[white]: ").append((unit.healthMultiplier() == Float.POSITIVE_INFINITY) ? "Inf" : Strings.autoFixed(unit.healthMultiplier(),1)).append(" |");
         }
-        return statusText.toString().substring(0,statusText.length()-2);
+        return statusText.substring(0,statusText.length()-2);
     }
 
     public void display(Unit unit, Table table){
@@ -557,7 +547,6 @@ public class UnitType extends UnlockableContent{
             bars.defaults().growX().height(20f).pad(4);
 
             bars.add(new Bar(() -> {
-                //"[yellow]盾[white]：" + UI.formatAmount((long)unit.shield()) +
                 if(unit.shield() > 0){
                     return UI.formatAmount((long)unit.health) + "[gray]+[white]" + UI.formatAmount((long)unit.shield);
                 }else if(unit.maxHealth == unit.health){
@@ -585,8 +574,9 @@ public class UnitType extends UnlockableContent{
                 }).growX().left().height(0f).pad(0f);
                 bars.row();
             }
-            arcdisplayStatus(unit, bars);
         }).growX();
+
+        displayStatusEffect(unit,table);
 
         String statusText = getStatustext(unit);
         if(statusText.length()>0){
