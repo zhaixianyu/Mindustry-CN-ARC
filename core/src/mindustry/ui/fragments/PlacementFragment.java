@@ -481,8 +481,6 @@ public class PlacementFragment{
                                 }
                                 commands.clear();
                                 firstCommand = false;
-                                Table unitlist = u.table().growX().left().get();
-                                unitlist.left();
 
                                 u.table(ut->{
                                     int col = 0;
@@ -544,7 +542,7 @@ public class PlacementFragment{
                                             });
 
                                             if(++col % 7 == 0){
-                                                unitlist.row();
+                                                ut.row();
                                             }
 
                                             if(!firstCommand){
@@ -573,7 +571,7 @@ public class PlacementFragment{
                                                 Call.setUnitCommand(Vars.player, ids.toArray(), command);
                                             }).checked(i -> currentCommand[0] == command).size(50f).tooltip(command.localized());
                                         }
-                                    }).fillX().padTop(4f).left();
+                                    }).fillX().padTop(4f);
                                 }
                             }else{
                                 u.add("[未选中单位]").color(Color.lightGray).growX().center().labelAlign(Align.center).pad(6);
