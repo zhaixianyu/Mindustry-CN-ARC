@@ -30,6 +30,7 @@ import mindustry.ui.*;
 import mindustry.world.Block;
 import mindustry.world.blocks.production.GenericCrafter;
 import mindustry.world.meta.Env;
+import mindustry.world.meta.StatUnit;
 
 import java.util.regex.*;
 
@@ -992,7 +993,30 @@ public class SchematicsDialog extends BaseDialog{
                     }
                 });
             }
+            cont.row();
 
+            schem.calProduction();
+            cont.table(r -> {
+                int i = 0;
+                for(Item item : schem.items.keys()){
+                    r.image(item.uiIcon).left().size(iconMed);
+                    r.label(
+                            () -> (schem.items.get(item, 0) > 0 ? "+" : "") + Strings.autoFixed(schem.items.get(item, 0), 2) + StatUnit.perSecond.localized()
+                    ).padLeft(2).left().padRight(5).color(Color.lightGray);
+                    if(++i % 4 == 0){
+                        r.row();
+                    }
+                }
+                for (Liquid liquid : schem.liquids.keys()) {
+                    r.image(liquid.uiIcon).left().size(iconMed);
+                    r.label(
+                            () -> (schem.liquids.get(liquid, 0) > 0 ? "+" : "") + Strings.autoFixed(schem.liquids.get(liquid, 0), 2) + StatUnit.perSecond.localized()
+                    ).padLeft(2).left().padRight(5).color(Color.lightGray);
+                    if(++i % 4 == 0){
+                        r.row();
+                    }
+                }
+            });
             show();
         }
     }
