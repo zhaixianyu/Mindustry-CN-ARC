@@ -494,15 +494,15 @@ public class UnitType extends UnlockableContent{
 
     private void displayStatusEffect(Unit unit,Table table){
         for(StatusEffect e : content.statusEffects()){
-            if(unit.hasEffect(e) && unit.getEffectTime(e) > 0f){
+            if(unit.hasEffect(e)){
                 table.row();
                 table.table(t->{
                     int i = 0;
                     for(StatusEffect eff : content.statusEffects()){
-                        if(unit.hasEffect(eff) && unit.getEffectTime(eff) > 0f){
+                        if(unit.hasEffect(eff)){
                             i+=1;
                             if((i-1) % 5 != 0) t.add("|");
-                            t.add(new ItemImage(eff.uiIcon,unit.getEffectTime(eff) >= 100000f?"inf" : UI.formatTime(unit.getEffectTime(eff))));
+                            t.add(new ItemImage(eff.uiIcon,(unit.getEffectTime(eff) >= 100000f || unit.getEffectTime(eff) == -1f)?"inf" : UI.formatTime(unit.getEffectTime(eff))));
                             if(i % 5==0)
                                 t.row();
                         }
