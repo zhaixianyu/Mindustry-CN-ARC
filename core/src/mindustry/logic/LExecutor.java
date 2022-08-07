@@ -1159,7 +1159,7 @@ public class LExecutor{
         @Override
         public void run(LExecutor exec){
             if(headless) return;
-
+            if(Core.settings.getBool("removeLogicLock"))return;
             switch(action){
                 case pan -> {
                     control.input.logicCutscene = true;

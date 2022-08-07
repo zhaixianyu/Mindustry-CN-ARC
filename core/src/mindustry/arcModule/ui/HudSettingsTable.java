@@ -15,6 +15,7 @@ import arc.scene.*;
 import arc.scene.ui.ImageButton.*;
 import arc.struct.*;
 import arc.util.*;
+import mindustry.game.EventType;
 import mindustry.input.*;
 import mindustry.entities.Lightning;
 import mindustry.gen.*;
@@ -57,7 +58,9 @@ public class HudSettingsTable extends Table{
             fontColor = Color.white;
             disabledFontColor = Color.gray;
         }};
-
+        Events.on(EventType.WorldLoadEvent.class, e->{
+            Core.settings.put("removeLogicLock",false);
+        });
         rebuild();
         right();
     }
@@ -158,6 +161,10 @@ public class HudSettingsTable extends Table{
                     t.button("[acid]天",textStyle, () ->{
                         Core.settings.put("showweather", !Core.settings.getBool("showweather"));
                     }).checked(a->Core.settings.getBool("showweather")).size(30,30).tooltip("天气显示");
+                    t.button("[violet]锁",textStyle,()->{
+                        Core.settings.put("removeLogicLock", !Core.settings.getBool("removeLogicLock"));
+                        ui.arcInfo("已移除逻辑视角锁定");
+                    }).checked(a->Core.settings.getBool("removeLogicLock")).size(30,30).tooltip("逻辑锁定");
                 }).left();
                 sp.row();
                 sp.add(sets);
