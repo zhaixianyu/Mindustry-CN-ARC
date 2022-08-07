@@ -245,7 +245,7 @@ public class CustomRulesDialog extends BaseDialog{
         check("@rules.coreDestroyClear",b->rules.coreDestroyClear = b,()->rules.coreDestroyClear);
         check("@rules.unitPayloadUpdate",b->rules.unitPayloadUpdate = b,()->rules.unitPayloadUpdate);
         check("@rules.showSpawns",b->rules.showSpawns = b,()->rules.showSpawns);
-        check("@rules.canGameOver", b -> rules.canGameOver = b, () -> rules.canGameOver);
+        check("@rules.possessionAllowed", b -> rules.possessionAllowed = b, () -> rules.possessionAllowed);
         main.button("@hiddenBuildItems", () -> showBanned("@hiddenBuildItems", ContentType.item, rules.hiddenBuildItems, Item::showUnlock)).left().width(300f).row();
 
         check("@rules.limitarea", b -> rules.limitMapArea = b, () -> rules.limitMapArea);
