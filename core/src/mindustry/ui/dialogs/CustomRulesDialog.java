@@ -85,7 +85,7 @@ public class CustomRulesDialog extends BaseDialog{
                 dialog.cont.pane(t -> {
                     t.left().margin(14f);
                     int[] i = {0};
-                    content.<T>getBy(type).each(b -> !set.contains(b) && pred.get(b), b -> {
+                    content.<T>getBy(type).each(b -> !set.contains(b) && pred.get(b) && b.hasEmoji(), b -> {
                         int cols = mobile && Core.graphics.isPortrait() ? 4 : 12;
                         t.button(new TextureRegionDrawable(b.uiIcon), Styles.flati, iconMed, () -> {
                             set.add(b);
