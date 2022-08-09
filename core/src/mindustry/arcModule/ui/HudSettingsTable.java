@@ -163,6 +163,7 @@ public class HudSettingsTable extends Table{
                     }).checked(a->Core.settings.getBool("showweather")).size(30,30).tooltip("天气显示");
                     t.button("[violet]锁",textStyle,()->{
                         Core.settings.put("removeLogicLock", !Core.settings.getBool("removeLogicLock"));
+                        control.input.logicCutscene = false;
                         ui.arcInfo("已移除逻辑视角锁定");
                     }).checked(a->Core.settings.getBool("removeLogicLock")).size(30,30).tooltip("逻辑锁定");
                 }).left();
