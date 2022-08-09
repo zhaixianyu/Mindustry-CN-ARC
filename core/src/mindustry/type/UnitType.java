@@ -49,6 +49,7 @@ public class UnitType extends UnlockableContent{
     //MI2 unit transparency
     private static float legTrans = 1f, unitTrans = 1f;
 
+    private Table unitStatus = new Table();
 
     /** Environmental flags that are *all* required for this unit to function. 0 = any environment */
     public int envRequired = 0;
@@ -501,8 +502,8 @@ public class UnitType extends UnlockableContent{
                     for(StatusEffect eff : content.statusEffects()){
                         if(unit.hasEffect(eff)){
                             i+=1;
-                            if((i-1) % 5 != 0) t.add("|");
-                            t.add(new ItemImage(eff.uiIcon,(unit.getEffectTime(eff) >= 100000f || unit.getEffectTime(eff) == -1f)?"inf" : UI.formatTime(unit.getEffectTime(eff))));
+                            if((i-1) % 5 != 0) t.add().width(20f);
+                            t.add(new ItemImage(eff.uiIcon,(unit.getEffectTime(eff) >= 1000000f || unit.getEffectTime(eff) == -1f)?"inf" : UI.formatTime(unit.getEffectTime(eff))));
                             if(i % 5==0)
                                 t.row();
                         }
@@ -512,6 +513,17 @@ public class UnitType extends UnlockableContent{
             }
         }
 
+    }
+
+    private void updateStatusTable(Unit unit){
+        unitStatus.clear();
+        displayStatusEffect(unit,unitStatus);
+
+        String statusText = getStatustext(unit);
+        if(statusText.length()>0){
+            unitStatus.row();
+            unitStatus.add(statusText).growX().wrap().left();
+        }
     }
 
     private String getStatustext(Unit unit){
@@ -547,6 +559,7 @@ public class UnitType extends UnlockableContent{
             bars.defaults().growX().height(20f).pad(4);
 
             bars.add(new Bar(() -> {
+                updateStatusTable(unit);
                 if(unit.shield() > 0){
                     return UI.formatAmount((long)unit.health) + "[gray]+[white]" + UI.formatAmount((long)unit.shield);
                 }else if(unit.maxHealth == unit.health){
@@ -575,26 +588,18 @@ public class UnitType extends UnlockableContent{
                 bars.row();
             }
         }).growX();
-
-        displayStatusEffect(unit,table);
-
-        String statusText = getStatustext(unit);
-        if(statusText.length()>0){
-            table.row();
-            table.add(statusText).growX().wrap().left();
-        }
+        table.row();
+        table.table(t-> unitStatus = t).growX();
 
         if(unit.controller() instanceof LogicAI ai){
             table.row();
             table.table(tt->{
                 tt.add(Blocks.microProcessor.emoji() + " " + Core.bundle.get("units.processorcontrol")).growX().left();
                 if(ai.controller != null && (Core.settings.getBool("mouseposition") || Core.settings.getBool("position"))){
-                    //table.row();
                     tt.add("[lightgray](" + ai.controller.tileX() + ", " + ai.controller.tileY() + ")").growX().right();
                 }
             }).growX().wrap().left();
             table.row();
-            //table.label(() -> Iconc.settings + " " + (long)unit.flag + "").color(Color.lightGray).growX().wrap().left();
             if(net.active() && ai.controller != null && ai.controller.lastAccessed != null){
                 table.row();
                 table.add(Core.bundle.format("lastaccessed", ai.controller.lastAccessed)).growX().wrap().left();

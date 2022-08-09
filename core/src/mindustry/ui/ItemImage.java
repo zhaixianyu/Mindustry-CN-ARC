@@ -50,7 +50,7 @@ public class ItemImage extends Stack{
     public ItemImage(TextureRegion region, String text){
         add(new Table(o -> {
             o.left();
-            o.add(new Image(region)).size(32f).scaling(Scaling.fit);
+            o.add(new Image(region)).size(26f).scaling(Scaling.fit);
         }));
 
         add(new Table(t -> {
