@@ -575,7 +575,7 @@ public class arcWaveInfoDialog extends BaseDialog{
         dialog.cont.pane(p -> {
             int i = 0;
             for(UnitType type : content.units()){
-                if(type.isHidden()) continue;
+                if(type.isHidden() && !(Core.settings.getBool("developmode") && type.hasEmoji())) continue;
                 p.button(t -> {
                     t.left();
                     t.image(type.uiIcon).size(8 * 4).scaling(Scaling.fit).padRight(2f);
