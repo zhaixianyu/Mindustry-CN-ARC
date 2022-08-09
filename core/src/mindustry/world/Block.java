@@ -537,7 +537,7 @@ public class Block extends UnlockableContent implements Senseable{
             }
         }
 
-        if(canBeBuilt() && requirements.length > 0){
+        if(requirements.length > 0){
             stats.add(Stat.buildTime, buildCost / 60, StatUnit.seconds);
             stats.add(Stat.buildCost, StatValues.items(false, requirements));
         }
