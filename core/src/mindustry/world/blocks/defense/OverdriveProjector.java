@@ -16,6 +16,7 @@ import mindustry.ui.*;
 import mindustry.world.*;
 import mindustry.world.meta.*;
 
+import static arc.Core.settings;
 import static mindustry.Vars.*;
 
 public class OverdriveProjector extends Block{
@@ -141,19 +142,16 @@ public class OverdriveProjector extends Block{
             float realRange = range + phaseHeat * phaseRangeBoost;
             float pro_Transparency = (float)Core.settings.getInt("overdrive_zone") / 100f;
             if(status() == BlockStatus.active&& pro_Transparency > 0.02f){
-                //Draw.z(Layer.overdrive - 1f);
-                if (phaseHeat>0.2){
-                    Draw.color(Color.valueOf("FFA500"), pro_Transparency);
-                    //Draw.color(baseColor, pro_Transparency);
-                    //Draw.reset();
-                    Lines.stroke(1f);
-                    Lines.circle(x, y, realRange);
-                    Draw.alpha(pro_Transparency * 0.1f);
+
+                if(settings.getBool("animatedshields")){
+                    Draw.z(Layer.overdrive);
+                    Draw.color(baseColor, phaseColor, 1 - pro_Transparency * realBoost() * realBoost() / 4.25f);
+                    //Draw.color(phaseColor,pro_Transparency * realBoost());
                     Fill.circle(x, y, realRange);
-                }
-                else {
-                    Draw.color(Color.valueOf("FF8C00"),pro_Transparency);
-                    //Draw.color(phaseColor,pro_Transparency);
+                    Draw.reset();
+                    Draw.z(Layer.overdrive-0.3f);
+                } else{
+                    Draw.color(phaseHeat>0.2?Color.valueOf("FFA500"):Color.valueOf("FF8C00"), pro_Transparency);
                     Lines.stroke(1f);
                     Lines.circle(x, y, realRange);
                     Draw.alpha(pro_Transparency * 0.1f);
