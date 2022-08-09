@@ -145,9 +145,8 @@ public class OverdriveProjector extends Block{
 
                 if(settings.getBool("animatedshields")){
                     Draw.z(Layer.overdrive);
-                    Draw.color(baseColor, phaseColor, 1 - pro_Transparency * realBoost() * realBoost() / 4.25f);
-                    //Draw.color(phaseColor,pro_Transparency * realBoost());
-                    Fill.circle(x, y, realRange);
+                    Draw.color(Color.valueOf("#ff8d71"), phaseColor, 1 - pro_Transparency * realBoost() * realBoost() / 4.25f);
+                    Fill.poly(x, y,50, realRange);
                     Draw.reset();
                     Draw.z(Layer.overdrive-0.3f);
                 } else{
