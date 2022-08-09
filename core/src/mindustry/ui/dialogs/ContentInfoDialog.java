@@ -94,9 +94,9 @@ public class ContentInfoDialog extends BaseDialog{
         table.table(t -> {
             t.row();
             t.table(tt->{
-                tt.button(content.emoji(), Styles.cleart, () -> Core.app.setClipboardText((char) Fonts.getUnicode(content.name) + "")).width(60f);
-                tt.button(Icon.info, Styles.clearNonei, () -> Core.app.setClipboardText(content.name + "")).width(50f);
-                tt.button(Icon.book, Styles.clearNonei, () -> Core.app.setClipboardText(content.description + "")).width(50f);
+                tt.button(content.emoji(), Styles.cleart, () -> Core.app.setClipboardText(content.emoji())).width(60f).tooltip(content.emoji());
+                tt.button(Icon.info, Styles.clearNonei, () -> Core.app.setClipboardText(content.name)).width(50f).tooltip(content.name);
+                tt.button(Icon.book, Styles.clearNonei, () -> Core.app.setClipboardText(content.description)).width(50f).tooltip(content.description);
             });
 
             t.row();
