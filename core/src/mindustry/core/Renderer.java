@@ -358,7 +358,7 @@ public class Renderer implements ApplicationListener{
 
             Draw.drawRange(Layer.overdrive, 1f, () -> effectBuffer.begin(Color.clear), () -> {
                 effectBuffer.end();
-                effectBuffer.blit(Shaders.shield);
+                effectBuffer.blit(Core.settings.getBool("staticShieldsBorder") ? Shaders.staticShield : Shaders.shield);
             });
 
             Draw.drawRange(Layer.buildBeam, 1f, () -> effectBuffer.begin(Color.clear), () -> {
