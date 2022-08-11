@@ -12,6 +12,7 @@ import arc.scene.*;
 import arc.scene.ui.layout.*;
 import arc.util.*;
 import mindustry.*;
+import mindustry.arcModule.Marker;
 import mindustry.core.*;
 import mindustry.entities.units.*;
 import mindustry.game.EventType.*;
@@ -535,6 +536,10 @@ public class DesktopInput extends InputHandler{
 
         if(Core.input.keyTap(Binding.rtsSelectAll)){
             control.input.selectedUnits = player.team().data().units.select(Unitc::isCommandable);
+        }
+
+        if(Core.input.keyTap(Binding.lockonLastMark)){
+            Marker.lockonLastMark();
         }
 
         if(Core.input.keyTap(Binding.showRTSAi)){
