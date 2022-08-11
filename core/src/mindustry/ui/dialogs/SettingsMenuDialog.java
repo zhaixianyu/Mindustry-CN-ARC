@@ -686,8 +686,8 @@ public class SettingsMenuDialog extends BaseDialog{
         //////////specmode
         specmode.addCategory("specGameMode");
         specmode.checkPref("modMode", false);
-        specmode.sliderPref("itemSelectionHeight",4,4,12, i->i + "");
-        specmode.sliderPref("itemSelectionWidth",4,4,12, i->i + "");
+        specmode.sliderPref("itemSelectionHeight",4,4,12, i->i + "行");
+        specmode.sliderPref("itemSelectionWidth",4,4,12, i->i + "列");
         specmode.checkPref("autoSelSchematic",false);
         specmode.checkPref("researchViewer",false);
         specmode.checkPref("developMode", false);
