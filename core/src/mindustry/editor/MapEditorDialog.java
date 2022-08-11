@@ -857,7 +857,7 @@ public class MapEditorDialog extends Dialog implements Disposable{
 
             if(i == 0) editor.drawBlock = block;
 
-            if(++i % 4 == 0){
+            if(++i % Math.max(Core.settings.getInt("editorBrush"),3) == 0){
                 blockSelection.row();
             }
         }

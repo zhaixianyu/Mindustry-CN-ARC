@@ -691,6 +691,7 @@ public class SettingsMenuDialog extends BaseDialog{
         specmode.checkPref("autoSelSchematic",false);
         specmode.checkPref("researchViewer",false);
         specmode.checkPref("developMode", false);
+        specmode.sliderPref("editorBrush",4,3,12,i->i+"");
         //////////cheating
         cheating.addCategory("arcWeakCheat");
         cheating.checkPref("forceIgnoreAttack",false);
