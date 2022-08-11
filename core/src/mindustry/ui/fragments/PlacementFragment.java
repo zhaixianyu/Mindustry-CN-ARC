@@ -25,6 +25,7 @@ import mindustry.input.*;
 import mindustry.type.*;
 import mindustry.ui.*;
 import mindustry.world.*;
+import mindustry.world.blocks.ConstructBlock;
 import mindustry.world.blocks.ConstructBlock.*;
 
 import static mindustry.Vars.*;
@@ -292,6 +293,7 @@ public class PlacementFragment{
 
                     for(Block block : getUnlockedByCategory(currentCategory)){
                         if(!unlocked(block) && !Core.settings.getBool("allBlocksReveal")) continue;
+                        if (block == Blocks.air || block instanceof ConstructBlock) continue;
                         if(index++ % rowWidth == 0){
                             blockTable.row();
                         }
@@ -465,7 +467,7 @@ public class PlacementFragment{
                     if(control.input.commandMode != wasCommandMode){
                         mainStack.clearChildren();
                         if((!mobile || Core.settings.getBool("mobileCommandMode")) || !control.input.commandMode)
-                        mainStack.addChild(control.input.commandMode ? commandTable : blockCatTable);
+                            mainStack.addChild(control.input.commandMode ? commandTable : blockCatTable);
 
                         //hacky, but forces command table to be same width as blocks
                         if(control.input.commandMode){
