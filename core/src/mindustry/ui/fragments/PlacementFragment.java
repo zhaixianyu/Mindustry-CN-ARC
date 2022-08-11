@@ -143,6 +143,27 @@ public class PlacementFragment{
         if(Core.input.keyTap(Binding.pick) && player.isBuilder() && !Core.scene.hasDialog()){ //mouse eyedropper select
             var build = world.buildWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
 
+            if (build == null && Core.settings.getBool("worldCreator")) {
+                var tile = world.tileWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
+                if (tile != null) {
+                    Block target;
+                    if (tile.block() != Blocks.air) {
+                        target = tile.block();
+                    }
+                    else if (tile.overlay() != Blocks.air) {
+                        target = tile.overlay();
+                    }
+                    else {
+                        target = tile.floor();
+                    }
+                    if (target != Blocks.air && (target.isVisible() || Core.settings.getBool("allBlocksReveal"))) {
+                        input.block = target;
+                        currentCategory = input.block.category;
+                        return true;
+                    }
+
+                }
+            }
             //can't middle click buildings in fog
             if(build != null && build.inFogTo(player.team())){
                 build = null;
