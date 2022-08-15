@@ -72,6 +72,22 @@ public class Build{
         if(Core.settings.getBool("worldCreator")){
             Tile tile = world.tile(x, y);
             if(tile == null) return;
+            if(result == Blocks.cliff) {
+                int rotationb = 0;
+                for(int i = 0; i < 8; i++){
+                    Tile other = world.tiles.get(tile.x + Geometry.d8[i].x, tile.y + Geometry.d8[i].y);
+                    if(other != null && !other.floor().hasSurface()){
+                        rotationb |= (1 << i);
+                    }
+                }
+
+                if(rotationb != 0){
+                    tile.setBlock(Blocks.cliff);
+                }
+
+                tile.data = (byte)rotationb;
+                return;
+            };
             if(result instanceof OverlayFloor){
                 tile.setOverlay(result);
                 return;
