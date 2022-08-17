@@ -350,12 +350,12 @@ public class ChatFragment extends Table{
 
     private boolean chatValidType(String msg) {
         int chatType = settings.getInt("chatValidType");
-        if (chatType==0 && (msg.contains("[acid][公屏][white]") || msg.contains("[violet][逻辑-"))) return false;
+        if (chatType==0 && (msg.contains("[acid][公屏][white]") || msg.contains("[逻辑~"))) return false;
         else if(chatType==1 &&
                 (msg.contains("加入了服务器") ||msg.contains("离开了服务器")||msg.contains("小贴士")||msg.contains("自动存档完成")||
                 msg.contains("登录成功")||msg.contains("经验+")||msg.contains("[ARC")
-                ||(msg.contains("[acid][公屏][white]"))|| msg.contains("[violet][逻辑-"))) return false;
-        else if(chatType==2 && !(msg.contains("[acid][公屏][white]") || msg.contains("[violet][逻辑-") )) return false;
+                ||(msg.contains("[acid][公屏][white]"))|| msg.contains("[逻辑~"))) return false;
+        else if(chatType==2 && !(msg.contains("[acid][公屏][white]") || msg.contains("[逻辑~") )) return false;
         return true;
     }
 
