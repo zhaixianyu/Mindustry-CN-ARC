@@ -59,7 +59,7 @@ public class AdvanceToolTable extends Table{
     private boolean showSelectPayload = false;
     private Boolean showPayloadBlock = false;
     private float timeAcce = 1f;
-    private Boolean evaluation = false;
+    private float elevation = -99f;
 
     public AdvanceToolTable(){
         rebuild();
@@ -326,7 +326,7 @@ public class AdvanceToolTable extends Table{
                 for(var n = 0; n < unitCount; n++){
                     Tmp.v1.rnd(Mathf.random(unitRandDst * tilesize));
                     Unit unit = cloneUnit(spawnUnit);
-                    if(evaluation) unit.elevation = 1;
+                    if(elevation!=-99) unit.elevation = elevation;
                     unit.set(unitLoc.x * tilesize + Tmp.v1.x, unitLoc.y * tilesize + Tmp.v1.y);
                     unitStatus.each((status, statusDuration) -> {
                         unit.apply(status, statusDuration * 60f);
@@ -431,7 +431,24 @@ public class AdvanceToolTable extends Table{
                             selectTeamDialog.addCloseButton();
                             selectTeamDialog.show();
                         }).tooltip("[acid]更多队伍选择").center().width(50f).row();
-                        tt.check("飞行模式    [orange]生成的单位会飞起来",evaluation,a->evaluation=a).center().padBottom(5f);
+                    }).row();
+                    t.table(list-> {
+                        list.check("飞行模式    [orange]生成的单位会飞起来", elevation == -1, a -> elevation = 1).center().padBottom(5f).padRight(10f);
+
+                        if(Core.settings.getBool("developMode"))
+                        {
+                            TextField sField = list.field(elevation + "", text -> elevation = Float.parseFloat(text)).valid(text -> {
+                                return Objects.equals(text, "Inf") || Strings.canParsePositiveFloat(text);
+                            }).tooltip("单位层级").maxTextLength(10).get();
+                            list.add("秒");
+                            Slider sSlider = list.slider(-10,10,0.05f,0, n -> {
+                                if(elevation != n){//用一种神奇的方式阻止了反复更新
+                                    sField.setText(n+"");
+                                }
+                                elevation = n;
+                            }).get();
+                            sField.update(() -> sSlider.setValue(elevation));
+                        }
                     });
                 }).row();
             }
@@ -473,9 +490,7 @@ public class AdvanceToolTable extends Table{
                                     if(Objects.equals(text, "Inf")){
                                         unitStatus.put(effects, Float.MAX_VALUE);
                                     }else unitStatus.put(effects, Float.parseFloat(text));
-                                }).valid(text -> {
-                                    return Objects.equals(text, "Inf") || Strings.canParsePositiveFloat(text);
-                                }).tooltip("buff持续时间(单位：秒)").maxTextLength(10).get();
+                                }).valid(text -> Objects.equals(text, "Inf") || Strings.canParsePositiveFloat(text)).tooltip("buff持续时间(单位：秒)").maxTextLength(10).get();
                                 list.add("秒");
                                 Slider sSlider = list.slider(0f, statusTime.length - 1f, 1f, statusTimeIndex(unitStatus.get(effects)), n -> {
                                     if(statusTimeIndex(unitStatus.get(effects)) != n){//用一种神奇的方式阻止了反复更新
@@ -669,6 +684,7 @@ public class AdvanceToolTable extends Table{
     }
 
     private void resetUnitType(Unit unit, UnitType unitType){
+        elevation = -99;
         unit.type = unitType;
         unit.health = unitType.health;
         unit.shield = 0;
