@@ -59,6 +59,7 @@ public class AdvanceToolTable extends Table{
     private boolean showSelectPayload = false;
     private Boolean showPayloadBlock = false;
     private float timeAcce = 1f;
+    private Boolean evaluation = false;
 
     public AdvanceToolTable(){
         rebuild();
@@ -66,6 +67,18 @@ public class AdvanceToolTable extends Table{
 
     void rebuild(){
         clear();
+        if(mobile){
+            table(tBox -> {
+                tBox.background(Tex.buttonEdge3);
+                tBox.button("指挥", cleart, () -> {
+                    control.input.commandMode = !control.input.commandMode;
+                }).width(80f);
+
+                tBox.button("取消", cleart, () -> {
+                    if(control.input instanceof MobileInput input) input.arcClearPlans();
+                }).width(80f);
+            }).left().row();
+        }
         if(!show){
             table(t -> {
                 t.background(Tex.buttonEdge3);
@@ -77,19 +90,6 @@ public class AdvanceToolTable extends Table{
             }).left();
         }else{
             table(t -> {
-                if(mobile){
-                    t.table(tBox -> {
-                        tBox.background(Tex.buttonEdge3);
-                        tBox.button("指挥", cleart, () -> {
-                            control.input.commandMode = !control.input.commandMode;
-                        }).width(80f);
-
-                        tBox.button("取消", cleart, () -> {
-                            if(control.input instanceof MobileInput input) input.arcClearPlans();
-                        }).width(80f);
-                    }).left().row();
-                }
-
                 if(showEntities){
                     t.table(tt -> {
                         tt.table(
@@ -326,6 +326,7 @@ public class AdvanceToolTable extends Table{
                 for(var n = 0; n < unitCount; n++){
                     Tmp.v1.rnd(Mathf.random(unitRandDst * tilesize));
                     Unit unit = cloneUnit(spawnUnit);
+                    if(evaluation) unit.elevation = 1;
                     unit.set(unitLoc.x * tilesize + Tmp.v1.x, unitLoc.y * tilesize + Tmp.v1.y);
                     unitStatus.each((status, statusDuration) -> {
                         unit.apply(status, statusDuration * 60f);
@@ -430,6 +431,7 @@ public class AdvanceToolTable extends Table{
                             selectTeamDialog.addCloseButton();
                             selectTeamDialog.show();
                         }).tooltip("[acid]更多队伍选择").center().width(50f).row();
+                        tt.check("飞行模式    [orange]生成的单位会飞起来",evaluation,a->evaluation=a).center().padBottom(5f);
                     });
                 }).row();
             }
@@ -702,167 +704,4 @@ public class AdvanceToolTable extends Table{
         }
         return 0;
     }
-    //已废弃，但可以用在其他地方
-    /*
-    private void unitStatusMenu(){
-        BaseDialog unitStatusTable = new BaseDialog("单位状态重构厂");
-        Table table = unitStatusTable.cont;
-
-        Runnable[] rebuildStatus = {null};
-        rebuildStatus[0] = () -> {
-            table.clear();
-
-            table.row();
-
-            table.pane(list -> {
-                int i = 0;
-                for (StatusEffect effects : content.statusEffects()) {
-                    if (i++ % 8 == 0) list.row();
-                    list.button(effects.emoji(), () -> {
-                        if(unitStatus.get(effects) == null)
-                            unitStatus.put(effects, 10f);
-                        else unitStatus.remove(effects);
-                        rebuildStatus[0].run();
-                    }).size(50f).color(unitStatus.get(effects) == null ? Color.red:Color.acid);
-                }
-            }).top().center();
-
-            table.row();
-
-            table.table(t-> {
-                if(unitStatus.size > 0) {
-                    unitStatus.each((status,statusDuration)->{
-                        t.add(status.emoji() + status.localizedName+" ");
-                        if(!status.permanent){
-                            TextField sField;
-                            sField = t.field(String.valueOf(statusDuration), text -> {
-                                unitStatus.remove(status);
-                                unitStatus.put(status, Float.parseFloat(text));
-                            }).maxTextLength(10).valid(value -> Strings.canParsePositiveFloat(value)).get();
-
-                            t.slider(0.125f, 10F, 0.125f, (float) Math.log10(statusDuration), n -> {
-                                unitStatus.remove(status);
-                                unitStatus.put(status, (float) Math.pow(10,n));
-                                sField.setText(Strings.autoFixed((float) Math.pow(10,n),2));
-                            });
-                        }
-                        t.row();
-                    });
-                }
-            });
-
-            table.row();
-            table.button("[red]重置出厂状态",()->{unitStatus.clear();}).fillX();
-        };
-        rebuildStatus[0].run();
-        unitStatusTable.addCloseButton();
-        unitStatusTable.show();
-    }
-
-    private void showItems(){
-        BaseDialog itemDialog = new BaseDialog("单位的百宝袋");
-        Table table = itemDialog.cont;
-        Runnable[] rebuildItems = {null};
-
-        rebuildItems[0] = () -> {
-            table.clear();
-            table.table(p -> {
-
-                p.table(pt->{
-                    pt.button(Items.copper.emoji(),() -> {showSelectItems = !showSelectItems;rebuildItems[0].run();}).size(50f);
-                    pt.add("数量：");
-                    pt.field(String.valueOf(unitItemAmount), text -> {
-                        unitItemAmount = Integer.parseInt(text);
-                    }).maxTextLength(4).valid(value -> Strings.canParsePositiveInt(value)).get();
-                    pt.add("/ " + spawning.itemCapacity+" ");
-                    pt.add(unitItems==null?"":unitItems.emoji());
-                });
-
-                p.row();
-
-                if(showSelectItems){
-                    p.table(pt->{
-                        int i = 0;
-                        for (Item item : content.items()) {
-                            pt.button(item.emoji(), () -> {
-                                unitItems = item;
-                                rebuildItems[0].run();
-                            }).size(50f).left();
-                            if (++i % 6 == 0) pt.row();
-                        }
-                        pt.button("[red]×", () -> {
-                            unitItems = null;
-                            rebuildItems[0].run();
-                        }).size(50f).left();
-                        pt.row();
-                    }).fillX().row();
-                }
-
-                p.table(pt->{
-                    int i = 0;
-                    for (Unit payload:unitPayload){
-                        if((payload instanceof Payloadc pay && pay.hasPayload())|| payload.hasItem()){
-                            pt.button(payload.type.emoji() + "[red]*",
-                                    () -> {unitPayload.remove(payload);
-                                        rebuildItems[0].run();
-                                    }).size(50f).left();
-                        }
-                        else{
-                            pt.button(payload.type.emoji(),
-                                    () -> {unitPayload.remove(payload);
-                                        rebuildItems[0].run();
-                                    }).size(50f).left();
-                        }
-
-                        if (++i % 8 == 0) pt.row();
-                    }
-                }).row();
-
-                p.button(UnitTypes.mono.emoji(),cleart,() -> {showSelectPayload = !showSelectPayload;rebuildItems[0].run();}).size(50f);
-                p.row();
-
-                if (showSelectPayload){
-                    p.pane(list -> {
-                        int i = 0;
-                        for (UnitType units : content.units()) {
-                            list.button(units.emoji(), () -> {
-                                unitPayload.add(units.create(unitTeam));
-                                rebuildItems[0].run();
-                            }).size(50f);
-                            if (++i % 8 == 0) list.row();
-                        }
-                    });
-                    p.row();
-                    p.table(pt->{
-                        pt.button("[cyan]自递归",()->{
-                            Unit unit = spawning.create(unitTeam);
-                            unit.set(unitLoc.x * tilesize + Tmp.v1.x, unitLoc.y * tilesize + Tmp.v1.y);
-                            unitStatus.each((status,statusDuration)->{
-                                unit.apply(status,statusDuration * 60f);
-                            });
-                            if (unitItems!=null) unit.addItem(unitItems,unitItemAmount);
-
-                            if (unit instanceof Payloadc pay){
-                                unitPayload.each(payload ->{
-                                    pay.addPayload(new UnitPayload(payload));
-                                });
-                            }
-
-
-
-                            rebuildItems[0].run();
-                        });
-                        pt.button("?",()->ui.showInfo("使用说明：携带的单位存在一个序列，每个单位可以具备特定的属性。\n[cyan]自递归[white]是指根据当前的配置生成一个单位，并储存到载荷序列上"
-                                +"\n这一单位具备所有目前设置的属性，包括buff、物品和载荷。\n合理使用自递归可以发掘无限的可能性"+
-                                "\n[orange][警告]尚不清楚连续套娃是否会对游戏产生影响")).size(50f);
-                    });
-                }
-            });
-        };
-
-        rebuildItems[0].run();
-        itemDialog.addCloseButton();
-        itemDialog.show();
-    }
-    */
 }
