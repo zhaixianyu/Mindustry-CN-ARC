@@ -59,7 +59,7 @@ public class AdvanceToolTable extends Table{
     private boolean showSelectPayload = false;
     private Boolean showPayloadBlock = false;
     private float timeAcce = 1f;
-    private float elevation = -99f;
+    private float elevation = 0f;
 
     public AdvanceToolTable(){
         rebuild();
@@ -326,7 +326,7 @@ public class AdvanceToolTable extends Table{
                 for(var n = 0; n < unitCount; n++){
                     Tmp.v1.rnd(Mathf.random(unitRandDst * tilesize));
                     Unit unit = cloneUnit(spawnUnit);
-                    if(elevation!=-99) unit.elevation = elevation;
+                    if(elevation!=0) unit.elevation = elevation;
                     unit.set(unitLoc.x * tilesize + Tmp.v1.x, unitLoc.y * tilesize + Tmp.v1.y);
                     unitStatus.each((status, statusDuration) -> {
                         unit.apply(status, statusDuration * 60f);
@@ -437,10 +437,9 @@ public class AdvanceToolTable extends Table{
 
                         if(Core.settings.getBool("developMode"))
                         {
-                            TextField sField = list.field(elevation + "", text -> elevation = Float.parseFloat(text)).valid(text -> {
-                                return Objects.equals(text, "Inf") || Strings.canParsePositiveFloat(text);
-                            }).tooltip("单位层级").maxTextLength(10).get();
-                            list.add("秒");
+                            TextField sField = list.field(elevation + "", text -> elevation = Float.parseFloat(text)).
+                                    valid(text -> Strings.canParseFloat(text)).tooltip("单位层级").maxTextLength(10).get();
+                            list.add("层");
                             Slider sSlider = list.slider(-10,10,0.05f,0, n -> {
                                 if(elevation != n){//用一种神奇的方式阻止了反复更新
                                     sField.setText(n+"");
@@ -684,7 +683,7 @@ public class AdvanceToolTable extends Table{
     }
 
     private void resetUnitType(Unit unit, UnitType unitType){
-        elevation = -99;
+        elevation = 0;
         unit.type = unitType;
         unit.health = unitType.health;
         unit.shield = 0;
