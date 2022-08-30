@@ -124,7 +124,7 @@ public class PlayerListFragment{
             iconTable.tapped(() -> {
                 if(!user.dead() && clickable){
                     Core.camera.position.set(user.unit());
-                    ui.arcInfo("定位玩家：" + user.name, 1f);
+                    ui.arcInfo("定位玩家：" + user.name);
                     if(control.input instanceof DesktopInput input){
                         input.panning = true;
                     }
@@ -155,15 +155,21 @@ public class PlayerListFragment{
             if (Core.settings.getBool("arcWayzerServerMode")){
                 button.add(iconTable).size(h);
                 if (Core.settings.getBool("cheating_mode")){
-                    button.labelWrap("[" + user.id + "] ").minWidth(150f);
+                    button.labelWrap("[" + user.id + "] ").minWidth(100f);
                 }
                 button.image(Icon.admin).visible(() -> user.admin && !(!user.isLocal() && net.server())).size(bs).get().updateVisibility();
-                button.labelWrap("[#" + user.color().toString().toUpperCase() + "]" + user.name()).width(320f).pad(10);
-                button.add().grow();
+                button.table(
+                    t -> {
+                        t.labelWrap("[#" + user.color().toString().toUpperCase() + "]" + user.name()).minWidth(300f);
+                        t.touchable = Touchable.enabled;
+                        t.tapped(()->{
+                            Core.app.setClipboardText(user.name);
+                            ui.arcInfo("复制昵称：" + user.name);
+                        });
+                    }
+                ).width(320f).pad(10f).left();
 
-                button.button(Icon.copy, Styles.clearNonei, () -> {
-                    Core.app.setClipboardText(user.name);
-                });
+                button.add().grow();
 
                 button.button(Icon.link, Styles.clearNonei, () -> {
                     String message = arcAtPlayer(user.name);
@@ -178,7 +184,7 @@ public class PlayerListFragment{
                     }
                     if(control.input instanceof DesktopInput){
                         ((DesktopInput) control.input).panning = follow == user;
-                        ui.arcInfo("追踪玩家：" + user.name, 1f);
+                        ui.arcInfo("追踪玩家：" + user.name);
                     }
                 }).checked(b -> {
                     boolean checked = follow == user;
