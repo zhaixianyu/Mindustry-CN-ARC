@@ -155,7 +155,7 @@ public class PlayerListFragment{
             if (Core.settings.getBool("arcWayzerServerMode")){
                 button.add(iconTable).size(h);
                 if (Core.settings.getBool("cheating_mode")){
-                    button.labelWrap("[" + user.id + "] ").minWidth(100f);
+                    button.labelWrap("[" + user.id + "] ").minWidth(150f);
                 }
                 button.image(Icon.admin).visible(() -> user.admin && !(!user.isLocal() && net.server())).size(bs).get().updateVisibility();
                 button.table(
