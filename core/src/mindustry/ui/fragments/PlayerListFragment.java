@@ -13,6 +13,7 @@ import arc.util.*;
 import mindustry.input.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
+import mindustry.input.*;
 import mindustry.net.*;
 import mindustry.net.Packets.*;
 import mindustry.ui.*;
@@ -96,11 +97,13 @@ public class PlayerListFragment{
             button.left();
             button.margin(5).marginBottom(10);
 
-            Table table = new Table(){
+            ClickListener listener = new ClickListener();
+
+            Table iconTable = new Table(){
                 @Override
                 public void draw(){
                     super.draw();
-                    Draw.color(Pal.gray);
+                    Draw.colorMul(user.team().color, listener.isOver() ? 1.3f : 1f);
                     Draw.alpha(parentAlpha);
                     Lines.stroke(Scl.scl(4f));
                     Lines.rect(x, y, width, height);
@@ -192,15 +195,15 @@ public class PlayerListFragment{
                     button.table(t -> {
                         t.defaults().size(bs);
 
-                        t.button(Icon.hammer, ustyle,
-                        () -> ui.showConfirm("@confirm", Core.bundle.format("confirmban",  user.name()), () -> Call.adminRequest(user, AdminAction.ban)));
-                        t.button(Icon.cancel, ustyle,
-                        () -> ui.showConfirm("@confirm", Core.bundle.format("confirmkick",  user.name()), () -> Call.adminRequest(user, AdminAction.kick)));
+                    t.button(Icon.hammerSmall, ustyle,
+                    () -> ui.showConfirm("@confirm", Core.bundle.format("confirmban",  user.name()), () -> Call.adminRequest(user, AdminAction.ban)));
+                    t.button(Icon.cancelSmall, ustyle,
+                    () -> ui.showConfirm("@confirm", Core.bundle.format("confirmkick",  user.name()), () -> Call.adminRequest(user, AdminAction.kick)));
 
                         t.row();
 
-                        t.button(Icon.admin, style, () -> {
-                            if(net.client()) return;
+                    t.button(Icon.adminSmall, style, () -> {
+                        if(net.client()) return;
 
                             String id = user.uuid();
 
@@ -220,23 +223,19 @@ public class PlayerListFragment{
                             .touchable(() -> net.client() ? Touchable.disabled : Touchable.enabled)
                             .checked(user.admin);
 
-                        t.button(Icon.zoom, ustyle, () -> Call.adminRequest(user, AdminAction.trace));
+                    t.button(Icon.zoomSmall, ustyle, () -> Call.adminRequest(user, AdminAction.trace));
 
                     }).padRight(12).size(bs + 10f, bs);
                 }else if(!user.isLocal() && !user.admin && net.client() && Groups.player.size() >= 3 && player.team() == user.team()){ //votekick
                     button.add().growY();
 
-                    button.button(Icon.hammer, ustyle,
-                    () -> {
-                        ui.showConfirm("@confirm", Core.bundle.format("confirmvotekick",  user.name()), () -> {
-                            Call.sendChatMessage("/votekick " + user.name());
-                        });
-                    }).size(h);
-                }
+                button.button(Icon.hammer, ustyle,
+                    () -> ui.showConfirm("@confirm", Core.bundle.format("confirmvotekick",  user.name()),
+                    () -> Call.sendChatMessage("/votekick " + user.name())))
+                .size(h);
             }
-            content.add(button).padBottom(-6).width(700f).maxHeight(h + 14);
-            content.row();
-            content.image().height(4f).color(state.rules.pvp|| Core.settings.getBool("arcAlwaysTeamColor") ? user.team().color : Pal.gray).growX();
+
+            content.add(button).width(350f).height(h + 14);
             content.row();
         }
 
