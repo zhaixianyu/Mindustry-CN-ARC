@@ -461,7 +461,6 @@ public class Blocks{
             drownTime = 200f;
             cacheLayer = CacheLayer.arkycite;
             albedo = 0.9f;
-            liquidMultiplier = 1.5f;
         }};
 
         arkyicStone = new Floor("arkyic-stone"){{

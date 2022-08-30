@@ -583,7 +583,7 @@ public class ResearchDialog extends BaseDialog{
             infoTable.table(b -> {
                 b.margin(0).left().defaults().left();
 
-                if(selectable ||Core.settings.getBool("researchViewer")) ){
+                if(selectable || Core.settings.getBool("researchViewer")){
                     b.button(Icon.info, Styles.flati, () -> ui.content.show(node.content)).growY().width(50f);
                 }
                 b.add().grow();
