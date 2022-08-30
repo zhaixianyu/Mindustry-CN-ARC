@@ -717,4 +717,40 @@ public class UI implements ApplicationListener, Loadable{
         if (Math.abs(number - Math.round(number)) < 0.01) return String.format("%.0f", number);
         return String.format("%.2f", number);
     }
+
+    public static String arcFixed(float number, int maxDeci){
+
+        String sign = number < 0 ? "-" : "";
+        number = Math.abs(number);
+        if(number >= 1_000_000_000){
+            return sign + Strings.fixed(number / 1_000_000_000f, 1) + billions+ "";
+        }else if(number >= 1_000_000){
+            return sign + Strings.fixed(number / 1_000_000f, 1) + millions + "";
+        }else if(number >= 25_000){
+            return number / 1000 + thousands + "";
+        }else if(number >= 2500){
+            return sign + Strings.fixed(number / 1000f, 1) + thousands + "";
+        }else{
+            return sign + Strings.autoFixed(number,maxDeci);
+        }
+    }
+
+    public static String simpleFormat(String text,float cur,float total,int deci){
+        return text + " " + simpleView(cur,total,deci);
+    }
+
+    public static String simpleFormat(String text,float cur,float total){
+        return simpleFormat(text,cur,total,1);
+    }
+
+    public static String simpleView(float cur,float total,int deci){
+        float pre = cur/total;
+        if(pre>0.99) return arcFixed(cur,deci);
+        else if (pre<0.001) return  arcFixed(cur,deci) + "/" + arcFixed(total,deci);
+        else return arcFixed(cur,deci) + "/" + arcFixed(total,deci) + " | [lightgray]" + (int)(pre * 100) + "%";
+    }
+
+    public static String simpleView(float cur,float total){
+        return simpleView(cur,total,1);
+    }
 }
