@@ -13,14 +13,19 @@ import arc.scene.ui.layout.*;
 import arc.util.*;
 import mindustry.*;
 import mindustry.arcModule.Marker;
+import mindustry.content.UnitTypes;
 import mindustry.core.*;
+import mindustry.entities.Predict;
+import mindustry.entities.Units;
 import mindustry.entities.units.*;
 import mindustry.game.EventType.*;
 import mindustry.game.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
+import mindustry.type.UnitType;
 import mindustry.ui.*;
 import mindustry.world.*;
+import mindustry.world.blocks.ControlBlock;
 
 import static arc.Core.*;
 import static mindustry.Vars.net;
@@ -51,6 +56,8 @@ public class DesktopInput extends InputHandler{
     public Tile prevSelected;
 
     public boolean autoAim = false;
+    /** Current thing being shot at. */
+    public @Nullable Teamc target;
 
     boolean showHint(){
         return ui.hudfrag.shown && Core.settings.getBool("hints") && selectPlans.isEmpty() &&
@@ -221,7 +228,7 @@ public class DesktopInput extends InputHandler{
         }
 
         if((Math.abs(Core.input.axis(Binding.move_x)) > 0 || Math.abs(Core.input.axis(Binding.move_y)) > 0 || input.keyDown(Binding.mouse_move)) && (!scene.hasField())){
-            panning = false;
+            if(!Core.settings.getBool("removePan")) panning = false;
             follow = null;
         }
 
@@ -747,7 +754,7 @@ public class DesktopInput extends InputHandler{
     }
 
     protected void updateMovement(Unit unit){
-        boolean omni = unit.type.omniMovement;
+        UnitType type = unit.type;
 
         float speed = unit.speed();
         float xa = Core.input.axis(Binding.move_x);
@@ -759,23 +766,69 @@ public class DesktopInput extends InputHandler{
             movement.add(input.mouseWorld().sub(player).scl(1f / 25f * speed)).limit(speed);
         }
 
-        float mouseAngle = Angles.mouseAngle(unit.x, unit.y);
-        boolean aimCursor = omni && player.shooting && unit.type.hasWeapons() && unit.type.faceTarget && !boosted;
+        boolean busy = unit.mining() || unit.activelyBuilding();
 
-        if(aimCursor){
-            unit.lookAt(mouseAngle);
-        }else{
+        if (Core.settings.getBool("playerNeedShooting")){
+            busy = false;
+        }
+
+        boolean manualShoot = Core.input.keyDown(Binding.select) && shouldShoot && !busy && (type.hasWeapons() || UnitTypes.block.equals(type)) && !boosted;
+
+        float mouseX = unit.aimX(), mouseY = unit.aimY();
+        Vec2 aimPos = type.faceTarget ? Core.input.mouseWorld() : Tmp.v1.trns(unit.rotation, Core.input.mouseWorld().dst(unit)).add(unit.x, unit.y);
+
+        float lookAtAngle = Angles.mouseAngle(unit.x, unit.y);
+
+        if(target != null) {
+            boolean validHealTarget = type.canHeal && target instanceof Building b && b.isValid() && target.team() == unit.team && b.damaged() && target.within(unit, type.range);
+            if ((Units.invalidateTarget(target, unit, type.range) && !validHealTarget) || state.isEditor()) {
+                target = null;
+            }
+        }
+
+        if (!manualShoot && Core.settings.getBool("autotarget") && !busy) {
+            if (target == null) {
+                float range = unit.hasWeapons() ? unit.range() : 0f;
+                player.shooting = false;
+                if(!(player.unit() instanceof BlockUnitUnit u && u.tile() instanceof ControlBlock c && !c.shouldAutoTarget())){
+                    target = Units.closestTarget(unit.team, unit.x, unit.y, range, u -> u.checkTarget(type.targetAir, type.targetGround), u -> type.targetGround);
+
+                    if(type.canHeal && target == null){
+                        target = Geometry.findClosest(unit.x, unit.y, indexer.getDamaged(Team.sharded));
+                        if(target != null && !unit.within(target, range)){
+                            target = null;
+                        }
+                    }
+                }
+            }
+            else {
+                Vec2 intercept = Predict.intercept(unit, target, unit.hasWeapons() ? type.weapons.first().bullet.speed : 0f);
+
+                mouseX = intercept.x;
+                mouseY = intercept.y;
+                player.shooting = !boosted;
+
+                aimPos = intercept;
+                lookAtAngle = unit.angleTo(intercept);
+            }
+        }
+        else {
+            target = null;
+        }
+        if (type.omniMovement && type.faceTarget && unit.isShooting) {
+            unit.lookAt(lookAtAngle);
+        }
+        else {
             unit.lookAt(unit.prefRotation());
         }
 
         unit.movePref(movement);
-
-        if (!autoAim) unit.aim(Core.input.mouseWorld());
+        unit.aim(aimPos);
         unit.controlWeapons(true, player.shooting && !boosted);
 
-        player.boosting = Core.input.keyDown(Binding.boost);
-        player.mouseX = unit.aimX();
-        player.mouseY = unit.aimY();
+        player.boosting = Core.input.keyDown(Binding.boost) || Core.settings.getBool("forceBoost");
+        player.mouseX = mouseX;
+        player.mouseY = mouseY;
 
         //update payload input
         if(unit instanceof Payloadc){
