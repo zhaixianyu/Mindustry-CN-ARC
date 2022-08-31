@@ -4,6 +4,7 @@ import arc.*;
 import arc.func.*;
 import arc.graphics.*;
 import arc.scene.actions.*;
+import arc.scene.event.Touchable;
 import arc.scene.ui.*;
 import arc.scene.ui.TextButton.*;
 import arc.scene.ui.layout.*;
@@ -25,13 +26,20 @@ public class LogicDialog extends BaseDialog{
     public LCanvas canvas;
     Cons<String> consumer = s -> {};
     boolean privileged;
+    float period = 15f;
+    float counter = 0f;
+    Table varTable = new Table();
+    Table mainTable = new Table();
+
+    boolean excludeNull = false;
+    boolean refreshing = true;
+
     @Nullable LExecutor executor;
 
     public LogicDialog(){
         super("logic");
 
         clearChildren();
-
         canvas = new LCanvas();
         shouldPause = true;
 
@@ -44,13 +52,97 @@ public class LogicDialog extends BaseDialog{
             canvas.rebuild();
         });
 
-        add(canvas).grow().name("canvas");
+
+        add(mainTable).grow().name("canvas");
+        rebuildMain();
 
         row();
 
         add(buttons).growX().name("canvas");
     }
 
+    private void rebuildMain(){
+        mainTable.clear();
+        canvas.rebuild();
+        if(!Core.settings.getBool("logicSupport"))  {
+            mainTable.add(canvas).grow();
+        }else{
+            varsTable();
+            mainTable.add(varTable);
+            mainTable.add(canvas).grow();
+            counter=0;
+            varTable.update(()->{
+                counter+=Time.delta;
+                if(counter>period && refreshing){
+                    varsTable();
+                    counter=0;
+                }
+            });
+        }
+    }
+    private void varsTable(){
+        varTable.clear();
+        varTable.pane(t->{
+            if(executor==null) return;
+            t.table(tt->{
+                tt.add("变量刷新间隔").padRight(5f).left();
+                TextField field = tt.field((int)period + "", text -> {
+                    period = Integer.parseInt(text);
+                }).width(100f).valid(Strings::canParsePositiveInt).maxTextLength(5).get();
+                tt.slider(1, 60,1, 15, res -> {
+                    period = res;
+                    field.setText((int)res + "");
+                });
+            });
+            t.row();
+            t.table(tt->{
+                tt.button(Icon.cancelSmall,Styles.cleari,()->{
+                    Core.settings.put("logicSupport",!Core.settings.getBool("logicSupport"));
+                    ui.arcInfo("已关闭逻辑辅助器，可在设置-学术端里打开！");
+                    rebuildMain();
+                }).size(50f);
+                tt.button(Icon.refreshSmall,Styles.cleari,()->{
+                    executor.build.updateCode(executor.build.code);
+                    ui.arcInfo("已更新逻辑！");
+                }).size(50f);
+                tt.button(Icon.pauseSmall,Styles.cleari,()->{
+                    refreshing = !refreshing;
+                    ui.arcInfo("已" + (refreshing?"开启":"关闭") + "逻辑刷新");
+                }).checked(refreshing).size(50f);
+                tt.button(Icon.trash,Styles.cleari,()->{
+                    excludeNull = !excludeNull;
+                    ui.arcInfo("已" + (excludeNull?"关闭":"开启") + "null排除");
+                }).checked(excludeNull).size(50f);
+            });
+            t.row();
+            for(var s : executor.vars){
+                if(s.constant) continue;
+                String text = s.isobj ? PrintI.toString(s.objval) : Math.abs(s.numval - (long)s.numval) < 0.00001 ? (long)s.numval + "" : s.numval + "";
+                if(text == null && excludeNull) continue;
+                t.table(tt->{
+                    tt.background(Tex.whitePane);
+                    tt.setColor(typeColor(s,new Color()));
+
+                    tt.table(tv->{
+                        tv.labelWrap(s.name).width(100f);
+                        tv.touchable = Touchable.enabled;
+                        tv.tapped(()->{
+                            Core.app.setClipboardText(s.name);
+                            ui.arcInfo("[cyan]复制变量名[white] " + s.name);
+                        });
+                    });
+                    tt.table(tv->{
+                        tv.labelWrap(text).width(150f);
+                        tv.touchable = Touchable.enabled;
+                        tv.tapped(()->{
+                            Core.app.setClipboardText(text);
+                            ui.arcInfo("[cyan]复制变量属性[white] " + text);
+                        });
+                    }).padLeft(20f);
+                }).padTop(10f).tooltip(typeName(s)).row();
+            }
+        }).width(350f).padLeft(20f);
+    }
     private Color typeColor(Var s, Color color){
         return color.set(
             !s.isobj ? Pal.place :
@@ -146,7 +238,6 @@ public class LogicDialog extends BaseDialog{
 
                         t.add(new Image(Tex.whiteui, Pal.gray.cpy().mul(mul))).width(stub);
                         t.table(Tex.pane, out -> {
-                            float period = 15f;
                             float[] counter = {-1f};
                             Label label = out.add("").style(Styles.outlineLabel).padLeft(4).padRight(4).width(140f).wrap().get();
                             label.update(() -> {

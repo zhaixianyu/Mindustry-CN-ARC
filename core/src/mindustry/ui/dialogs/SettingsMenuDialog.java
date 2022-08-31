@@ -511,6 +511,7 @@ public class SettingsMenuDialog extends BaseDialog{
         });
         arc.checkPref("showAdvanceToolTable",false);
         arc.checkPref("arcSpecificTable",true);
+        arc.checkPref("logicSupport",true);
         arc.checkPref("powerStatistic", true);
         arc.sliderPref("arccoreitems", 3, 0, 3, 1, s -> {
             if(s==0){return "不显示";}

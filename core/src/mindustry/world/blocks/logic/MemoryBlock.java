@@ -1,7 +1,14 @@
 package mindustry.world.blocks.logic;
 
+import arc.scene.ui.Dialog;
+import arc.scene.ui.TextField;
+import arc.scene.ui.layout.Table;
+import arc.util.Strings;
 import arc.util.io.*;
+import mindustry.editor.arcWaveInfoDialog;
 import mindustry.gen.*;
+import mindustry.ui.Styles;
+import mindustry.ui.dialogs.BaseDialog;
 import mindustry.world.*;
 import mindustry.world.meta.*;
 
@@ -71,6 +78,18 @@ public class MemoryBlock extends Block{
             }
         }
 
+        @Override
+        public void buildConfiguration(Table table){
+            if(!accessible()){
+                //go away
+                deselect();
+                return;
+            }
+
+            table.button(Icon.pencil, Styles.cleari, () -> {
+                ui.arcInfo("制作中...");
+            }).size(40);
+        }
         @Override
         public void read(Reads read, byte revision){
             super.read(read, revision);

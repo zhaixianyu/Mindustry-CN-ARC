@@ -200,13 +200,6 @@ public class ModsDialog extends BaseDialog{
                             githubImportMod(text, false, null);
                         });
                     }).margin(12f);
-
-                    t.row();
-
-                    t.button("[cyan]冷却液[white]的mod资源站", Icon.link,bstyle, () -> {
-                        dialog.hide();
-                        Core.app.openURI("http://cryofluid.ys168.com/");
-                    }).margin(12f);
                 });
                 dialog.addCloseButton();
 
