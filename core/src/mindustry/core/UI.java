@@ -87,6 +87,8 @@ public class UI implements ApplicationListener, Loadable{
 
     private @Nullable Element lastAnnouncement;
 
+    private @Nullable Element lastArcAnnouncement;
+
     public UI(){
         Fonts.loadFonts();
     }
@@ -581,7 +583,7 @@ public class UI implements ApplicationListener, Loadable{
         t.pack();
         t.act(0.1f);
         Core.scene.add(t);
-        lastAnnouncement = t;
+        lastArcAnnouncement = t;
     }
 
     public void showOkText(String title, String text, Runnable confirmed){

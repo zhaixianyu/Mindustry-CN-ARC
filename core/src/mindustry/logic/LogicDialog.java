@@ -74,7 +74,6 @@ public class LogicDialog extends BaseDialog{
             varTable.update(()->{
                 counter+=Time.delta;
                 if(counter>period && refreshing){
-                    varsTable();
                     counter=0;
                 }
             });
@@ -82,10 +81,9 @@ public class LogicDialog extends BaseDialog{
     }
     private void varsTable(){
         varTable.clear();
-        varTable.pane(t->{
-            if(executor==null) return;
+        varTable.table(t->{
             t.table(tt->{
-                tt.add("变量刷新间隔").padRight(5f).left();
+                tt.add("刷新间隔").padRight(5f).left();
                 TextField field = tt.field((int)period + "", text -> {
                     period = Integer.parseInt(text);
                 }).width(100f).valid(Strings::canParsePositiveInt).maxTextLength(5).get();
@@ -103,43 +101,59 @@ public class LogicDialog extends BaseDialog{
                 }).size(50f);
                 tt.button(Icon.refreshSmall,Styles.cleari,()->{
                     executor.build.updateCode(executor.build.code);
+                    varsTable();
                     ui.arcInfo("已更新逻辑！");
                 }).size(50f);
                 tt.button(Icon.pauseSmall,Styles.cleari,()->{
                     refreshing = !refreshing;
                     ui.arcInfo("已" + (refreshing?"开启":"关闭") + "逻辑刷新");
                 }).checked(refreshing).size(50f);
+                /*
                 tt.button(Icon.trash,Styles.cleari,()->{
                     excludeNull = !excludeNull;
                     ui.arcInfo("已" + (excludeNull?"关闭":"开启") + "null排除");
-                }).checked(excludeNull).size(50f);
+                }).checked(excludeNull).size(50f);*/
             });
-            t.row();
+        });
+        varTable.row();
+        varTable.pane(t->{
+            if(executor==null) return;
             for(var s : executor.vars){
                 if(s.constant) continue;
                 String text = s.isobj ? PrintI.toString(s.objval) : Math.abs(s.numval - (long)s.numval) < 0.00001 ? (long)s.numval + "" : s.numval + "";
-                if(text == null && excludeNull) continue;
+                //if(text == "null" && excludeNull) continue;
                 t.table(tt->{
                     tt.background(Tex.whitePane);
-                    tt.setColor(typeColor(s,new Color()));
 
                     tt.table(tv->{
                         tv.labelWrap(s.name).width(100f);
                         tv.touchable = Touchable.enabled;
                         tv.tapped(()->{
                             Core.app.setClipboardText(s.name);
-                            ui.arcInfo("[cyan]复制变量名[white] " + s.name);
+                            ui.arcInfo("[cyan]复制变量名[white]\n " + s.name);
                         });
                     });
                     tt.table(tv->{
-                        tv.labelWrap(text).width(150f);
+                        Label varPro = tv.labelWrap(text).width(150f).get();
                         tv.touchable = Touchable.enabled;
                         tv.tapped(()->{
-                            Core.app.setClipboardText(text);
-                            ui.arcInfo("[cyan]复制变量属性[white] " + text);
+                            Core.app.setClipboardText(varPro.getText().toString());
+                            ui.arcInfo("[cyan]复制变量属性[white]\n " + varPro.getText());
+                        });
+                        tv.update(()->{
+                            if(counter + Time.delta>period && refreshing){
+                                varPro.setText(s.isobj ? PrintI.toString(s.objval) : Math.abs(s.numval - (long)s.numval) < 0.00001 ? (long)s.numval + "" : s.numval + "");
+                            }
                         });
                     }).padLeft(20f);
-                }).padTop(10f).tooltip(typeName(s)).row();
+
+                    tt.update(()->{
+                        if(counter + Time.delta>period && refreshing){
+                            tt.setColor(typeColor(s,new Color()));
+                        }
+                    });
+
+                }).padTop(10f).row();
             }
         }).width(350f).padLeft(20f);
     }
