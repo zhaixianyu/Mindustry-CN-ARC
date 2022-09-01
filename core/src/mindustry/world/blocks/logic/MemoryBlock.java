@@ -58,6 +58,7 @@ public class MemoryBlock extends Block{
     public class MemoryBuild extends Building{
         public double[] memory = new double[memoryCapacity];
         float counter = 0f;
+        int deci = -1;
 
         //massive byte size means picking up causes sync issues
         @Override
@@ -104,7 +105,6 @@ public class MemoryBlock extends Block{
         }
 
         private void rebuildInfo(){
-
             infoTable.clear();
             if(!showInfo){
                 infoTable.button(Icon.pencil, Styles.cleari, () -> {
@@ -130,10 +130,16 @@ public class MemoryBlock extends Block{
                     ui.arcInfo("已更新内存元！");
                 }).size(40);
 
-                Label rowNum = t.add("每行： "+numPerRow).get();
-                t.slider(5, 20,1, 20, res -> {
+                Label rowNum = t.add("每行 "+numPerRow).get();
+                t.slider(2, 15,1, numPerRow, res -> {
                     numPerRow = (int)res;
-                    rowNum.setText("每行： "+numPerRow);
+                    rowNum.setText("每行 "+numPerRow);
+                });
+
+                Label deciL = t.add(deci==-1?"不约化":("约化 "+deci)).get();
+                t.slider(-1, 15,1, deci, res -> {
+                    deci = (int)res;
+                    deciL.setText(deci==-1?"不约化":("约化 "+deci));
                 });
 
                 Label refresh = t.add("刷新 "+period).get();
@@ -146,27 +152,35 @@ public class MemoryBlock extends Block{
             infoTable.pane(t->{
                 int index = 0;
                 for(double v : memory){
-                    t.add(index + " ");
+                    Label textR = t.add(index + " ").get();
                     int finalIndex = index;
 
                     t.table(tt->{
-                        Label text = tt.add(v+"").get();
+                        Label text = tt.add(showString(memory[finalIndex])).get();
                         tt.update(()->{
                             if(counter + Time.delta>period){
-                                text.setText(memory[finalIndex]+"");
+                                textR.setText((memory[finalIndex]==0?"[gray]":"") + finalIndex + " ");
+                                text.setText(showString(memory[finalIndex]));
                             }
                         });
                         tt.touchable = Touchable.enabled;
                         tt.tapped(()->{
-                            Core.app.setClipboardText(text.getText().toString());
-                            ui.arcInfo("[cyan]复制内存[white]\n " + text.getText());
+                            Core.app.setClipboardText(memory[finalIndex]+"");
+                            ui.arcInfo("[cyan]复制内存[white]\n " + memory[finalIndex]);
                         });
                     });
                     index+=1;
                     if(index % numPerRow==0) t.row();
-                    else t.add(" | ");
+                    else t.add(" " + ((index % numPerRow) % 2 == 0?"[cyan]":"[acid]") + "|[white] ");
                 }
             }).maxWidth(1000f).maxHeight(500f);
+        }
+
+        public String showString(double number){
+            if(number == 0) return "[gray]-";
+            else if(deci == 0 || number == (int)number) return "[orange]" + (int)number + "";
+            if(deci == -1) return "[orange]" + number + "";
+            else return "[orange]" + String.format("%." + deci + "f", number) + "";
         }
         @Override
         public void read(Reads read, byte revision){

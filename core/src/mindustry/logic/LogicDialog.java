@@ -50,6 +50,7 @@ public class LogicDialog extends BaseDialog{
         onResize(() -> {
             setup();
             canvas.rebuild();
+            varsTable();
         });
 
 
@@ -87,7 +88,7 @@ public class LogicDialog extends BaseDialog{
                 TextField field = tt.field((int)period + "", text -> {
                     period = Integer.parseInt(text);
                 }).width(100f).valid(Strings::canParsePositiveInt).maxTextLength(5).get();
-                tt.slider(1, 60,1, 15, res -> {
+                tt.slider(1, 60,1, period, res -> {
                     period = res;
                     field.setText((int)res + "");
                 });
@@ -100,7 +101,7 @@ public class LogicDialog extends BaseDialog{
                     rebuildMain();
                 }).size(50f);
                 tt.button(Icon.refreshSmall,Styles.cleari,()->{
-                    //executor.build.updateCode(executor.build.code);
+                    executor.build.updateCode(executor.build.code);
                     varsTable();
                     ui.arcInfo("已更新逻辑显示！");
                 }).size(50f);
@@ -351,7 +352,7 @@ public class LogicDialog extends BaseDialog{
                 modified.get(result);
             }
         };
-
+        varsTable();
         show();
     }
 }
