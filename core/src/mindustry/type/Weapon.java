@@ -156,7 +156,7 @@ public class Weapon implements Cloneable{
 
         if(reload > 0) {
             t.row();
-            t.add("[lightgray]" + Stat.reload.localized() + ": " + (mirror ? "2x " : "") + "[stat]" + Strings.autoFixed(60f / reload, 2) + " [white]" + StatUnit.perSecond.localized());
+            t.add("[lightgray]" + Stat.reload.localized() + ": " + (mirror ? "2x " : "") + "[stat]" + Strings.autoFixed(60f / reload * shoot.shots, 2) + " [white]" + StatUnit.perSecond.localized());
         }
         t.row();
         t.add("[lightgray]武器范围: [stat]" + String.format("%.1f", bullet.range/8f) + " [white]格");
