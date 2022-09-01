@@ -1,9 +1,14 @@
 package mindustry.world.blocks.logic;
 
+import arc.Core;
+import arc.graphics.Color;
+import arc.scene.event.Touchable;
 import arc.scene.ui.Dialog;
+import arc.scene.ui.Label;
 import arc.scene.ui.TextField;
 import arc.scene.ui.layout.Table;
 import arc.util.Strings;
+import arc.util.Time;
 import arc.util.io.*;
 import mindustry.editor.arcWaveInfoDialog;
 import mindustry.gen.*;
@@ -17,6 +22,12 @@ import static mindustry.Vars.*;
 public class MemoryBlock extends Block{
     public int memoryCapacity = 32;
 
+    boolean showInfo = false;
+    int numPerRow = 10;
+    int period = 15;
+
+    Table infoTable = new Table();
+
     public MemoryBlock(String name){
         super(name);
         destructible = true;
@@ -25,6 +36,7 @@ public class MemoryBlock extends Block{
         drawDisabled = false;
         envEnabled = Env.any;
         canOverdrive = false;
+        configurable = true;
     }
 
     @Override
@@ -45,6 +57,7 @@ public class MemoryBlock extends Block{
 
     public class MemoryBuild extends Building{
         public double[] memory = new double[memoryCapacity];
+        float counter = 0f;
 
         //massive byte size means picking up causes sync issues
         @Override
@@ -86,9 +99,74 @@ public class MemoryBlock extends Block{
                 return;
             }
 
-            table.button(Icon.pencil, Styles.cleari, () -> {
-                ui.arcInfo("制作中...");
-            }).size(40);
+            rebuildInfo();
+            table.add(infoTable);
+        }
+
+        private void rebuildInfo(){
+
+            infoTable.clear();
+            if(!showInfo){
+                infoTable.button(Icon.pencil, Styles.cleari, () -> {
+                    showInfo = !showInfo;
+                    rebuildInfo();
+                }).size(40);
+                return;
+            }
+            infoTable.update(()->{
+                counter+= Time.delta;
+                if(counter>period){
+                    counter=0;
+                }
+            });
+            infoTable.setColor(Color.lightGray);
+            infoTable.table(t->{
+                t.button(Icon.pencil, Styles.cleari, () -> {
+                    showInfo = !showInfo;
+                    rebuildInfo();
+                }).size(40);
+                t.button(Icon.refreshSmall,Styles.cleari,()->{
+                    rebuildInfo();
+                    ui.arcInfo("已更新内存元！");
+                }).size(40);
+
+                Label rowNum = t.add("每行： "+numPerRow).get();
+                t.slider(5, 20,1, 20, res -> {
+                    numPerRow = (int)res;
+                    rowNum.setText("每行： "+numPerRow);
+                });
+
+                Label refresh = t.add("刷新 "+period).get();
+                t.slider(1, 60,1, 20, res -> {
+                    period = (int)res;
+                    refresh.setText("刷新 "+period);
+                });
+            });
+            infoTable.row();
+            infoTable.pane(t->{
+                int index = 0;
+                for(double v : memory){
+                    t.add(index + " ");
+                    int finalIndex = index;
+
+                    t.table(tt->{
+                        Label text = tt.add(v+"").get();
+                        tt.update(()->{
+                            if(counter + Time.delta>period){
+                                text.setText(memory[finalIndex]+"");
+                            }
+                        });
+                        tt.touchable = Touchable.enabled;
+                        tt.tapped(()->{
+                            Core.app.setClipboardText(text.getText().toString());
+                            ui.arcInfo("[cyan]复制内存[white]\n " + text.getText());
+                        });
+                    });
+                    index+=1;
+                    if(index % numPerRow==0) t.row();
+                    else t.add(" | ");
+                }
+            }).maxWidth(1000f).maxHeight(500f);
         }
         @Override
         public void read(Reads read, byte revision){

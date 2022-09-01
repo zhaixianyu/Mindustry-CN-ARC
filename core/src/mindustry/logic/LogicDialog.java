@@ -100,9 +100,9 @@ public class LogicDialog extends BaseDialog{
                     rebuildMain();
                 }).size(50f);
                 tt.button(Icon.refreshSmall,Styles.cleari,()->{
-                    executor.build.updateCode(executor.build.code);
+                    //executor.build.updateCode(executor.build.code);
                     varsTable();
-                    ui.arcInfo("已更新逻辑！");
+                    ui.arcInfo("已更新逻辑显示！");
                 }).size(50f);
                 tt.button(Icon.pauseSmall,Styles.cleari,()->{
                     refreshing = !refreshing;
