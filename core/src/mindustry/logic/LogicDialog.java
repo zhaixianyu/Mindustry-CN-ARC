@@ -8,6 +8,7 @@ import arc.scene.event.Touchable;
 import arc.scene.ui.*;
 import arc.scene.ui.TextButton.*;
 import arc.scene.ui.layout.*;
+import arc.struct.Seq;
 import arc.util.*;
 import mindustry.core.GameState.*;
 import mindustry.ctype.*;
@@ -30,8 +31,6 @@ public class LogicDialog extends BaseDialog{
     float counter = 0f;
     Table varTable = new Table();
     Table mainTable = new Table();
-
-    boolean excludeNull = false;
     boolean refreshing = true;
 
     @Nullable LExecutor executor;
@@ -97,17 +96,22 @@ public class LogicDialog extends BaseDialog{
             t.table(tt->{
                 tt.button(Icon.cancelSmall,Styles.cleari,()->{
                     Core.settings.put("logicSupport",!Core.settings.getBool("logicSupport"));
-                    ui.arcInfo("已关闭逻辑辅助器，可在设置-学术端里打开！");
+                    ui.arcInfo("[orange]已关闭逻辑辅助器！");
                     rebuildMain();
                 }).size(50f);
                 tt.button(Icon.refreshSmall,Styles.cleari,()->{
                     executor.build.updateCode(executor.build.code);
                     varsTable();
-                    ui.arcInfo("已更新逻辑显示！");
+                    ui.arcInfo("[orange]已更新逻辑显示！");
                 }).size(50f);
                 tt.button(Icon.pauseSmall,Styles.cleari,()->{
                     refreshing = !refreshing;
-                    ui.arcInfo("已" + (refreshing?"开启":"关闭") + "逻辑刷新");
+                    ui.arcInfo("[orange]已" + (refreshing?"开启":"关闭") + "逻辑刷新");
+                }).checked(refreshing).size(50f);
+                tt.button(Icon.rightOpenOutSmall,Styles.cleari,()->{
+                    Core.settings.put("rectJumpLine",!Core.settings.getBool("rectJumpLine"));
+                    ui.arcInfo("[orange]已" + (refreshing?"开启":"关闭") + "方形跳转线");
+                    this.canvas.rebuild();
                 }).checked(refreshing).size(50f);
                 /*
                 tt.button(Icon.trash,Styles.cleari,()->{
@@ -117,47 +121,54 @@ public class LogicDialog extends BaseDialog{
             });
         });
         varTable.row();
-        varTable.pane(t->{
-            if(executor==null) return;
-            for(var s : executor.vars){
-                if(s.constant) continue;
-                String text = s.isobj ? PrintI.toString(s.objval) : Math.abs(s.numval - (long)s.numval) < 0.00001 ? (long)s.numval + "" : s.numval + "";
-                //if(text == "null" && excludeNull) continue;
-                t.table(tt->{
-                    tt.background(Tex.whitePane);
+            varTable.pane(t->{
+                if(executor==null) return;
+                for(var s : executor.vars){
+                    //if((s.constant && !showConstant) || (!s.constant && showConstant)) continue;
+                    if(s.name.startsWith("___")) continue;
+                    String text = s.isobj ? PrintI.toString(s.objval) : Math.abs(s.numval - (long)s.numval) < 0.00001 ? (long)s.numval + "" : s.numval + "";
+                    //if(text == "null" && excludeNull) continue;
+                    t.table(tt->{
+                        tt.background(Tex.whitePane);
 
-                    tt.table(tv->{
-                        tv.labelWrap(s.name).width(100f);
-                        tv.touchable = Touchable.enabled;
-                        tv.tapped(()->{
-                            Core.app.setClipboardText(s.name);
-                            ui.arcInfo("[cyan]复制变量名[white]\n " + s.name);
+                        tt.table(tv->{
+                            tv.labelWrap(s.name).width(100f);
+                            tv.touchable = Touchable.enabled;
+                            tv.tapped(()->{
+                                Core.app.setClipboardText(s.name);
+                                ui.arcInfo("[cyan]复制变量名[white]\n " + s.name);
+                            });
                         });
-                    });
-                    tt.table(tv->{
-                        Label varPro = tv.labelWrap(text).width(150f).get();
-                        tv.touchable = Touchable.enabled;
-                        tv.tapped(()->{
-                            Core.app.setClipboardText(varPro.getText().toString());
-                            ui.arcInfo("[cyan]复制变量属性[white]\n " + varPro.getText());
-                        });
-                        tv.update(()->{
+                        tt.table(tv->{
+                            Label varPro = tv.labelWrap(text).width(200f).get();
+                            tv.touchable = Touchable.enabled;
+                            tv.tapped(()->{
+                                Core.app.setClipboardText(varPro.getText().toString());
+                                ui.arcInfo("[cyan]复制变量属性[white]\n " + varPro.getText());
+                            });
+                            tv.update(()->{
+                                if(counter + Time.delta>period && refreshing){
+                                    varPro.setText(s.isobj ? PrintI.toString(s.objval) : Math.abs(s.numval - (long)s.numval) < 0.00001 ? (long)s.numval + "" : s.numval + "");
+                                }
+                            });
+                        }).padLeft(20f);
+
+                        tt.update(()->{
                             if(counter + Time.delta>period && refreshing){
-                                varPro.setText(s.isobj ? PrintI.toString(s.objval) : Math.abs(s.numval - (long)s.numval) < 0.00001 ? (long)s.numval + "" : s.numval + "");
+                                tt.setColor(arcVarsColor(s));
                             }
                         });
-                    }).padLeft(20f);
 
-                    tt.update(()->{
-                        if(counter + Time.delta>period && refreshing){
-                            tt.setColor(typeColor(s,new Color()));
-                        }
-                    });
-
-                }).padTop(10f).row();
-            }
-        }).width(350f).padLeft(20f);
+                    }).padTop(10f).row();
+                }
+            }).width(400f).padLeft(20f);
     }
+    private Color arcVarsColor(Var s){
+        if(s.constant && s.name.startsWith("@")) return Color.goldenrod;
+        else if (s.constant) return Color.tan;
+        else return typeColor(s,new Color());
+    }
+
     private Color typeColor(Var s, Color color){
         return color.set(
             !s.isobj ? Pal.place :
@@ -213,6 +224,11 @@ public class LogicDialog extends BaseDialog{
                     }).marginLeft(12f).disabled(b -> Core.app.getClipboardText() == null);
                     t.row();
                     t.button("[orange]清空",Icon.trash,style,()-> canvas.clearAll()).marginLeft(12f);
+                    t.row();
+                    t.button("[orange]逻辑辅助器",Icon.settings,style,()-> {
+                        Core.settings.put("logicSupport",!Core.settings.getBool("logicSupport"));
+                        rebuildMain();
+                    }).marginLeft(12f);
                 });
             });
 
