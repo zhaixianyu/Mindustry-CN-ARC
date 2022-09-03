@@ -19,6 +19,8 @@ import mindustry.net.Administration.*;
 import mindustry.net.*;
 import mindustry.net.Packets.*;
 import mindustry.ui.*;
+import mindustry.world.blocks.distribution.Conveyor;
+import mindustry.world.blocks.distribution.DirectionBridge;
 import mindustry.world.blocks.storage.*;
 import mindustry.world.blocks.storage.CoreBlock.*;
 
@@ -358,7 +360,7 @@ abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Dra
             return;
         }
         indexer.eachBlock(player.team(), player.x, player.y, itemTransferRange,
-            build -> build.acceptStack(player.unit().item(), player.unit().stack.amount, player.unit()) > 0 && !(build.block instanceof CoreBlock),
+            build -> build.acceptStack(player.unit().item(), player.unit().stack.amount, player.unit()) > 0 && !(build.block instanceof CoreBlock) && !(build.block instanceof Conveyor) && !(build.block instanceof DirectionBridge),
             build -> Call.transferInventory(player, build)
         );
     }
