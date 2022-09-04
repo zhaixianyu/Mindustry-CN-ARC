@@ -55,7 +55,7 @@ public class DrawUtilities {
 
         float height = layout.height;
 
-        font.draw(text, dx, dy + layout.height + 1, halign);
+        font.draw(text, dx + layout.width/2, dy + layout.height/2, halign);
 
         font.setUseIntegerPositions(ints);
         font.setColor(Color.white);

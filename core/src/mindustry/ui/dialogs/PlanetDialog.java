@@ -35,6 +35,7 @@ import mindustry.world.blocks.storage.*;
 
 import static arc.Core.*;
 import static mindustry.Vars.*;
+import static mindustry.arcModule.DrawUtilities.arcDrawText;
 import static mindustry.graphics.g3d.PlanetRenderer.*;
 import static mindustry.ui.dialogs.PlanetDialog.Mode.*;
 
@@ -68,6 +69,8 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
 
     public Table sectorTop = new Table(), notifs = new Table(), expandTable = new Table();
     public Label hoverLabel = new Label("");
+
+    private boolean alwaysShowName = false;
 
     public PlanetDialog(){
         super("", Styles.fullDialog);
@@ -233,6 +236,7 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
             buttons.add().growX();
             buttons.add(sectorTop).minWidth(230f);
             buttons.add().growX();
+            buttons.button("区块名称", Icon.bookOpen, () -> alwaysShowName = !alwaysShowName).size(100f, 54f).pad(2).bottom();
             addTech();
         }
     }
@@ -463,6 +467,9 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
                         Draw.rect(icon, 0, 0, iw, iw * icon.height / icon.width);
                     });
                 }
+                planets.drawPlane(sec,()->{
+                    if((canSelect(sec) || sec.hasBase()) && alwaysShowName) arcDrawText((sec.preset !=null ? "" : "[gray]") +  sec.name(),0.5f,0,0,0);
+                });
             }
         }
 
@@ -594,7 +601,7 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
 
             //sector notifications & search
             c.top().right();
-            c.defaults().width(290f);
+            c.defaults().width(350f);
 
             c.button(bundle.get("sectorlist") +
             (attacked == 0 ? "" : "\n[red]⚠[lightgray] " + bundle.format("sectorlist.attacked", "[red]" + attacked + "[]")),
@@ -638,7 +645,7 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
 
             readd[0] = () -> {
                 con.clearChildren();
-                for(Sector sec : all){
+                for(Sector sec : all.copy().sort(sector -> sector.info.production.size)){
                     if(sec.hasBase() && (searchText.isEmpty() || sec.name().toLowerCase().contains(searchText.toLowerCase()))){
                         con.button(t -> {
                             t.marginRight(10f);
@@ -655,8 +662,20 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
                                 }
 
                                 String ic = sec.iconChar() == null ? "" : sec.iconChar() + " ";
-
                                 head.add(ic + sec.name()).growX().wrap();
+
+                                if(!mobile && !sec.info.export.isEmpty() && sec.info.destination != null && sec.info.destination.hasBase()){
+                                    String des = sec.info.destination.iconChar();
+                                    String text = Iconc.rightOpen + " " + (des == null || des.isEmpty() ? "" : des + " ") + sec.info.destination.name();
+                                    head.button(text, Styles.cleart, () -> {
+                                        ui.planet.showSelect(sec, other -> {
+                                            if(other.planet == sec.planet){
+                                                sec.info.destination = other;
+                                            }
+                                        });
+                                    }).minWidth(150f).right().padRight(10f);
+                                }
+
                             }).growX().row();
 
                             if(sec.isAttacked()){
