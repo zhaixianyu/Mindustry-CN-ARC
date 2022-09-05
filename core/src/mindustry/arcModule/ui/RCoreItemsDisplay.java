@@ -125,8 +125,8 @@ public class RCoreItemsDisplay extends CoreItemsDisplay{
                         if(core == null) return "";
                         int planAmount = planItems.get(item);
                         int amount = core.items.get(item);
-                        if(planAmount == 0) return "" + UI.formatAmount(amount);
-                        String planColor = (planAmount > 0 ? "[scarlet]" : "[green]");
+                        if(planAmount == 0) return (amount >= player.team().core().storageCapacity * 0.99 ? "[stat]" : "") + UI.formatAmount(amount);
+                        String planColor = (planAmount > 0 ?  "[scarlet]" : "[green]");
                         String amountColor = (amount < planAmount / 2 ? "[scarlet]" : amount < planAmount ? "[stat]" : "[green]");
                         return amountColor + UI.formatAmount(amount) + "[white]/" + planColor + UI.formatAmount(Math.abs(planAmount));
                     }).padRight(3).minWidth(52f).left();
@@ -146,7 +146,7 @@ public class RCoreItemsDisplay extends CoreItemsDisplay{
                     image(unit.uiIcon).size(iconSmall).padRight(3).tooltip(t -> t.background(Styles.black6).margin(4f).add(unit.localizedName).style(Styles.outlineLabel));
                     label(() -> {
                         int typeCount = player.team().data().countType(unit);
-                        return (typeCount == Units.getCap(player.team())?"[accent]":"") + typeCount;
+                        return (typeCount == Units.getCap(player.team())?"[stat]":"") + typeCount;
                     }).padRight(3).minWidth(52f).left();
 
                     if(++i % Core.settings.getInt("arcCoreItemsCol") == 0){
