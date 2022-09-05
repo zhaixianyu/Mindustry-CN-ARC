@@ -315,7 +315,7 @@ public class District{
                 arcFillTextHead(districtType.districtName,districtA.x,districtB.x,Math.max(districtA.y,districtB.y),0.5f);
             }
 
-            Draw.color(Color.pink,0.7f);
+            Draw.color(Pal.stat,0.7f);
             Draw.z(Layer.effect - 1f);
             Lines.stroke(Math.min(Math.abs(width),Math.abs(height)) / tilesize / 10f);
             Lines.rect(districtA.x * tilesize, districtA.y * tilesize, width, height);
