@@ -519,6 +519,7 @@ public class SettingsMenuDialog extends BaseDialog{
             else if(s==2){return "兵种状态";}
             else{return "显示资源和兵种";}
         });
+        arc.sliderPref("arcCoreItemsCol",5,4,15,1, i -> i + "列");
         arc.checkPref("showFloatingSettings",false);
         arc.sliderPref("arcDetailInfo", 1, 0, 1, 1, s -> {
             if(s==0){return "详细模式";}

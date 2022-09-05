@@ -5,6 +5,7 @@ import arc.struct.*;
 import arc.util.Interval;
 import mindustry.*;
 import mindustry.core.*;
+import mindustry.entities.Units;
 import mindustry.type.*;
 import mindustry.ui.*;
 import mindustry.world.blocks.storage.CoreBlock;
@@ -130,7 +131,7 @@ public class RCoreItemsDisplay extends CoreItemsDisplay{
                         return amountColor + UI.formatAmount(amount) + "[white]/" + planColor + UI.formatAmount(Math.abs(planAmount));
                     }).padRight(3).minWidth(52f).left();
 
-                    if(++i % 5 == 0){
+                    if(++i % Core.settings.getInt("arcCoreItemsCol") == 0){
                         row();
                     }
                 }
@@ -138,13 +139,17 @@ public class RCoreItemsDisplay extends CoreItemsDisplay{
         }
 
         if(arccoreitems == 2 || arccoreitems == 3){
+            row();
+            i = 0;
             for(UnitType unit : content.units()){
                 if(usedUnits.contains(unit)){
                     image(unit.uiIcon).size(iconSmall).padRight(3).tooltip(t -> t.background(Styles.black6).margin(4f).add(unit.localizedName).style(Styles.outlineLabel));
-                    //TODO leaks garbage
-                    label(() -> "" + Vars.player.team().data().countType(unit)).padRight(3).minWidth(52f).left();
+                    label(() -> {
+                        int typeCount = player.team().data().countType(unit);
+                        return (typeCount == Units.getCap(player.team())?"[accent]":"") + typeCount;
+                    }).padRight(3).minWidth(52f).left();
 
-                    if(++i % 5 == 0){
+                    if(++i % Core.settings.getInt("arcCoreItemsCol") == 0){
                         row();
                     }
                 }
