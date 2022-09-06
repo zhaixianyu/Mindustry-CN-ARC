@@ -823,6 +823,7 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
         Table t = new Table().left();
 
         int i = 0;
+        int rowSet = settings.getInt("itemSelectionWidth");
         for(var item : content.items()){
             var stat = stats.get(item);
             if(stat == null) continue;
@@ -830,7 +831,7 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
             if(total > 1){
                 t.image(item.uiIcon).padRight(3);
                 t.add(UI.formatAmount(total) + " " + Core.bundle.get("unit.perminute")).color(Color.lightGray).padRight(3);
-                if(++i % 3 == 0){
+                if( ++i % rowSet == 0){
                     t.row();
                 }
             }
@@ -910,7 +911,7 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
                         for(ItemStack stack : items){
                             res.image(stack.item.uiIcon).padRight(3);
                             res.add(UI.formatAmount(Math.max(stack.amount, 0))).color(Color.lightGray);
-                            if(++i % 4 == 0){
+                            if(++i % settings.getInt("itemSelectionWidth") == 0){
                                 res.row();
                             }
                         }
