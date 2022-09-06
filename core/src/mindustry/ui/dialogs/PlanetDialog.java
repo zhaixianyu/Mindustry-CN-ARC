@@ -839,7 +839,8 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
 
         if(t.getChildren().any()){
             c.defaults().left();
-            c.add(name).row();
+            c.add(name).color(getThemeColor()).center().row();
+            c.image().color(getThemeColor()).fillX().row();
             builder.get(c);
             c.add(t).padLeft(10f).row();
         }
@@ -866,7 +867,8 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
             }
 
             if(sector.save != null && sector.info.resources.any()){
-                c.add("@sectors.resources").left().row();
+                c.add("资源").color(getThemeColor()).center().row();
+                c.image().color(getThemeColor()).fillX().row();
                 c.table(t -> {
                     for(UnlockableContent uc : sector.info.resources){
                         if(uc == null) continue;
@@ -876,10 +878,10 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
             }
 
             //production
-            displayItems(c, sector.getProductionScale(), sector.info.production, "@sectors.production");
+            displayItems(c, sector.getProductionScale(), sector.info.production, "产出");
 
             //export
-            displayItems(c, sector.getProductionScale(), sector.info.export, "@sectors.export", t -> {
+            displayItems(c, sector.getProductionScale(), sector.info.export, "输出", t -> {
                 if(sector.info.destination != null && sector.info.destination.hasBase()){
                     String ic = sector.info.destination.iconChar();
                     t.add(Iconc.rightOpen + " " + (ic == null || ic.isEmpty() ? "" : ic + " ") + sector.info.destination.name()).padLeft(10f).row();
@@ -888,7 +890,7 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
 
             //import
             if(sector.hasBase()){
-                displayItems(c, 1f, sector.info.importStats(sector.planet), "@sectors.import", t -> {
+                displayItems(c, 1f, sector.info.importStats(sector.planet), "输入", t -> {
                     sector.info.eachImport(sector.planet, other -> {
                         String ic = other.iconChar();
                         t.add(Iconc.rightOpen + " " + (ic == null || ic.isEmpty() ? "" : ic + " ") + other.name()).padLeft(10f).row();
@@ -901,7 +903,8 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
             //stored resources
             if(sector.hasBase() && items.total > 0){
 
-                c.add("@sectors.stored").left().row();
+                c.add("存储").color(getThemeColor()).center().row();
+                c.image().color(getThemeColor()).fillX().row();
                 c.table(t -> {
                     t.left();
 
