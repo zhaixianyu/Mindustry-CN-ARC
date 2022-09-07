@@ -928,6 +928,7 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
 
                         int i = 0;
                         for(ItemStack stack : items){
+                            /*
                             res.stack(
                                     new Table(tt -> {
                                         tt.image(stack.item.uiIcon).padRight(3).tooltip(tooltip -> tooltip.background(Styles.black6).margin(4f).add(stack.item.localizedName).style(Styles.outlineLabel));
@@ -939,9 +940,9 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
                                             return UI.colorFormatAmount(result);
                                         }).get().setFontScale(0.75f);
                                     }).top().left()
-                            );
+                            );*/
 
-                            //res.image(stack.item.uiIcon).padRight(3);
+                            res.image(stack.item.uiIcon).padRight(3);
                             res.add(UI.formatAmount(Math.max(stack.amount, 0))).color(Color.lightGray);
                             if(++i % settings.getInt("itemSelectionWidth") == 0){
                                 res.row();
