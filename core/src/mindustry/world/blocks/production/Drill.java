@@ -18,7 +18,6 @@ import mindustry.logic.*;
 import mindustry.type.*;
 import mindustry.ui.*;
 import mindustry.world.*;
-import mindustry.world.blocks.environment.*;
 import mindustry.world.meta.*;
 
 import static mindustry.Vars.*;
@@ -141,20 +140,19 @@ public class Drill extends Block{
             float speed = 60f / getDrillTime(returnItem) * returnCount;
             float width;
             if (liquidBoostIntensity > 1) {
-                width = drawPlaceText(Core.bundle.format(
-                        "bar.drillspeedliquid",
-                        Strings.fixed(speed, 2),
-                        Strings.fixed(speed * liquidBoostIntensity * liquidBoostIntensity, 2)
-                ), x, y, valid);
+                width = drawPurePlaceText(Iconc.production + " []" + returnItem.emoji()+ returnItem.localizedName + " [stat]" +
+                                        Strings.autoFixed(speed, 2) + "[white]([cyan]" +
+                                        Strings.autoFixed(speed * liquidBoostIntensity * liquidBoostIntensity, 2) + "[white])", x, y, valid);
             }
             else {
-                width = drawPlaceText(Core.bundle.formatFloat("bar.drillspeed", speed, 2), x, y, valid);
+                width = drawPurePlaceText(Iconc.production + " " + returnItem.emoji() + "[stat]"+ returnItem.localizedName + " " + Strings.autoFixed(speed, 2), x, y, valid);
             }
             float dx = x * tilesize + offset - width/2f - 4f, dy = y * tilesize + offset + size * tilesize / 2f + 5, s = iconSmall / 4f;
+            /*
             Draw.mixcol(Color.darkGray, 1f);
             Draw.rect(returnItem.fullIcon, dx, dy - 1, s, s);
             Draw.reset();
-            Draw.rect(returnItem.fullIcon, dx, dy, s, s);
+            Draw.rect(returnItem.fullIcon, dx, dy, s, s);*/
 
             if(drawMineItem){
                 Draw.color(returnItem.color);
