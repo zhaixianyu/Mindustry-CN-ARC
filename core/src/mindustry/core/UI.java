@@ -649,7 +649,7 @@ public class UI implements ApplicationListener, Loadable{
         }else if(mag >= 1_000_000){
             return sign + Strings.fixed(mag / 1_000_000f, 1) + "[gray]" +millions + "[]";
         }else if(mag >= 25_000){
-            return number / 1000 + "[gray]" + thousands + "[]";
+            return sign + mag / 1000 + "[gray]" + thousands + "[]";
         }else if(mag >= 2500){
             return sign + Strings.fixed(mag / 1000f, 1) + "[gray]" + thousands + "[]";
         }else{
@@ -669,11 +669,11 @@ public class UI implements ApplicationListener, Loadable{
         }else if(mag >= 1_000_000){
             return sign + Strings.fixed(mag / 1_000_000f, decimal) + "[gray]" +millions + "[]";
         }else if(mag >= 25_000){
-            return number / 1000 + "[gray]" + thousands + "[]";
+            return sign + mag / 1000 + "[gray]" + thousands + "[]";
         }else if(mag >= 2500){
             return sign + Strings.fixed(mag / 1000f, decimal) + "[gray]" + thousands + "[]";
         }else{
-            return number + "";
+            return Strings.autoFixed(mag, decimal) + "";
         }
     }
 
@@ -688,11 +688,33 @@ public class UI implements ApplicationListener, Loadable{
         }else if(mag >= 1_000_000){
             return sign + Strings.fixed(mag / 1_000_000f, 1) + millions + "";
         }else if(mag >= 25_000){
-            return number / 1000 + thousands + "";
+            return sign + mag / 1000 + thousands + "";
         }else if(mag >= 2500){
-            return sign + Strings.fixed(mag / 1000f, 1) + thousands + "";
+            return sign + Strings.autoFixed(mag / 1000f, 1) + thousands + "";
         }else{
             return number + "";
+        }
+    }
+
+    public static String colorFormatAmount(float number){
+        if (number == 0) return "";
+        //prevent overflow
+        if(number == Long.MIN_VALUE) number ++;
+
+        long mag = (long) Math.abs(number);
+        String sign = number < 0 ? "[orange]-" : "[green]";
+        if(mag >= 1_000_000_000){
+            return sign + Strings.fixed(mag / 1_000_000_000f, 1) + billions+ "";
+        }else if(mag >= 1_000_000){
+            return sign + Strings.fixed(mag / 1_000_000f, 1) + millions + "";
+        }else if(mag >= 25_000){
+            return sign + mag / 1000 + thousands + "";
+        }else if(mag >= 2500){
+            return sign + Strings.fixed(mag / 1000f, 1) + thousands + "";
+        }else if(mag >= 100){
+            return sign + (int)mag + "";
+        }else{
+            return sign + Strings.autoFixed(mag, 1) + "";
         }
     }
 
@@ -729,7 +751,7 @@ public class UI implements ApplicationListener, Loadable{
         }else if(number >= 1_000_000){
             return sign + Strings.fixed(number / 1_000_000f, 1) + millions + "";
         }else if(number >= 25_000){
-            return number / 1000 + thousands + "";
+            return sign + number / 1000 + thousands + "";
         }else if(number >= 2500){
             return sign + Strings.fixed(number / 1000f, 1) + thousands + "";
         }else{

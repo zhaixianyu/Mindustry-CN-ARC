@@ -72,6 +72,8 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
 
     private boolean alwaysShowName = false;
 
+    private int viewInt = 60;
+
     public PlanetDialog(){
         super("", Styles.fullDialog);
         
@@ -236,6 +238,12 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
             buttons.add().growX();
             buttons.add(sectorTop).minWidth(230f);
             buttons.add().growX();
+            buttons.button("显示周期",Icon.settings,()->{
+                if(viewInt==1) viewInt = 60;
+                else if (viewInt==60) viewInt = 120;
+                else viewInt = 1;
+                ui.arcInfo("调整资源输入|输出显示周期为 [orange]" + viewInterval(viewInt));
+            }).size(100f, 54f).pad(2).bottom();
             buttons.button("区块名称", Icon.bookOpen, () -> alwaysShowName = !alwaysShowName).size(100f, 54f).pad(2).bottom();
             addTech();
         }
@@ -819,7 +827,15 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
         displayItems(c, scl, stats, name, t -> {});
     }
 
+    void displayItems(Table c, float scl, ObjectMap<Item, ExportStat> stats, String name,Boolean showColor){
+        displayItems(c, scl, stats, name, t -> {},showColor);
+    }
+
     void displayItems(Table c, float scl, ObjectMap<Item, ExportStat> stats, String name, Cons<Table> builder){
+        displayItems(c, scl, stats, name, t -> {},false);
+    }
+
+    void displayItems(Table c, float scl, ObjectMap<Item, ExportStat> stats, String name, Cons<Table> builder,Boolean showColor){
         Table t = new Table().left();
 
         int i = 0;
@@ -827,10 +843,10 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
         for(var item : content.items()){
             var stat = stats.get(item);
             if(stat == null) continue;
-            int total = (int)(stat.mean * 60 * scl);
-            if(total > 1){
+            int total = (int)(stat.mean * viewInt * scl);
+            if(total != 0){
                 t.image(item.uiIcon).padRight(3);
-                t.add(UI.formatAmount(total) + " " + Core.bundle.get("unit.perminute")).color(Color.lightGray).padRight(3);
+                t.add(showColor? UI.colorFormatAmount(total) : UI.formatAmount(total)).color(Color.lightGray).padRight(3);
                 if( ++i % rowSet == 0){
                     t.row();
                 }
@@ -839,7 +855,7 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
 
         if(t.getChildren().any()){
             c.defaults().left();
-            c.add(name).color(getThemeColor()).center().row();
+            c.add(name + "  ("+ viewInterval(viewInt) + ")").color(getThemeColor()).center().row();
             c.image().color(getThemeColor()).fillX().row();
             builder.get(c);
             c.add(t).padLeft(10f).row();
@@ -878,7 +894,7 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
             }
 
             //production
-            displayItems(c, sector.getProductionScale(), sector.info.production, "产出");
+            displayItems(c, sector.getProductionScale(), sector.info.production, "产出",true);
 
             //export
             displayItems(c, sector.getProductionScale(), sector.info.export, "输出", t -> {
@@ -912,7 +928,20 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
 
                         int i = 0;
                         for(ItemStack stack : items){
-                            res.image(stack.item.uiIcon).padRight(3);
+                            res.stack(
+                                    new Table(tt -> {
+                                        tt.image(stack.item.uiIcon).padRight(3).tooltip(tooltip -> tooltip.background(Styles.black6).margin(4f).add(stack.item.localizedName).style(Styles.outlineLabel));
+                                    }),
+
+                                    new Table(tt -> {
+                                        tt.label(() -> {
+                                            float result = arcGetProduction(sector,stack.item);
+                                            return UI.colorFormatAmount(result);
+                                        }).get().setFontScale(0.75f);
+                                    }).top().left()
+                            );
+
+                            //res.image(stack.item.uiIcon).padRight(3);
                             res.add(UI.formatAmount(Math.max(stack.amount, 0))).color(Color.lightGray);
                             if(++i % settings.getInt("itemSelectionWidth") == 0){
                                 res.row();
@@ -951,6 +980,15 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
         }
 
         dialog.show();
+    }
+
+    float arcGetProduction(Sector sector, Item item){
+        ExportStat pro = sector.info.production.get(item), exp = sector.info.export.get(item),in = sector.info.importStats(sector.planet).get(item);
+        float result = 0f;
+        if(pro != null) result += pro.mean * viewInt * sector.getProductionScale();
+        if(exp != null) result -= exp.mean * viewInt * sector.getProductionScale();
+        if(in != null) result += in.mean * viewInt;
+        return result;
     }
 
     void addSurvivedInfo(Sector sector, Table table, boolean wrap){
@@ -1246,4 +1284,12 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
         /** Launch between planets. */
         planetLaunch
     }
+
+    private String viewInterval(int viewInt){
+        if (viewInt == 60) return "每分";
+        else if(viewInt == 120) return "每周期";
+        else if(viewInt == 1) return "每秒";
+        else return "每" + viewInt + "秒";
+    }
+
 }
