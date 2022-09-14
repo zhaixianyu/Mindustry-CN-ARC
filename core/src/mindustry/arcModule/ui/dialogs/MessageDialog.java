@@ -51,6 +51,7 @@ public class MessageDialog extends BaseDialog{
     public MessageDialog(){
         super("ARC-中央监控室");
 
+        voiceControl.voiceControlDialog();
         cont.pane(t -> {
             historyTable = t;
         }).growX().scrollX(false);
