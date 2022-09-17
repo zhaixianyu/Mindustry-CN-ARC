@@ -533,16 +533,16 @@ public class UnitType extends UnlockableContent{
     private String getStatustext(Unit unit){
         StringBuilder statusText = new StringBuilder(">>");
         if(unit.damageMultiplier() != 1f){
-            statusText.append(" [red]伤[white]: ").append(Strings.autoFixed(unit.damageMultiplier(),1)).append(" |");
+            statusText.append(" [red]伤[white]: ").append(Strings.autoFixed(unit.damageMultiplier(),2)).append(" |");
         }
         if(unit.reloadMultiplier() != 1f){
-            statusText.append(" [violet]攻速[white]: ").append(Strings.autoFixed(unit.reloadMultiplier(),1)).append(" |");
+            statusText.append(" [violet]攻速[white]: ").append(Strings.autoFixed(unit.reloadMultiplier(),2)).append(" |");
         }
         if(unit.speedMultiplier() != 1f){
-            statusText.append(" [cyan]移[white]: ").append(Strings.autoFixed(unit.speedMultiplier(),1)).append(" |");
+            statusText.append(" [cyan]移[white]: ").append(Strings.autoFixed(unit.speedMultiplier(),2)).append(" |");
         }
         if(unit.healthMultiplier() != 1f){
-            statusText.append(" [acid]血[white]: ").append((unit.healthMultiplier() == Float.POSITIVE_INFINITY) ? "Inf" : Strings.autoFixed(unit.healthMultiplier(),1)).append(" |");
+            statusText.append(" [acid]血[white]: ").append((unit.healthMultiplier() == Float.POSITIVE_INFINITY) ? "Inf" : Strings.autoFixed(unit.healthMultiplier(),2)).append(" |");
         }
         return statusText.substring(0,statusText.length()-2);
     }
@@ -672,7 +672,7 @@ public class UnitType extends UnlockableContent{
 
             for(Ability a : abilities){
                 if(a.display && unique.add(a.localized())){
-                    stats.add(Stat.abilities, a.localized());
+                    stats.add(Stat.abilities,a.localized());
                 }
             }
         }
