@@ -1448,7 +1448,6 @@ public class UnitType extends UnlockableContent{
 
         Draw.reset();
 
-        //display healthbar by MI2
         Draw.z(Layer.shields + 6f);
         float y_corr = 0f ;
         if (unit.hitSize<30f && unit.hitSize>20f && unit.controller().isBeingControlled(player.unit())) y_corr = 2f;
@@ -1464,7 +1463,7 @@ public class UnitType extends UnlockableContent{
                         unit.x - unit.hitSize() * 0.6f, unit.y + (unit.hitSize() / 2f) + y_corr,
                         unit.x + unit.hitSize() * (Math.min(Mathf.maxZero(unit.health), unit.maxHealth) * 1.2f / unit.maxHealth - 0.6f), unit.y + (unit.hitSize() / 2f) + y_corr);
                 Lines.stroke(2f);
-                if(unit.shield > 0){
+                if(unit.shield > 0 && unit.shield<1e20){
                     for(int didgt = 1; didgt <= Mathf.digits((int)(unit.shield / unit.maxHealth)) + 1; didgt++){
                         Draw.color(Pal.shield, 0.8f);
                         float shieldAmountScale = unit.shield / (unit.maxHealth * Mathf.pow(10f, (float)didgt - 1f));
