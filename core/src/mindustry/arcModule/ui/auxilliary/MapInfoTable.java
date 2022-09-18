@@ -49,7 +49,7 @@ public class MapInfoTable extends BaseToolsTable{
             }
         }).tooltip("切换跟踪玩家");
         button(Icon.starSmall, clearAccentNonei, ui.achievements::show).tooltip("统计与成就");
-        button(Icon.editSmall,clearAccentNonei,this::uiTable).tooltip("ui大全");
+        if(!mobile) button(Icon.editSmall,clearAccentNonei,this::uiTable).tooltip("ui大全");
     }
 
     private void floorStatisticDialog(){
