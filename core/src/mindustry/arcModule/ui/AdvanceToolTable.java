@@ -1,6 +1,7 @@
 package mindustry.arcModule.ui;
 
 import arc.Core;
+import arc.Events;
 import arc.graphics.Color;
 import arc.math.Mathf;
 import arc.math.geom.Vec2;
@@ -16,6 +17,7 @@ import mindustry.content.Items;
 import mindustry.content.StatusEffects;
 import mindustry.content.UnitTypes;
 import mindustry.core.World;
+import mindustry.game.EventType;
 import mindustry.game.Team;
 import mindustry.gen.Icon;
 import mindustry.gen.Payloadc;
@@ -42,7 +44,7 @@ import static mindustry.ui.Styles.*;
 
 public class AdvanceToolTable extends Table {
     private boolean show = false;
-    private boolean showGameMode = false, showEntities = false, showTeamChange = false, showCreator = false;
+    private boolean showGameMode = false, showEntities = false, showTeamChange = false, showTimeControl = false, showCreator = false;
 
     //unitFactory
     private int unitCount = 1;
@@ -63,6 +65,14 @@ public class AdvanceToolTable extends Table {
 
     public AdvanceToolTable() {
         rebuild();
+        Events.on(EventType.WorldLoadEvent.class, e -> {
+            if(!state.rules.editor){
+                Core.settings.put("worldCreator",false);
+                Core.settings.put("forcePlacement",false);
+                Core.settings.put("allBlocksReveal",false);
+            }
+        }
+        );
     }
 
     void rebuild() {
@@ -117,17 +127,8 @@ public class AdvanceToolTable extends Table {
                     }).left().row();
                 }
 
-                if (showCreator) {
+                if (showTimeControl) {
                     t.table(tt -> {
-                        tt.table(
-                                tBox -> {
-                                    tBox.background(Tex.pane);
-                                    tBox.button("创世神", flatToggleMenut, () -> {
-                                        Core.settings.put("worldCreator", !Core.settings.getBool("worldCreator"));
-                                    }).checked(b -> Core.settings.getBool("worldCreator")).size(70f, 30f);
-
-                                }).left();
-
                         tt.table(tBox -> {
                             tBox.background(Tex.buttonEdge3);
                             tBox.add("沙漏：").left();
@@ -151,14 +152,26 @@ public class AdvanceToolTable extends Table {
                                 Time.setDeltaProvider(() -> Math.min(Core.graphics.getDeltaTime() * 60 * timeAcce, 3 * timeAcce));
                                 ui.announce("当前时间倍率：" + timeAcce);
                             }).tooltip("[acid]恢复原速").size(30f, 30f);
-                                /*tBox.button("[orange]||", cleart, () -> {
-                                    if(state.is(GameState.State.playing)) {state.set(GameState.State.paused);}
-                                    else if(state.is(GameState.State.paused)){
-                                        state.set(GameState.State.playing);
-                                    }
-                                    //ui.announce("当前时间倍率：" + timeAcce);
-                                }).size(30f, 30f);*/
                         }).left();
+                    }).left().row();
+                }
+
+                if (showCreator) {
+                    t.table(tt -> {
+                        tt.table(
+                                tBox -> {
+                                    tBox.background(Tex.pane);
+                                    tBox.button("创世神", flatToggleMenut, () -> {
+                                        Core.settings.put("worldCreator", !Core.settings.getBool("worldCreator"));
+                                    }).checked(b -> Core.settings.getBool("worldCreator")).size(70f, 30f);
+                                    tBox.button("强制放置", flatToggleMenut, () -> {
+                                        Core.settings.put("forcePlacement", !Core.settings.getBool("forcePlacement"));
+                                    }).checked(b -> Core.settings.getBool("forcePlacement")).size(70f, 30f);
+                                    tBox.button("解禁", flatToggleMenut, () -> {
+                                        Core.settings.put("allBlocksReveal", !Core.settings.getBool("allBlocksReveal"));
+                                        ui.hudfrag.blockfrag.rebuild();
+                                    }).checked(b -> Core.settings.getBool("allBlocksReveal")).tooltip("[acid]显示并允许建造所有物品").size(50f, 30f);
+                                }).left();
                     }).left().row();
                 }
 
@@ -194,10 +207,6 @@ public class AdvanceToolTable extends Table {
                             state.rules.infiniteResources = !state.rules.infiniteResources;
                         }).checked(b -> state.rules.infiniteResources).size(50f, 30f);
 
-                        tBox.button("解禁", flatToggleMenut, () -> {
-                            Core.settings.put("allBlocksReveal", !Core.settings.getBool("allBlocksReveal"));
-                            ui.hudfrag.blockfrag.rebuild();
-                        }).checked(b -> Core.settings.getBool("allBlocksReveal")).tooltip("[acid]显示并允许建造所有物品").size(50f, 30f);
 
                     }).left().row();
                 }
@@ -216,6 +225,11 @@ public class AdvanceToolTable extends Table {
 
                     mainBox.button(Blocks.worldProcessor.emoji(), cleart, () -> {
                         showCreator = !showCreator;
+                        rebuild();
+                    }).width(50f);
+
+                    mainBox.button(Blocks.overdriveProjector.emoji(), cleart, () -> {
+                        showTimeControl = !showTimeControl;
                         rebuild();
                     }).width(50f);
 
