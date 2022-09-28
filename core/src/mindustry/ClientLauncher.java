@@ -21,6 +21,8 @@ import mindustry.mod.*;
 import mindustry.net.*;
 import mindustry.ui.*;
 
+import java.security.NoSuchAlgorithmException;
+
 import static arc.Core.*;
 import static mindustry.Vars.*;
 
@@ -225,6 +227,12 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
                 }))));
             }
         }else{
+            try {
+                graphics.setTitle(getWindowTitle());
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            }
+
             asyncCore.begin();
 
             super.update();
@@ -243,6 +251,15 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
         }
 
         lastTime = Time.nanos();
+    }
+
+    private String getWindowTitle() throws NoSuchAlgorithmException {
+        int enabled = mods.mods.count(t->t.enabled());
+        long time = (Time.millis() - startPlayTime) / 1000;
+        return "Mindustry-CN-ARC | 版本号 " + (Version.arcBuild <= 0 ? "dev" : Version.arcBuild) + " | mod启用" + enabled + "/" + (mods == null ? 0 : mods.mods.size) + " | " +
+                (Core.graphics != null ? Core.graphics.getWidth() + "x" + Core.graphics.getHeight() + " | " : "") +
+                ("您已游玩：" + time / 1140 + " 时 " + time % 1140 / 60 + " 分 " + time % 1140 % 60 + " 秒")
+                ;
     }
 
     @Override
