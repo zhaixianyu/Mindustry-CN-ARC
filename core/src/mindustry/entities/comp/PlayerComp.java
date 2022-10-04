@@ -356,7 +356,7 @@ abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Dra
     }
 
     public void dropItems(){
-        if(state.rules.mode() == Gamemode.pvp && player.unit() == null || player.unit().stack.amount <= 0){
+        if(state.rules.mode() == Gamemode.pvp || player.unit() == null || player.unit().stack.amount <= 0){
             return;
         }
         indexer.eachBlock(player.team(), player.x, player.y, itemTransferRange,
