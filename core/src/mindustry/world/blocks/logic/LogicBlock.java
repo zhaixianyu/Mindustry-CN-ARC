@@ -602,6 +602,7 @@ public class LogicBlock extends Block{
                 settingTable.row();
                 settingTable.pane(t -> {
                     for (var s : executor.vars) {
+                        if(s.name.startsWith("___")) continue;
                         String text = arcVarsText(s);
                         t.table(tt -> {
                             tt.labelWrap(s.name + "").color(arcVarsColor(s)).width(100f);
