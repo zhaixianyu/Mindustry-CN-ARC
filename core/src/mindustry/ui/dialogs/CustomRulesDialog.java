@@ -297,15 +297,15 @@ public class CustomRulesDialog extends BaseDialog{
             for(int teamId =0;teamId<Core.settings.getInt("moreCustomTeam");teamId+=1){
                 Team team = Team.get(teamId);
                 team.rules().cheat = true;
-                setup();
             }
-                }).width(256f).height(32f).row();
+            setup();
+        }).width(256f).height(32f).row();
         main.button("所有队伍关闭无限火力", () -> {
             for(int teamId =0;teamId<Core.settings.getInt("moreCustomTeam");teamId+=1){
                 Team team = Team.get(teamId);
                 team.rules().cheat = false;
-                setup();
             }
+            setup();
         }).width(256f).height(32f).row();
 
         team("@rules.playerteam", t -> rules.defaultTeam = t, () -> rules.defaultTeam);
