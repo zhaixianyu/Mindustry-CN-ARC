@@ -285,18 +285,28 @@ public class CustomRulesDialog extends BaseDialog{
                 }).group(group).checked(b -> rules.env == planet.defaultEnv);
             }
 
-            t.button("@rules.anyenv", style, () -> {
-                if(!rules.infiniteResources){
-                    //unlocalized for now
-                    ui.showInfo("[accent]'Any' environment, or 'mixed tech', is no longer allowed outside of sandbox.[]\n\nReasoning: Serpulo and Erekir tech were never meant to be used in the same map. They are not compatible or remotely balanced.\nI have received far too many complains in this regard.");
-                }else{
-                    rules.env = Vars.defaultEnv;
-                    rules.hiddenBuildItems.clear();
-                }
+            t.button("@rules.anyenv", style, () -> {         
+                rules.env = Vars.defaultEnv;
+                rules.hiddenBuildItems.clear();     
             }).group(group).checked(b -> rules.hiddenBuildItems.size == 0);
         }).left().fill(false).expand(false, false).row();
 
         title("@rules.title.teams");
+        
+        main.button("所有队伍开启无限火力", () -> {
+            for(int teamId =0;teamId<Core.settings.getInt("moreCustomTeam");teamId+=1){
+                Team team = Team.get(teamId);
+                team.rules().cheat = true;
+                setup();
+            }
+                }).width(256f).height(32f).row();
+        main.button("所有队伍关闭无限火力", () -> {
+            for(int teamId =0;teamId<Core.settings.getInt("moreCustomTeam");teamId+=1){
+                Team team = Team.get(teamId);
+                team.rules().cheat = false;
+                setup();
+            }
+        }).width(256f).height(32f).row();
 
         team("@rules.playerteam", t -> rules.defaultTeam = t, () -> rules.defaultTeam);
         team("@rules.enemyteam", t -> rules.waveTeam = t, () -> rules.waveTeam);
