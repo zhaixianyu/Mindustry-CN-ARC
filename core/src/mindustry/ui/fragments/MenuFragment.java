@@ -146,12 +146,12 @@ public class MenuFragment{
             container.add(editor);
             container.add(tools);
             container.add(mods);
+            container.add(achievements);
             // add even custom buttons (before the exit button)
             for(int i = 0; i < customs.size; i += 2){
                 container.add(customs.get(i));
             }
             container.row();
-            container.add(achievements);
             container.add(cn_arc);
             container.add(updatedialog);
             container.add(database);
