@@ -268,9 +268,18 @@ public class MessageDialog extends BaseDialog {
 
     public boolean resolveMarkMsg(String message) {
         //除了markType以外的内容
-        if (message.contains("<ARC") && message.contains("标记了")) {
-            addMsg(new MessageDialog.advanceMsg(arcMsgType.markInfo, message));
-            return true;
+        if (message.contains("<ARC")) {
+            if(message.contains("标记了") && message.contains("Wave")){
+                addMsg(new MessageDialog.advanceMsg(arcMsgType.markWave, message));
+                return true;
+            } else if (message.contains("标记了") && message.contains("Content")) {
+                addMsg(new MessageDialog.advanceMsg(arcMsgType.markContent, message));
+                return true;
+            } else if (message.contains("<AT>")) {
+                addMsg(new MessageDialog.advanceMsg(arcMsgType.markPlayer, message));
+                if (message.substring(message.indexOf("AT")).contains(player.name)) ui.announce("你被戳了一下，请注意查看信息框哦~");
+                return true;
+            }
         }
         return false;
     }
@@ -279,7 +288,7 @@ public class MessageDialog extends BaseDialog {
         Seq<String> serverMsg = Seq.with("加入了服务器", "离开了服务器", "自动存档完成", "登录成功", "经验+", "[YELLOW]本局游戏时长:", "[YELLOW]单人快速投票", "[GREEN]回档成功",
                 "[YELLOW]PVP保护时间, 全力进攻吧", "[YELLOW]发起", "[YELLOW]你可以在投票结束前使用", "[GREEN]投票成功", "[GREEN]换图成功,当前地图",
                 "[RED]本地图禁用单位", "[RED]该地图限制空军,禁止进入敌方领空", "[yellow]本地图限制空军", "[YELLOW]火焰过多造成服务器卡顿,自动关闭火焰",
-                " [GREEN]====", "[RED]无效指令", "[RED]该技能"
+                " [GREEN]====", "[RED]无效指令", "[RED]该技能", "切换成功"
         );
         for (int i = 0; i < serverMsg.size; i++) {
             if (message.contains(serverMsg.get(i))) {
@@ -382,7 +391,9 @@ public class MessageDialog extends BaseDialog {
         chat("聊天", Color.valueOf("#778899")),
 
         markLoc("标记", "坐标", Color.valueOf("#7FFFD4")),
-        markInfo("标记", "波次", Color.valueOf("#7FFFD4")),
+        markWave("标记", "波次", Color.valueOf("#7FFFD4")),
+        markContent("标记", "内容", Color.valueOf("#7FFFD4")),
+        markPlayer("标记", "玩家", Color.valueOf("#7FFFD4")),
         district("规划区", "", Color.violet),
 
         serverTips("服务器", "小贴士", Color.valueOf("#98FB98"), false),

@@ -32,7 +32,7 @@ import mindustry.ui.dialogs.BaseDialog;
 
 import static mindustry.Vars.*;
 import static mindustry.arcModule.DrawUtilities.*;
-import static mindustry.arcModule.Marker.teamMark;
+import static mindustry.arcModule.RFuncs.getPrefix;
 
 public class District{
 
@@ -313,8 +313,7 @@ public class District{
         public advDistrict() {}
 
         public String toString(){
-            return  (teamMark ? "/t ":"") + versionFixed +
-                    ShareType + "[white]{" + districtType.getName() + "}" +
+            return  getPrefix("violet","District") + "{" + districtType.getName() + "}" +
                     "[white]：" +
                     "(" + (int)districtA.x + "," + (int)districtA.y+")~" +
                     "(" + (int)districtB.x + "," + (int)districtB.y+")"
