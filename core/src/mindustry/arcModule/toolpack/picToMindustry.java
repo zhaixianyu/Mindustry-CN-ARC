@@ -3,7 +3,9 @@ package mindustry.arcModule.toolpack;
 import arc.files.Fi;
 import arc.graphics.Color;
 import arc.graphics.Pixmap;
+import arc.graphics.Pixmaps;
 import arc.scene.ui.Dialog;
+import arc.scene.ui.Label;
 import arc.scene.ui.layout.Table;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
@@ -23,13 +25,16 @@ import static mindustry.content.Blocks.sorter;
 
 public class picToMindustry {
 
-    Pixmap image, Cimage;
+    Pixmap oriImage, image, Cimage;
     Integer closest = null;
     Table tTable;
     Fi originFile;
 
     int[] palette;
     int canvasSize;
+
+    float scale = 1f;
+    float[] scaleList = {0.02f, 0.05f, 0.1f, 0.15f, 0.2f, 0.25f, 0.3f, 0.4f, 0.5f, 0.65f, 0.8f, 1f, 1.25f, 1.5f, 2f, 3f, 5f};
 
     public picToMindustry() {
         CanvasBlock canva = (CanvasBlock) Blocks.canvas;
@@ -47,41 +52,62 @@ public class picToMindustry {
                     try {
                         originFile = file;
                         byte[] bytes = file.readBytes();
-                        image = new Pixmap(bytes);
-                        Cimage = image.copy();
+                        oriImage = new Pixmap(bytes);
                         rebuilt();
-                        if (image.width > 500 || image.height > 500)
-                            ui.arcInfo("[orange]警告：图片可能过大，请尝试压缩图片",5);
+                        if (oriImage.width > 500 || oriImage.height > 500)
+                            ui.arcInfo("[orange]警告：图片可能过大，请尝试压缩图片", 5);
                     } catch (Throwable e) {
                         ui.arcInfo("读取图片失败，请尝试更换图片\n" + e);
                     }
                 });
             }).size(240, 50);
         }).padBottom(20f).row();
+        pt.cont.table(t -> {
+            t.add("缩放: \uE815 ");
+            Label zoom = t.add(scale + "").padRight(20f).get();
+            t.slider(0, scaleList.length - 1, 1, 11, s -> {
+                scale = scaleList[(int) s];
+                zoom.setText(scale + "");
+                rebuilt();
+            }).width(200f);
+        }).padBottom(20f).row();
         pt.cont.table(a -> tTable = a);
         pt.addCloseButton();
         return pt;
     }
 
+    private String formatNumber(int number) {
+        return formatNumber(number, 1f);
+    }
+
+    private String formatNumber(int number, float alert) {
+        if (number >= 500 * alert) return "[red]" + number + "[]";
+        else if (number >= 200 * alert) return "[orange]" + number + "[]";
+        else return number + "";
+    }
+
     private void rebuilt() {
+        image = Pixmaps.scale(oriImage, scale);
         tTable.clear();
         tTable.table(t -> {
             t.add("名称").color(getThemeColor()).padRight(25f).padBottom(10f);
             t.add(originFile.name()).padBottom(10f).row();
             t.add("大小").color(getThemeColor()).padRight(25f);
-            t.add(image.width + "\uE815" + image.height);
+            t.add(formatNumber(image.width) + "\uE815" + formatNumber(image.height));
         }).padBottom(20f).row();
         tTable.table(t -> {
             t.table(tt -> {
                 tt.button("画板 " + canvas.emoji(), Styles.cleart, () -> {
+                    Cimage = image.copy();
                     create_rbg(palette);
                     canvasGenerator();
                 }).size(100, 50);
-                tt.add("预估大小：" + image.width / canvasSize + "\uE815" + (image.height / canvasSize + 1));
+                tt.add("大小：" + formatNumber(image.width / canvasSize, 0.5f) + "\uE815" + formatNumber(image.height / canvasSize + 1, 0.5f));
             });
             t.row();
             t.table(tt -> {
                 tt.button("像素画 " + Blocks.sorter.emoji(), Styles.cleart, () -> {
+                    Cimage = image.copy();
                     sorterGenerator();
                 }).size(100, 50);
             }).row();
@@ -177,9 +203,11 @@ public class picToMindustry {
         schem.labels.add(sorter.emoji());
         // Import it
         Vars.schematics.add(schem);
+        if (state.isGame()) {
+            Vars.ui.schematics.hide();
+            Vars.control.input.useSchematic(schem);
+        }
         // Select it
-        Vars.ui.schematics.hide();
-        Vars.control.input.useSchematic(schem);
         ui.arcInfo("已保存蓝图：" + originFile.name(), 10);
     }
 

@@ -85,7 +85,7 @@ public class SchematicsDialog extends BaseDialog{
                 Core.app.setClipboardText(blueprintlink);
             }
         });
-        buttons.button(Blocks.canvas.emoji() + Blocks.logicDisplay.emoji() + Blocks.sorter.emoji(),Icon.image, picToMindustry::new);
+        buttons.button("[violet]转换器[white] " + Blocks.canvas.emoji() + Blocks.logicDisplay.emoji() + Blocks.sorter.emoji(),Icon.image, picToMindustry::new);
         shown(this::setup);
         onResize(this::setup);
 
