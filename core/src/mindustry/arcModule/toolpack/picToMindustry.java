@@ -13,12 +13,13 @@ import mindustry.content.Blocks;
 import mindustry.game.Schematic;
 import mindustry.ui.Styles;
 import mindustry.ui.dialogs.BaseDialog;
+import mindustry.world.blocks.distribution.Sorter;
 import mindustry.world.blocks.logic.CanvasBlock;
 import mindustry.world.blocks.logic.CanvasBlock.*;
 
-import static mindustry.Vars.getThemeColor;
-import static mindustry.Vars.ui;
+import static mindustry.Vars.*;
 import static mindustry.content.Blocks.canvas;
+import static mindustry.content.Blocks.sorter;
 
 public class picToMindustry {
 
@@ -40,8 +41,7 @@ public class picToMindustry {
     public Dialog ptDialog() {
         Dialog pt = new BaseDialog("arc-图片转换器");
         pt.cont.table(t -> {
-            t.add("选择并导入图片，可将其转成画板、像素画或是逻辑画").row();
-            t.add("已完成：转画板，其他功能制作中").padBottom(20f).row();
+            t.add("选择并导入图片，可将其转成画板、像素画或是逻辑画").padBottom(20f).row();
             t.button("[cyan]选择图片", () -> {
                 Vars.platform.showFileChooser(false, "png", file -> {
                     try {
@@ -49,10 +49,11 @@ public class picToMindustry {
                         byte[] bytes = file.readBytes();
                         image = new Pixmap(bytes);
                         Cimage = image.copy();
-                        create_rbg();
                         rebuilt();
+                        if (image.width > 500 || image.height > 500)
+                            ui.arcInfo("[orange]警告：图片可能过大，请尝试压缩图片",5);
                     } catch (Throwable e) {
-                        ui.arcInfo("Failed to load source image\n" + e);
+                        ui.arcInfo("读取图片失败，请尝试更换图片\n" + e);
                     }
                 });
             }).size(240, 50);
@@ -73,6 +74,7 @@ public class picToMindustry {
         tTable.table(t -> {
             t.table(tt -> {
                 tt.button("画板 " + canvas.emoji(), Styles.cleart, () -> {
+                    create_rbg(palette);
                     canvasGenerator();
                 }).size(100, 50);
                 tt.add("预估大小：" + image.width / canvasSize + "\uE815" + (image.height / canvasSize + 1));
@@ -80,8 +82,8 @@ public class picToMindustry {
             t.row();
             t.table(tt -> {
                 tt.button("像素画 " + Blocks.sorter.emoji(), Styles.cleart, () -> {
-                    //canvasGenerator();
-                }).size(100, 50).disabled(true);
+                    sorterGenerator();
+                }).size(100, 50);
             }).row();
             t.table(tt -> {
                 tt.button("逻辑画 " + Blocks.logicDisplay.emoji(), Styles.cleart, () -> {
@@ -89,38 +91,6 @@ public class picToMindustry {
                 }).size(100, 50).disabled(true);
             }).row();
         });
-    }
-
-    private float diff_hsv(int[] a, int[] b) {
-        float dh = Math.abs(a[0] - b[0]) * 2,
-                ds = Math.abs(a[1] - b[1]),
-                dv = Math.abs(a[2] - b[2]);
-        return dh + ds + dv;
-    }
-
-    private void create_hsv() {
-        ObjectMap<Integer, int[]> canvasMap = new ObjectMap<>();
-        Color tmp = new Color();
-
-        for (int i : palette) {
-            canvasMap.put(palette[i], Color.RGBtoHSV(tmp.set(palette[i])));
-        }
-
-        for (var x = 0; x < image.width; x++) {
-            for (var y = 0; y < image.height; y++) {
-                int raw = image.get(x, y);
-                int[] pixel = Color.RGBtoHSV(tmp.set(raw));
-
-                float egg = 10000;
-                canvasMap.each((a, b) -> {
-                    float h = diff_hsv(pixel, b);
-                    if (h < egg) {
-                        closest = a;
-                    }
-                });
-                Cimage.set(x, y, closest);
-            }
-        }
     }
 
     private float diff_rbg(Integer a, Integer b) {
@@ -137,13 +107,13 @@ public class picToMindustry {
         return dr + dg + db;
     }
 
-    private void create_rbg() {
+    private void create_rbg(int[] colorBar) {
         for (var x = 0; x < image.width; x++) {
             for (var y = 0; y < image.height; y++) {
                 Integer pixel = image.get(x, y);
 
                 float egg = 1000;
-                for (var other : palette) {
+                for (var other : colorBar) {
                     float h = diff_rbg(pixel, other);
                     if (h < egg) {
                         closest = other;
@@ -180,5 +150,68 @@ public class picToMindustry {
         Vars.ui.schematics.hide();
         Vars.control.input.useSchematic(schem);
         ui.arcInfo("已保存蓝图：" + originFile.name(), 10);
+    }
+
+    private void sorterGenerator() {
+        var tiles = new Seq();
+        for (var y = 0; y < image.height; y++) {
+            for (var x = 0; x < image.width; x++) {
+                if (image.get(x, y) == 0) continue;
+                Sorter.SorterBuild build = (Sorter.SorterBuild) sorter.newBuilding();
+                final float[] closestItem = {99999};
+                int finalX = x;
+                int finalY = y;
+                content.items().each(t -> {
+                    float dst = diff_rbg(t.color.rgba(), image.get(finalX, finalY));
+                    if (dst > closestItem[0]) return;
+                    build.sortItem = t;
+                    closestItem[0] = dst;
+                });
+                var stile = new Schematic.Stile(sorter, x, image.height - y - 1, build.config(), (byte) 0);
+                tiles.add(stile);
+            }
+        }
+        StringMap tags = new StringMap();
+        tags.put("name", originFile.name());
+        var schem = new Schematic(tiles, tags, image.width, image.height);
+        schem.labels.add(sorter.emoji());
+        // Import it
+        Vars.schematics.add(schem);
+        // Select it
+        Vars.ui.schematics.hide();
+        Vars.control.input.useSchematic(schem);
+        ui.arcInfo("已保存蓝图：" + originFile.name(), 10);
+    }
+
+    private float diff_hsv(int[] a, int[] b) {
+        float dh = Math.abs(a[0] - b[0]) * 2,
+                ds = Math.abs(a[1] - b[1]),
+                dv = Math.abs(a[2] - b[2]);
+        return dh + ds + dv;
+    }
+
+    private void create_hsv() {
+        ObjectMap<Integer, int[]> canvasMap = new ObjectMap<>();
+        Color tmp = new Color();
+
+        for (int i : palette) {
+            canvasMap.put(palette[i], Color.RGBtoHSV(tmp.set(palette[i])));
+        }
+
+        for (var x = 0; x < image.width; x++) {
+            for (var y = 0; y < image.height; y++) {
+                int raw = image.get(x, y);
+                int[] pixel = Color.RGBtoHSV(tmp.set(raw));
+
+                float egg = 10000;
+                canvasMap.each((a, b) -> {
+                    float h = diff_hsv(pixel, b);
+                    if (h < egg) {
+                        closest = a;
+                    }
+                });
+                Cimage.set(x, y, closest);
+            }
+        }
     }
 }
