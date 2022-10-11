@@ -12,18 +12,16 @@ import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
 import arc.util.io.*;
-import mindustry.game.Schematic;
 import mindustry.gen.*;
 import mindustry.ui.*;
 import mindustry.world.*;
 
 import static mindustry.Vars.*;
-import static mindustry.content.Blocks.canvas;
 
 public class CanvasBlock extends Block{
     public float padding = 0f;
-    public static int canvasSize = 8;
-    public static int[] palette = {0x362944_ff, 0xc45d9f_ff, 0xe39aac_ff, 0xf0dab1_ff, 0x6461c2_ff, 0x2ba9b4_ff, 0x93d4b5_ff, 0xf0f6e8_ff};
+    public int canvasSize = 8;
+    public int[] palette = {0x362944_ff, 0xc45d9f_ff, 0xe39aac_ff, 0xf0dab1_ff, 0x6461c2_ff, 0x2ba9b4_ff, 0x93d4b5_ff, 0xf0f6e8_ff};
     public int bitsPerPixel;
     public IntIntMap colorToIndex = new IntIntMap();
 
