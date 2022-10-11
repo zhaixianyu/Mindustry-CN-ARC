@@ -47,7 +47,7 @@ public class picToMindustry {
         Dialog pt = new BaseDialog("arc-图片转换器");
         pt.cont.table(t -> {
             t.add("选择并导入图片，可将其转成画板、像素画或是逻辑画").padBottom(20f).row();
-            t.button("[cyan]选择图片", () -> {
+            t.button("[cyan]选择图片[white](png)", () -> {
                 Vars.platform.showFileChooser(false, "png", file -> {
                     try {
                         originFile = file;
