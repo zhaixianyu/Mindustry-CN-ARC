@@ -11,7 +11,6 @@ import arc.scene.ui.layout.Table;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.struct.StringMap;
-import arc.util.Log;
 import arc.util.Strings;
 import mindustry.Vars;
 import mindustry.content.Blocks;

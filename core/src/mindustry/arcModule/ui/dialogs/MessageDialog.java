@@ -31,10 +31,14 @@ import static mindustry.ui.Styles.cleart;
 import static mindustry.ui.Styles.nodeArea;
 
 public class MessageDialog extends BaseDialog {
-    /** 选择的第一个|最后一个记录 */
+    /**
+     * 选择的第一个|最后一个记录
+     */
     private int msgInit, msgFinal;
-    private int maxMsgRecorded = Math.max(Core.settings.getInt("maxMsgRecorded"),20);
-    /** 存储的所有事件记录 */
+    private int maxMsgRecorded = Math.max(Core.settings.getInt("maxMsgRecorded"), 20);
+    /**
+     * 存储的所有事件记录
+     */
     public static Seq<advanceMsg> msgList = new Seq<>();
 
     private Table historyTable;
@@ -243,7 +247,7 @@ public class MessageDialog extends BaseDialog {
 
         if (Marker.resolveMessage(message)) return true;
         if (District.resolveMessage(message)) return true;
-        if (resolveMarkMsg(message)) return true;
+        if (resolveMarkMsg(message, null)) return true;
         if (resolveServerMsg(message)) return true;
 
         addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.normal, message));
@@ -254,7 +258,7 @@ public class MessageDialog extends BaseDialog {
     public boolean resolveMsg(String message, @Nullable Player playersender) {
         if (Marker.resolveMessage(message)) return true;
         if (District.resolveMessage(message)) return true;
-        if (resolveMarkMsg(message)) return true;
+        if (resolveMarkMsg(message, playersender)) return true;
 
         if (playersender != null) {
             addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.chat, message, playersender.name(), new Vec2(playersender.x, playersender.y)));
@@ -266,10 +270,10 @@ public class MessageDialog extends BaseDialog {
         return false;
     }
 
-    public boolean resolveMarkMsg(String message) {
+    public boolean resolveMarkMsg(String message, @Nullable Player playersender) {
         //除了markType以外的内容
         if (message.contains("<ARC")) {
-            if(message.contains("标记了") && message.contains("Wave")){
+            if (message.contains("标记了") && message.contains("Wave")) {
                 addMsg(new MessageDialog.advanceMsg(arcMsgType.markWave, message));
                 return true;
             } else if (message.contains("标记了") && message.contains("Content")) {
@@ -277,7 +281,11 @@ public class MessageDialog extends BaseDialog {
                 return true;
             } else if (message.contains("<AT>")) {
                 addMsg(new MessageDialog.advanceMsg(arcMsgType.markPlayer, message));
-                if (message.substring(message.indexOf("AT")).contains(player.name)) ui.announce("你被戳了一下，请注意查看信息框哦~");
+                if (message.substring(message.indexOf("AT")).contains(player.name)) {
+                    if (playersender != null)
+                        ui.announce("[gold]你被[white] " + playersender.name + " [gold]戳了一下，请注意查看信息框哦~", 10);
+                    else ui.announce("[orange]你被戳了一下，请注意查看信息框哦~", 10);
+                }
                 return true;
             }
         }
