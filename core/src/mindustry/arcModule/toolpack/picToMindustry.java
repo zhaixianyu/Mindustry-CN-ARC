@@ -73,7 +73,7 @@ public class picToMindustry {
                 zoom.setText(Strings.fixed(scale, 2) + "");
                 rebuilt();
             }).width(200f);
-        }).padBottom(20f).row();
+        }).padBottom(20f).visible(() -> oriImage != null).row();
         pt.cont.table(t -> {
             t.add("色调函数: ");
             Label zoom = t.add(disFunList[0]).padRight(20f).get();
@@ -81,7 +81,7 @@ public class picToMindustry {
                 colorDisFun = (int) s;
                 zoom.setText(disFunList[colorDisFun]);
             }).width(200f);
-        }).padBottom(20f).row();
+        }).padBottom(20f).visible(() -> oriImage != null).row();
         pt.cont.table(a -> tTable = a);
         pt.addCloseButton();
         return pt;
