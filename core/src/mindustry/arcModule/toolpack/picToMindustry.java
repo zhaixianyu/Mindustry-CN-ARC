@@ -10,6 +10,7 @@ import arc.scene.ui.layout.Table;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.struct.StringMap;
+import arc.util.Strings;
 import mindustry.Vars;
 import mindustry.content.Blocks;
 import mindustry.game.Schematic;
@@ -35,6 +36,8 @@ public class picToMindustry {
 
     float scale = 1f;
     float[] scaleList = {0.02f, 0.05f, 0.1f, 0.15f, 0.2f, 0.25f, 0.3f, 0.4f, 0.5f, 0.65f, 0.8f, 1f, 1.25f, 1.5f, 2f, 3f, 5f};
+    int colorDisFun = 0;
+    String[] disFunList = {"基础对比", "平方对比", "LAB"};
 
     public picToMindustry() {
         CanvasBlock canva = (CanvasBlock) Blocks.canvas;
@@ -67,8 +70,16 @@ public class picToMindustry {
             Label zoom = t.add(scale + "").padRight(20f).get();
             t.slider(0, scaleList.length - 1, 1, 11, s -> {
                 scale = scaleList[(int) s];
-                zoom.setText(scale + "");
+                zoom.setText(Strings.fixed(scale, 2) + "");
                 rebuilt();
+            }).width(200f);
+        }).padBottom(20f).row();
+        pt.cont.table(t -> {
+            t.add("色调函数: ");
+            Label zoom = t.add(disFunList[0]).padRight(20f).get();
+            t.slider(0, disFunList.length - 1, 1, 0, s -> {
+                colorDisFun = (int) s;
+                zoom.setText(disFunList[colorDisFun]);
             }).width(200f);
         }).padBottom(20f).row();
         pt.cont.table(a -> tTable = a);
@@ -92,8 +103,8 @@ public class picToMindustry {
         tTable.table(t -> {
             t.add("名称").color(getThemeColor()).padRight(25f).padBottom(10f);
             t.add(originFile.name()).padBottom(10f).row();
-            t.add("大小").color(getThemeColor()).padRight(25f);
-            t.add(formatNumber(image.width) + "\uE815" + formatNumber(image.height));
+            t.add("原始大小").color(getThemeColor()).padRight(25f);
+            t.add(formatNumber(oriImage.width) + "\uE815" + formatNumber(oriImage.height));
         }).padBottom(20f).row();
         tTable.table(t -> {
             t.table(tt -> {
@@ -110,6 +121,7 @@ public class picToMindustry {
                     Cimage = image.copy();
                     sorterGenerator();
                 }).size(100, 50);
+                tt.add("大小：" + formatNumber(image.width) + "\uE815" + formatNumber(image.height));
             }).row();
             t.table(tt -> {
                 tt.button("逻辑画 " + Blocks.logicDisplay.emoji(), Styles.cleart, () -> {
@@ -120,17 +132,26 @@ public class picToMindustry {
     }
 
     private float diff_rbg(Integer a, Integer b) {
-        int ar = (a >> 16) & 0xFF,
-                ag = (a >> 8) & 0xFF,
-                ab = a & 0xFF;
+        int ar = a >> 24 & 0xFF,
+                ag = a >> 16 & 0xFF,
+                ab = a >> 8 & 0xFF;
         // get in
-        int br = (b >> 16) & 0xFF,
-                bg = (b >> 8) & 0xFF,
-                bb = b & 0xFF;
+        int br = b >> 24 & 0xFF,
+                bg = b >> 16 & 0xFF,
+                bb = b >> 8 & 0xFF;
         int dr = Math.abs(ar - br),
                 dg = Math.abs(ag - bg),
                 db = Math.abs(ab - bb);
-        return dr + dg + db;
+        switch (colorDisFun) {
+            case 1:
+                return dr * dr + dg * dg + db * db;
+            case 2: {
+                float Rmean = (ar + br) / 2;
+                return (float) Math.sqrt((2 + Rmean / 256) * (dr * dr) + 4 * (dg * dg) + (2 + (255 - Rmean) / 256) * (db * db));
+            }
+            default:
+                return dr + dg + db;
+        }
     }
 
     private void create_rbg(int[] colorBar) {
