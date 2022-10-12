@@ -1,5 +1,6 @@
 package mindustry.arcModule.toolpack;
 
+import arc.Core;
 import arc.files.Fi;
 import arc.graphics.Color;
 import arc.graphics.Pixmap;
@@ -10,6 +11,7 @@ import arc.scene.ui.layout.Table;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.struct.StringMap;
+import arc.util.Log;
 import arc.util.Strings;
 import mindustry.Vars;
 import mindustry.content.Blocks;
@@ -63,7 +65,8 @@ public class picToMindustry {
                         ui.arcInfo("读取图片失败，请尝试更换图片\n" + e);
                     }
                 });
-            }).size(240, 50);
+            }).size(240, 50).padBottom(20f).row();
+            t.check("自动保存为蓝图", Core.settings.getBool("autoSavePTM"), ta -> Core.settings.put("autoSavePTM", ta));
         }).padBottom(20f).row();
         pt.cont.table(t -> {
             t.add("缩放: \uE815 ");
@@ -146,7 +149,7 @@ public class picToMindustry {
             case 1:
                 return dr * dr + dg * dg + db * db;
             case 2: {
-                float Rmean = (ar + br) / 2;
+                float Rmean = (ar + br) / 2f;
                 return (float) Math.sqrt((2 + Rmean / 256) * (dr * dr) + 4 * (dg * dg) + (2 + (255 - Rmean) / 256) * (db * db));
             }
             default:
@@ -155,12 +158,11 @@ public class picToMindustry {
     }
 
     private void create_rbg(int[] colorBar) {
-        for (var x = 0; x < image.width; x++) {
-            for (var y = 0; y < image.height; y++) {
+        for (int x = 0; x < image.width; x++) {
+            for (int y = 0; y < image.height; y++) {
                 Integer pixel = image.get(x, y);
-
                 float egg = 1000;
-                for (var other : colorBar) {
+                for (int other : colorBar) {
                     float h = diff_rbg(pixel, other);
                     if (h < egg) {
                         closest = other;
@@ -174,35 +176,38 @@ public class picToMindustry {
 
     private void canvasGenerator() {
         int width = Cimage.width / canvasSize, height = Cimage.height / canvasSize + 1;
-        var tiles = new Seq();
-        for (var y = 0; y < height; y++) {
-            for (var x = 0; x < width; x++) {
+        Seq<Schematic.Stile> tiles = new Seq<>();
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
                 // add canvas to the schematic
                 CanvasBuild build = (CanvasBuild) canvas.newBuilding();
                 // get max 12x12 region of the image
                 Pixmap region = Cimage.crop(x * canvasSize, (height - y - 1) * canvasSize, canvasSize, canvasSize);
                 // convert pixel data of the region
                 byte[] bytes = build.packPixmap(region);
-                var stile = new Schematic.Stile(canvas, x * 2, y * 2, bytes, (byte) 0);
+                Schematic.Stile stile = new Schematic.Stile(canvas, x * 2, y * 2, bytes, (byte) 0);
                 tiles.add(stile);
             }
         }
         StringMap tags = new StringMap();
         tags.put("name", originFile.name());
-        var schem = new Schematic(tiles, tags, width * 2, height * 2);
+        Schematic schem = new Schematic(tiles, tags, width * 2, height * 2);
         schem.labels.add(canvas.emoji());
         // Import it
-        Vars.schematics.add(schem);
-        // Select it
-        Vars.ui.schematics.hide();
-        Vars.control.input.useSchematic(schem);
-        ui.arcInfo("已保存蓝图：" + originFile.name(), 10);
+        if (Core.settings.getBool("autoSavePTM")) {
+            Vars.schematics.add(schem);
+            ui.arcInfo("已保存蓝图：" + originFile.name(), 10);
+        }
+        if (state.isGame()) {
+            Vars.ui.schematics.hide();
+            Vars.control.input.useSchematic(schem);
+        }
     }
 
     private void sorterGenerator() {
-        var tiles = new Seq();
-        for (var y = 0; y < image.height; y++) {
-            for (var x = 0; x < image.width; x++) {
+        Seq<Schematic.Stile> tiles = new Seq<>();
+        for (int y = 0; y < image.height; y++) {
+            for (int x = 0; x < image.width; x++) {
                 if (image.get(x, y) == 0) continue;
                 Sorter.SorterBuild build = (Sorter.SorterBuild) sorter.newBuilding();
                 final float[] closestItem = {99999};
@@ -214,22 +219,23 @@ public class picToMindustry {
                     build.sortItem = t;
                     closestItem[0] = dst;
                 });
-                var stile = new Schematic.Stile(sorter, x, image.height - y - 1, build.config(), (byte) 0);
+                Schematic.Stile stile = new Schematic.Stile(sorter, x, image.height - y - 1, build.config(), (byte) 0);
                 tiles.add(stile);
             }
         }
         StringMap tags = new StringMap();
         tags.put("name", originFile.name());
-        var schem = new Schematic(tiles, tags, image.width, image.height);
+        Schematic schem = new Schematic(tiles, tags, image.width, image.height);
         schem.labels.add(sorter.emoji());
         // Import it
-        Vars.schematics.add(schem);
+        if (Core.settings.getBool("autoSavePTM")) {
+            Vars.schematics.add(schem);
+            ui.arcInfo("已保存蓝图：" + originFile.name(), 10);
+        }
         if (state.isGame()) {
             Vars.ui.schematics.hide();
             Vars.control.input.useSchematic(schem);
         }
-        // Select it
-        ui.arcInfo("已保存蓝图：" + originFile.name(), 10);
     }
 
     private float diff_hsv(int[] a, int[] b) {
@@ -247,8 +253,8 @@ public class picToMindustry {
             canvasMap.put(palette[i], Color.RGBtoHSV(tmp.set(palette[i])));
         }
 
-        for (var x = 0; x < image.width; x++) {
-            for (var y = 0; y < image.height; y++) {
+        for (int x = 0; x < image.width; x++) {
+            for (int y = 0; y < image.height; y++) {
                 int raw = image.get(x, y);
                 int[] pixel = Color.RGBtoHSV(tmp.set(raw));
 
