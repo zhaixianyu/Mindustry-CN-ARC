@@ -35,6 +35,8 @@ public class MessageDialog extends BaseDialog {
      * 选择的第一个|最后一个记录
      */
     private int msgInit, msgFinal;
+
+    private boolean ignoreMark = false;
     private int maxMsgRecorded = Math.max(Core.settings.getInt("maxMsgRecorded"), 20);
     /**
      * 存储的所有事件记录
@@ -184,6 +186,11 @@ public class MessageDialog extends BaseDialog {
 
         setDialog.cont.table(t -> {
 
+            t.check("停止识别标记等交互信息", ignoreMark, a -> {
+                ignoreMark = !ignoreMark;
+            }).left().width(300f);
+            t.row();
+
             t.check("信息编辑模式", fieldMode, a -> {
                 fieldMode = a;
                 build();
@@ -244,11 +251,12 @@ public class MessageDialog extends BaseDialog {
     }
 
     public boolean resolveMsg(String message) {
-
-        if (Marker.resolveMessage(message)) return true;
-        if (District.resolveMessage(message)) return true;
-        if (resolveMarkMsg(message, null)) return true;
-        if (resolveServerMsg(message)) return true;
+        if (!ignoreMark){
+            if (Marker.resolveMessage(message)) return true;
+            if (District.resolveMessage(message)) return true;
+            if (resolveMarkMsg(message, null)) return true;
+            if (resolveServerMsg(message)) return true;
+        }
 
         addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.normal, message));
 
@@ -256,15 +264,17 @@ public class MessageDialog extends BaseDialog {
     }
 
     public boolean resolveMsg(String message, @Nullable Player playersender) {
-        if (Marker.resolveMessage(message)) return true;
-        if (District.resolveMessage(message)) return true;
-        if (resolveMarkMsg(message, playersender)) return true;
+        if (!ignoreMark){
+            if (Marker.resolveMessage(message)) return true;
+            if (District.resolveMessage(message)) return true;
+            if (resolveMarkMsg(message, playersender)) return true;
 
-        if (playersender != null) {
-            addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.chat, message, playersender.name(), new Vec2(playersender.x, playersender.y)));
-            return true;
+            if (playersender != null) {
+                addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.chat, message, playersender.name(), new Vec2(playersender.x, playersender.y)));
+                return true;
+            }
+            if (resolveServerMsg(message)) return true;
         }
-        if (resolveServerMsg(message)) return true;
         addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.normal, message));
 
         return false;
