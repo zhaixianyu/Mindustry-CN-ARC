@@ -166,6 +166,7 @@ public class LogicDialog extends BaseDialog{
     public static String arcVarsText(Var s){
         return s.isobj ? PrintI.toString(s.objval) : Math.abs(s.numval - (long)s.numval) < 0.00001 ? (long)s.numval + "" : s.numval + "";
     }
+
     public static Color arcVarsColor(Var s){
         if(s.constant && s.name.startsWith("@")) return Color.goldenrod;
         else if (s.constant) return Color.tan;
