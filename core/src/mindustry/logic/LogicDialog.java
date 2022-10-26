@@ -160,6 +160,30 @@ public class LogicDialog extends BaseDialog{
 
                     }).padTop(10f).row();
                 }
+                t.table(tt->{
+                    tt.background(Tex.whitePane);
+
+                    tt.table(tv->{
+                        Label varPro = tv.labelWrap(executor.textBuffer.toString()).width(300f).get();
+                        tv.touchable = Touchable.enabled;
+                        tv.tapped(()->{
+                            Core.app.setClipboardText(varPro.getText().toString());
+                            ui.arcInfo("[cyan]复制信息版[white]\n " + varPro.getText());
+                        });
+                        tv.update(()->{
+                            if(counter + Time.delta>period && refreshing){
+                                varPro.setText(executor.textBuffer.toString());
+                            }
+                        });
+                    }).padLeft(20f);
+
+                    tt.update(()->{
+                        if(counter + Time.delta>period && refreshing){
+                            tt.setColor(Color.valueOf("#e600e6"));
+                        }
+                    });
+
+                }).padTop(10f).row();
             }).width(400f).padLeft(20f);
     }
 
@@ -169,7 +193,7 @@ public class LogicDialog extends BaseDialog{
 
     public static Color arcVarsColor(Var s){
         if(s.constant && s.name.startsWith("@")) return Color.goldenrod;
-        else if (s.constant) return Color.tan;
+        else if (s.constant) return Color.valueOf("00cc7e");
         else return typeColor(s,new Color());
     }
 
