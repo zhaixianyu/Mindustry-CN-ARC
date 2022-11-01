@@ -344,7 +344,7 @@ abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Dra
     }
 
     public void buildDestroyedBlocks() {
-        if (unit.canBuild() && state.rules.mode() != Gamemode.pvp) {
+        if (unit.canBuild()) {
             int count = 0;
             for (Teams.BlockPlan plan : player.team().data().plans) {
                 if (within(plan.x * tilesize, plan.y * tilesize, buildingRange)) {

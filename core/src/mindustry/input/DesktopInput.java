@@ -129,7 +129,7 @@ public class DesktopInput extends InputHandler{
             drawBreakSelection(selectX, selectY, cursorX, cursorY, !Core.input.keyDown(Binding.schematic_select) ? maxLength : Vars.getMaxSchematicSize());
         }
 
-        if(Core.input.keyDown(Binding.schematic_select) && !Core.scene.hasKeyboard() && mode != breaking){
+        if(!Core.scene.hasKeyboard() && mode != breaking){
             if(Core.input.keyDown(Binding.schematic_select)){
                 drawSelection(schemX, schemY, cursorX, cursorY, Vars.getMaxSchematicSize());
             }else if(Core.input.keyDown(Binding.rebuild_select)){
@@ -589,10 +589,6 @@ public class DesktopInput extends InputHandler{
 
         if(Core.input.keyTap(Binding.rtsSelectWound)){
             control.input.selectedUnits.removeAll(unit -> unit.health > unit.maxHealth * (float)Core.settings.getInt("rtsWoundUnit")/100f);
-        }
-
-        if(Core.input.keyTap(Binding.rtsSelectAll)){
-            control.input.selectedUnits = player.team().data().units.select(Unitc::isCommandable);
         }
 
         if(Core.input.keyTap(Binding.lockonLastMark)){
