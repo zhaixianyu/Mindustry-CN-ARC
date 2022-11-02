@@ -80,8 +80,6 @@ public enum Binding implements KeyBind{
     console(KeyCode.f8),
     rtsSelectWound(KeyCode.f12),
     rtsSelectHealth(KeyCode.f12),
-
-    rtsSelectAll(KeyCode.f2),
     lockonLastMark(KeyCode.f12)
     ;
 
