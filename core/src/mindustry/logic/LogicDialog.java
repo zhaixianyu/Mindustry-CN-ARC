@@ -269,13 +269,13 @@ public class LogicDialog extends BaseDialog{
         buttons.button("@variables", Icon.menu, () -> {
             BaseDialog dialog = new BaseDialog("@variables");
             dialog.hidden(() -> {
-                if(!wasPaused){
+                if(!wasPaused && !net.active()){
                     state.set(State.paused);
                 }
             });
 
             dialog.shown(() -> {
-                if(!wasPaused){
+                if(!wasPaused && !net.active()){
                     state.set(State.playing);
                 }
             });
