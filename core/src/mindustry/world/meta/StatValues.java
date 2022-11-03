@@ -252,7 +252,7 @@ public class StatValues{
                 blockInfo.append(block.emoji()).append(" ").append(block.localizedName);
 
                 if(i == list.size-1||list.get(i+1).itemDrop.hardness!=list.get(i).itemDrop.hardness){
-                    Float eff = 60f / (drill.drillTime + drill.hardnessDrillMultiplier * list.get(i).itemDrop.hardness) * drill.size * drill.size;
+                    float eff = 60f / (drill.drillTime + drill.hardnessDrillMultiplier * list.get(i).itemDrop.hardness) * drill.size * drill.size;
                     blockInfo.append("    [stat]<").append(Strings.autoFixed(eff,2)).append("|[cyan]");
                     blockInfo.append(Strings.autoFixed(eff * drill.liquidBoostIntensity * drill.liquidBoostIntensity,2)).append("[stat]>");
                     l.add(blockInfo.toString()).left().row();
@@ -289,7 +289,7 @@ public class StatValues{
                     blockInfo.append(block.emoji()).append(" ").append(block.localizedName);
 
                     if (i == list.size - 1 || list.get(i + 1).itemDrop.hardness != list.get(i).itemDrop.hardness) {
-                        Float eff = 60f * unit.mineSpeed / (50f + list.get(i).itemDrop.hardness * 15f);
+                        float eff = 60f * unit.mineSpeed / (50f + list.get(i).itemDrop.hardness * 15f);
                         blockInfo.append("    [stat]<").append(Strings.autoFixed(eff, 2)).append(">");
                         l.add(blockInfo.toString()).left().row();
                         blockInfo = new StringBuilder();
@@ -309,7 +309,7 @@ public class StatValues{
                         l.row();
                     }
                 }
-                Float eff = 60f * unit.mineSpeed / (50f + 15f);
+                float eff = 60f * unit.mineSpeed / (50f + 15f);
                 blockInfo.append("    <").append(Strings.autoFixed(eff, 2)).append("[white]>");
                 l.add(blockInfo.toString()).left();
             });
@@ -434,7 +434,10 @@ public class StatValues{
                 table.table(bt -> {
                     bt.left().defaults().padRight(3).left();
 
-                    if(type.damage > 0 && (type.collides || type.splashDamage <= 0)){
+                    if (type instanceof LightningBulletType) {
+                        lightning(0, type.damage, type.lightningLength, type.lightningLengthRand).display(bt);
+                    }
+                    else if(type.damage > 0 && (type.collides || type.splashDamage <= 0)){
                         if(type.continuousDamage() > 0){
                             bt.add(Core.bundle.format("bullet.damage", type.continuousDamage()) + StatUnit.perSecond.localized());
                         }else{
@@ -511,18 +514,20 @@ public class StatValues{
                         sep(bt, "[stat]追踪[lightgray]~[]"+Strings.autoFixed(type.homingPower * 50 * Time.toSeconds, 1)+"°/s[lightgray]~[]"+Strings.fixed(type.homingRange / tilesize,1)+"[lightgray]格");
                     }
 
-                    if(type.lightning > 0){
-                        sep(bt, "[stat]"+type.lightning+"[lightgray]x闪电~[stat]"+Strings.autoFixed((type.lightningDamage < 0 ? type.damage : type.lightningDamage),1)+"[lightgray]伤害~[stat]" + type.lightningLength+"[lightgray]格");
+                    if(!(type instanceof LightningBulletType) && type.lightning > 0){
+                        lightning(type.lightning, type.lightningDamage < 0 ? type.damage : type.lightningDamage, type.lightningLength, type.lightningLengthRand).display(bt);
                     }
-
-
 
                     if(type.pierceArmor){
                         sep(bt, "@bullet.armorpierce");
                     }
 
                     if(type.status != StatusEffects.none){
-                        sep(bt, (type.status.minfo.mod == null ? type.status.emoji() : "") + "[stat]" + type.status.localizedName + (type.status.reactive? "":"[lightgray] ~ [stat]" + Strings.autoFixed(type.statusDuration/60f,2)+"[white]s"));
+                        sep(bt, (type.status.minfo.mod == null ? type.status.emoji() : "") + "[stat]" + type.status.localizedName + (type.status.reactive? "":"[lightgray]~[]" + Strings.autoFixed(type.statusDuration/60f,2)+"[lightgray]s"));
+                    }
+
+                    if (type.suppressionRange > -1f) {
+                        sep(bt, "[lightgray]压制场~[stat]" + type.suppressionRange / 8f + "[]格~[stat]" + type.suppressionDuration / 60f + "[]秒");
                     }
 
                     if(type.fragBullet != null){
@@ -531,10 +536,50 @@ public class StatValues{
 
                         ammo(ObjectMap.of(t, type.fragBullet), indent + 1, false).display(bt);
                     }
-                }).padTop(compact ? 0 : -9).padLeft(indent * 8).left().get().background(compact ? null : Tex.underline);
+
+                    if (type.intervalBullet != null) {
+                        sep(bt, "[lightgray]每[stat]" + Strings.autoFixed(type.bulletInterval / 60f, 2) + "[]秒生成[stat]" + type.intervalBullets + "[]x子弹：");
+                        bt.row();
+                        ammo(ObjectMap.of(t, type.intervalBullet), indent + 1, false).display(bt);
+                    }
+
+                    Seq<BulletType> spawn = type.spawnBullets.copy();
+                    while (spawn.any()) {//显示所有spawnBullets
+                        BulletType bullet = spawn.first();
+                        Boolf<BulletType> pred = b -> bullet.damage == b.damage && bullet.splashDamage == b.splashDamage;
+                        //通过pred的的子弹被认为和当前子弹是一样的，合并显示
+                        sep(bt, "[stat]" + spawn.count(pred) + "x[lightgray]生成子弹：");
+                        bt.row();
+                        ammo(ObjectMap.of(t, bullet), indent + 1, false).display(bt);
+                        spawn.removeAll(pred);//删除已经显示的子弹
+                    }
+                }).padTop(compact ? 0 : -9).padLeft(indent * 12).left().get().background(compact ? null : Tex.underline);
 
                 table.row();
             }
+        };
+    }
+
+    public static StatValue lightning(int shots, float damage, int length, int lengthRand) {
+        return table -> {
+            String str = "[lightgray]";
+            if (shots > 0) {
+                str += String.format("[stat]%d[]x", shots);
+            }
+            str += String.format("闪电~[stat]%s[]伤害~", Strings.autoFixed(damage, 1));
+            if (lengthRand > 0) {
+                str += String.format("[stat]%d~%d[]长度", length, length + lengthRand);
+            }
+            else {
+                str += String.format("[stat]%d[]长度", length);
+            }
+            sep(table, str);
+        };
+    }
+
+    public static StatValue turretReload(Turret turret) {
+        return table -> {
+            table.add(turret.shoot.totalShots() + " x " + Strings.autoFixed(60f / turret.reload, 1) + "/s");
         };
     }
 

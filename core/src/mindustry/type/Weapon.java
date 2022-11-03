@@ -160,14 +160,23 @@ public class Weapon implements Cloneable{
 
         if(reload > 0) {
             t.row();
-            t.add("[lightgray]" + Stat.reload.localized() + ": " + (mirror ? "2x " : "") + "[stat]" + Strings.autoFixed(60f / reload * shoot.shots, 2) + " [white]" + StatUnit.perSecond.localized());
+            t.add("[lightgray]" + Stat.reload.localized() + ": " + (mirror ? "2x " : "") + "[stat]" + shoot.totalShots() + " x " + Strings.autoFixed(60f / reload, 2) + " []" + StatUnit.perSecond.localized());
         }
         t.row();
-        t.add("[lightgray]武器范围: [stat]" + String.format("%.1f", bullet.range/8f) + " [white]格");
+        t.add("[lightgray]武器范围: [stat]" + String.format("%.1f", bullet.range/8f) + " []格");
+
+        if (rotate) {
+            t.row();
+            t.add("[lightgray]旋转速度: [stat]" + String.format("%.0f", rotateSpeed * 60f) + " []°/s");
+            if (rotationLimit < 361f) {
+                t.row();
+                t.add("[lightgray]旋转范围: [stat]" + String.format("%.0f", rotationLimit) + " []" + StatUnit.degrees.localized());
+            }
+        }
 
         if(inaccuracy > 0){
             t.row();
-            t.add("[lightgray]" + Stat.inaccuracy.localized() + ": [white]" + (int)inaccuracy + " " + StatUnit.degrees.localized());
+            t.add("[lightgray]" + Stat.inaccuracy.localized() + ": [white]" + (int)inaccuracy + " []" + StatUnit.degrees.localized());
         }
 
         StatValues.ammo(ObjectMap.of(u, bullet)).display(t);
