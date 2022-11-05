@@ -198,6 +198,7 @@ public class Weapon implements Cloneable{
         wy = unit.y + Angles.trnsy(rotation, x, y) + Angles.trnsy(weaponRotation, 0, -realRecoil);
 
         Draw.xscl = -Mathf.sign(flipSprite);
+        Draw.alpha(0.5f);
         Draw.rect(outlineRegion, wx, wy, weaponRotation);
         Draw.xscl = 1f;
     }
@@ -229,10 +230,12 @@ public class Weapon implements Cloneable{
         wy = unit.y + Angles.trnsy(rotation, x, y) + Angles.trnsy(weaponRotation, 0, -realRecoil);
 
         if(shadow > 0){
+            Draw.alpha(unitTrans);
             Drawf.shadow(wx, wy, shadow,unitTrans);
         }
 
         if(top){
+            Draw.alpha(unitTrans);
             drawOutline(unit, mount);
         }
 
@@ -248,16 +251,18 @@ public class Weapon implements Cloneable{
             }
         }
 
-        Draw.alpha(unitTrans);
+
         Draw.xscl = -Mathf.sign(flipSprite);
 
         //fix color
         unit.type.applyColor(unit);
+        Draw.alpha(unitTrans);
 
         if(region.found()) Draw.rect(region, wx, wy, weaponRotation);
 
         if(cellRegion.found()){
             Draw.color(unit.type.cellColor(unit));
+            Draw.alpha(unitTrans);
             Draw.rect(cellRegion, wx, wy, weaponRotation);
             Draw.color();
         }
