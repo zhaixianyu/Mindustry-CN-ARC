@@ -288,7 +288,7 @@ public class Weapon implements Cloneable{
 
         Draw.xscl = 1f;
 
-        if (draw_minunithealthbar && Core.settings.getBool("unitWeaponTargetLine")){
+        if (draw_minunithealthbar && Core.settings.getBool("unitWeaponTargetLine") && mount.shoot){
             if(mount.aimX !=0 && mount.aimY != 0  && Mathf.len(mount.aimX - wx, mount.aimY - wy) <= 1200f){
                 Lines.stroke(1f);
                 if (unit.controller() == player) {
@@ -296,7 +296,7 @@ public class Weapon implements Cloneable{
                 } else {
                     Draw.color(unit.team.color);
                 }
-                Draw.alpha(mount.shoot?0.8f:0.3f);
+                Draw.alpha(0.8f);
                 Lines.line(wx, wy, mount.aimX, mount.aimY);
                 if(Core.settings.getInt("unitTargetType")==0 || !(unit.controller() instanceof Player))
                     Lines.spikes(mount.aimX,mount.aimY,4f,4f,4, (float) (Math.atan((mount.aimX-wx)/(mount.aimY-wy)*doubleRadDeg))+45f);
