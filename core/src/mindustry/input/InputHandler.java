@@ -505,7 +505,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
             throw new ValidateException(player, "Player cannot control a building.");
         }
 
-        if(player.team() == build.team && build.canControlSelect(player.unit())){
+        if((player.team() == build.team || (build instanceof CoreBuild && state.rules.editor)) && build.canControlSelect(player.unit())){
             build.onControlSelect(player.unit());
         }
     }
@@ -1538,7 +1538,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
 
     public @Nullable Building selectedControlBuild(){
         Building build = world.buildWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
-        if(build != null && !player.dead() && build.canControlSelect(player.unit()) && build.team == player.team()){
+        if(build != null && !player.dead() && build.canControlSelect(player.unit()) && (build.team == player.team() || (build instanceof CoreBuild && state.rules.editor))){
             return build;
         }
         return null;
