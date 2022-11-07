@@ -227,41 +227,52 @@ public class StatValues{
         });
     }
 
-    public static StatValue drillBlock(Drill drill){
+    public static StatValue drillBlock(Drill drill) {
         Seq<Block> list = content.blocks().select(b -> b instanceof Floor f && !f.wallOre && f.itemDrop != null && f.itemDrop.hardness <= drill.tier && f.itemDrop != drill.blockedItem);
-        list.sort(t->t.itemDrop.hardness);
-        if(drill instanceof BurstDrill){return table -> table.table(l -> {
-            l.left();
-            for(int i = 0; i < list.size; i++){
-                var item = list.get(i);
 
-                l.image(item.uiIcon).size(iconSmall).padRight(2).padLeft(2).padTop(3).padBottom(3);
-                l.add(item.localizedName).left().padLeft(1).padRight(4);
-                if(i % 5 == 4){
-                    l.row();
+        if (drill instanceof BurstDrill burstDrill) {
+            list.sort(t -> burstDrill.drillMultipliers.get(t.itemDrop, 1f));
+            return table -> {
+                table.row();
+                table.table(t -> {
+                    t.background(Styles.grayPanel);
+                    StringBuilder oreList = new StringBuilder();
+                    for (int i = 0; i < list.size; i++) {
+                        Block block = list.get(i);
+                        oreList.append(block.emoji()).append(" ").append(block.localizedName);
+                        if (i == list.size - 1 || burstDrill.drillMultipliers.containsKey(list.get(i + 1).itemDrop)) {
+                            t.labelWrap(oreList.toString()).width(250f).padLeft(20f).padTop(5f);
+                            float eff = 60f / (drill.drillTime + drill.hardnessDrillMultiplier * block.itemDrop.hardness) * drill.size * drill.size * burstDrill.drillMultipliers.get(block.itemDrop, 1f);
+                            t.add("[stat]" + Strings.fixed(eff, 2)).padLeft(20f);
+                            t.add("[cyan]" + Strings.fixed(eff * drill.liquidBoostIntensity * drill.liquidBoostIntensity, 2)).padLeft(20f).padRight(20f);
+                            t.row();
+                            oreList = new StringBuilder();
+                        } else oreList.append("  ");
+                    }
+                });
+            };
+        } else {
+            list.sort(t -> t.itemDrop.hardness);
+            return table -> {
+            table.row();
+            table.table(t -> {
+                t.background(Styles.grayPanel);
+                StringBuilder oreList = new StringBuilder();
+                for (int i = 0; i < list.size; i++) {
+                    Block block = list.get(i);
+                    oreList.append(block.emoji()).append(" ").append(block.localizedName);
+                    if (i == list.size - 1 || list.get(i + 1).itemDrop.hardness != block.itemDrop.hardness) {
+                        t.labelWrap(oreList.toString()).width(250f).padLeft(20f).padTop(5f);
+                        float eff = 60f / (drill.drillTime + drill.hardnessDrillMultiplier * block.itemDrop.hardness) * drill.size * drill.size;
+                        t.add("[stat]" + Strings.fixed(eff, 2)).padLeft(20f);
+                        t.add("[cyan]" + Strings.fixed(eff * drill.liquidBoostIntensity * drill.liquidBoostIntensity, 2)).padLeft(20f).padRight(20f);
+                        t.row();
+                        oreList = new StringBuilder();
+                    } else oreList.append("  ");
                 }
-            }
-        });
+            });
+        };
         }
-        else{
-        return table -> table.table(l -> {
-            l.left();
-            StringBuilder blockInfo = new StringBuilder();
-            for(int i = 0; i < list.size; i++){
-                var block = list.get(i);
-                blockInfo.append(block.emoji()).append(" ").append(block.localizedName);
-
-                if(i == list.size-1||list.get(i+1).itemDrop.hardness!=list.get(i).itemDrop.hardness){
-                    float eff = 60f / (drill.drillTime + drill.hardnessDrillMultiplier * list.get(i).itemDrop.hardness) * drill.size * drill.size;
-                    blockInfo.append("    [stat]<").append(Strings.autoFixed(eff,2)).append("|[cyan]");
-                    blockInfo.append(Strings.autoFixed(eff * drill.liquidBoostIntensity * drill.liquidBoostIntensity,2)).append("[stat]>");
-                    l.add(blockInfo.toString()).left().row();
-                    blockInfo = new StringBuilder();
-                }
-                else blockInfo.append("  ");
-
-            }
-        });}
     }
 
     public static StatValue arcSeparator(Separator separator){
@@ -281,21 +292,24 @@ public class StatValues{
                         b.itemDrop.hardness <= unit.mineTier && (!b.playerUnmineable || Core.settings.getBool("doubletapmine")));
         list.sort(t->t.itemDrop.hardness);
         if(unit.mineHardnessScaling){
-            return table -> table.table(l -> {
-                l.left();
-                StringBuilder blockInfo = new StringBuilder();
-                for (int i = 0; i < list.size; i++) {
-                    var block = list.get(i);
-                    blockInfo.append(block.emoji()).append(" ").append(block.localizedName);
-
-                    if (i == list.size - 1 || list.get(i + 1).itemDrop.hardness != list.get(i).itemDrop.hardness) {
-                        float eff = 60f * unit.mineSpeed / (50f + list.get(i).itemDrop.hardness * 15f);
-                        blockInfo.append("    [stat]<").append(Strings.autoFixed(eff, 2)).append(">");
-                        l.add(blockInfo.toString()).left().row();
-                        blockInfo = new StringBuilder();
-                    } else blockInfo.append("  ");
-                }
-            });
+            return table -> {
+                table.row();
+                table.table(t -> {
+                    t.background(Styles.grayPanel);
+                    StringBuilder oreList = new StringBuilder();
+                    for (int i = 0; i < list.size; i++) {
+                        Block block = list.get(i);
+                        oreList.append(block.emoji()).append(" ").append(block.localizedName);
+                        if (i == list.size - 1 || list.get(i + 1).itemDrop.hardness != block.itemDrop.hardness) {
+                            t.labelWrap(oreList.toString()).width(250f).padLeft(20f).padTop(5f);
+                            float eff = 60f * unit.mineSpeed / (50f + list.get(i).itemDrop.hardness * 15f);
+                            t.add("[stat]" + Strings.fixed(eff, 2)).padLeft(20f);
+                            t.row();
+                            oreList = new StringBuilder();
+                        } else oreList.append("  ");
+                    }
+                });
+            };
         }
         else {
             return table -> table.table(l -> {
