@@ -920,6 +920,13 @@ public class UnitType extends UnlockableContent{
             ammoCapacity = Math.max(1, (int)(shotsPerSecond * targetSeconds));
         }
 
+        estimateDps();
+
+        //only do this after everything else was initialized
+        sample = constructor.get();
+    }
+    
+    public float estimateDps(){
         //calculate estimated DPS for one target based on weapons
         if(dpsEstimate < 0){
             dpsEstimate = weapons.sumf(Weapon::dps);
@@ -930,9 +937,8 @@ public class UnitType extends UnlockableContent{
                 dpsEstimate /= 25f;
             }
         }
-
-        //only do this after everything else was initialized
-        sample = constructor.get();
+        
+        return dpsEstimate;
     }
 
     @CallSuper

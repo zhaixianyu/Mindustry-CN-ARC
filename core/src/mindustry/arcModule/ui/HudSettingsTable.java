@@ -28,7 +28,6 @@ import static mindustry.Vars.*;
 import static arc.Core.bundle;
 import static arc.Core.settings;
 import static mindustry.gen.Tex.*;
-import static mindustry.gen.Tex.button;
 import static mindustry.ui.Styles.flatDown;
 import static mindustry.ui.Styles.flatOver;
 
