@@ -1,3 +1,23 @@
+[cyan]------------------------[v140.3-11/11]---------------------------
+7.0, an update that has been in development for more than 1.5 years, is finally here.
+
+As with earlier major updates, there are too many changes to list in a single changelog - these are just the highlights.
+
+An entirely new planet - Erekir - with its own campaign, tech tree, units and blocks
+100+ new blocks to research
+18 new units for Erekir, 5 new naval support units on Serpulo
+Tanks, hovercrafts, insectoid walkers and more
+10 new turrets
+Entire new systems for transporting power and items on Erekir
+A new, more direct system of commanding units to move to specific locations and attack enemies
+Special thanks to the community members who helped create maps for use in the campaign:
+
+Mechanicalfish
+ThatOneBepis
+hhhi17
+Note: Server-wise, this release should be compatible with beta 140.x versions.
+
+
 [cyan]------------------------[v140.2-11/9]---------------------------
 This is a minor bugfix patch, intended to be the last beta release before 7.0 is fully available.
 
