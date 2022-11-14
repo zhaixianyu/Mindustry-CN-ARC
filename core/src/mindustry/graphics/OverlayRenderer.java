@@ -22,7 +22,7 @@ import mindustry.world.*;
 import mindustry.world.blocks.storage.CoreBlock.*;
 
 import static mindustry.Vars.*;
-import static mindustry.arcModule.DrawUtilities.arcDrawNearby;
+import static mindustry.arcModule.toolpack.arcScanner.drawScanner;
 
 public class OverlayRenderer{
     private static final float indicatorLength = 14f;
@@ -316,32 +316,7 @@ public class OverlayRenderer{
         }
         District.drawDistrict();
 
-        if(Core.input.keyDown(Binding.arcDetail)){
-            Draw.reset();
-            Draw.color(player.team().color,0.5f);
-            Lines.circle(player.x,player.y,5 * tilesize);
-            Lines.circle(player.x,player.y,10 * tilesize);
-            Lines.circle(player.x,player.y,15 * tilesize);
-            float curve = Mathf.curve(Time.time % 240f, 120f, 240f);
-            Lines.circle(player.x,player.y,15 * tilesize * Interp.pow3Out.apply(curve));
-            Draw.reset();
-            // 出怪点
-            if (spawner.countSpawns() < 25 && !state.rules.pvp){
-                for(Tile tile : spawner.getSpawns()) {
-                    Draw.color(state.rules.waveTeam.color);
-                    arcDrawNearby(Icon.units.getRegion(), tile,6 ,false);
-                }
-            }
-
-            for(Team team : Team.all){
-                for(CoreBuild core : team.cores()){
-                    if (state.rules.pvp && core.inFogTo(player.team())) continue;
-                    Draw.color(core.team.color);
-                    arcDrawNearby(core.block.fullIcon, core.tile,4,  true);
-                }
-            }
-
-        }
+        drawScanner();
     }
 
     private static class CoreEdge{

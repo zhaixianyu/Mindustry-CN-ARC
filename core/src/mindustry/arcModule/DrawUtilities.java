@@ -24,22 +24,6 @@ import static arc.graphics.g2d.Lines.stroke;
 import static mindustry.Vars.*;
 
 public class DrawUtilities {
-
-    /**
-     * 以玩家为中心，绘制一个环绕的图标圈
-     */
-    public static void arcDrawNearby(TextureRegion region, Tile tile, float size ,boolean rotate) {
-        float rot = (float) Math.atan2(tile.worldy() - player.y, tile.worldx() - player.x);
-        float range = Mathf.dst(tile.worldy()- player.y, tile.worldx() - player.x) ;
-        //float range = 30f;
-        float nx = player.x + Mathf.cos(rot) * range / 16f;
-        float ny = player.y + Mathf.sin(rot) * range / 16f;
-
-        if(rotate) Draw.rect(region, nx, ny, size, size, (float) Math.toDegrees(rot));
-        else Draw.rect(region, nx, ny, size, size);
-        arcDrawText((int) (range / 8f) + "" ,0.1f/ Scl.scl(1f), nx ,ny + size / 2 ,1);
-    }
-
     /**
      * Trans From minerTool
      */
