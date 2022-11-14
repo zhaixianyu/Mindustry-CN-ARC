@@ -693,7 +693,7 @@ public class SettingsMenuDialog extends BaseDialog{
         specmode.sliderPref("editorBrush",4,3,12,i->i+"");
         specmode.checkPref("autoSelSchematic",false);
         specmode.checkPref("researchViewer",false);
-        specmode.checkPref("atriVoice",false);
+        //specmode.checkPref("atriVoice",false);
         specmode.checkPref("developMode", false);
         //////////cheating
         cheating.addCategory("arcWeakCheat");
