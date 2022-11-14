@@ -81,7 +81,8 @@ public enum Binding implements KeyBind{
     console(KeyCode.f8),
     rtsSelectWound(KeyCode.f12),
     rtsSelectHealth(KeyCode.f12),
-    lockonLastMark(KeyCode.f12)
+    lockonLastMark(KeyCode.f12),
+    arcDetail(KeyCode.altLeft)
     ;
 
     private final KeybindValue defaultValue;

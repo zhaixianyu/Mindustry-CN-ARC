@@ -10,6 +10,7 @@ import arc.util.*;
 import mindustry.*;
 import mindustry.ai.types.*;
 import mindustry.arcModule.District;
+import mindustry.content.Blocks;
 import mindustry.content.UnitTypes;
 import mindustry.entities.*;
 import mindustry.game.EventType.*;
@@ -21,6 +22,7 @@ import mindustry.world.*;
 import mindustry.world.blocks.storage.CoreBlock.*;
 
 import static mindustry.Vars.*;
+import static mindustry.arcModule.DrawUtilities.arcDrawNearby;
 
 public class OverlayRenderer{
     private static final float indicatorLength = 14f;
@@ -223,7 +225,7 @@ public class OverlayRenderer{
                     }
                 }
             }
-            if (Core.settings.getBool("showFlyerSpawn") && spawner.countSpawns()<20) {
+            if (Core.settings.getBool("showFlyerSpawn") && spawner.countSpawns() < 20) {
                 for(Tile tile : spawner.getSpawns()) {
                     float angle = Angles.angle(world.width() / 2f, world.height() / 2f, tile.x, tile.y);
                     float trns = Math.max(world.width(), world.height()) * Mathf.sqrt2 * tilesize;
@@ -313,6 +315,33 @@ public class OverlayRenderer{
             }
         }
         District.drawDistrict();
+
+        if(Core.input.keyDown(Binding.arcDetail)){
+            Draw.reset();
+            Draw.color(player.team().color,0.5f);
+            Lines.circle(player.x,player.y,5 * tilesize);
+            Lines.circle(player.x,player.y,10 * tilesize);
+            Lines.circle(player.x,player.y,15 * tilesize);
+            float curve = Mathf.curve(Time.time % 240f, 120f, 240f);
+            Lines.circle(player.x,player.y,15 * tilesize * Interp.pow3Out.apply(curve));
+            Draw.reset();
+            // 出怪点
+            if (spawner.countSpawns() < 25 && !state.rules.pvp){
+                for(Tile tile : spawner.getSpawns()) {
+                    Draw.color(state.rules.waveTeam.color);
+                    arcDrawNearby(Icon.units.getRegion(), tile,6 ,false);
+                }
+            }
+
+            for(Team team : Team.all){
+                for(CoreBuild core : team.cores()){
+                    if (state.rules.pvp && core.inFogTo(player.team())) continue;
+                    Draw.color(core.team.color);
+                    arcDrawNearby(core.block.fullIcon, core.tile,4,  true);
+                }
+            }
+
+        }
     }
 
     private static class CoreEdge{
