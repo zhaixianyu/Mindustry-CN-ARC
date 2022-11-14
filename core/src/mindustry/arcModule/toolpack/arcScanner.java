@@ -85,19 +85,24 @@ public class arcScanner {
 
             for (int i = 1; i < curScanRange / radarCir / tilesize + 1; i++) {
                 Draw.color(player.team().color, 0.6f);
+                Lines.stroke(expandRate);
                 Lines.circle(player.x, player.y, (radarCir * i * tilesize) / ratio);
                 arcDrawText(i * (int)radarCir + "", 0.2f / Scl.scl(1f) * expandRate, player.x, player.y + i * radarCir * tilesize / ratio + 1f, getThemeColor(), 1);
             }
 
             if (scanRate < 1f) {
                 Draw.color(player.team().color, 0.8f);
+                Lines.stroke(expandRate);
                 Lines.circle(player.x, player.y, curScanRange / ratio);
             } else {
                 curScanRange = (int)(curScanRange / radarCir / tilesize + 1) * radarCir * tilesize;
 
                 Draw.color(player.team().color, 0.6f);
                 float curve = Mathf.curve(Time.time % 240f, 120f, 240f);
+                Lines.stroke(expandRate);
                 Lines.circle(player.x, player.y, curScanRange * Interp.pow3Out.apply(curve) / ratio);
+                Lines.stroke(expandRate * 1.5f);
+                Draw.color(player.team().color, 0.85f);
                 Lines.rect(player.x - player.x / ratio, player.y - player.y / ratio, world.width() * tilesize / ratio, world.height() * tilesize / ratio);
             }
 
