@@ -194,13 +194,18 @@ public class PlayerListFragment{
                     return checked;
                 });
 
-
                 button.button(Icon.hammer, ustyle,
                 () -> {
                     ui.showConfirm("@confirm", Core.bundle.format("confirmvotekick",  user.name()), () -> {
                         Call.sendChatMessage("/votekick " + user.name());
                     });
                 }).size(h);
+
+                if((net.server() || player.admin) && !user.isLocal() && (!user.admin || net.server())){
+                    button.button(Icon.zoom, ustyle, () -> Call.adminRequest(user, AdminAction.trace)).size(h);
+                }
+
+
             }
             //原版模式
             else{
