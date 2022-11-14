@@ -178,7 +178,7 @@ public class arcScanner {
                 Marker.markList.each(a->{
                     if((Time.time - a.time) > Marker.retainTime) return;
                     Draw.color(a.markType.color);
-                    Lines.stroke(markerSize * (1 - (Time.time % 180 + 30) / 210));
+                    Lines.stroke(expandRate * (1 - (Time.time % 180 + 30) / 210));
 
                     Lines.circle(transX(a.markPos.x), transY(a.markPos.y), markerSize / ratio * (Time.time % 180) / 180);
                     Lines.stroke(expandRate);
