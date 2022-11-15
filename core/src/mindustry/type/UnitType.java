@@ -678,18 +678,15 @@ public class UnitType extends UnlockableContent{
         stats.add(Stat.rotateSpeed,rotateSpeed);
         stats.add(Stat.size, StatValues.squared(hitSize / tilesize, StatUnit.blocks));
         stats.add(Stat.unitItemCapacity, itemCapacity);
+        stats.add(Stat.aiController,aiController.get().getClass().getSimpleName());
+
+
         stats.add(Stat.unitrange, (int)(maxRange / tilesize), StatUnit.blocks);
         stats.add(Stat.ammoType, ammoType.icon());
         stats.add(Stat.ammoCapacity, ammoCapacity);
 
         if(abilities.any()){
-            var unique = new ObjectSet<String>();
-
-            for(Ability a : abilities){
-                if(a.display && unique.add(a.localized())){
-                    stats.add(Stat.abilities,a.localized());
-                }
-            }
+            stats.add(Stat.abilities, StatValues.abilities(this, abilities));
         }
 
         stats.add(Stat.flying, flying);
@@ -726,6 +723,10 @@ public class UnitType extends UnlockableContent{
 
         if(reqs != null){
             stats.add(Stat.buildCost, StatValues.items(reqs));
+        }
+
+        if(targetFlags.length > 0 && targetFlags[0] != null){
+            stats.add(Stat.targets, StatValues.targets(this, targetFlags));
         }
 
         if(weapons.any()){

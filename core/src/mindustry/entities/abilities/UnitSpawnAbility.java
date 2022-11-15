@@ -13,6 +13,7 @@ import mindustry.graphics.*;
 import mindustry.type.*;
 
 import static mindustry.Vars.*;
+import static mindustry.arcModule.RFuncs.abilityPro;
 
 public class UnitSpawnAbility extends Ability{
     public UnitType unit;
@@ -33,8 +34,11 @@ public class UnitSpawnAbility extends Ability{
     }
 
     @Override
-    public String localized(){
-        return "单位工厂：[stat]"+unit.localizedName+"[]"+unit.emoji()+"[lightgray]单位~[stat]"+Strings.autoFixed(spawnTime/60f,2)+"[lightgray](s)";
+    public String description(){
+        StringBuilder des = new StringBuilder();
+        des.append(abilityPro(spawnTime/60f,"s"));
+        des.append("[stat]").append(unit.localizedName).append("[white]").append("~");
+        return des.deleteCharAt(des.length() - 1).toString();
     }
 
     @Override

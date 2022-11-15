@@ -11,6 +11,7 @@ import arc.util.*;
 import mindustry.*;
 import mindustry.content.*;
 import mindustry.ctype.*;
+import mindustry.entities.abilities.Ability;
 import mindustry.entities.bullet.*;
 import mindustry.gen.*;
 import mindustry.maps.*;
@@ -412,6 +413,51 @@ public class StatValues{
         };
     }
 
+    public static StatValue targets(UnitType unit, BlockFlag[] targetFlags){
+        return table -> {
+            table.row();
+            table.table(t -> {
+                t.background(Styles.grayPanel);
+                for(BlockFlag flag : targetFlags){
+                    if (flag == null) continue;
+                    t.add(flag.name()).width(150f).padBottom(5f);
+                    int count = 0;
+                    for (Block block: content.blocks()){
+                        if (block.flags.contains(flag)) {
+                            if (count >= 3) {
+                                t.add("\uE813").width(30f);
+                                break;
+                            }else t.add(block.emoji()).width(30f);
+                            count += 1;
+                        }
+                    }
+                    t.row();
+                }
+            }).padLeft(12f);
+        };
+    }
+
+    public static StatValue abilities(UnitType unit, Seq<Ability> abilities){
+        return table -> {
+            table.row();
+            table.table(t -> {
+                t.background(Styles.grayPanel);
+                for(Ability a : abilities){
+                    if (!a.display) continue;
+                    if (a.description().length() > 0){
+                        t.table(tt->{
+                            tt.add(a.localized()).width(100f);
+                            tt.add(a.description()).minWidth(350f).padRight(12f).padBottom(5f);
+                        });
+                    }else{
+                        t.add(a.localized()).minWidth(350f).padRight(12f).padBottom(5f);
+                    }
+                    t.row();
+                }
+            }).padLeft(12f);
+        };
+    }
+
     public static <T extends UnlockableContent> StatValue ammo(ObjectMap<T, BulletType> map){
         return ammo(map, 0, false);
     }
@@ -566,7 +612,7 @@ public class StatValues{
                         ammo(ObjectMap.of(t, bullet), indent + 1, false).display(bt);
                         spawn.removeAll(pred);//删除已经显示的子弹
                     }
-                }).padTop(compact ? 0 : -9).padLeft(indent * 12).left().get().background(compact ? null : Tex.underline);
+                }).padTop(compact ? 0 : -9).padLeft(12).left().get().background(compact ? null : Tex.underline);
 
                 table.row();
             }

@@ -9,6 +9,9 @@ import mindustry.entities.*;
 import mindustry.gen.*;
 import mindustry.type.*;
 
+import static mindustry.Vars.tilesize;
+import static mindustry.arcModule.RFuncs.abilityPro;
+
 public class StatusFieldAbility extends Ability{
     public StatusEffect effect;
     public float duration = 60, reload = 100, range = 20;
@@ -30,8 +33,12 @@ public class StatusFieldAbility extends Ability{
     }
 
     @Override
-    public String localized(){
-        return "能力场："+effect.localizedName+effect.emoji()+"[lightgray]~[stat]"+Strings.autoFixed(range / Vars.tilesize,2)+"[lightgray]格~[stat]"+Strings.autoFixed(duration/60f,2)+"[lightgray]时长(s)~[stat]"+Strings.autoFixed(reload/60f,2)+"[lightgray]频率(s)";
+    public String description(){
+        StringBuilder des = new StringBuilder();
+        des.append(abilityPro(reload/60f,"s"));
+        des.append(abilityPro(range / tilesize,"格"));
+        des.append(abilityPro(duration / 60f,"s[white]" + effect.localizedName + effect.emoji()));
+        return des.deleteCharAt(des.length() - 1).toString();
     }
 
     @Override

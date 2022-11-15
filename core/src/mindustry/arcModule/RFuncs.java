@@ -1,6 +1,7 @@
 package mindustry.arcModule;
 
 import arc.graphics.Color;
+import arc.util.Strings;
 import mindustry.*;
 import mindustry.content.*;
 import mindustry.core.*;
@@ -89,6 +90,10 @@ public class RFuncs {
         prefix.append("<" + type + ">");
         prefix.append("[white]");
         return prefix;
+    }
+
+    public static StringBuilder abilityPro(float value, String unit){
+        return new StringBuilder().append("[stat]").append(Strings.autoFixed(value,1)).append("[lightgray]").append(unit).append("[#" + getThemeColor() + "]").append("~");
     }
 
 }

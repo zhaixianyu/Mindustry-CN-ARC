@@ -16,6 +16,7 @@ import mindustry.graphics.*;
 import mindustry.type.*;
 
 import static mindustry.Vars.*;
+import static mindustry.arcModule.RFuncs.abilityPro;
 
 public class EnergyFieldAbility extends Ability{
     private static final Seq<Healthc> all = new Seq<>();
@@ -48,8 +49,14 @@ public class EnergyFieldAbility extends Ability{
     }
 
     @Override
-    public String localized(){
-        return "能量场：[stat]"+Strings.autoFixed(damage,1)+"[lightgray]伤害|[stat]" + Strings.autoFixed(healPercent,1) + "[lightgray]%修复~[stat]"+range / Vars.tilesize+"[lightgray]格~[stat]"+maxTargets+"[lightgray]目标";
+    public String description(){
+        StringBuilder des = new StringBuilder();
+        des.append(abilityPro(reload/60f,"s"));
+        des.append(abilityPro(range / tilesize,"格"));
+        des.append(abilityPro(damage,"伤害"));
+        des.append(abilityPro(statusDuration / 60f,"s[white]" + status.emoji()));
+        des.append(abilityPro(healPercent,"%修复"));
+        return des.deleteCharAt(des.length() - 1).toString();
     }
 
     @Override

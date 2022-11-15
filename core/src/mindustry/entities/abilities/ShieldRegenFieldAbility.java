@@ -6,6 +6,9 @@ import mindustry.content.*;
 import mindustry.entities.*;
 import mindustry.gen.*;
 
+import static mindustry.Vars.tilesize;
+import static mindustry.arcModule.RFuncs.abilityPro;
+
 public class ShieldRegenFieldAbility extends Ability{
     public float amount = 1, max = 100f, reload = 100, range = 60;
     public Effect applyEffect = Fx.shieldApply;
@@ -25,8 +28,13 @@ public class ShieldRegenFieldAbility extends Ability{
     }
 
     @Override
-    public String localized(){
-        return "护盾再生场：[stat]"+Strings.autoFixed(range / Vars.tilesize,2)+"[lightgray]格~[stat]"+amount+"[lightgray]量~[stat]"+max+"[lightgray]最大~[stat]"+Strings.autoFixed(reload/60f,2)+"[lightgray]频率(s)";
+    public String description(){
+        StringBuilder des = new StringBuilder();
+        des.append(abilityPro(reload/60f,"s"));
+        des.append(abilityPro(range / tilesize,"格"));
+        des.append(abilityPro(amount,"量"));
+        des.append(abilityPro(max,"最大"));
+        return des.deleteCharAt(des.length() - 1).toString();
     }
 
     @Override
