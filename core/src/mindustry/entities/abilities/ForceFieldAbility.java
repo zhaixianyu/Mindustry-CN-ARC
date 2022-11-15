@@ -11,10 +11,11 @@ import mindustry.*;
 import mindustry.content.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
+import mindustry.type.UnitType;
 import mindustry.ui.*;
 
 import static mindustry.Vars.tilesize;
-import static mindustry.arcModule.RFuncs.abilityPro;
+import static mindustry.arcModule.RFuncs.abilitysFormat;
 
 public class ForceFieldAbility extends Ability{
     /** Shield radius. */
@@ -57,13 +58,13 @@ public class ForceFieldAbility extends Ability{
     }
 
     @Override
-    public String description(){
-        StringBuilder des = new StringBuilder();
-        des.append(abilityPro(max,"盾容"));
-        des.append(abilityPro(radius / tilesize,"格"));
-        des.append(abilityPro(regen * 60f,"恢复"));
-        des.append(abilityPro(cooldown / 60f,"s冷却"));
-        return des.deleteCharAt(des.length() - 1).toString();
+    public String description(UnitType unit){
+        return abilitysFormat("@盾容~@格~@恢复~@s冷却",
+                max,
+                radius / tilesize,
+                regen * 60f,
+                cooldown / 60f
+                );
     }
 
     ForceFieldAbility(){}

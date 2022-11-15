@@ -35,7 +35,7 @@ public abstract class Ability implements Cloneable{
         return Core.bundle.get("ability." + (type.isAnonymousClass() ? type.getSuperclass() : type).getSimpleName().replace("Ability", "").toLowerCase());
     }
 
-    public String description(){
+    public String description(UnitType unit){
         return "";
     }
 

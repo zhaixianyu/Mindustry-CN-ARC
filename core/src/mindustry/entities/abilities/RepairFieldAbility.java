@@ -1,13 +1,13 @@
 package mindustry.entities.abilities;
 
 import arc.util.*;
-import mindustry.Vars;
 import mindustry.content.*;
 import mindustry.entities.*;
 import mindustry.gen.*;
+import mindustry.type.UnitType;
 
 import static mindustry.Vars.tilesize;
-import static mindustry.arcModule.RFuncs.abilityPro;
+import static mindustry.arcModule.RFuncs.abilitysFormat;
 
 public class RepairFieldAbility extends Ability{
     public float amount = 1, reload = 100, range = 60;
@@ -27,12 +27,12 @@ public class RepairFieldAbility extends Ability{
     }
 
     @Override
-    public String description(){
-        StringBuilder des = new StringBuilder();
-        des.append(abilityPro(reload/60f,"s"));
-        des.append(abilityPro(range / tilesize,"格"));
-        des.append(abilityPro(amount,"血"));
-        return des.deleteCharAt(des.length() - 1).toString();
+    public String description(UnitType unit){
+        return abilitysFormat("@s~@格~@血",
+                reload / 60f,
+                range / tilesize,
+                amount
+                );
     }
 
     @Override

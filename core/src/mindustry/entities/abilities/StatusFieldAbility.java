@@ -1,16 +1,14 @@
 package mindustry.entities.abilities;
 
-import arc.*;
 import arc.math.*;
 import arc.util.*;
-import mindustry.Vars;
 import mindustry.content.*;
 import mindustry.entities.*;
 import mindustry.gen.*;
 import mindustry.type.*;
 
 import static mindustry.Vars.tilesize;
-import static mindustry.arcModule.RFuncs.abilityPro;
+import static mindustry.arcModule.RFuncs.abilitysFormat;
 
 public class StatusFieldAbility extends Ability{
     public StatusEffect effect;
@@ -33,12 +31,14 @@ public class StatusFieldAbility extends Ability{
     }
 
     @Override
-    public String description(){
-        StringBuilder des = new StringBuilder();
-        des.append(abilityPro(reload/60f,"s"));
-        des.append(abilityPro(range / tilesize,"格"));
-        des.append(abilityPro(duration / 60f,"s[white]" + effect.localizedName + effect.emoji()));
-        return des.deleteCharAt(des.length() - 1).toString();
+    public String description(UnitType unit){
+        return abilitysFormat("@s~@格~@s@@",
+                reload / 60f,
+                range / tilesize,
+                duration / 60f,
+                effect.localizedName,
+                effect.emoji()
+        );
     }
 
     @Override

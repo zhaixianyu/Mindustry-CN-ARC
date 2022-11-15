@@ -1,13 +1,13 @@
 package mindustry.entities.abilities;
 
 import arc.util.*;
-import mindustry.Vars;
 import mindustry.content.*;
 import mindustry.entities.*;
 import mindustry.gen.*;
+import mindustry.type.UnitType;
 
 import static mindustry.Vars.tilesize;
-import static mindustry.arcModule.RFuncs.abilityPro;
+import static mindustry.arcModule.RFuncs.abilitysFormat;
 
 public class ShieldRegenFieldAbility extends Ability{
     public float amount = 1, max = 100f, reload = 100, range = 60;
@@ -28,13 +28,13 @@ public class ShieldRegenFieldAbility extends Ability{
     }
 
     @Override
-    public String description(){
-        StringBuilder des = new StringBuilder();
-        des.append(abilityPro(reload/60f,"s"));
-        des.append(abilityPro(range / tilesize,"格"));
-        des.append(abilityPro(amount,"量"));
-        des.append(abilityPro(max,"最大"));
-        return des.deleteCharAt(des.length() - 1).toString();
+    public String description(UnitType unit){
+        return abilitysFormat("@s~@格~@量~@最大",
+                reload / 60f,
+                range / tilesize,
+                amount,
+                max
+                );
     }
 
     @Override

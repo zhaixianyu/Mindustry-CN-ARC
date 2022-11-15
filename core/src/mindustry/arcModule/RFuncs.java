@@ -1,11 +1,13 @@
 package mindustry.arcModule;
 
 import arc.graphics.Color;
+import arc.struct.Seq;
 import arc.util.Strings;
 import mindustry.*;
 import mindustry.content.*;
 import mindustry.core.*;
 import mindustry.game.*;
+import mindustry.type.ItemStack;
 import mindustry.ui.*;
 
 import static mindustry.Vars.*;
@@ -92,8 +94,11 @@ public class RFuncs {
         return prefix;
     }
 
-    public static StringBuilder abilityPro(float value, String unit){
-        return new StringBuilder().append("[stat]").append(Strings.autoFixed(value,1)).append("[lightgray]").append(unit).append("[#" + getThemeColor() + "]").append("~");
+    public static String abilitysFormat(String format, Object... values){
+        for (int i = 0; i < values.length; i++) {
+            values[i] = values[i] instanceof Number n ? "[stat]" + Strings.autoFixed(n.floatValue(), 1) + "[]" : "[white]" + values[i] + "[]";
+        }
+        return Strings.format("[lightgray]" + format.replace("~", "[#" + getThemeColor() + "]~[]"), values);
     }
 
 }

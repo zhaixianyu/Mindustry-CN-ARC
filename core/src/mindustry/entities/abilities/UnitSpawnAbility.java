@@ -13,7 +13,7 @@ import mindustry.graphics.*;
 import mindustry.type.*;
 
 import static mindustry.Vars.*;
-import static mindustry.arcModule.RFuncs.abilityPro;
+import static mindustry.arcModule.RFuncs.abilitysFormat;
 
 public class UnitSpawnAbility extends Ability{
     public UnitType unit;
@@ -34,11 +34,12 @@ public class UnitSpawnAbility extends Ability{
     }
 
     @Override
-    public String description(){
-        StringBuilder des = new StringBuilder();
-        des.append(abilityPro(spawnTime/60f,"s"));
-        des.append("[stat]").append(unit.localizedName).append("[white]").append("~");
-        return des.deleteCharAt(des.length() - 1).toString();
+    public String description(UnitType unit){
+        return abilitysFormat("@s~@@",
+                spawnTime / 60f,
+                unit.localizedName,
+                unit.emoji()
+                );
     }
 
     @Override

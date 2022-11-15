@@ -1,17 +1,16 @@
 package mindustry.entities.abilities;
 
-import arc.Core;
 import arc.graphics.*;
 import arc.graphics.g2d.*;
 import arc.math.*;
 import arc.util.*;
-import mindustry.Vars;
 import mindustry.entities.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
+import mindustry.type.UnitType;
 
 import static mindustry.Vars.tilesize;
-import static mindustry.arcModule.RFuncs.abilityPro;
+import static mindustry.arcModule.RFuncs.abilitysFormat;
 
 public class SuppressionFieldAbility extends Ability{
     protected static Rand rand = new Rand();
@@ -49,11 +48,11 @@ public class SuppressionFieldAbility extends Ability{
     }
 
     @Override
-    public String description(){
-        StringBuilder des = new StringBuilder();
-        des.append(abilityPro(reload/60f,"s"));
-        des.append(abilityPro(range / tilesize,"格"));
-        return des.deleteCharAt(des.length() - 1).toString();
+    public String description(UnitType unit){
+        return abilitysFormat("@s~@格",
+                reload / 60f,
+                range / tilesize
+        );
     }
 
     @Override

@@ -444,10 +444,10 @@ public class StatValues{
                 t.background(Styles.grayPanel);
                 for(Ability a : abilities){
                     if (!a.display) continue;
-                    if (a.description().length() > 0){
+                    if (a.description(unit).length() > 0){
                         t.table(tt->{
                             tt.add(a.localized()).width(100f);
-                            tt.add(a.description()).minWidth(350f).padRight(12f).padBottom(5f);
+                            tt.add(a.description(unit)).minWidth(350f).padRight(12f).padBottom(5f);
                         });
                     }else{
                         t.add(a.localized()).minWidth(350f).padRight(12f).padBottom(5f);

@@ -1,13 +1,11 @@
 package mindustry.entities.abilities;
 
-import arc.*;
 import arc.audio.*;
 import arc.graphics.*;
 import arc.graphics.g2d.*;
 import arc.math.*;
 import arc.struct.*;
 import arc.util.*;
-import mindustry.*;
 import mindustry.content.*;
 import mindustry.entities.*;
 import mindustry.game.*;
@@ -16,7 +14,7 @@ import mindustry.graphics.*;
 import mindustry.type.*;
 
 import static mindustry.Vars.*;
-import static mindustry.arcModule.RFuncs.abilityPro;
+import static mindustry.arcModule.RFuncs.abilitysFormat;
 
 public class EnergyFieldAbility extends Ability{
     private static final Seq<Healthc> all = new Seq<>();
@@ -49,14 +47,15 @@ public class EnergyFieldAbility extends Ability{
     }
 
     @Override
-    public String description(){
-        StringBuilder des = new StringBuilder();
-        des.append(abilityPro(reload/60f,"s"));
-        des.append(abilityPro(range / tilesize,"格"));
-        des.append(abilityPro(damage,"伤害"));
-        des.append(abilityPro(statusDuration / 60f,"s[white]" + status.emoji()));
-        des.append(abilityPro(healPercent,"%修复"));
-        return des.deleteCharAt(des.length() - 1).toString();
+    public String description(UnitType unit){
+        return abilitysFormat("@s~@格~@伤害~@s@~@%修复",
+                reload / 60f,
+                range / tilesize,
+                damage,
+                statusDuration / 60f,
+                status.emoji(),
+                healPercent
+                );
     }
 
     @Override
