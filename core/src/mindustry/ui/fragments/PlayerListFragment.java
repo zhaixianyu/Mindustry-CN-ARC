@@ -28,6 +28,8 @@ public class PlayerListFragment{
     private TextField search;
     public Seq<Player> players = new Seq<>();
 
+    private float buttonSize = 30f;
+
     public void build(Group parent){
         content.name = "players";
         parent.fill(cont -> {
@@ -155,9 +157,6 @@ public class PlayerListFragment{
 
             if (Core.settings.getBool("arcWayzerServerMode")){
                 button.add(iconTable).size(h);
-                if (Core.settings.getBool("cheating_mode")){
-                    button.labelWrap("[" + user.id + "] ").minWidth(150f);
-                }
                 button.image(Icon.admin).visible(() -> user.admin && !(!user.isLocal() && net.server())).size(bs).get().updateVisibility();
                 button.table(
                     t -> {
@@ -172,12 +171,12 @@ public class PlayerListFragment{
 
                 button.add().grow();
 
-                button.button(Icon.link, Styles.clearNonei, () -> {
+                button.button(String.valueOf(Iconc.link), Styles.cleart, () -> {
                     String message = arcAtPlayer(user.name);
                     Call.sendChatMessage(message);
-                });
+                }).size(buttonSize);
 
-                button.button(Icon.lock, Styles.clearTogglei, () -> {
+                button.button(String.valueOf(Iconc.lock), Styles.cleart, () -> {
                     if(follow != user){
                         follow = user;
                     }else {
@@ -189,20 +188,23 @@ public class PlayerListFragment{
                     }
                 }).checked(b -> {
                     boolean checked = follow == user;
-                    b.getStyle().imageUp = checked ? Icon.lock : Icon.lockOpen;
-                    b.getStyle().up = Styles.none;
+                    b.setText(checked ? String.valueOf(Iconc.lock) : String.valueOf(Iconc.lockOpen));
                     return checked;
-                });
+                }).size(buttonSize);
 
-                button.button(Icon.hammer, ustyle,
+                button.button("[coral]" + Iconc.planeOutline, Styles.cleart,
                 () -> {
                     ui.showConfirm("@confirm", Core.bundle.format("confirmvotekick",  user.name()), () -> {
                         Call.sendChatMessage("/votekick " + user.name());
                     });
-                }).size(h);
+                }).size(buttonSize);
 
                 if((net.server() || player.admin) && !user.isLocal() && (!user.admin || net.server())){
-                    button.button(Icon.zoom, ustyle, () -> Call.adminRequest(user, AdminAction.trace)).size(h);
+                    button.button("[gold]" + Iconc.zoom, Styles.cleart, () -> Call.adminRequest(user, AdminAction.trace)).size(buttonSize);
+                    button.button("[gold]" + Iconc.cancel, Styles.cleart,
+                            () -> ui.showConfirm("@confirm", Core.bundle.format("confirmkick",  user.name()), () -> Call.adminRequest(user, AdminAction.kick))).size(buttonSize);
+                    button.button("[gold]" + Iconc.hammer, Styles.cleart,
+                            () -> ui.showConfirm("@confirm", Core.bundle.format("confirmban",  user.name()), () -> Call.adminRequest(user, AdminAction.ban))).size(buttonSize);
                 }
 
 
