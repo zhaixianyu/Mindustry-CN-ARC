@@ -97,8 +97,8 @@ public class arcScanner {
         curScanRange = worldSize * tilesize * scanRate;
 
         for (int i = 1; i < curScanRange / radarCir / tilesize + 1; i++) {
-            Draw.color(player.team().color, 0.6f);
-            Lines.stroke(expandRate);
+            Draw.color(player.team().color, 0.45f);
+            Lines.stroke(expandRate * 0.75f);
             Lines.circle(player.x, player.y, (radarCir * i * tilesize) / ratio);
             float rRatio = (radarCir * i * tilesize) / ratio + 2f;
             arcDrawText(i * (int) radarCir + "", 0.2f / Scl.scl(1f) * expandRate, player.x, player.y + rRatio, getThemeColor(), 1);
@@ -172,10 +172,10 @@ public class arcScanner {
 
             Draw.color(unit.team().color, 0.9f);
 
-            float angle = (float) Math.atan2(unit.unit().aimY - unit.y, unit.unit().aimX - unit.x);
+            float angle = unit.unit().rotation * Mathf.degreesToRadians;
             Fill.tri(transX(unit.x + Mathf.cos(angle) * playerSize * expandRate), transY(unit.y + Mathf.sin(angle) * playerSize * expandRate),
-                    transX(unit.x + Mathf.cos(angle + Mathf.PI * 2 / 3) * playerSize * expandRate), transY(unit.y + Mathf.sin(angle + Mathf.PI * 2 / 3) * playerSize * expandRate),
-                    transX(unit.x + Mathf.cos(angle + Mathf.PI * 4 / 3) * playerSize * expandRate), transY(unit.y + Mathf.sin(angle + Mathf.PI * 4 / 3) * playerSize * expandRate));
+                    transX(unit.x + Mathf.cos(angle + Mathf.PI * 2 / 3) * playerSize * expandRate * 0.75f), transY(unit.y + Mathf.sin(angle + Mathf.PI * 2 / 3) * playerSize * expandRate * 0.75f),
+                    transX(unit.x + Mathf.cos(angle + Mathf.PI * 4 / 3) * playerSize * expandRate * 0.75f), transY(unit.y + Mathf.sin(angle + Mathf.PI * 4 / 3) * playerSize * expandRate * 0.75f));
         }
         //绘制arc标记
         if(Marker.markList.size>0) {
