@@ -124,7 +124,7 @@ public class arcScanner {
             Lines.circle(player.x, player.y, curScanRange * Interp.pow3Out.apply(curve) / ratio);
             Lines.stroke(expandRate * 1.5f);
 
-            Draw.color(player.team().color, 0.05f);
+            Draw.color(player.team().color, 0.1f);
             Fill.rect(player.x - player.x / ratio + world.width() * tilesize / ratio / 2, player.y - player.y / ratio + world.height() * tilesize / ratio / 2, world.width() * tilesize / ratio, world.height() * tilesize / ratio);
             Draw.color(player.team().color, 0.85f);
             Lines.rect(player.x - player.x / ratio, player.y - player.y / ratio, world.width() * tilesize / ratio, world.height() * tilesize / ratio);
@@ -163,7 +163,7 @@ public class arcScanner {
         //绘制单位
         for (Unit unit : Groups.unit) {
             if (scanRate < 1f && Mathf.dst(unit.x - player.x,unit.y - player.y) > curScanRange) continue;
-            Draw.color(unit.team.color, 0.5f);
+            Draw.color(unit.team.color, 0.6f);
             Fill.circle(transX(unit.x), transY(unit.y), unit.hitSize * unitSize);
         }
         //绘制玩家
@@ -173,9 +173,9 @@ public class arcScanner {
             Draw.color(unit.team().color, 0.9f);
 
             float angle = (float) Math.atan2(unit.unit().aimY - unit.y, unit.unit().aimX - unit.x);
-            Fill.tri(player.x + (unit.x + Mathf.cos(angle) * playerSize - player.x) / ratio, player.y + (unit.y + Mathf.sin(angle) * playerSize - player.y) / ratio,
-                    player.x + (unit.x + Mathf.cos(angle + Mathf.PI * 2 / 3) * playerSize - player.x) / ratio, player.y + (unit.y + Mathf.sin(angle + Mathf.PI * 2 / 3) * playerSize - player.y) / ratio,
-                    player.x + (unit.x + Mathf.cos(angle + Mathf.PI * 4 / 3) * playerSize - player.x) / ratio, player.y + (unit.y + Mathf.sin(angle + Mathf.PI * 4 / 3) * playerSize - player.y) / ratio);
+            Fill.tri(transX(unit.x + Mathf.cos(angle) * playerSize * expandRate), transY(unit.y + Mathf.sin(angle) * playerSize * expandRate),
+                    transX(unit.x + Mathf.cos(angle + Mathf.PI * 2 / 3) * playerSize * expandRate), transY(unit.y + Mathf.sin(angle + Mathf.PI * 2 / 3) * playerSize * expandRate),
+                    transX(unit.x + Mathf.cos(angle + Mathf.PI * 4 / 3) * playerSize * expandRate), transY(unit.y + Mathf.sin(angle + Mathf.PI * 4 / 3) * playerSize * expandRate));
         }
         //绘制arc标记
         if(Marker.markList.size>0) {
