@@ -1562,8 +1562,8 @@ public class UnitType extends UnlockableContent{
         }
 
         if(Core.settings.getBool("unithitbox")){
-            Draw.color(unit.team.color, Color.black, Mathf.absin(Time.time, 4f, 1f));
-            Lines.poly(unit.x, unit.y, 6, unit.hitSize());
+            Draw.color(unit.team.color, 0.5f);
+            Lines.circle(unit.x, unit.y, unit.hitSize / 2f);
         }
 
     }
