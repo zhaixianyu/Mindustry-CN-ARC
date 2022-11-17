@@ -201,7 +201,7 @@ public class PlayerListFragment{
                     });
                 }).size(h);
 
-                if((net.server() || player.admin) && !user.isLocal()){
+                if((net.server() || player.admin) && !user.isLocal() && (!user.admin || net.server())){
                     button.button(Icon.zoom, ustyle, () -> Call.adminRequest(user, AdminAction.trace)).size(h);
                 }
 
