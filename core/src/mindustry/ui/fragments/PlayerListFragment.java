@@ -167,7 +167,7 @@ public class PlayerListFragment{
                             ui.arcInfo("复制昵称：" + user.name);
                         });
                     }
-                ).width(320f).pad(10f).left();
+                ).width(400f).pad(10f).left();
 
                 button.add().grow();
 
