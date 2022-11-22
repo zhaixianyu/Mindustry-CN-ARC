@@ -28,33 +28,22 @@ import static mindustry.arcModule.DrawUtilities.*;
 
 public class arcScanner {
 
-    /**
-     * 实际与画面的距离
-     */
+    /** 缩放倍率，最重要的参数 */
     private static float ratio = 10f;
 
-    /**
-     * 每多少范围一个雷达
-     */
+    /** 每多少范围一个雷达圈 */
     private static float radarCir = 25f;
+    /** 范围倍率 */
     private static final int basicRadarCir = 25;
-    /**
-     * 需要多少s扫描完成，仅用于特效
-     */
+    /** 默认扫描时间，仅用于特效 */
     private static float scanTime = 5;
-    /**
-     * 当前扫描的百分比
-     */
+    /** 当前扫描的百分比 */
     private static float scanRate = 0;
 
-    /**
-     * 当前扫描的百分比
-     */
+    /** 扫描线旋转倍率 */
     private static float scanSpeed = -0.02f;
 
-    /**
-     * 实际扫描范围
-     */
+    /** 实际扫描范围，不是参数 */
     private static float curScanRange = 0;
     private static float worldSize = 0;
 
@@ -75,6 +64,8 @@ public class arcScanner {
         t.update(() -> t.setPosition(Core.graphics.getWidth() / 2f, Core.graphics.getHeight() * 0.1f, Align.center));
         t.pack();
         t.act(0.1f);
+        t.update(()-> t.visible = t.visible && state.isPlaying());
+
         Core.scene.add(t);
 
         Events.on(EventType.WorldLoadEvent.class, event -> {
@@ -178,19 +169,20 @@ public class arcScanner {
                 float curve = Mathf.curve(Time.time % 200f, 60f, 200f);
                 Draw.color(state.rules.waveTeam.color, 1f);
                 Lines.stroke(expandRate * 1f);
-                Lines.circle(player.x + (tile.worldx() - player.x) / ratio, player.y + (tile.worldy() - player.y) / ratio, state.rules.dropZoneRadius * Interp.pow3Out.apply(curve) / ratio);
+                Lines.circle(transX(tile.worldx()), transY(tile.worldy()), state.rules.dropZoneRadius * Interp.pow3Out.apply(curve) / ratio);
                 Draw.color(state.rules.waveTeam.color, 0.5f);
                 Lines.stroke(expandRate * 0.8f);
-                Lines.dashCircle(player.x + (tile.worldx() - player.x) / ratio, player.y + (tile.worldy() - player.y) / ratio, state.rules.dropZoneRadius * Interp.pow3Out.apply(curve) / ratio);
+                Lines.dashCircle(transX(tile.worldx()), transY(tile.worldy()), state.rules.dropZoneRadius / ratio);
             }
         }
         //绘制核心
         for (Team team : Team.all) {
             for (CoreBlock.CoreBuild core : team.cores()) {
-                if (scanRate < 1f && Mathf.dst(core.x - player.x, core.y - player.y) > curScanRange) continue;
                 if (state.rules.pvp && core.inFogTo(player.team())) continue;
+                if (scanRate < 1f && Mathf.dst(core.x - player.x, core.y - player.y) > curScanRange) continue;
                 Draw.color(core.team.color, 1f);
-                arcDrawNearby(core.block.fullIcon, core.tile, 4 * expandRate, core.team.color);
+                Draw.rect(core.block.fullIcon, transX(core.tile.worldx()), transY(core.tile.worldy()), 4 * expandRate, 4 * expandRate);
+
             }
         }
         //绘制单位
@@ -250,8 +242,6 @@ public class arcScanner {
         float nx = player.x + (tile.worldx() - player.x) / ratio;
         float ny = player.y + (tile.worldy() - player.y) / ratio;
         Draw.rect(region, nx, ny, size, size);
-        //Fill.rect(nx, ny, size, size);
-        //arcDrawText((int) (range / 8f) + "", 0.2f / Scl.scl(1f) * expandRate, nx, ny + size / 2, color, 1);
     }
 
     private static float transX(float x) {
