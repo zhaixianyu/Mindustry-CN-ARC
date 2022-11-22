@@ -525,6 +525,11 @@ public class SettingsMenuDialog extends BaseDialog{
             else if(s==1){return "简略模式";}
             else{return s+"";}
         });
+        arc.sliderPref("radarMode",0, 0, 30, 1, s -> {
+            if(s==0)    return "关闭";
+            else if(s==30)  return "一键开关";
+            else{return "[lightgray]x[white]" + Strings.autoFixed(s * 0.2f,1) +"倍搜索";}
+        });
 
         arc.addCategory("arcAddBlockInfo");
         arc.sliderPref("overdrive_zone",0,0,100,2, i -> i > 0 ? i + "%" : "关闭");

@@ -63,6 +63,9 @@ public class arcScanner {
     private static final float unitSize = 0.1f;
     private static final float playerSize = 3f * tilesize, markerSize = 15f * tilesize;
     private static int expandRate = 1;
+    private static float time = 0;
+
+    public static boolean mobileRadar = false;
 
 
     static {
@@ -80,15 +83,42 @@ public class arcScanner {
     }
 
     public static void drawScanner() {
-        if (Core.input.keyDown(Binding.arcDetail)) {
-            Draw.reset();
-            t.visible = true;
-            if (scanRate < 1f) scanRate = Math.min(scanRate + 1 / 60f / scanTime, 1f);
-        } else {
-            t.visible = false;
-            if (scanRate > 0f) scanRate = Math.max(scanRate - 3 / 60f / scanTime, 0f);
+        if (Core.settings.getInt("radarMode") == 0) return;
+        float extendSpd = Core.settings.getInt("radarMode") * 0.2f;
+        Draw.reset();
+
+        if(mobile){
+            if (extendSpd >= 6) {
+                t.visible = mobileRadar;
+                scanRate = t.visible ? 1f : 0f;
+            } else {
+                if (mobileRadar) {
+                    t.visible = true;
+                    if (scanRate < 1f) scanRate = Math.min(scanRate + 1 / 60f / scanTime * extendSpd, 1f);
+                } else {
+                    t.visible = false;
+                    if (scanRate > 0f) scanRate = Math.max(scanRate - 3 / 60f / scanTime * extendSpd, 0f);
+                }
+            }
+        }else{
+            if (extendSpd >= 6) {
+                if (Core.input.keyDown(Binding.arcDetail) && Time.time - time > 60f) {
+                    time = Time.time;
+                    t.visible = !t.visible;
+                    scanRate = t.visible ? 1f : 0f;
+                }
+            } else {
+                if (Core.input.keyDown(Binding.arcDetail)) {
+                    t.visible = true;
+                    if (scanRate < 1f) scanRate = Math.min(scanRate + 1 / 60f / scanTime * extendSpd, 1f);
+                } else {
+                    t.visible = false;
+                    if (scanRate > 0f) scanRate = Math.max(scanRate - 3 / 60f / scanTime * extendSpd, 0f);
+                }
+            }
         }
-        if(scanRate <= 0) return;
+
+        if (scanRate <= 0) return;
 
         float playerToBorder = Math.max(Math.max(Math.max(Mathf.dst(player.tileX(), player.tileY()), Mathf.dst(world.width() - player.tileX(), player.tileY())), Mathf.dst(world.width() - player.tileX(), world.height() - player.tileY())), Mathf.dst(player.tileX(), world.height() - player.tileY()));
         worldSize = Math.min(playerToBorder, (int) (Mathf.dst(world.width(), world.height()) / radarCir) * radarCir);
@@ -137,7 +167,8 @@ public class arcScanner {
         // 出怪点
         if (spawner.countSpawns() < 25 && !state.rules.pvp) {
             for (Tile tile : spawner.getSpawns()) {
-                if (scanRate < 1f && Mathf.dst(tile.worldx() - player.x,tile.worldy() - player.y) > curScanRange) continue;
+                if (scanRate < 1f && Mathf.dst(tile.worldx() - player.x, tile.worldy() - player.y) > curScanRange)
+                    continue;
 
                 Draw.color(state.rules.waveTeam.color, 1f);
                 arcDrawNearby(Icon.units.getRegion(), tile, Math.max(6 * expandRate, state.rules.dropZoneRadius / ratio / 2), state.rules.waveTeam.color);
@@ -154,7 +185,7 @@ public class arcScanner {
         //绘制核心
         for (Team team : Team.all) {
             for (CoreBlock.CoreBuild core : team.cores()) {
-                if (scanRate < 1f && Mathf.dst(core.x - player.x,core.y - player.y) > curScanRange) continue;
+                if (scanRate < 1f && Mathf.dst(core.x - player.x, core.y - player.y) > curScanRange) continue;
                 if (state.rules.pvp && core.inFogTo(player.team())) continue;
                 Draw.color(core.team.color, 1f);
                 arcDrawNearby(core.block.fullIcon, core.tile, 4 * expandRate, core.team.color);
@@ -162,13 +193,13 @@ public class arcScanner {
         }
         //绘制单位
         for (Unit unit : Groups.unit) {
-            if (scanRate < 1f && Mathf.dst(unit.x - player.x,unit.y - player.y) > curScanRange) continue;
+            if (scanRate < 1f && Mathf.dst(unit.x - player.x, unit.y - player.y) > curScanRange) continue;
             Draw.color(unit.team.color, 0.6f);
             Fill.circle(transX(unit.x), transY(unit.y), unit.hitSize * unitSize);
         }
         //绘制玩家
         for (Player unit : Groups.player) {
-            if (scanRate < 1f && Mathf.dst(unit.x - player.x,unit.y - player.y) > curScanRange) continue;
+            if (scanRate < 1f && Mathf.dst(unit.x - player.x, unit.y - player.y) > curScanRange) continue;
 
             Draw.color(unit.team().color, 0.9f);
 
@@ -178,16 +209,16 @@ public class arcScanner {
                     transX(unit.x + Mathf.cos(angle + Mathf.PI * 4 / 3) * playerSize * expandRate * 0.75f), transY(unit.y + Mathf.sin(angle + Mathf.PI * 4 / 3) * playerSize * expandRate * 0.75f));
         }
         //绘制arc标记
-        if(Marker.markList.size>0) {
-            Marker.markList.each(a->{
-                if((Time.time - a.time) > Marker.retainTime) return;
+        if (Marker.markList.size > 0) {
+            Marker.markList.each(a -> {
+                if ((Time.time - a.time) > Marker.retainTime) return;
                 Draw.color(a.markType.color);
                 Lines.stroke(expandRate * (1 - (Time.time % 180 + 30) / 210));
 
                 Lines.circle(transX(a.markPos.x), transY(a.markPos.y), markerSize / ratio * (Time.time % 180) / 180);
                 Lines.stroke(expandRate);
                 Lines.circle(transX(a.markPos.x), transY(a.markPos.y), markerSize / ratio);
-                Lines.arc(transX(a.markPos.x), transY(a.markPos.y), (markerSize - expandRate) / ratio,1 - (Time.time - a.time)/Marker.retainTime);
+                Lines.arc(transX(a.markPos.x), transY(a.markPos.y), (markerSize - expandRate) / ratio, 1 - (Time.time - a.time) / Marker.retainTime);
                 Draw.reset();
             });
         }
@@ -220,11 +251,11 @@ public class arcScanner {
         //arcDrawText((int) (range / 8f) + "", 0.2f / Scl.scl(1f) * expandRate, nx, ny + size / 2, color, 1);
     }
 
-    private static float transX(float x){
+    private static float transX(float x) {
         return player.x + (x - player.x) / ratio;
     }
 
-    private static float transY(float y){
+    private static float transY(float y) {
         return player.y + (y - player.y) / ratio;
     }
 
