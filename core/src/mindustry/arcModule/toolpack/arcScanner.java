@@ -201,6 +201,7 @@ public class arcScanner {
         }
         //绘制玩家
         for (Player unit : Groups.player) {
+            if (player.dead()) continue;
             if (scanRate < 1f && Mathf.dst(unit.x - player.x, unit.y - player.y) > curScanRange) continue;
 
             Draw.color(unit.team().color, 0.9f);
