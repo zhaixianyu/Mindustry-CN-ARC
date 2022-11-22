@@ -23,6 +23,7 @@ import mindustry.world.blocks.storage.CoreBlock.*;
 
 import static mindustry.Vars.*;
 import static mindustry.arcModule.toolpack.arcScanner.drawScanner;
+import static mindustry.arcModule.toolpack.arcWaveSpawner.drawSpawner;
 
 public class OverlayRenderer{
     private static final float indicatorLength = 14f;
@@ -206,7 +207,7 @@ public class OverlayRenderer{
                 });
             }
         }
-
+        /*
         if(state.hasSpawns()){
             Lines.stroke(2f);
             Draw.color(Color.gray, Color.lightGray, Mathf.absin(Time.time, 8f, 1f));
@@ -246,7 +247,8 @@ public class OverlayRenderer{
             }
             Draw.reset();
         }
-
+        */
+        drawSpawner();
 
         //draw selected block
         if(input.block == null && !Core.scene.hasMouse()){
