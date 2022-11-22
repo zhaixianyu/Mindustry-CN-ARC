@@ -71,7 +71,7 @@ public class arcScanner {
     static {
         t.touchable = Touchable.disabled;
         t.margin(8f).add(">> 雷达扫描中 <<").color(getThemeColor()).style(Styles.outlineLabel).labelAlign(Align.center);
-        t.visible = true;
+        t.visible = false;
         t.update(() -> t.setPosition(Core.graphics.getWidth() / 2f, Core.graphics.getHeight() * 0.1f, Align.center));
         t.pack();
         t.act(0.1f);
@@ -150,6 +150,8 @@ public class arcScanner {
 
             Draw.color(player.team().color, 0.6f);
             float curve = Mathf.curve(Time.time % 360f, 120f, 360f);
+            Lines.stroke(expandRate * 1.5f);
+            Lines.circle(player.x, player.y, curScanRange / ratio);
             Lines.stroke(expandRate * 1.5f);
             Lines.circle(player.x, player.y, curScanRange * Interp.pow3Out.apply(curve) / ratio);
             Lines.stroke(expandRate * 1.5f);
