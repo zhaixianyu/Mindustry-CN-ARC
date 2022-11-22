@@ -525,11 +525,6 @@ public class SettingsMenuDialog extends BaseDialog{
             else if(s==1){return "简略模式";}
             else{return s+"";}
         });
-        arc.sliderPref("radarMode",0, 0, 30, 1, s -> {
-            if(s==0)    return "关闭";
-            else if(s==30)  return "一键开关";
-            else{return "[lightgray]x[white]" + Strings.autoFixed(s * 0.2f,1) +"倍搜索";}
-        });
 
         arc.addCategory("arcAddBlockInfo");
         arc.sliderPref("overdrive_zone",0,0,100,2, i -> i > 0 ? i + "%" : "关闭");
@@ -600,7 +595,7 @@ public class SettingsMenuDialog extends BaseDialog{
         arc.checkPref("arcShareWaveInfo", false);
         arc.checkPref("arcAlwaysTeamColor",false);
 
-        arc.addCategory("arcCPlayerEffect");
+        arc.addCategory("arcPlayerEffect");
         arc.stringInput("playerEffectColor", "ffd37f");
         arc.sliderPref("unitTargetType", 0, 0, 5, 1, s -> {
             if(s==0){return "关闭";}
@@ -618,6 +613,17 @@ public class SettingsMenuDialog extends BaseDialog{
             else{return s+"";}
         });
         arc.sliderPref("playerEffectCurStroke", 0, 1, 30, 1, i -> (float)i/10f + "Pixel(s)");
+
+        arc.addCategoryS("雷达扫描设置 [lightgray](PC按键，手机辅助器)");
+        arc.sliderPref("radarMode",0, 0, 30, 1, s -> {
+            if(s==0)    return "关闭";
+            else if(s==30)  return "一键开关";
+            else{return "[lightgray]x[white]" + Strings.autoFixed(s * 0.2f,1) +"倍搜索";}
+        });
+        arc.sliderPref("radarSize",0, 0, 50, 1, s -> {
+            if(s==0)    return "固定大小";
+            else{return "[lightgray]x[white]" + Strings.autoFixed(s * 0.1f,1) +"倍";}
+        });
 
         arc.addCategory("developerMode");
         arc.checkPref("arcDisableModWarning",false);
@@ -884,6 +890,11 @@ public class SettingsMenuDialog extends BaseDialog{
 
         public void addCategory(String name){
             list.add(new Divider(name, bundle.get("category." + name + ".name")));
+            rebuild();
+        }
+
+        public void addCategoryS(String name){
+            list.add(new Divider(name, name));
             rebuild();
         }
 
