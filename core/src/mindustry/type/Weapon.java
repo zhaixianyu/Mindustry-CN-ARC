@@ -176,7 +176,7 @@ public class Weapon implements Cloneable{
 
         if(inaccuracy > 0){
             t.row();
-            t.add("[lightgray]" + Stat.inaccuracy.localized() + ": [white]" + (int)inaccuracy + " []" + StatUnit.degrees.localized());
+            t.add("[lightgray]" + Stat.inaccuracy.localized() + ": [stat]" + (int)inaccuracy + " []" + StatUnit.degrees.localized());
         }
 
         StatValues.ammo(ObjectMap.of(u, bullet)).display(t);

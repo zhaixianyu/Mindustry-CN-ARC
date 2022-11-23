@@ -680,14 +680,17 @@ public class UnitType extends UnlockableContent{
         stats.add(Stat.unitItemCapacity, itemCapacity);
         stats.add(Stat.aiController,aiController.get().getClass().getSimpleName());
 
-
-        stats.add(Stat.unitrange, (int)(maxRange / tilesize), StatUnit.blocks);
-        stats.add(Stat.ammoType, ammoType.icon());
-        stats.add(Stat.ammoCapacity, ammoCapacity);
-
         if(abilities.any()){
             stats.add(Stat.abilities, StatValues.abilities(this, abilities));
         }
+
+        stats.add(Stat.unitrange, (int)(maxRange / tilesize), StatUnit.blocks);
+        if(weapons.any()){
+            stats.add(Stat.weapons, StatValues.weapons(this, weapons));
+        }
+        stats.add(Stat.estimateDPS,estimateDps());
+        stats.add(Stat.ammoType, ammoType.icon());
+        stats.add(Stat.ammoCapacity, ammoCapacity);
 
         stats.add(Stat.flying, flying);
 
@@ -702,15 +705,9 @@ public class UnitType extends UnlockableContent{
         }
 
         if(mineTier >= 1){
-            stats.add(Stat.uniMineTier,mineTier);
-            stats.addPercent(Stat.mineSpeed, mineSpeed);
+            //stats.add(Stat.uniMineTier,mineTier);
+            //stats.addPercent(Stat.mineSpeed, mineSpeed);
             stats.add(Stat.mineTier, StatValues.drillUnit(this));
-            /*
-            stats.add(Stat.mineTier, StatValues.blocks(b ->
-                b.itemDrop != null &&
-                (b instanceof Floor f && (((f.wallOre && mineWalls) || (!f.wallOre && mineFloor))) ||
-                (!(b instanceof Floor) && mineWalls)) &&
-                b.itemDrop.hardness <= mineTier && (!b.playerUnmineable || Core.settings.getBool("doubletapmine"))));*/
         }
         if(buildSpeed > 0){
             stats.addPercent(Stat.buildSpeed, buildSpeed);
@@ -727,10 +724,6 @@ public class UnitType extends UnlockableContent{
 
         if(targetFlags.length > 0 && targetFlags[0] != null){
             stats.add(Stat.targets, StatValues.targets(this, targetFlags));
-        }
-
-        if(weapons.any()){
-            stats.add(Stat.weapons, StatValues.weapons(this, weapons));
         }
 
         if(immunities.size > 0){
