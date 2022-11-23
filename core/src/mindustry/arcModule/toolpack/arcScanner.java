@@ -117,7 +117,7 @@ public class arcScanner {
         float playerToBorder = Math.max(Math.max(Math.max(Mathf.dst(player.tileX(), player.tileY()), Mathf.dst(world.width() - player.tileX(), player.tileY())), Mathf.dst(world.width() - player.tileX(), world.height() - player.tileY())), Mathf.dst(player.tileX(), world.height() - player.tileY()));
         float worldSize = Math.min(playerToBorder, (int) (Mathf.dst(world.width(), world.height()) / radarCir) * radarCir);
 
-        float playerSize = Math.min(world.width(),world.height()) * tilesize * 0.04f;
+        float playerSize = Math.min(world.width(),world.height()) * tilesize * 0.03f;
 
         sizeRate = Core.settings.getInt("radarSize") == 0 ? 1f : Core.settings.getInt("radarSize") * 0.1f / renderer.getScale();
         sizeRate *= Math.min(Core.scene.getHeight() / (world.height() * tilesize),Core.scene.getWidth() / (world.width() * tilesize)) * 2f;
