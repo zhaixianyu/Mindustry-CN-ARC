@@ -33,6 +33,8 @@ public class LogicDialog extends BaseDialog{
     Table mainTable = new Table();
     public static boolean refreshing = true;
 
+    public static String transText = "";
+
     @Nullable LExecutor executor;
 
     public LogicDialog(){
