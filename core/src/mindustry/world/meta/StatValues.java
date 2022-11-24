@@ -520,7 +520,7 @@ public class StatValues{
                     }
 
                     if(type.buildingDamageMultiplier != 1){
-                        sep(bt, colorize(type.buildingDamageMultiplier) + "[lightgray] x 建筑伤害");
+                        sep(bt, colorize(type.buildingDamageMultiplier) + "[lightgray]x建筑伤害");
                     }
 
                     if(type.rangeChange != 0 && !compact){
@@ -536,7 +536,7 @@ public class StatValues{
                     }
 
                     if(!compact && !Mathf.equal(type.reloadMultiplier, 1f)){
-                        sep(bt,  colorize(type.reloadMultiplier) + "[lightgray] x 射速");
+                        sep(bt,  colorize(type.reloadMultiplier) + "[lightgray]x射速");
                     }
 
                     if(type.knockback > 0){
@@ -555,29 +555,21 @@ public class StatValues{
                         boolean laserPierce = type instanceof LaserBulletType || type instanceof ContinuousLaserBulletType || type instanceof ShrapnelBulletType;
                         boolean pierceBuilding = laserPierce || type instanceof ContinuousFlameBulletType || type instanceof RailBulletType || type.pierceBuilding;
                         boolean pierceUnit = type.pierce;
-                        boolean infinitePierce = type.pierceCap == -1;
-                        String str = "[stat]";
-                        if (infinitePierce && !(type instanceof RailBulletType)) {
-                            str += "无限";
+                        StringBuilder str = new StringBuilder("[stat]");
+                        if(type instanceof RailBulletType rail){
+                            str.append(Strings.autoFixed(rail.pierceDamageFactor * 100f, 1) + "%衰减");
+                        }else{
+                            str.append(type.pierceCap == -1? "无限" : type.pierceCap + "x");
                         }
-                        str += "穿透";
+                        str.append("穿透[lightgray]");
                         if (pierceBuilding && pierceUnit) {
-                            str += "建筑与单位";
+                            str.append("建筑与单位");
                         }
                         else {
-                            str += pierceBuilding ? "建筑" : "单位";
+                            str.append(pierceBuilding ? "建筑" : "单位");
                         }
-                        if (!infinitePierce && !(type instanceof RailBulletType)) {
-                            str += type.pierceCap + "次";
-                        }
-
-                        sep(bt, str);
-                        if (laserPierce) {
-                            sep(bt, " [stat]会被塑钢墙阻挡");
-                        }
-                        if (type instanceof RailBulletType rail) {
-                            sep(bt, " [stat]" + Strings.autoFixed(rail.pierceDamageFactor * 100f, 1) + "%[lightgray]衰减");
-                        }
+                        if(laserPierce) str.append("[stat](电性)");
+                        sep(bt, str.toString());
                     }
 
                     if(type.incendAmount > 0){

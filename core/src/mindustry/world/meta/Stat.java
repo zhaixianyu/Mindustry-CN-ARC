@@ -81,11 +81,11 @@ public class Stat implements Comparable<Stat>{
     payloadCapacity = new Stat("payloadCapacity", StatCat.support),
 
     abilities = new Stat("abilities", StatCat.combat),
-    aiController = new Stat("aiController", StatCat.combat),
-    targets = new Stat("targets", StatCat.combat),
     weapons = new Stat("weapons", StatCat.combat),
     bullet = new Stat("bullet", StatCat.combat),
     estimateDPS = new Stat("estimateDPS", StatCat.combat),
+    aiController = new Stat("aiController", StatCat.combat),
+    targets = new Stat("targets", StatCat.combat),
     ammoType = new Stat("ammoType", StatCat.combat),
     ammoCapacity = new Stat("ammoCapacity", StatCat.combat),
 

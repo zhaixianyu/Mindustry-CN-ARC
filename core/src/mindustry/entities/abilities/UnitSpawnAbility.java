@@ -37,8 +37,8 @@ public class UnitSpawnAbility extends Ability{
     public String description(UnitType unit){
         return abilitysFormat("@s~@@",
                 spawnTime / 60f,
-                unit.localizedName,
-                unit.emoji()
+                this.unit.localizedName,
+                this.unit.emoji()
                 );
     }
 
