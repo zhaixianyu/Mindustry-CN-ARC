@@ -621,7 +621,7 @@ public class PlacementFragment{
                             } else {
                                 u.add("[未选择单位]").color(getThemeColor()).growX().center().labelAlign(Align.center).pad(6);
                             }
-                            if (true || mobile) {
+                            if (mobile) {
                                 u.row();
                                 u.table(sp->{
                                     sp.button("\uE86D", Styles.cleart, () -> {
