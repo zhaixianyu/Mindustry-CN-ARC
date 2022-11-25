@@ -507,8 +507,12 @@ public class LCanvas extends Table{
                 LogicDialog.transText = thisText.toString();
                 stNew = LogicIO.read(new String[]{"print",LogicDialog.transText},2);
             }
-            statements.addChildAt(child, new StatementElem(stNew));
+            StatementElem stNewElem = new StatementElem(stNew);
+            statements.addChildAt(child, stNewElem);
             remove();
+            for(Element ste :  statements.seq){
+                if(((StatementElem)ste).st instanceof JumpStatement jst && jst.dest == st.elem) jst.dest = stNewElem;
+            }
             statements.layout();
         }
 
