@@ -170,6 +170,7 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
         add(logic = new Logic());
         add(control = new Control());
         add(renderer = new Renderer());
+        loadSettings();
         add(ui = new UI());
         add(netServer = new NetServer());
         add(netClient = new NetClient());

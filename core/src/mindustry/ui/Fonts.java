@@ -69,8 +69,16 @@ public class Fonts{
     public static void loadFonts(){
         largeIcons.clear();
         FreeTypeFontParameter param = fontParameter();
-
-        Core.assets.load("default", Font.class, new FreeTypeFontLoaderParameter(mainFont, param)).loaded = f -> Fonts.def = f;
+        if (Core.settings.getInt("fontSet") == 1){
+            Core.assets.load("default", Font.class, new FreeTypeFontLoaderParameter("fonts/cute.woff", new FreeTypeFontParameter(){{
+                size = 22 * Core.settings.getInt("fontSize") / 10;
+                shadowColor = Color.darkGray;
+                shadowOffsetY = 2;
+                incremental = true;
+            }}
+            )).loaded = f -> Fonts.def = f;
+        }
+        else Core.assets.load("default", Font.class, new FreeTypeFontLoaderParameter(mainFont, param)).loaded = f -> Fonts.def = f;
         Core.assets.load("icon", Font.class, new FreeTypeFontLoaderParameter("fonts/icon.ttf", new FreeTypeFontParameter(){{
             size = 30;
             incremental = true;
@@ -285,7 +293,7 @@ public class Fonts{
 
     static FreeTypeFontParameter fontParameter(){
         return new FreeTypeFontParameter(){{
-            size = 18;
+            size = Math.min(18 * Core.settings.getInt("fontSize") / 10, 10);
             shadowColor = Color.darkGray;
             shadowOffsetY = 2;
             incremental = true;

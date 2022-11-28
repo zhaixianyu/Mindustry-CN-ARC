@@ -696,15 +696,22 @@ public class SettingsMenuDialog extends BaseDialog{
         });
 
         //////////specmode
-        specmode.addCategory("specGameMode");
+        specmode.addCategory("moreContent");
         specmode.checkPref("modMode", false);
         specmode.sliderPref("itemSelectionHeight",4,4,12, i->i + "行");
         specmode.sliderPref("itemSelectionWidth",4,4,12, i->i + "列");
         specmode.sliderPref("blockInventoryWidth",3,3,16, i->i + "");
         specmode.sliderPref("editorBrush",4,3,12,i->i+"");
+
+        specmode.addCategory("specGameMode");
+        specmode.sliderPref("fontSet", 0, 0, 1, 1, s -> {
+            if(s==0){return "原版字体";}
+            else if(s==1){return "萌化字体包";}
+            else{return s+"";}
+        });
+        specmode.sliderPref("fontSize",10,5,25,1,i->"x " + Strings.fixed(i * 0.1f,1));
         specmode.checkPref("autoSelSchematic",false);
         specmode.checkPref("researchViewer",false);
-        //specmode.checkPref("atriVoice",false);
         specmode.checkPref("developMode", false);
         //////////cheating
         cheating.addCategory("arcWeakCheat");
