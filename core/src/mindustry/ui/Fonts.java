@@ -70,13 +70,7 @@ public class Fonts{
         largeIcons.clear();
         FreeTypeFontParameter param = fontParameter();
         if (Core.settings.getInt("fontSet") == 1){
-            Core.assets.load("default", Font.class, new FreeTypeFontLoaderParameter("fonts/cute.woff", new FreeTypeFontParameter(){{
-                size = 22 * Core.settings.getInt("fontSize") / 10;
-                shadowColor = Color.darkGray;
-                shadowOffsetY = 2;
-                incremental = true;
-            }}
-            )).loaded = f -> Fonts.def = f;
+            Core.assets.load("default", Font.class, new FreeTypeFontLoaderParameter("fonts/cute.woff", cuteParameter())).loaded = f -> Fonts.def = f;
         }
         else Core.assets.load("default", Font.class, new FreeTypeFontLoaderParameter(mainFont, param)).loaded = f -> Fonts.def = f;
         Core.assets.load("icon", Font.class, new FreeTypeFontLoaderParameter("fonts/icon.ttf", new FreeTypeFontParameter(){{
@@ -204,7 +198,15 @@ public class Fonts{
             size = 18;
         }};
 
-        Core.assets.load("outline", Font.class, new FreeTypeFontLoaderParameter(mainFont, param)).loaded = t -> Fonts.outline = t;
+        FreeTypeFontParameter cuteParam = new FreeTypeFontParameter(){{
+            borderColor = Color.darkGray;
+            incremental = true;
+            size = 22;
+        }};
+
+        if (Core.settings.getInt("fontSet") == 1){
+            Core.assets.load("outline", Font.class, new FreeTypeFontLoaderParameter("fonts/cute.woff", cuteParam)).loaded = t -> Fonts.outline = t;
+        } else Core.assets.load("outline", Font.class, new FreeTypeFontLoaderParameter(mainFont, param)).loaded = t -> Fonts.outline = t;
 
         Core.assets.load("tech", Font.class, new FreeTypeFontLoaderParameter("fonts/tech.ttf", new FreeTypeFontParameter(){{
             size = 18;
@@ -293,7 +295,16 @@ public class Fonts{
 
     static FreeTypeFontParameter fontParameter(){
         return new FreeTypeFontParameter(){{
-            size = Math.min(18 * Core.settings.getInt("fontSize") / 10, 10);
+            size = (int) Math.max(18 * Core.settings.getInt("fontSize") / 10f, 10);
+            shadowColor = Color.darkGray;
+            shadowOffsetY = 2;
+            incremental = true;
+        }};
+    }
+
+    static FreeTypeFontParameter cuteParameter(){
+        return new FreeTypeFontParameter(){{
+            size = (int) Math.max(22 * Core.settings.getInt("fontSize") / 10f, 10);
             shadowColor = Color.darkGray;
             shadowOffsetY = 2;
             incremental = true;
