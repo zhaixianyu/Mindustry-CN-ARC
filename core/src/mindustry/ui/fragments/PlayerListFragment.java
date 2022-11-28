@@ -171,7 +171,7 @@ public class PlayerListFragment{
 
                 button.add().grow();
 
-                button.button(String.valueOf(Iconc.link), Styles.cleart, () -> {
+                button.button("[#" + getThemeColor() + "]♐", Styles.cleart, () -> {
                     String message = arcAtPlayer(user.name);
                     Call.sendChatMessage(message);
                 }).size(buttonSize);
