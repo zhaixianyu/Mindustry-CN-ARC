@@ -1,19 +1,39 @@
 package mindustry.arcModule.toolpack;
 
 import arc.Core;
+import arc.Events;
 import arc.graphics.Color;
 import arc.graphics.g2d.*;
 import arc.math.Angles;
 import arc.math.Mathf;
+import arc.scene.event.Touchable;
+import arc.util.Align;
 import arc.util.Time;
 import mindustry.content.UnitTypes;
+import mindustry.game.EventType;
+import mindustry.game.SpawnGroup;
+import mindustry.ui.Styles;
 import mindustry.world.Tile;
 
 import static mindustry.Vars.*;
 
 public class arcWaveSpawner {
 
+    static boolean hasFlyer = false;
+
     static float spawnerMargin = tilesize * 11f;
+
+    static {
+        Events.on(EventType.WorldLoadEvent.class, event -> {
+            hasFlyer = false;
+            for(SpawnGroup sg : state.rules.spawns){
+                if(sg.type.flying){
+                    hasFlyer = true;
+                    break;
+                }
+            }
+        });
+    }
 
     public static void drawSpawner() {
         if(state.hasSpawns()){
@@ -34,7 +54,7 @@ public class arcWaveSpawner {
                     }
                 }
             }
-            if (Core.settings.getBool("showFlyerSpawn") && spawner.countSpawns() < 20) {
+            if (hasFlyer && Core.settings.getBool("showFlyerSpawn") && spawner.countSpawns() < 20) {
                 for(Tile tile : spawner.getSpawns()) {
                     float angle = Angles.angle(world.width() / 2f, world.height() / 2f, tile.x, tile.y);
                     float trns = Math.max(world.width(), world.height()) * Mathf.sqrt2 * tilesize;
