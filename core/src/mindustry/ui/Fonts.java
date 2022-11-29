@@ -297,8 +297,7 @@ public class Fonts{
     static int getFontSize(){
         if (Core.settings.getInt("fontSize") < 5) Core.settings.put("fontSize",10);
         float multiplier = Core.settings.getInt("fontSize") / 10f;
-        if (Core.settings.getInt("fontSet") == 1) return (int) (22 * multiplier);
-        else return (int) (18 * multiplier);
+        return (int) (18 * multiplier);
     }
 
     static FreeTypeFontParameter fontParameter(){

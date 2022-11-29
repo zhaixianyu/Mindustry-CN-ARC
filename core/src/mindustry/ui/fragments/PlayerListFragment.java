@@ -160,7 +160,7 @@ public class PlayerListFragment{
                 button.image(Icon.admin).visible(() -> user.admin && !(!user.isLocal() && net.server())).size(bs).get().updateVisibility();
                 button.table(
                     t -> {
-                        t.labelWrap("[#" + user.color().toString().toUpperCase() + "]" + user.name()).minWidth(300f);
+                        t.labelWrap("[#" + user.color().toString().toUpperCase() + "]" + user.name()).minWidth(380f);
                         t.touchable = Touchable.enabled;
                         t.tapped(()->{
                             Core.app.setClipboardText(user.name);
