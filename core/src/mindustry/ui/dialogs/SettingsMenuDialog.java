@@ -720,6 +720,7 @@ public class SettingsMenuDialog extends BaseDialog{
         cheating.checkPref("allBlocksReveal",false);
         cheating.checkPref("worldCreator",false);
         cheating.checkPref("overrideSkipWave", false);
+        cheating.checkPref("forceConfigInventory", false);
         cheating.addCategory("arcStrongCheat");
         cheating.checkPref("showOtherTeamResource", false);
         cheating.checkPref("showOtherTeamState", false);
