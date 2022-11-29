@@ -45,7 +45,7 @@ public class RFuncs {
 
     private static String colorized(Color color, String name){
         if (colorized) return  "[#" + color + "]" + name + "[]";
-        else return name.substring(11);
+        else return name;
     }
 
     private static Color blockColor(Block block){
