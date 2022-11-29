@@ -25,7 +25,6 @@ import java.security.NoSuchAlgorithmException;
 
 import static arc.Core.*;
 import static mindustry.Vars.*;
-import static mindustry.arcModule.RFuncs.colorizeContent;
 
 public abstract class ClientLauncher extends ApplicationCore implements Platform{
     private static final int loadingFPS = 20;
@@ -180,7 +179,6 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
 
         assets.loadRun("contentinit", ContentLoader.class, () -> content.init(), () -> content.load());
         assets.loadRun("baseparts", BaseRegistry.class, () -> {}, () -> bases.load());
-        colorizeContent();
     }
 
     @Override

@@ -66,7 +66,6 @@ public class RFuncs {
         }else{
             return block.mapColor.cpy().mul(1.2f);
         }
-        Log.info(block.name + bestColor);
         return bestColor;
     }
 
