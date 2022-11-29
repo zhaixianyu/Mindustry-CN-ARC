@@ -72,8 +72,8 @@ public class Fonts{
         largeIcons.clear();
         FreeTypeFontParameter param = fontParameter();
 
-        if (Core.settings.getInt("fontSet") == 1) fontPack = "fonts/cute.ttf";
-        else if (Core.settings.getInt("fontSet") == 2) fontPack = "fonts/kai.ttf";
+        if (Core.settings.getInt("fontSet") == 1) fontPack = "fonts/cute.woff";
+        else if (Core.settings.getInt("fontSet") == 2) fontPack = "fonts/kai.woff";
         Core.assets.load("default", Font.class, new FreeTypeFontLoaderParameter(fontPack, param)).loaded = f -> Fonts.def = f;
 
         Core.assets.load("icon", Font.class, new FreeTypeFontLoaderParameter("fonts/icon.ttf", new FreeTypeFontParameter(){{
@@ -201,8 +201,8 @@ public class Fonts{
             size = getFontSize();
         }};
 
-        if (Core.settings.getInt("fontSet") == 1) fontPack = "fonts/cute.ttf";
-        else if (Core.settings.getInt("fontSet") == 2) fontPack = "fonts/kai.ttf";
+        if (Core.settings.getInt("fontSet") == 1) fontPack = "fonts/cute.woff";
+        else if (Core.settings.getInt("fontSet") == 2) fontPack = "fonts/kai.woff";
         Core.assets.load("outline", Font.class, new FreeTypeFontLoaderParameter(fontPack, param)).loaded = t -> Fonts.outline = t;
 
         String techPack = "fonts/tech.ttf";
