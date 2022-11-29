@@ -71,8 +71,9 @@ public class Fonts{
         FreeTypeFontParameter param = fontParameter();
         if (Core.settings.getInt("fontSet") == 1){
             Core.assets.load("default", Font.class, new FreeTypeFontLoaderParameter("fonts/cute.woff", cuteParameter())).loaded = f -> Fonts.def = f;
-        }
-        else Core.assets.load("default", Font.class, new FreeTypeFontLoaderParameter(mainFont, param)).loaded = f -> Fonts.def = f;
+        } else if (Core.settings.getInt("fontSet") == 2) {
+            Core.assets.load("default", Font.class, new FreeTypeFontLoaderParameter("fonts/kai.woff", param)).loaded = f -> Fonts.def = f;
+        } else Core.assets.load("default", Font.class, new FreeTypeFontLoaderParameter(mainFont, param)).loaded = f -> Fonts.def = f;
         Core.assets.load("icon", Font.class, new FreeTypeFontLoaderParameter("fonts/icon.ttf", new FreeTypeFontParameter(){{
             size = 30;
             incremental = true;
@@ -166,6 +167,8 @@ public class Fonts{
 
     /** Called from a static context for use in the loading screen.*/
     public static void loadDefaultFont(){
+        if (Core.settings.getInt("fontSize") < 5) Core.settings.put("fontSize",10);
+
         int max = Gl.getInt(Gl.maxTextureSize);
 
         UI.packer = new PixmapPacker(max >= 4096 ? 4096 : 2048, 2048, 2, true);
@@ -206,6 +209,8 @@ public class Fonts{
 
         if (Core.settings.getInt("fontSet") == 1){
             Core.assets.load("outline", Font.class, new FreeTypeFontLoaderParameter("fonts/cute.woff", cuteParam)).loaded = t -> Fonts.outline = t;
+        }else if (Core.settings.getInt("fontSet") == 2){
+            Core.assets.load("outline", Font.class, new FreeTypeFontLoaderParameter("fonts/kai.woff", param)).loaded = t -> Fonts.outline = t;
         } else Core.assets.load("outline", Font.class, new FreeTypeFontLoaderParameter(mainFont, param)).loaded = t -> Fonts.outline = t;
 
         Core.assets.load("tech", Font.class, new FreeTypeFontLoaderParameter("fonts/tech.ttf", new FreeTypeFontParameter(){{
@@ -295,7 +300,7 @@ public class Fonts{
 
     static FreeTypeFontParameter fontParameter(){
         return new FreeTypeFontParameter(){{
-            size = (int) Math.max(18 * Core.settings.getInt("fontSize") / 10f, 10);
+            size = (int) ( 18 * Core.settings.getInt("fontSize") / 10f);
             shadowColor = Color.darkGray;
             shadowOffsetY = 2;
             incremental = true;
@@ -304,7 +309,7 @@ public class Fonts{
 
     static FreeTypeFontParameter cuteParameter(){
         return new FreeTypeFontParameter(){{
-            size = (int) Math.max(22 * Core.settings.getInt("fontSize") / 10f, 10);
+            size = (int) ( 18 * Core.settings.getInt("fontSize") / 10f);
             shadowColor = Color.darkGray;
             shadowOffsetY = 2;
             incremental = true;

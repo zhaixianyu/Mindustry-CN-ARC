@@ -704,9 +704,10 @@ public class SettingsMenuDialog extends BaseDialog{
         specmode.sliderPref("editorBrush",4,3,12,i->i+"");
 
         specmode.addCategory("specGameMode");
-        specmode.sliderPref("fontSet", 0, 0, 1, 1, s -> {
+        specmode.sliderPref("fontSet", 0, 0, 2, 1, s -> {
             if(s==0){return "原版字体";}
-            else if(s==1){return "萌化字体包";}
+            else if(s==1) return "[violet]LC[white]の[cyan]萌化字体包";
+            else if(s==2) return "[violet]9527[white]の[cyan]楷体包";
             else{return s+"";}
         });
         specmode.sliderPref("fontSize",10,5,25,1,i->"x " + Strings.fixed(i * 0.1f,1));
