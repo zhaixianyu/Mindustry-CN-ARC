@@ -17,6 +17,7 @@ import mindustry.world.*;
 
 import static arc.Core.*;
 import static mindustry.Vars.*;
+import static mindustry.arcModule.RFuncs.colorizeContent;
 
 /**
  * Loads all game content.
@@ -93,6 +94,7 @@ public class ContentLoader{
     public void load(){
         initialize(Content::loadIcon);
         initialize(Content::load);
+        colorizeContent();
     }
 
     /** Initializes all content with the specified function. */

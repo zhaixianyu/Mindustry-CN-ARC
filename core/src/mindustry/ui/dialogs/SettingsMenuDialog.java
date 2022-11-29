@@ -403,7 +403,6 @@ public class SettingsMenuDialog extends BaseDialog{
         game.checkPref("console", false);
 
         graphics.addCategory("arcCOverview");
-        graphics.stringInput("themeColor", "ffd37f");
 
         graphics.sliderPref("fpscap", 240, 10, 245, 5, s -> (s > 240 ? Core.bundle.get("setting.fpscap.none") : Core.bundle.format("setting.fpscap.text", s)));
         int[] lastUiScale = {settings.getInt("uiscale", 100)};
@@ -703,7 +702,8 @@ public class SettingsMenuDialog extends BaseDialog{
         specmode.sliderPref("blockInventoryWidth",3,3,16, i->i + "");
         specmode.sliderPref("editorBrush",4,3,12,i->i+"");
 
-        specmode.addCategory("specGameMode");
+        specmode.addCategory("personalized");
+        specmode.checkPref("colorizedContent",false);
         specmode.sliderPref("fontSet", 0, 0, 2, 1, s -> {
             if(s==0){return "原版字体";}
             else if(s==1) return "[violet]LC[white]の[cyan]萌化字体包";
@@ -711,6 +711,8 @@ public class SettingsMenuDialog extends BaseDialog{
             else{return s+"";}
         });
         specmode.sliderPref("fontSize",10,5,25,1,i->"x " + Strings.fixed(i * 0.1f,1));
+        specmode.stringInput("themeColor", "ffd37f");
+        specmode.addCategory("specGameMode");
         specmode.checkPref("autoSelSchematic",false);
         specmode.checkPref("researchViewer",false);
         specmode.checkPref("developMode", false);
