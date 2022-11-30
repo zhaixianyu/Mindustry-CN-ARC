@@ -1392,7 +1392,7 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
         //derelict team icon currently doesn't display
         return team == Team.derelict ?
             block.localizedName + "\n" + Core.bundle.get("block.derelict") :
-                "[#" + team.color + "]" + block.localizedName.substring(11) + (team == player.team() || team.emoji.isEmpty() ? "" : " " + team.emoji
+                "[#" + team.color + "]" + (Core.settings.getBool("colorizedContent")? block.localizedName.substring(11) : block.localizedName) + (team == player.team() || team.emoji.isEmpty() ? "" : " " + team.emoji
                 + (team.id > 5 ? "[" + team.id + "]" : ""));
     }
 
