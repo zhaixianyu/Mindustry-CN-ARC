@@ -19,7 +19,9 @@ import static mindustry.Vars.*;
 
 public class arcWaveSpawner {
 
-    static boolean hasFlyer = false;
+    public static boolean hasFlyer = true;
+
+    public static float flyerSpawnerRadius = 5f * tilesize;
 
     static float spawnerMargin = tilesize * 11f;
 
@@ -66,7 +68,7 @@ public class arcWaveSpawner {
                     }
                     Draw.color(Color.gray, Color.lightGray, Mathf.absin(Time.time, 8f, 1f));
                     Draw.alpha(0.8f);
-                    Lines.dashCircle(spawnX, spawnY, 5f * tilesize);
+                    Lines.dashCircle(spawnX, spawnY, flyerSpawnerRadius);
 
                     Draw.color();
                     Draw.alpha(0.5f);
