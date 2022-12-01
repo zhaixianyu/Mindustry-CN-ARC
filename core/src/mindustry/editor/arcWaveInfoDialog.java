@@ -384,7 +384,7 @@ public class arcWaveInfoDialog extends BaseDialog {
 
                                             if (group.spawn != -1) groupInfo.append("*");
 
-                                            groupInfo.append(typeColor(group.type));
+                                            groupInfo.append(group.type.typeColor());
 
                                             groupInfo.append("\n").append(amount);
                                             groupInfo.append("\n");
@@ -448,7 +448,7 @@ public class arcWaveInfoDialog extends BaseDialog {
                         b.left();
                         b.image(group.type.uiIcon).size(32f).padRight(3).scaling(Scaling.fit);
                         //if(group.effect != null && group.effect != StatusEffects.none) b.image(group.effect.uiIcon).size(20f).padRight(3).scaling(Scaling.fit);
-                        b.add(typeColor(group.type) + group.type.localizedName);
+                        b.add(group.type.typeColor() + group.type.localizedName);
                         if (group.effect != null && group.effect != StatusEffects.none)
                             b.image(group.effect.uiIcon).size(20f).padRight(3).scaling(Scaling.fit);
 
@@ -1050,14 +1050,6 @@ public class arcWaveInfoDialog extends BaseDialog {
         filterStrict = filterHealthMode = false;
         filterBegin = filterEnd = -1;
         filterEffect = StatusEffects.none;
-    }
-
-    String typeColor(UnitType unit) {
-        if (unit.naval) return "[cyan]";
-        else if (unit.allowLegStep) return "[magenta]";
-        else if (unit.flying) return "[acid]";
-        else if (unit.hovering) return "[sky]";
-        else return "[stat]";
     }
 
     enum Sort {

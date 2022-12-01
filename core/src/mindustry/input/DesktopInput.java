@@ -288,6 +288,8 @@ public class DesktopInput extends InputHandler{
             commandMode = false;
         }
 
+        if(input.keyDown(Binding.arcScanMode)) arcScanMode = !arcScanMode;
+
         //validate commanding units
         selectedUnits.removeAll(u -> !u.isCommandable() || !u.isValid());
 

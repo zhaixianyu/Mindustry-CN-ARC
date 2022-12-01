@@ -102,6 +102,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
 
     private WidgetGroup group = new WidgetGroup();
 
+    public boolean arcScanMode = false;
+
     private final Eachable<BuildPlan> allPlans = cons -> {
         player.unit().plans().each(cons);
         selectPlans.each(cons);
