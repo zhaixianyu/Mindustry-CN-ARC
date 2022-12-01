@@ -1,37 +1,44 @@
 package mindustry.arcModule.toolpack;
 
 import arc.Core;
-import arc.Events;
-import arc.graphics.Camera;
-import arc.graphics.Color;
-import arc.graphics.g2d.*;
-import arc.math.Interp;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Fill;
+import arc.graphics.g2d.Lines;
 import arc.math.Mathf;
 import arc.math.geom.Point2;
 import arc.math.geom.Vec2;
 import arc.scene.event.Touchable;
-import arc.scene.ui.Label;
 import arc.scene.ui.layout.Table;
 import arc.util.Align;
+import arc.util.Time;
+import mindustry.arcModule.Marker;
 import mindustry.content.StatusEffects;
 import mindustry.core.UI;
-import mindustry.game.EventType;
-import mindustry.game.SpawnGroup;
+import mindustry.graphics.Drawf;
+import mindustry.graphics.Layer;
 import mindustry.ui.Styles;
 import mindustry.world.Tile;
+import mindustry.world.blocks.distribution.Conveyor;
+import mindustry.world.meta.BlockGroup;
 
 import static mindustry.Vars.*;
-import static mindustry.ui.Styles.cleart;
+import static mindustry.arcModule.RFuncs.calWaveTimer;
 
 public class arcScanMode {
-    private static final Table spt = new Table(Styles.black3);
-    private static Table spawnerTable = new Table();
+
     private static Table st = new Table();
 
+    /** spawner */
+    private static final Table spt = new Table(Styles.black3);
+    private static Table spawnerTable = new Table();
     static float thisAmount, thisHealth, thisEffHealth, thisDps;
     static int totalAmount = 0, totalHealth = 0, totalEffHealth = 0, totalDps = 0;
 
     static int tableCount = 0;
+    /** conveyor */
+    static final int looper = 25;
+    static int forwardLoop = 0, backwardLoop = 0;
+
 
     static {
         spt.touchable = Touchable.disabled;
@@ -53,11 +60,10 @@ public class arcScanMode {
 
     public static void arcScan(){
         detailSpawner();
+        detailTransporter();
     }
 
     private static void detailSpawner(){
-
-
         spt.visible = spt.visible && state.isPlaying();
         if (!control.input.arcScanMode) {
             spt.visible = false;
@@ -68,11 +74,24 @@ public class arcScanMode {
         int curInfoWave = state.wave + 1;
         for(Tile tile : spawner.getSpawns()) {
             if(Mathf.dst(tile.worldx(),tile.worldy(),Core.input.mouseWorldX(),Core.input.mouseWorldY()) < state.rules.dropZoneRadius){
+                Draw.z(Layer.effect - 2f);
+                Draw.color(state.rules.waveTeam.color);
+                Lines.stroke(4f);
+                float curve = Mathf.curve(Time.time % 360f, 120f, 300f);
+                if (curve > 0)Lines.circle(tile.worldx(), tile.worldy(), state.rules.dropZoneRadius * curve);
+                Lines.circle(tile.worldx(), tile.worldy(), state.rules.dropZoneRadius);
+                Lines.arc(tile.worldx(), tile.worldy(), state.rules.dropZoneRadius - 3f, state.wavetime / state.rules.waveSpacing,90f);
+                float angle = Mathf.pi / 2 + state.wavetime / state.rules.waveSpacing * 2 * Mathf.pi;
+                Draw.color(state.rules.waveTeam.color);
+                Fill.circle(tile.worldx() + state.rules.dropZoneRadius * Mathf.cos(angle), tile.worldy() + state.rules.dropZoneRadius * Mathf.sin(angle) , 12f);
+
+
                 Vec2 v = Core.camera.project(tile.worldx(),tile.worldy());
                 spt.setPosition(v.x,v.y);
                 spt.visible = true;
                 spawnerTable.clear();
                 spawnerTable.table(Styles.black3,tt->{
+                    tt.add(calWaveTimer()).row();
                     state.rules.spawns.each(group -> group.spawn == -1 || (tile.x == Point2.x(group.spawn) && tile.y == Point2.y(group.spawn)), group->{
                         thisAmount = group.getSpawned(curInfoWave);
                         if (thisAmount > 0) {
@@ -139,6 +158,16 @@ public class arcScanMode {
 
         spt.visible = false;
         spawnerTable.clear();
+    }
+
+    private static void detailTransporter(){
+        //check tile being hovered over
+        Tile hoverTile = world.tileWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
+        if(hoverTile == null || hoverTile.build == null || !hoverTile.build.displayable() || hoverTile.build.inFogTo(player.team())){
+            return;
+        }
+        if (hoverTile.block().group != BlockGroup.transportation) return;
+
     }
 
 }

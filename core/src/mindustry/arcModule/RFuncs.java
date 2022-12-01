@@ -87,6 +87,24 @@ public class RFuncs {
         return builder.toString();
     }
 
+    public static String calWaveTimer(){
+        StringBuilder waveTimer = new StringBuilder();
+        waveTimer.append("[orange]");
+        int m = ((int)state.wavetime / 60) / 60;
+        int s = ((int)state.wavetime / 60) % 60;
+        int ms = (int)state.wavetime % 60;
+        if(m > 0){
+            waveTimer.append(m).append("[white]: [orange]");
+            if(s < 10){
+                waveTimer.append("0");
+            }
+            waveTimer.append(s).append("[white]min");
+        }else{
+            waveTimer.append(s).append("[white].[orange]").append(ms).append("[white]s");
+        }
+        return waveTimer.toString();
+    }
+
     public static String arcWaveInfo(int waves) {
         StringBuilder builder = new StringBuilder();
         if (state.rules.attackMode) {
