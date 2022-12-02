@@ -213,5 +213,19 @@ public class DirectionBridge extends Block{
             }
             return null;
         }
+
+        public boolean arcLinkValid(){
+            if (findLink() == null) return false;
+            int x1 = findLink().tileX();
+            int y1 = findLink().tileY();
+            if(x1 == x){
+                return Math.abs(y1 - y) <= range;
+            }else if(y1 == y){
+                return Math.abs(x1 - x) <= range;
+            }else{
+                return false;
+            }
+        }
+
     }
 }

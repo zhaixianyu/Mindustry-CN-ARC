@@ -27,8 +27,10 @@ import mindustry.ui.Styles;
 import mindustry.world.Block;
 import mindustry.world.Tile;
 import mindustry.world.blocks.distribution.*;
+import mindustry.world.blocks.liquid.LiquidBridge;
 import mindustry.world.blocks.liquid.LiquidJunction;
 import mindustry.world.blocks.storage.CoreBlock;
+import mindustry.world.blocks.storage.StorageBlock;
 import mindustry.world.meta.BlockGroup;
 
 
@@ -42,9 +44,7 @@ public class arcScanMode {
 
     private static Table ct = new Table(Styles.none);
     private static Table ctTable = new Table();
-    /**
-     * spawner
-     */
+    /** spawner */
     private static Table spt, sfpt;
     private static Table spawnerTable = new Table();
     private static Table flyerTable = new Table();
@@ -64,6 +64,7 @@ public class arcScanMode {
         {
             st.touchable = Touchable.disabled;
             st.margin(8f).add(">> 扫描详情模式 <<").color(getThemeColor()).style(Styles.outlineLabel).labelAlign(Align.center);
+            st.visible = true;
             st.update(() -> st.setPosition(Core.graphics.getWidth() / 2f, Core.graphics.getHeight() * 0.7f, Align.center));
             st.pack();
             st.update(() -> st.visible = control.input.arcScanMode && state.isPlaying());
@@ -314,8 +315,7 @@ public class arcScanMode {
         if (hoverTile == null || hoverTile.build == null || !hoverTile.build.displayable() || hoverTile.build.inFogTo(player.team())) {
             return;
         }
-        forwardIndex = 0;
-        forwardBuild.clear();
+        forwardIndex = 0; forwardBuild.clear();
 
         forward(hoverTile.build, hoverTile.build);
         //drawBuild();
@@ -331,21 +331,28 @@ public class arcScanMode {
         //能否接受
         if (forwardIndex == maxLoop || cur == null || conduit == 3) return;
         if (last.team != cur.team || (cur.team != player.team() && cur.inFogTo(player.team()))) return;
-        if (!canAccept(cur.block) && !cur.block.instantTransfer) return;
+        if (cur.block.itemCapacity == 0 && !cur.block.instantTransfer) return;
         if (cur instanceof LiquidJunction.LiquidJunctionBuild) return;
 
         //接受成功
         forwardIndex += 1;
         //绘制
         Draw.color(Color.gold);
-        Lines.stroke(2f);
-        float dst = Mathf.dst(last.tile.worldx(),last.tile.worldy(),cur.tile.worldx(),cur.tile.worldy());
-        Lines.line(last.tile.worldx(),last.tile.worldy(),cur.tile.worldx(),cur.tile.worldy());
-        if (dst > 8f) Drawf.simpleArrow(last.tile.worldx(),last.tile.worldy(),cur.tile.worldx(),cur.tile.worldy(),dst / 2,4f);
+        Lines.stroke(1.5f);
+        float dst = Mathf.dst(last.tile.worldx(), last.tile.worldy(), cur.tile.worldx(), cur.tile.worldy());
+        Lines.line(last.tile.worldx(), last.tile.worldy(), cur.tile.worldx(), cur.tile.worldy());
+        Fill.circle(cur.tile.worldx(), cur.tile.worldy(), 2f);
+        if (dst > 8f) {
+            Draw.color(Color.orange);
+            Drawf.simpleArrow(last.tile.worldx(), last.tile.worldy(), cur.tile.worldx(), cur.tile.worldy(), dst / 2, 4f);
+        }
+
+        if ((cur.block.group != BlockGroup.transportation && canAccept(cur.block)))
+            Drawf.selected(cur, Tmp.c1.set(Color.red).a(Mathf.absin(4f, 1f) * 0.5f + 0.5f));
 
         //准备下一迭代
         if (!forwardBuild.addUnique(cur)) return; //循环直接卡出，导致寻路不准，但问题应该不大
-        if (cur.block.group != BlockGroup.transportation) return;
+        //if (cur.block.group != BlockGroup.transportation) return;
 
         //处理超传
         conduit = cur.block.instantTransfer ? conduit + 1 : 0;
@@ -353,43 +360,52 @@ public class arcScanMode {
         //默认的下一个
         int from = cur.relativeToEdge(last.tile);
 
-        if (cur instanceof CoreBlock.CoreBuild){
-            return;
+        if (cur instanceof CoreBlock.CoreBuild || cur instanceof StorageBlock.StorageBuild) {
+            Drawf.selected(cur, Tmp.c1.set(Color.red).a(Mathf.absin(4f, 1f) * 0.5f + 0.5f));
         } else if (cur instanceof OverflowGate.OverflowGateBuild || cur instanceof Router.RouterBuild
                 || cur instanceof DuctRouter.DuctRouterBuild) { // 三向任意口，留意暂不处理路由器回流，即便这是可行的
-            forward(cur.nearby((from + 1) % 4), cur, conduit);
-            forward(cur.nearby((from + 2) % 4), cur, conduit);
-            forward(cur.nearby((from + 3) % 4), cur, conduit);
+            dumpForward(cur, last, conduit);
         } else if (cur instanceof Sorter.SorterBuild sb) {  // 分类的特殊情况
             if (sb.sortItem != null || !((Sorter) sb.block).invert) forward(cur.nearby((from + 1) % 4), cur, conduit);
             if (sb.sortItem != null || ((Sorter) sb.block).invert) forward(cur.nearby((from + 2) % 4), cur, conduit);
             if (sb.sortItem != null || !((Sorter) sb.block).invert) forward(cur.nearby((from + 3) % 4), cur, conduit);
         } else if (cur instanceof DuctBridge.DuctBridgeBuild ductBridgeBuild) {
-            if (ductBridgeBuild.findLink() != null) forward(ductBridgeBuild.findLink(), cur);
+            if (ductBridgeBuild.arcLinkValid()) forward(ductBridgeBuild.findLink(), cur);
             else forward(cur.front(), cur);
-        } else if (cur instanceof ItemBridge.ItemBridgeBuild itemBridgeBuild) {
+        } else if (cur instanceof ItemBridge.ItemBridgeBuild itemBridgeBuild && ! (cur instanceof LiquidBridge.LiquidBridgeBuild)) {
             if (world.tile(itemBridgeBuild.link) != null) forward(world.tile(itemBridgeBuild.link).build, cur);
             else if (itemBridgeBuild.incoming.size == 0) return;
-            else dumpNearby(cur,last,conduit);
+            else dumpNearby(cur, last, conduit);
         } else if (cur instanceof MassDriver.MassDriverBuild massDriverBuild && massDriverBuild.arcLinkValid()) {
-            forward(massDriverBuild, cur);
-            if (massDriverBuild.state == MassDriver.DriverState.idle || massDriverBuild.state == MassDriver.DriverState.accepting) dumpNearby(cur,last,conduit);
+            forward(world.tile(massDriverBuild.link).build, cur);
+            if (massDriverBuild.state == MassDriver.DriverState.idle || massDriverBuild.state == MassDriver.DriverState.accepting)
+                dumpNearby(cur, last, conduit);
         } else if (cur instanceof Conveyor.ConveyorBuild || cur instanceof Duct.DuctBuild || cur instanceof StackConveyor.StackConveyorBuild) {
             forward(cur.front(), cur);
+            if (cur instanceof StackConveyor.StackConveyorBuild stackConveyorBuild && stackConveyorBuild.state == 2)
+                dumpForward(cur, last, conduit);
         } else if (cur instanceof Junction.JunctionBuild) {
             forward(cur.nearby((from + 2) % 4), cur, conduit);
-        }else {
-            return ;
+        } else {
+            return;
         }
     }
 
-    private static void dumpNearby(Building cur, Building last, int conduit){
+    private static void dumpForward(Building cur, Building last, int conduit) {
+        int from = cur.relativeToEdge(last.tile);
+        forward(cur.nearby((from + 1) % 4), cur, conduit);
+        forward(cur.nearby((from + 2) % 4), cur, conduit);
+        forward(cur.nearby((from + 3) % 4), cur, conduit);
+    }
+
+    private static void dumpNearby(Building cur, Building last, int conduit) {
         cur.proximity.each(building -> {
-            if (building.canDump(building, Items.copper)) forward(building, cur);
+            if (cur.canDump(building, Items.copper) && (building != null && canAccept(building.block)))
+                forward(building, cur, conduit);
         });
     }
 
-    private static void drawBuild(){
+    private static void drawBuild() {
         forwardBuild.each(building -> Drawf.selected(building, Tmp.c1.set(Color.red).a(Mathf.absin(4f, 1f) * 0.5f + 0.5f)));
 
         forwardIndex = 0;
