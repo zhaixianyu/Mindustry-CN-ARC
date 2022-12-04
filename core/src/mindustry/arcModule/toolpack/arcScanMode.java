@@ -12,7 +12,7 @@ import arc.math.geom.Point2;
 import arc.math.geom.Vec2;
 import arc.scene.event.Touchable;
 import arc.scene.ui.layout.Table;
-import arc.struct.Seq;
+import arc.struct.*;
 import arc.util.Align;
 import arc.util.Time;
 import arc.util.Tmp;
@@ -31,6 +31,7 @@ import mindustry.world.blocks.liquid.LiquidBridge;
 import mindustry.world.blocks.liquid.LiquidJunction;
 import mindustry.world.blocks.storage.CoreBlock;
 import mindustry.world.blocks.storage.StorageBlock;
+import mindustry.world.blocks.storage.Unloader;
 import mindustry.world.meta.BlockGroup;
 
 
@@ -101,6 +102,7 @@ public class arcScanMode {
         detailCursor();
         detailSpawner();
         detailTransporter();
+        //detailTransporter2();
     }
 
     private static void detailCursor() {
@@ -422,4 +424,258 @@ public class arcScanMode {
         return false;
     }
 
+
+
+    public static Seq<Point> path = new Seq<>(), source = new Seq<>();
+    public static void detailTransporter2() {
+        if (!control.input.arcScanMode) return;
+
+        //check tile being hovered over
+        Tile hoverTile = world.tileWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
+        if (hoverTile == null || hoverTile.build == null || !hoverTile.build.isDiscovered(player.team())) {
+            return;
+        }
+
+        path.clear();
+        source.clear();
+        getBackwardPath(new Point(hoverTile.build, null));
+        drawPath(false);
+
+        path.clear();
+        source.clear();
+        getForwardPath(new Point(hoverTile.build, null));
+        drawPath(true);
+    }
+
+    public static void getBackwardPath(Point point) {
+        if (point.build == null) return;
+
+        Point same = path.find(other -> point.build == other.build && (other.from == null || point.from.build == other.from.build));
+        if (same != null) {
+            if (point.conduit >= same.conduit) return;
+            else path.replace(same, point);
+        }
+        else path.add(point);
+
+        Seq<Point> previous = getPrevious(point);
+        if (previous.any()) {
+            previous.each(arcScanMode::getBackwardPath);
+        }
+        else {
+            source.add(point);
+        }
+    }
+
+    public static void getForwardPath(Point point) {
+        if (point.build == null) return;
+
+        Point same = path.find(other -> point.build == other.build && (other.from == null || point.from.build == other.from.build));
+        if (same != null) {
+            if (point.conduit >= same.conduit) return;
+            else path.replace(same, point);
+        }
+        else path.add(point);
+
+        Seq<Point> next = getNext(point);
+        if (next.any()) {
+            next.each(arcScanMode::getForwardPath);
+        }
+        else {
+            source.add(point);
+        }
+    }
+
+    public static Seq<Point> getPrevious(Point point) {
+        Building build = point.build;
+        if (build == null) return new Seq<>();
+        Seq<Point> previous = new Seq<>();
+        //质驱
+        if (build instanceof MassDriver.MassDriverBuild) {
+            //暂时搞不定
+        }//桥
+        else if (build instanceof ItemBridge.ItemBridgeBuild bridge) {
+            bridge.incoming.each(pos -> previous.add(new Point(world.tile(pos).build, point)));
+        }//导管桥
+        else if (build instanceof DirectionBridge.DirectionBridgeBuild bridge) {
+            for (Building b : bridge.occupied) {
+                if (b != null) {
+                    previous.add(new Point(b, point));
+                }
+            }
+        }
+        for (Building b : build.proximity) {
+            Point from = new Point(b, b.relativeTo(build), b.block.instantTransfer ? point.conduit + 1 : 0, point);
+            if (canInput(point, b, true) && canOutput(from, build, false)) {
+                previous.add(from);
+            }
+        }
+        return previous;
+    }
+
+    public static Seq<Point> getNext(Point point) {
+        Building build = point.build;
+        if (build == null) return new Seq<>();
+        Seq<Point> next = new Seq<>();
+        //质驱
+        if (build instanceof MassDriver.MassDriverBuild massDriverBuild) {
+            if (massDriverBuild.arcLinkValid()) {
+                next.add(new Point(world.build(massDriverBuild.link), point));
+            }
+        }//桥
+        else if (build instanceof ItemBridge.ItemBridgeBuild itemBridgeBuild) {
+            if (itemBridgeBuild.arcLinkValid()) {
+                next.add(new Point(world.build(itemBridgeBuild.link), point));
+            }
+        }//导管桥
+        else if (build instanceof DirectionBridge.DirectionBridgeBuild directionBridgeBuild) {
+            DirectionBridge.DirectionBridgeBuild link = directionBridgeBuild.findLink();
+            if (link != null) {
+                next.add(new Point(link, point));
+            }
+        }
+
+        for (Building b : build.proximity) {
+            Point to = new Point(b, build.relativeTo(b), b.block.instantTransfer ? point.conduit + 1 : 0, point);
+            if (canInput(to, build, false) && canOutput(point, b, true)) {
+                next.add(to);
+            }
+        }
+        return next;
+    }
+
+    public static boolean canInput(Point point, Building from, boolean active) {
+        Building build = point.build;
+        if (build == null || from == null) return false;
+        if (from.block.instantTransfer && point.conduit > 2) return false;
+        //装甲传送带
+        if (build instanceof ArmoredConveyor.ArmoredConveyorBuild) {
+            return from != build.front() && (from instanceof Conveyor.ConveyorBuild || from == build.back());
+        }//装甲导管
+        else if (build instanceof Duct.DuctBuild ductBuild && ((Duct) ductBuild.block).armored) {
+            return from != build.front() && (from.block.isDuct || from == build.back());
+        }//传送带和导管
+        else if (build instanceof Conveyor.ConveyorBuild || build instanceof Duct.DuctBuild) {
+            return from != build.front();
+        }//塑钢带
+        else if (build instanceof StackConveyor.StackConveyorBuild stackConveyorBuild) {
+            return switch (stackConveyorBuild.state) {
+                case 2 -> from == build.back() && from instanceof StackConveyor.StackConveyorBuild;
+                case 1 -> from != build.front();
+                default -> from instanceof StackConveyor.StackConveyorBuild;
+            };
+        }//交叉器
+        else if (build instanceof Junction.JunctionBuild) {
+            return point.facing == -1 || from.relativeTo(build) == point.facing;
+        }//分类
+        else if (build instanceof Sorter.SorterBuild sorterBuild) {
+            return !active || build.relativeTo(from) != point.facing && (sorterBuild.sortItem != null || (from.relativeTo(build) == point.facing) == ((Sorter) sorterBuild.block).invert);
+        }//溢流
+        else if (build instanceof OverflowGate.OverflowGateBuild) {
+            return !active || build.relativeTo(from) != point.facing;
+        }//导管路由器与导管溢流
+        else if (build instanceof DuctRouter.DuctRouterBuild || build instanceof OverflowDuct.OverflowDuctBuild) {
+            return from == build.back();
+        }//桥
+        else if (build instanceof ItemBridge.ItemBridgeBuild itemBridgeBuild) {
+            return itemBridgeBuild.arcCheckAccept(from);
+        }//导管桥
+        else if (build instanceof DirectionBridge.DirectionBridgeBuild directionBridgeBuild) {
+            return directionBridgeBuild.arcCheckAccept(from);
+        }
+        else if (build instanceof Router.RouterBuild) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean canOutput(Point point, Building to, boolean active) {
+        Building build = point.build;
+        if (build == null || to == null) return false;
+        if (to.block.instantTransfer && point.conduit > 2) return false;
+        //传送带和导管
+        if (build instanceof Conveyor.ConveyorBuild || build instanceof Duct.DuctBuild) {
+            return to == build.front();
+        }//塑钢带
+        else if (build instanceof StackConveyor.StackConveyorBuild stackConveyor) {
+            if (stackConveyor.state == 2 && ((StackConveyor) stackConveyor.block).outputRouter) {
+                return to != build.back();
+            }
+            return to == build.front();
+        }//交叉器
+        else if (build instanceof Junction.JunctionBuild) {
+            return point.facing == -1 || build.relativeTo(to) == point.facing;
+        }//分类
+        else if (build instanceof Sorter.SorterBuild sorterBuild) {
+            return !active || to.relativeTo(build) != point.facing && (sorterBuild.sortItem != null || (build.relativeTo(to) == point.facing) == ((Sorter) sorterBuild.block).invert);
+        }//溢流
+        else if (build instanceof OverflowGate.OverflowGateBuild) {
+            return !active || to.relativeTo(build) != point.facing;
+        }//导管路由器与导管溢流
+        else if (build instanceof DuctRouter.DuctRouterBuild || build instanceof OverflowDuct.OverflowDuctBuild) {
+            return to != build.back();
+        }//桥
+        else if (build instanceof ItemBridge.ItemBridgeBuild bridge) {
+            return bridge.arcCheckDump(to);
+        }//导管桥
+        else if (build instanceof DirectionBridge.DirectionBridgeBuild directionBridgeBuild) {
+            DirectionBridge.DirectionBridgeBuild link = directionBridgeBuild.findLink();
+            return link == null && build.relativeTo(to) == build.rotation;
+        }
+        else if (build instanceof Router.RouterBuild || build instanceof Unloader.UnloaderBuild) {
+            return true;
+        }
+        return false;
+    }
+
+    public static void drawPath(boolean forward) {
+        path.each(p -> {
+            if (p.from != null) {
+                float x1 = p.build.tile.drawx(), y1 = p.build.tile.drawy();
+                float x2 = p.from.build.tile.drawx(), y2 = p.from.build.tile.drawy();
+                float dst = Mathf.dst(x1, y1, x2, y2);
+                float angle = Angles.angle(x1, y1, x2, y2) + 90;
+                float offset = 0.8f;
+                x1 += Angles.trnsx(angle, offset);
+                y1 += Angles.trnsy(angle, offset);
+                x2 += Angles.trnsx(angle, offset);
+                y2 += Angles.trnsy(angle, offset);
+
+                Draw.color(Tmp.c1.set(Color.gold).a(Mathf.absin(4f, 1f) * 0.4f + 0.6f));
+                Fill.circle(x1, y1, 1.5f);
+
+                Lines.stroke(1.2f);
+                Lines.line(x1, y1, x2, y2);
+
+                if (dst > 8f) {
+                    Draw.color(Color.orange);
+                    if (forward) {
+                        Drawf.simpleArrow(x2, y2, x1, y1, dst / 2, 3f);
+                    }
+                    else {
+                        Drawf.simpleArrow(x1, y1, x2, y2, dst / 2, 3f);
+                    }
+                }
+            }
+            else {
+                Drawf.selected(p.build, Tmp.c1.set(Color.orange).a(Mathf.absin(4f, 1f) * 0.5f + 0.5f));
+            }
+        });
+    }
+    public static class Point{
+        public Building build;
+        public byte facing = -1;
+        public int conduit = 0;
+
+        public Point from;
+        public Point(Building build, Point from) {
+            this.build = build;
+            this.from = from;
+        }
+        public Point(Building build, byte facing, int conduit, Point from) {
+            this.build = build;
+            this.facing = facing;
+            this.conduit = conduit;
+            this.from = from;
+        }
+    }
 }
