@@ -8,7 +8,6 @@ import arc.graphics.g2d.Lines;
 import arc.math.Angles;
 import arc.math.Interp;
 import arc.math.Mathf;
-import arc.math.geom.Point2;
 import arc.math.geom.Vec2;
 import arc.scene.event.Touchable;
 import arc.scene.ui.layout.Table;
@@ -17,8 +16,6 @@ import arc.util.Align;
 import arc.util.Time;
 import arc.util.Tmp;
 import mindustry.content.Items;
-import mindustry.content.StatusEffects;
-import mindustry.core.UI;
 import mindustry.gen.Building;
 import mindustry.graphics.Drawf;
 import mindustry.graphics.Layer;
@@ -137,6 +134,8 @@ public class arcScanMode {
         totalEffHealth = 0;
         totalDps = 0;
         int curInfoWave = state.wave + 1;
+        checkInit();
+        waveInfo thisWave = arcWave.get(state.wave + 1);
         for (Tile tile : spawner.getSpawns()) {
             if (Mathf.dst(tile.worldx(), tile.worldy(), Core.input.mouseWorldX(), Core.input.mouseWorldY()) < state.rules.dropZoneRadius) {
                 float curve = Mathf.curve(Time.time % 240f, 120f, 240f);
@@ -148,6 +147,7 @@ public class arcScanMode {
                 float trns = Math.max(world.width(), world.height()) * Mathf.sqrt2 * tilesize;
                 float spawnX = Mathf.clamp(world.width() * tilesize / 2f + Angles.trnsx(flyerAngle, trns), 0, world.width() * tilesize);
                 float spawnY = Mathf.clamp(world.height() * tilesize / 2f + Angles.trnsy(flyerAngle, trns), 0, world.height() * tilesize);
+
                 if (hasFlyer) {
                     Lines.line(tile.worldx(), tile.worldy(), spawnX, spawnY);
                     Tmp.v1.set(spawnX - tile.worldx(), spawnY - tile.worldy());
@@ -160,66 +160,10 @@ public class arcScanMode {
 
                     flyerTable.table(Styles.black3, tt -> {
                         tt.add(calWaveTimer()).row();
-                        state.rules.spawns.each(group -> group.type.flying && group.spawn == -1 || (tile.x == Point2.x(group.spawn) && tile.y == Point2.y(group.spawn)), group -> {
-                            thisAmount = group.getSpawned(curInfoWave);
-                            if (thisAmount > 0) {
-                                thisHealth = (group.type.health + group.getShield(curInfoWave)) * thisAmount;
-                                if (group.effect == null) {
-                                    thisEffHealth = (group.type.health + group.getShield(curInfoWave)) * thisAmount;
-                                    thisDps = group.type.estimateDps();
-                                } else {
-                                    thisEffHealth = group.effect.healthMultiplier * (group.type.health + group.getShield(curInfoWave)) * thisAmount;
-                                    thisDps = group.effect.damageMultiplier * group.effect.reloadMultiplier * group.type.estimateDps();
-                                }
-                                totalAmount += thisAmount;
-                                totalHealth += thisHealth;
-                                totalEffHealth += thisEffHealth;
-                                totalDps += thisDps;
-                            }
-                        });
-                        if (totalAmount == 0) tt.add("该波次没有敌人");
-                        else {
-                            tt.table(wi -> {
-                                wi.add("\uE86D").width(50f);
-                                wi.add("[accent]" + totalAmount).growX().padRight(50f);
-                                wi.add("\uE813").width(50f);
-                                wi.add("[accent]" + UI.formatAmount(totalHealth, 2)).growX().padRight(50f);
-                                if (totalEffHealth != totalHealth) {
-                                    wi.add("\uE810").width(50f);
-                                    wi.add("[accent]" + UI.formatAmount(totalEffHealth, 2)).growX().padRight(50f);
-                                }
-                                wi.add("\uE86E").width(50f);
-                                wi.add("[accent]" + UI.formatAmount(totalDps, 2)).growX();
-                            });
-                        }
+                        thisWave.specLoc(tile.pos(),group -> group.type.flying);
+                        tt.add(thisWave.proTable(false));
                         tt.row();
-                        tableCount = 0;
-                        tt.table(wi -> state.rules.spawns.each(group -> group.type.flying && group.spawn == -1 || (tile.x == Point2.x(group.spawn) && tile.y == Point2.y(group.spawn)), group -> {
-                            int amount = group.getSpawned(curInfoWave);
-                            if (amount > 0) {
-                                tableCount += 1;
-                                if (tableCount % 10 == 0) wi.row();
-
-                                StringBuilder groupInfo = new StringBuilder();
-                                groupInfo.append(group.type.emoji());
-
-                                groupInfo.append(group.type.typeColor());
-
-                                groupInfo.append("\n").append(amount);
-                                groupInfo.append("\n");
-
-                                if (group.getShield(curInfoWave) > 0f)
-                                    groupInfo.append(UI.formatAmount((long) group.getShield(curInfoWave)));
-                                groupInfo.append("\n[]");
-                                if (group.effect != null && group.effect != StatusEffects.none)
-                                    groupInfo.append(group.effect.emoji());
-                                if (group.items != null && group.items.amount > 0)
-                                    groupInfo.append(group.items.item.emoji());
-                                if (group.payloads != null && group.payloads.size > 0)
-                                    groupInfo.append("\uE87B");
-                                wi.add(groupInfo.toString()).height(130f).width(50f);
-                            }
-                        })).scrollX(true).scrollY(false).maxWidth(mobile ? 400f : 750f).growX();
+                        tt.add(thisWave.unitTable(tile.pos(),group -> group.type.flying)).maxWidth(mobile ? 400f : 750f).growX();
                     });
                 }
                 //ground
@@ -241,66 +185,10 @@ public class arcScanMode {
                 spt.visible = true;
                 spawnerTable.table(Styles.black3, tt -> {
                     tt.add(calWaveTimer()).row();
-                    state.rules.spawns.each(group -> !group.type.flying && group.spawn == -1 || (tile.x == Point2.x(group.spawn) && tile.y == Point2.y(group.spawn)), group -> {
-                        thisAmount = group.getSpawned(curInfoWave);
-                        if (thisAmount > 0) {
-                            thisHealth = (group.type.health + group.getShield(curInfoWave)) * thisAmount;
-                            if (group.effect == null) {
-                                thisEffHealth = (group.type.health + group.getShield(curInfoWave)) * thisAmount;
-                                thisDps = group.type.estimateDps();
-                            } else {
-                                thisEffHealth = group.effect.healthMultiplier * (group.type.health + group.getShield(curInfoWave)) * thisAmount;
-                                thisDps = group.effect.damageMultiplier * group.effect.reloadMultiplier * group.type.estimateDps();
-                            }
-                            totalAmount += thisAmount;
-                            totalHealth += thisHealth;
-                            totalEffHealth += thisEffHealth;
-                            totalDps += thisDps;
-                        }
-                    });
-                    if (totalAmount == 0) tt.add("该波次没有敌人");
-                    else {
-                        tt.table(wi -> {
-                            wi.add("\uE86D").width(50f);
-                            wi.add("[accent]" + totalAmount).growX().padRight(50f);
-                            wi.add("\uE813").width(50f);
-                            wi.add("[accent]" + UI.formatAmount(totalHealth, 2)).growX().padRight(50f);
-                            if (totalEffHealth != totalHealth) {
-                                wi.add("\uE810").width(50f);
-                                wi.add("[accent]" + UI.formatAmount(totalEffHealth, 2)).growX().padRight(50f);
-                            }
-                            wi.add("\uE86E").width(50f);
-                            wi.add("[accent]" + UI.formatAmount(totalDps, 2)).growX();
-                        });
-                    }
+                    thisWave.specLoc(tile.pos(),group -> !group.type.flying);
+                    tt.add(thisWave.proTable(false));
                     tt.row();
-                    tableCount = 0;
-                    tt.table(wi -> state.rules.spawns.each(group -> !group.type.flying && group.spawn == -1 || (tile.x == Point2.x(group.spawn) && tile.y == Point2.y(group.spawn)), group -> {
-                        int amount = group.getSpawned(curInfoWave);
-                        if (amount > 0) {
-                            tableCount += 1;
-                            if (tableCount % 10 == 0) wi.row();
-
-                            StringBuilder groupInfo = new StringBuilder();
-                            groupInfo.append(group.type.emoji());
-
-                            groupInfo.append(group.type.typeColor());
-
-                            groupInfo.append("\n").append(amount);
-                            groupInfo.append("\n");
-
-                            if (group.getShield(curInfoWave) > 0f)
-                                groupInfo.append(UI.formatAmount((long) group.getShield(curInfoWave)));
-                            groupInfo.append("\n[]");
-                            if (group.effect != null && group.effect != StatusEffects.none)
-                                groupInfo.append(group.effect.emoji());
-                            if (group.items != null && group.items.amount > 0)
-                                groupInfo.append(group.items.item.emoji());
-                            if (group.payloads != null && group.payloads.size > 0)
-                                groupInfo.append("\uE87B");
-                            wi.add(groupInfo.toString()).height(130f).width(50f);
-                        }
-                    })).scrollX(true).scrollY(false).maxWidth(mobile ? 400f : 750f).growX();
+                    tt.add(thisWave.unitTable(tile.pos(),group -> !group.type.flying)).maxWidth(mobile ? 400f : 750f).growX();
                 });
                 return;
             }

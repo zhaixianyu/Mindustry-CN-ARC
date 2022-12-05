@@ -128,6 +128,31 @@ public class RFuncs {
         return builder.toString();
     }
 
+    public static String fixedColorTime(int timer) {
+        return fixedColorTime(timer, true);
+    }
+    public static String fixedColorTime(int timer, boolean units) {
+        StringBuilder str = new StringBuilder();
+        str.append(timer > 0 ? "[orange]":"[acid]");
+        timer = Math.abs(timer);
+        int m = timer / 60 / 60;
+        int s = timer / 60 % 60;
+        int ms = timer % 60;
+        if (m > 0) {
+            str.append(m).append(": ");
+            if (s < 10) {
+                str.append("0");
+            }
+
+            str.append(s);
+            if (units) str.append("min");
+        } else {
+            str.append(s).append(".").append(ms);
+            if (units) str.append('s');
+        }
+        return str.toString();
+    }
+
     public static String fixedTime(int timer, boolean units) {
         StringBuilder str = new StringBuilder();
         int m = timer / 60 / 60;
