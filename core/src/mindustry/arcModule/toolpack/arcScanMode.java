@@ -29,6 +29,7 @@ import mindustry.world.Tile;
 import mindustry.world.blocks.distribution.*;
 import mindustry.world.blocks.liquid.LiquidBridge;
 import mindustry.world.blocks.liquid.LiquidJunction;
+import mindustry.world.blocks.production.GenericCrafter;
 import mindustry.world.blocks.storage.CoreBlock;
 import mindustry.world.blocks.storage.StorageBlock;
 import mindustry.world.blocks.storage.Unloader;
@@ -101,8 +102,8 @@ public class arcScanMode {
     public static void arcScan() {
         detailCursor();
         detailSpawner();
-        detailTransporter();
-        //detailTransporter2();
+        //detailTransporter();
+        detailTransporter2();
     }
 
     private static void detailCursor() {
@@ -448,7 +449,11 @@ public class arcScanMode {
     }
 
     public static void getBackwardPath(Point point) {
-        if (point.build == null) return;
+        if (point.build == null || path.size > maxLoop) return;
+        if (!point.trans){
+            source.add(point);
+            return;
+        }
 
         Point same = path.find(other -> point.build == other.build && (other.from == null || point.from.build == other.from.build));
         if (same != null) {
@@ -467,7 +472,11 @@ public class arcScanMode {
     }
 
     public static void getForwardPath(Point point) {
-        if (point.build == null) return;
+        if (point.build == null || path.size > maxLoop) return;
+        if (!point.trans){
+            source.add(point);
+            return;
+        }
 
         Point same = path.find(other -> point.build == other.build && (other.from == null || point.from.build == other.from.build));
         if (same != null) {
@@ -507,6 +516,9 @@ public class arcScanMode {
             Point from = new Point(b, b.relativeTo(build), b.block.instantTransfer ? point.conduit + 1 : 0, point);
             if (canInput(point, b, true) && canOutput(from, build, false)) {
                 previous.add(from);
+            } else if (canOutput(from, build, false)) {
+                from.trans = false;
+                previous.add(from);
             }
         }
         return previous;
@@ -537,6 +549,9 @@ public class arcScanMode {
         for (Building b : build.proximity) {
             Point to = new Point(b, build.relativeTo(b), b.block.instantTransfer ? point.conduit + 1 : 0, point);
             if (canInput(to, build, false) && canOutput(point, b, true)) {
+                next.add(to);
+            } else if (canInput(to, build, false)) {
+                to.trans = false;
                 next.add(to);
             }
         }
@@ -584,6 +599,9 @@ public class arcScanMode {
         }
         else if (build instanceof Router.RouterBuild) {
             return true;
+        }else if (canAccept(build.block)) {
+            point.trans = false;
+            return true;
         }
         return false;
     }
@@ -623,31 +641,48 @@ public class arcScanMode {
         }
         else if (build instanceof Router.RouterBuild || build instanceof Unloader.UnloaderBuild) {
             return true;
+        } else if (build instanceof GenericCrafter.GenericCrafterBuild) {
+            point.trans = false;
+            return true;
         }
         return false;
     }
 
     public static void drawPath(boolean forward) {
+        Color mainColor = forward ? Color.valueOf("80ff00") : Color.valueOf("ff8000");
+        Color highlightColor =  forward ? Color.valueOf("00cc00") : Color.red;
         path.each(p -> {
-            if (p.from != null) {
+            if (p.from != null && p.trans) {
                 float x1 = p.build.tile.drawx(), y1 = p.build.tile.drawy();
                 float x2 = p.from.build.tile.drawx(), y2 = p.from.build.tile.drawy();
                 float dst = Mathf.dst(x1, y1, x2, y2);
+                /*
                 float angle = Angles.angle(x1, y1, x2, y2) + 90;
                 float offset = 0.8f;
                 x1 += Angles.trnsx(angle, offset);
                 y1 += Angles.trnsy(angle, offset);
                 x2 += Angles.trnsx(angle, offset);
-                y2 += Angles.trnsy(angle, offset);
+                y2 += Angles.trnsy(angle, offset);*/
+                /*  //一种简单的绘图方式，差别不大。但感觉没必要绘图，极少出现输入输出重叠的。或者可以出个判断是否有重叠
+                float offset = tilesize / 8f;
+                float delta = forward ? offset : -offset;
+                x1 += delta;
+                y1 += delta;
+                x2 += delta;
+                y2 += delta;*/
 
-                Draw.color(Tmp.c1.set(Color.gold).a(Mathf.absin(4f, 1f) * 0.4f + 0.6f));
-                Fill.circle(x1, y1, 1.5f);
-
-                Lines.stroke(1.2f);
+                //Draw.z(Layer.weather + 0.2f);
+                Draw.color(mainColor);
+                Draw.color(Tmp.c1.set(mainColor).a(Mathf.absin(4f, 1f) * 0.4f + 0.6f));
+                Lines.stroke(1.5f);
                 Lines.line(x1, y1, x2, y2);
 
-                if (dst > 8f) {
-                    Draw.color(Color.orange);
+                //Draw.z(Layer.weather + 2.3f);
+                Draw.color(mainColor); //应该用highlightColor，但绘图层设置有问题
+                Fill.circle(x1, y1, 1.8f);
+
+                if (dst > tilesize) {
+                    Draw.color(highlightColor);
                     if (forward) {
                         Drawf.simpleArrow(x2, y2, x1, y1, dst / 2, 3f);
                     }
@@ -657,14 +692,17 @@ public class arcScanMode {
                 }
             }
             else {
-                Drawf.selected(p.build, Tmp.c1.set(Color.orange).a(Mathf.absin(4f, 1f) * 0.5f + 0.5f));
+                Drawf.selected(p.build, Tmp.c1.set(highlightColor).a(Mathf.absin(4f, 1f) * 0.5f + 0.5f));
             }
+            Draw.reset();
         });
     }
     public static class Point{
         public Building build;
         public byte facing = -1;
         public int conduit = 0;
+        //用于记录端点方块
+        public boolean trans = true;
 
         public Point from;
         public Point(Building build, Point from) {
