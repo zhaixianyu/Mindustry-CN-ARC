@@ -390,7 +390,7 @@ public class arcScanMode {
         if (build instanceof MassDriver.MassDriverBuild) {
             //暂时搞不定
         }//桥
-        else if (build instanceof ItemBridge.ItemBridgeBuild bridge) {
+        else if (build instanceof ItemBridge.ItemBridgeBuild bridge && ! (build instanceof LiquidBridge.LiquidBridgeBuild)) {
             bridge.incoming.each(pos -> previous.add(new Point(world.tile(pos).build, point)));
         }//导管桥
         else if (build instanceof DirectionBridge.DirectionBridgeBuild bridge) {
@@ -422,7 +422,7 @@ public class arcScanMode {
                 next.add(new Point(world.build(massDriverBuild.link), point));
             }
         }//桥
-        else if (build instanceof ItemBridge.ItemBridgeBuild itemBridgeBuild) {
+        else if (build instanceof ItemBridge.ItemBridgeBuild itemBridgeBuild && !(build instanceof LiquidBridge.LiquidBridgeBuild)) {
             if (itemBridgeBuild.arcLinkValid()) {
                 next.add(new Point(world.build(itemBridgeBuild.link), point));
             }
