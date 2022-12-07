@@ -64,9 +64,11 @@ public class arcScanMode {
             st.touchable = Touchable.disabled;
             st.margin(8f).add(">> 扫描详情模式 <<").color(getThemeColor()).style(Styles.outlineLabel).labelAlign(Align.center);
             st.visible = true;
-            st.update(() -> st.setPosition(Core.graphics.getWidth() / 2f, Core.graphics.getHeight() * 0.7f, Align.center));
             st.pack();
-            st.update(() -> st.visible = control.input.arcScanMode && state.isPlaying());
+            st.update(() -> {
+                st.visible = control.input.arcScanMode && state.isPlaying();
+                st.setPosition(Core.graphics.getWidth() / 2f, Core.graphics.getHeight() * 0.7f, Align.center);
+            });
             Core.scene.add(st);
         }
         {
