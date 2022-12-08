@@ -29,10 +29,15 @@ public class arcChatPicture {
     static Fi figureFile;
     static TextField figureLink;
 
+    static final int maxPicture = 10;
+    static int curPicture = 0;
+
     public static boolean resolveMessage(String text, @Nullable Player playersender) {
         if (!text.contains(ShareType) || !text.contains("http")) {
             return false;
         }
+
+        if (!checkPic()) return true;
 
         int Indexer = text.indexOf(ShareType) + ShareType.length();
         Indexer = text.indexOf("http", Indexer);
@@ -123,6 +128,14 @@ public class arcChatPicture {
         });
     }
 
+    private static boolean checkPic() {
+        if (curPicture >= maxPicture) {
+            ui.arcInfo("当前图片已达上限，仅允许自己添加图片", 10);
+            return false;
+        } else
+            return true;
+    }
+
     public static class floatFigure {
         private final Table t;
         private final Table pic = new Table();
@@ -131,6 +144,8 @@ public class arcChatPicture {
         private final @Nullable Player sender;
 
         floatFigure(Pixmap pixmap, @Nullable Player playersender) {
+            curPicture += 1;
+
             pix = pixmap;
             t = new Table(Styles.black3);
             sender = playersender;
@@ -140,7 +155,9 @@ public class arcChatPicture {
             t.setPosition(Core.graphics.getWidth() / 3f * 2, Core.graphics.getHeight() / 3f * 2, Align.center);
             t.pack();
             t.act(0.1f);
-            t.update(() -> t.visible = t.visible && state.isPlaying());
+            t.update(() -> {
+                if (!state.isGame()) clear();
+            });
             Core.scene.add(t);
             buildTable();
             ui.arcInfo("已收到图片!，来源：" + (playersender.isNull() ? "" : playersender.name) + "\n[gray]使用参考中央监控室-图片分享器");
@@ -180,7 +197,8 @@ public class arcChatPicture {
         private void clear() {
             t.visible = false;
             t.clearListeners();
-            pic.clear();
+            t.remove();
+            curPicture -= 1;
         }
 
         private void saveFig() {
