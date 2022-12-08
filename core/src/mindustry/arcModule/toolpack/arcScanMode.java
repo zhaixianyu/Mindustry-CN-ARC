@@ -59,7 +59,7 @@ public class arcScanMode {
     static Seq<Building> forwardBuild = new Seq<>();
 
 
-    static {
+    static {/*
         {
             st.touchable = Touchable.disabled;
             st.margin(8f).add(">> 扫描详情模式 <<").color(getThemeColor()).style(Styles.outlineLabel).labelAlign(Align.center);
@@ -70,7 +70,7 @@ public class arcScanMode {
                 st.setPosition(Core.graphics.getWidth() / 2f, Core.graphics.getHeight() * 0.7f, Align.center);
             });
             Core.scene.add(st);
-        }
+        }*/
         {
             ct.touchable = Touchable.disabled;
             ct.visible = false;

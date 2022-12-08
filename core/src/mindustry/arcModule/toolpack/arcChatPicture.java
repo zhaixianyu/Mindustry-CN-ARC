@@ -8,12 +8,9 @@ import arc.graphics.Texture;
 import arc.graphics.g2d.*;
 import arc.scene.event.ElementGestureListener;
 import arc.scene.event.InputEvent;
-import arc.scene.ui.Dialog;
-import arc.scene.ui.Label;
-import arc.scene.ui.TextField;
+import arc.scene.ui.*;
 import arc.scene.ui.layout.Table;
 import arc.util.*;
-import mindustry.Vars;
 import mindustry.arcModule.ui.dialogs.MessageDialog;
 import mindustry.gen.Call;
 import mindustry.gen.Player;
@@ -75,10 +72,14 @@ public class arcChatPicture {
             }).size(240, 50).padBottom(20f).row();
             t.table(a -> tTable = a);
             t.row();
-            figureLink = t.field("在此输入图片网址api",text->{}).width(400f).get();
-            t.button("♐", () -> Call.sendChatMessage(getPrefix("yellow", "Picture").append(figureLink.getText()).toString()));
+            figureLink = t.field("在此输入图片网址api", text -> {
+            }).width(400f).get();
+            t.button("♐", () -> {
+                Call.sendChatMessage(getPrefix("yellow", "Picture").append(figureLink.getText()).toString());
+                figureLink.clear();
+            }).disabled(disable -> !figureLink.getText().startsWith("http"));
             t.row();
-            t.button("[orange]随机二次元(大雾)",()->{
+            t.button("[orange]随机二次元(大雾)", () -> {
                 try {
                     Http.get("https://api.ixiaowai.cn/api/api.php", res -> {
                         Pixmap pix = new Pixmap(res.getResult());
@@ -90,6 +91,8 @@ public class arcChatPicture {
                 }
 
             }).padTop(30f).width(400f);
+            t.row();
+            t.add("关闭识别方法：中央监控室——设置" + (mobile ? "" : "\nPC端可通过[cyan]扫描模式[white]来隐藏附属信息"));
         });
 
         dialog.addCloseButton();
@@ -126,14 +129,15 @@ public class arcChatPicture {
 
     public static class floatFigure {
         private final Table t;
-        private final Table pic;
-
+        private Table pic = new Table();
         private final Pixmap pix;
+        private float sizeM = 1f;
+        private @Nullable Player sender;
 
         floatFigure(Pixmap pixmap, @Nullable Player playersender) {
             pix = pixmap;
             t = new Table(Styles.black3);
-            pic = new Table();
+            sender = playersender;
 
             t.add(pic);
             t.visible = false;
@@ -142,18 +146,33 @@ public class arcChatPicture {
             t.act(0.1f);
             t.update(() -> t.visible = t.visible && state.isPlaying());
             Core.scene.add(t);
+            buildTable();
+            ui.arcInfo("已收到图片!，来源：" + (playersender.isNull() ? "" : playersender.name) + "\n[gray]使用参考中央监控室-图片分享器");
+        }
 
-            float ratio = Math.max(pix.width, pix.height) / 500f;
-
+        private void buildTable() {
+            pic.clear();
+            float ratio = Math.max(pix.width, pix.height) / 500f * sizeM;
             t.visible = true;
             TextureRegion cache = new TextureRegion(new Texture(pix));
-            pic.image(cache).size(pix.width / ratio, pix.height / ratio);
+
+            pic.image(cache).size(pix.width / ratio, pix.height / ratio).get();
             pic.row();
             pic.table(tp -> {
-                if (playersender != null) tp.add("[cyan]来源：" + playersender.name()).padRight(20f);
-                tp.button("\uE879", Styles.cleart, this::saveFig).size(40);
-                tp.button("[red]x", Styles.cleart, this::clear).size(40);
-            });
+                if (sender != null) tp.add("[cyan]来源：" + sender.name()).fontScale(sizeM).row();
+                tp.table(tpa -> {
+                    tpa.button("\uE879", Styles.cleart, this::saveFig).size(40);
+                    tpa.button("+", Styles.cleart, () -> {
+                        sizeM = sizeM * 1.2f;
+                        buildTable();
+                    }).size(40);
+                    tpa.button("-", Styles.cleart, () -> {
+                        sizeM = sizeM / 1.2f;
+                        buildTable();
+                    }).size(40);
+                    tpa.button("[red]x", Styles.cleart, this::clear).size(40);
+                });
+            }).visible(() -> mobile || control.input.arcScanMode);
             t.addListener(new ElementGestureListener() {
                 @Override
                 public void pan(InputEvent event, float x, float y, float deltaX, float deltaY) {
