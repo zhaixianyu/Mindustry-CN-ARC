@@ -56,20 +56,18 @@ public class arcChatPicture {
 
         Dialog dialog = new BaseDialog("图片分享器");
         dialog.cont.table(t -> {
-            t.button("[cyan]选择图片[white](png)", () -> {
-                platform.showFileChooser(false, "png", file -> {
-                    figureFile = file;
-                    try {
-                        byte[] bytes = file.readBytes();
-                        oriImage = new Pixmap(bytes);
-                        rebuildShare();
-                        if (oriImage.width > 500 || oriImage.height > 500)
-                            ui.arcInfo("[orange]警告：图片可能过大，请尝试压缩图片", 5);
-                    } catch (Throwable e) {
-                        ui.arcInfo("读取图片失败，请尝试更换图片\n" + e);
-                    }
-                });
-            }).size(240, 50).padBottom(20f).row();
+            t.button("[cyan]选择图片[white](png)", () -> platform.showFileChooser(false, "png", file -> {
+                figureFile = file;
+                try {
+                    byte[] bytes = file.readBytes();
+                    oriImage = new Pixmap(bytes);
+                    rebuildShare();
+                    if (oriImage.width > 500 || oriImage.height > 500)
+                        ui.arcInfo("[orange]警告：图片可能过大，请尝试压缩图片", 5);
+                } catch (Throwable e) {
+                    ui.arcInfo("读取图片失败，请尝试更换图片\n" + e);
+                }
+            })).size(240, 50).padBottom(20f).row();
             t.table(a -> tTable = a);
             t.row();
             figureLink = t.field("在此输入图片网址api", text -> {
@@ -111,9 +109,7 @@ public class arcChatPicture {
         tTable.add("操作图片").pad(25f);
         tTable.row();
         tTable.table(t -> {
-            t.button("添加到本地", () -> {
-                new floatFigure(oriImage, player);
-            }).width(300f).row();
+            t.button("添加到本地", () -> new floatFigure(oriImage, player)).width(300f).row();
             t.button("上传到云以分享", () -> {
                 ui.arcInfo("上传中，请等待...");
                 var post = Http.post("http://squirrel.gq/api/upload");
@@ -129,10 +125,10 @@ public class arcChatPicture {
 
     public static class floatFigure {
         private final Table t;
-        private Table pic = new Table();
+        private final Table pic = new Table();
         private final Pixmap pix;
         private float sizeM = 1f;
-        private @Nullable Player sender;
+        private final @Nullable Player sender;
 
         floatFigure(Pixmap pixmap, @Nullable Player playersender) {
             pix = pixmap;
@@ -152,7 +148,7 @@ public class arcChatPicture {
 
         private void buildTable() {
             pic.clear();
-            float ratio = Math.max(pix.width, pix.height) / 500f * sizeM;
+            float ratio = Math.max(pix.width, pix.height) / 500f / sizeM;
             t.visible = true;
             TextureRegion cache = new TextureRegion(new Texture(pix));
 
@@ -162,12 +158,12 @@ public class arcChatPicture {
                 if (sender != null) tp.add("[cyan]来源：" + sender.name()).fontScale(sizeM).row();
                 tp.table(tpa -> {
                     tpa.button("\uE879", Styles.cleart, this::saveFig).size(40);
-                    tpa.button("+", Styles.cleart, () -> {
-                        sizeM = sizeM * 1.2f;
-                        buildTable();
-                    }).size(40);
                     tpa.button("-", Styles.cleart, () -> {
                         sizeM = sizeM / 1.2f;
+                        buildTable();
+                    }).size(40);
+                    tpa.button("+", Styles.cleart, () -> {
+                        sizeM = sizeM * 1.2f;
                         buildTable();
                     }).size(40);
                     tpa.button("[red]x", Styles.cleart, this::clear).size(40);
@@ -188,9 +184,7 @@ public class arcChatPicture {
         }
 
         private void saveFig() {
-            platform.export("图片-" + Time.millis(), "png", file -> {
-                PixmapIO.writePng(file, pix);
-            });
+            platform.export("图片-" + Time.millis(), "png", file -> PixmapIO.writePng(file, pix));
             ui.arcInfo("[cyan]已保存图片");
         }
     }
