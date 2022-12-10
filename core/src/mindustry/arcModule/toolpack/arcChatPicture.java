@@ -45,15 +45,16 @@ public class arcChatPicture {
 
         MessageDialog.addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.arcChatPicture, text));
 
-        try {
-            Http.get(url, res -> {
+        Http.get(url, res -> {
+            try {
                 Pixmap pix = new Pixmap(res.getResult());
                 Timer.schedule(() -> new floatFigure(pix, playersender), 0.01f);
-            });
-        } catch (Exception e) {
-            Log.err(e);
-            ui.arcInfo("[orange]图片读取失败");
-        }
+            } catch (Exception e) {
+                Log.err(e);
+                ui.arcInfo("[orange]图片读取失败");
+            }
+        });
+
         return true;
     }
 
@@ -122,6 +123,8 @@ public class arcChatPicture {
                 post.header("filename", figureFile.name());
                 post.header("size", String.valueOf(figureFile.length()));
                 post.header("token", "3ab6950d5970c57f938673911f42fd32");
+                post.timeout=10000;
+                post.error(e -> ui.arcInfo("发生了一个错误:"+e.toString()));
                 post.submit(r -> figureLink.setText("http://squirrel.gq/api/get?id=" + r.getResultAsString()));
             }).width(300f);
 
