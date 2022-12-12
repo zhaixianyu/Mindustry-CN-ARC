@@ -230,7 +230,7 @@ public class arcWaveSpawner {
             this.shield = group.getShield(waveIndex) * amount;   //盾
             this.health = (group.type.health + shield) * amount;   //盾+血
             this.dps = group.type.estimateDps() * amount;
-            this.effHealth = health * amount;
+            this.effHealth = health;
             if (group.effect != null) {
                 this.effHealth *= group.effect.healthMultiplier;
                 this.dps *= group.effect.damageMultiplier * group.effect.reloadMultiplier;
