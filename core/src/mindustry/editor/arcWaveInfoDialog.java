@@ -330,13 +330,13 @@ public class arcWaveInfoDialog extends BaseDialog {
                                 tt.add("第[accent]" + (finalWave + 1) + "[]波");
                                 tt.row();
                                 float firstWaveTime = state.rules.initialWaveSpacing <= 0 ? (2 * state.rules.waveSpacing) : state.rules.initialWaveSpacing;
-                                int thisTime = (int) ((finalWave - 1) * state.rules.waveSpacing + firstWaveTime);
+                                int thisTime = (int) (finalWave * state.rules.waveSpacing + firstWaveTime);
                                 tt.add(fixedTime(thisTime, false)).row();
                                 Label waveTime = tt.add("").get();
                                 tt.update(()->{
                                    if (!state.isGame()) waveTime.setText("");
                                    else {
-                                       int deltaTime = thisTime - (int) (state.wave < 1 ? (firstWaveTime - state.wavetime) : (firstWaveTime + state.rules.waveSpacing * state.wave - state.wavetime));
+                                       int deltaTime = thisTime - (int) (state.wave <= 1 ? (firstWaveTime - state.wavetime) : (firstWaveTime + state.rules.waveSpacing * (state.wave - 1) - state.wavetime));
                                        waveTime.setText(fixedColorTime(deltaTime,false));
                                    }
                                 });
