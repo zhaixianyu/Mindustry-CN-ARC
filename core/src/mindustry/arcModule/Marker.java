@@ -109,7 +109,7 @@ public class Marker {
                 ui.MessageDialog.addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.markLoc, text, pos));
                 return true;
             } catch (Throwable e) {
-                Log.err("Cannot resolve position from " + posStr);
+                Log.err("Cannot resolve position");
                 return false;
             }
         }
