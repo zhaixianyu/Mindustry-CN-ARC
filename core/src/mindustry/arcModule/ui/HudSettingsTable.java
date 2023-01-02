@@ -141,7 +141,9 @@ public class HudSettingsTable extends Table{
                         ui.arcInfo("已移除逻辑视角锁定");
                     }).checked(a->Core.settings.getBool("removeLogicLock")).size(30,30).tooltip("逻辑锁定");
                     t.button("[cyan]雾",textStyle, () ->{
-                        state.rules.fog = !state.rules.fog;
+                        if(player.team().id==255) {
+                            state.rules.fog = !state.rules.fog;
+                        }
                     }).checked(a->state.rules.fog).size(30,30).tooltip("战争迷雾").visible(!state.rules.pvp || player.team().id == 255);
                 }).left();
                 sp.row();
