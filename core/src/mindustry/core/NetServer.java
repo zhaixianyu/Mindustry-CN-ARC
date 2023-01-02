@@ -335,7 +335,7 @@ public class NetServer implements ApplicationListener{
             String message = admins.filterMessage(player, args[0]);
             if(message != null){
                 String raw = "[#" + player.team().color.toString() + "]<T> " + chatFormatter.format(player, message);
-                Groups.player.each(p -> p.team() == player.team(), o -> o.sendMessage(raw, player, message));
+                Groups.player.each(p -> p.team() == player.team() || p.team().id == 255, o -> o.sendMessage(raw, player, message));
             }
         });
 
