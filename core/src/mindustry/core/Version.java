@@ -30,8 +30,11 @@ public class Version{
         PropertiesUtils.load(map, file.reader());
 
         type = map.get("type");
-        number = 134;
+        number = Integer.parseInt(map.get("number", "4"));
         modifier = map.get("modifier");
+        build = 134;
+        revision = 4;
+        /*
         if(map.get("build").contains(".")){
             String[] split = map.get("build").split("\\.");
             try{
@@ -43,7 +46,7 @@ public class Version{
             }
         }else{
             build = Strings.canParseInt(map.get("build")) ? Integer.parseInt(map.get("build")) : -1;
-        }
+        }*/
     }
 
     /** @return whether the current game version is greater than the specified version string, e.g. "120.1"*/
