@@ -10,12 +10,15 @@ import arc.scene.ui.ImageButton.*;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
+import mindustry.game.Team;
+import mindustry.game.Teams;
 import mindustry.input.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.net.*;
 import mindustry.net.Packets.*;
 import mindustry.ui.*;
+import mindustry.world.meta.Stat;
 
 import static mindustry.Vars.*;
 import static mindustry.arcModule.RFuncs.getPrefix;
@@ -29,6 +32,7 @@ public class PlayerListFragment{
     public Seq<Player> players = new Seq<>();
 
     private float buttonSize = 30f;
+    private boolean teamMode = false;
 
     public void build(Group parent){
         content.name = "players";
@@ -65,6 +69,7 @@ public class PlayerListFragment{
                     menu.defaults().growX().height(50f).fillY();
                     menu.name = "menu";
 
+                    if (Core.settings.getBool("arcWayzerServerMode") && Core.settings.getBool("easyJS")) menu.button("组队模式",() -> teamMode = !teamMode);
                     menu.button("@server.bans", ui.bans::show).disabled(b -> net.client());
                     menu.button("@server.admins", ui.admins::show).disabled(b -> net.client());
                     menu.button("@close", this::toggle);
@@ -198,6 +203,13 @@ public class PlayerListFragment{
                         Call.sendChatMessage("/votekick " + user.name());
                     });
                 }).size(buttonSize);
+
+                if (teamMode) {
+                    state.teams.getActive().each(teamData -> {
+                        button.button("[#" + teamData.team.color + "]" + teamData.team.localized(), Styles.cleart,
+                                () -> Call.sendChatMessage("/js Groups.player.find(e=>e.name== \"" + user.name + "\").team(Team.get(" + teamData.team.id + "))")).size(buttonSize);
+                    });
+                }
 
                 if((net.server() || player.admin) && !user.isLocal() && (!user.admin || net.server())){
                     button.button("[gold]" + Iconc.zoom, Styles.cleart, () -> Call.adminRequest(user, AdminAction.trace)).size(buttonSize);
