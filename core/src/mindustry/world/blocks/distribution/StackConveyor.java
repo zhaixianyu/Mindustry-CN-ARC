@@ -271,7 +271,7 @@ public class StackConveyor extends Block implements Autotiler{
             if(!enabled) return;
 
             if(state == stateUnload){ //unload
-                while(lastItem != null && (!outputRouter ? moveForward(lastItem) : dump(lastItem)) && (!items.empty() && lastItem == items.first())){
+                while(lastItem != null && (!outputRouter ? moveForward(lastItem) : dump(lastItem))){
                     if(!outputRouter){
                         items.remove(lastItem, 1);
                     }
@@ -280,6 +280,7 @@ public class StackConveyor extends Block implements Autotiler{
                         poofOut();
                         lastItem = null;
                     }
+                    if(lastItem != items.first()) break;
                 }
             }else{ //transfer
                 if(state != stateLoad || (items.total() >= getMaximumAccepted(lastItem))){
