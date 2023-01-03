@@ -27,6 +27,10 @@ public class ItemModule extends BlockModule{
 
     private @Nullable WindowedMean[] flow;
 
+    public int[] getItems(){
+        return items;
+    }
+
     public ItemModule copy(){
         ItemModule out = new ItemModule();
         out.set(this);

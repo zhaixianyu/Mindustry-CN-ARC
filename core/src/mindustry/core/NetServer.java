@@ -958,10 +958,22 @@ public class NetServer implements ApplicationListener{
         dataWrites.output = dataStream;
 
         //block data isn't important, just send the items for each team, they're synced across cores
-        for(TeamData data : state.teams.present){
-            if(data.cores.size > 0){
+        for (TeamData data : state.teams.present) {
+            if (data.cores.size > 0) {
                 dataStream.writeByte(data.team.id);
-                data.cores.first().items.write(dataWrites);
+                if (!state.rules.pvp || data.team == player.team() || player.team() == Team.get(255))
+                    data.cores.first().items.write(dataWrites);
+                else {
+                    int[] items = data.cores.first().items.getItems();
+                    int itemCount = 0;
+                    for (int i = 0; i < items.length; i++) if (items[i] > 0) itemCount += 1;
+                    dataStream.writeShort(itemCount);
+                    for (int i = 0; i < items.length; i++) {
+                        if (items[i] == 0) continue;
+                        dataStream.writeShort(i);
+                        dataStream.writeInt(100);
+                    }
+                }
             }
         }
 
