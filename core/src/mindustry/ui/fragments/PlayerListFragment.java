@@ -10,6 +10,7 @@ import arc.scene.ui.ImageButton.*;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
+import mindustry.arcModule.ui.dialogs.TeamSelectDialog;
 import mindustry.game.Team;
 import mindustry.game.Teams;
 import mindustry.input.*;
@@ -69,7 +70,7 @@ public class PlayerListFragment{
                     menu.defaults().growX().height(50f).fillY();
                     menu.name = "menu";
 
-                    if (Core.settings.getBool("arcWayzerServerMode") && Core.settings.getBool("easyJS")) menu.button("组队模式",() -> teamMode = !teamMode);
+                    if (Core.settings.getBool("arcWayzerServerMode") && Core.settings.getBool("easyJS")) menu.button("快速换队",() -> teamMode = !teamMode);
                     menu.button("@server.bans", ui.bans::show).disabled(b -> net.client());
                     menu.button("@server.admins", ui.admins::show).disabled(b -> net.client());
                     menu.button("@close", this::toggle);
@@ -204,19 +205,21 @@ public class PlayerListFragment{
                     });
                 }).size(buttonSize);
 
-                if (teamMode) {
-                    state.teams.getActive().each(teamData -> {
-                        button.button("[#" + teamData.team.color + "]" + teamData.team.localized(), Styles.cleart,
-                                () -> Call.sendChatMessage("/js Groups.player.find(e=>e.name== \"" + user.name + "\").team(Team.get(" + teamData.team.id + "))")).size(buttonSize);
-                    });
-                }
-
                 if((net.server() || player.admin) && !user.isLocal() && (!user.admin || net.server())){
                     button.button("[gold]" + Iconc.zoom, Styles.cleart, () -> Call.adminRequest(user, AdminAction.trace)).size(buttonSize);
                     button.button("[gold]" + Iconc.cancel, Styles.cleart,
                             () -> ui.showConfirm("@confirm", Core.bundle.format("confirmkick",  user.name()), () -> Call.adminRequest(user, AdminAction.kick))).size(buttonSize);
                     button.button("[gold]" + Iconc.hammer, Styles.cleart,
                             () -> ui.showConfirm("@confirm", Core.bundle.format("confirmban",  user.name()), () -> Call.adminRequest(user, AdminAction.ban))).size(buttonSize);
+                }
+                if (teamMode) {
+                    state.teams.getActive().each(teamData -> {
+                        button.button("[#" + teamData.team.color + "]" + teamData.team.localized(), Styles.cleart,
+                                () -> Call.sendChatMessage("/js Groups.player.find(e=>e.name== \"" + user.name + "\").team(Team.get(" + teamData.team.id + "))")).size(buttonSize);
+                    });
+                    button.button("[violet]+",Styles.cleart,()->{
+                        new TeamSelectDialog(team -> Call.sendChatMessage("/js Groups.player.find(e=>e.name== \"" + user.name + "\").team(Team.get(" + team.id + "))"), user.team()).show();
+                    }).size(buttonSize);
                 }
 
 
