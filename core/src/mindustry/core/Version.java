@@ -32,7 +32,7 @@ public class Version{
         type = map.get("type");
         number = Integer.parseInt(map.get("number", "4"));
         modifier = map.get("modifier");
-        build = 134;
+        build = 140;
         revision = 4;
         /*
         if(map.get("build").contains(".")){

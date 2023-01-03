@@ -349,6 +349,14 @@ public class NetServer implements ApplicationListener{
             Groups.player.each(Player::admin, a -> a.sendMessage(raw, player, args[0]));
         });
 
+        clientCommands.<Player>register("p", "", "暂停游戏", (args, player) -> {
+            if(player.admin){
+                state.set(state.isPaused() ? State.playing : State.paused);
+                Groups.player.each(player1 -> player1.sendMessage("[cyan]服务器已" + (state.isPaused()?"暂停":"继续")));
+            }
+        });
+
+
         //duration of a kick in seconds
         int kickDuration = 60 * 60;
         //voting round duration in seconds
