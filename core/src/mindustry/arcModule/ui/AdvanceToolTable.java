@@ -21,10 +21,7 @@ import mindustry.content.UnitTypes;
 import mindustry.core.World;
 import mindustry.game.EventType;
 import mindustry.game.Team;
-import mindustry.gen.Icon;
-import mindustry.gen.Payloadc;
-import mindustry.gen.Tex;
-import mindustry.gen.Unit;
+import mindustry.gen.*;
 import mindustry.input.DesktopInput;
 import mindustry.input.MobileInput;
 import mindustry.type.Item;
@@ -380,6 +377,30 @@ public class AdvanceToolTable extends Table {
                 Core.camera.position.set(unitLoc.x * tilesize, unitLoc.y * tilesize);
                 unitFactory.closeOnBack();
             }).fillX();
+
+            if (Core.settings.getBool("easyJS")) {
+                table.row();
+                table.button("[orange] 生成！(/js)", Icon.modeAttack, () -> {
+                    ui.arcInfo("已生成单个单位。\n[gray]请不要短时多次使用本功能，否则容易因ddos被服务器ban", 5f);
+                    Tmp.v1.rnd(Mathf.random(unitRandDst * tilesize));
+                    float x = unitLoc.x * tilesize + Tmp.v1.x, y = unitLoc.y * tilesize + Tmp.v1.y;
+                    Call.sendChatMessage("/js unit = UnitTypes." + spawnUnit.type.name + ".create(Team.get(" + spawnUnit.team.id + "))");
+                    if (spawnUnit.health != spawnUnit.type.health)
+                        Call.sendChatMessage("/js unit.health = " + spawnUnit.health);
+                    if (spawnUnit.shield != 0) Call.sendChatMessage("/js unit.shield = " + spawnUnit.shield);
+                    if (spawnUnit.elevation != 0) Call.sendChatMessage("/js unit.elevation = " + spawnUnit.elevation);
+                    Call.sendChatMessage("/js unit.set(" + x + "," + y + ")");
+                    unitStatus.each((status, statusDuration) -> {
+                        Call.sendChatMessage("/js unit.apply(StatusEffects." + status.name + "," + statusDuration + "*60)");
+                    });
+                    Call.sendChatMessage("/js unit.add()");
+                    if (control.input instanceof DesktopInput input) {
+                        input.panning = true;
+                    }
+                    Core.camera.position.set(unitLoc.x * tilesize, unitLoc.y * tilesize);
+                    unitFactory.closeOnBack();
+                }).fillX();
+            }
         };
         rebuild[0].run();
 
@@ -446,7 +467,8 @@ public class AdvanceToolTable extends Table {
                         }
                         tt.button("[violet]+", flatToggleMenut, () -> {
                             new TeamSelectDialog(team -> {
-                                unit.team = team; rebuildTable[0].run();
+                                unit.team = team;
+                                rebuildTable[0].run();
                             }, unit.team).show();
                         }).checked(b -> {
                             return !Seq.with(Team.baseTeams).contains(unit.team);
