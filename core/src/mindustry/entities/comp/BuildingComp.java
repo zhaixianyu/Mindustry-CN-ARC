@@ -1154,7 +1154,7 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
     }
 
     public void drawBars(){
-        Draw.z(Layer.shields + 4f);
+        Draw.z(Layer.turret + 4f);
         if(maxHealth < Core.settings.getInt("blockbarminhealth") || (health / maxHealth > 0.9f )) return;
         Draw.color(team.color, 0.3f);
         Lines.stroke(4f);
