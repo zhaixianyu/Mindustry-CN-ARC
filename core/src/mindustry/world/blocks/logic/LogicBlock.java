@@ -475,15 +475,15 @@ public class LogicBlock extends Block{
                         changed = true;
                         l.valid = valid;
                         if(valid){
+                            if(!privileged) {
+                                //this prevents conflicts
+                                l.name = "";
+                                //finds a new matching name after toggling
+                                l.name = findLinkName(cur.block);
 
-                            //this prevents conflicts
-                            l.name = "";
-                            //finds a new matching name after toggling
-                            l.name = findLinkName(cur.block);
-
-                            //remove redundant links
-                            links.removeAll(o -> world.build(o.x, o.y) == cur && o != l);
-
+                                //remove redundant links
+                                links.removeAll(o -> world.build(o.x, o.y) == cur && o != l);
+                            }
                             //break to prevent concurrent modification
                             updates = true;
                             break;
