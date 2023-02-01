@@ -233,6 +233,11 @@ public class DesktopLauncher extends ClientLauncher{
             }
 
             @Override
+            public void clearAchievement(String name){
+                Core.settings.put("achievement." + name, false);
+            }
+
+            @Override
             public boolean isAchieved(String name){
                 return Core.settings.getBool("achievement." + name, false);
             }
