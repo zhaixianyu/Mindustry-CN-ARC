@@ -87,6 +87,8 @@ public class UI implements ApplicationListener, Loadable{
     //public MindustryWikiDialog mindustrywiki;
     public mindustry.arcModule.ui.dialogs.MessageDialog MessageDialog;
 
+    public mindustry.arcModule.ui.dialogs.MusicDialog MusicDialog;
+
     private @Nullable Element lastAnnouncement;
 
     private @Nullable Element lastArcAnnouncement;
@@ -223,6 +225,7 @@ public class UI implements ApplicationListener, Loadable{
         //mindustrywiki = new MindustryWikiDialog();
         MessageDialog = new MessageDialog();
         campaignComplete = new CampaignCompleteDialog();
+        MusicDialog = new MusicDialog();
 
         Group group = Core.scene.root;
 
@@ -603,6 +606,11 @@ public class UI implements ApplicationListener, Loadable{
             confirmed.run();
         });
         dialog.show();
+    }
+
+
+    public void showMusicMenu(){
+
     }
 
     /** Shows a menu that fires a callback when an option is selected. If nothing is selected, -1 is returned. */
