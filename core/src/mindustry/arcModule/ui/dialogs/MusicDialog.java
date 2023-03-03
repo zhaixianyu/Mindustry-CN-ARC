@@ -35,6 +35,7 @@ import static mindustry.Vars.ui;
 import static mindustry.arcModule.RFuncs.getPrefix;
 
 public class MusicDialog extends BaseDialog{
+    public static final String version = "1.0.1";
     public static final String ShareType = "[pink]<Music>";
     private MusicApi api;
     private MusicApi[] apis;
@@ -47,6 +48,7 @@ public class MusicDialog extends BaseDialog{
     private Slider progressBar;
     private MusicInfo nowMusic;
     private boolean loaded, updating, paused;
+    private BaseDialog switchDialog;
     public MusicDialog() {
         super("松鼠音乐");
         try {
@@ -58,7 +60,9 @@ public class MusicDialog extends BaseDialog{
             api = apis[2];
             setup();
             addCloseButton();
-            button(Icon.info, () -> Vars.ui.showInfo("[pink]松鼠音乐v1.0.0\n[gold]松鼠制作"));
+            button(Icon.info, () -> ui.showInfo("[pink]松鼠音乐v" + version + "\n[gold]松鼠制作"));
+            buttons.button("切换api", this::switchApi);
+            buttons.button("上传本地音乐", this::upload).disabled(b -> !api.canUpload());
             onResize(this::setup);
             shown(() -> {
                 if(check()) {
@@ -68,10 +72,31 @@ public class MusicDialog extends BaseDialog{
             player = new Music();
             vol = 100;
             loaded = true;
+            switchDialog = new BaseDialog("切换api");
+            switchDialog.cont.label(() -> "当前api: (" + api.getId() + ")" + api.getName());
+            switchDialog.cont.row();
+            switchDialog.cont.pane(p -> {
+                for(MusicApi capi : apis) {
+                    if(capi != null) {//What JetBrains IDEA
+                        byte id = capi.getId();
+                        String name = capi.getName();
+                        p.button("(" + id + ")" + name, () -> {
+                            api = apis[id];
+                            setup();
+                            switchDialog.hide();
+                        }).width(200f);
+                        p.row();
+                    }
+                }
+            }).growX().growY();
+            switchDialog.addCloseButton();
             Events.run(EventType.Trigger.update, this::updateProgress);
         } catch (Exception err) {
-            Events.on(EventType.ClientLoadEvent.class, e -> Vars.ui.showErrorMessage("松鼠音乐加载失败!\n" + err.getMessage()));
+            Events.on(EventType.ClientLoadEvent.class, e -> ui.showErrorMessage("松鼠音乐加载失败!\n" + err.getMessage()));
         }
+    }
+    private void switchApi(){
+        switchDialog.show();
     }
     private boolean check() {
         if(!loaded) {
@@ -111,56 +136,62 @@ public class MusicDialog extends BaseDialog{
     private void setup() {
         cont.top();
         cont.clear();
-        cont.table(s -> {
-            s.left();
-            s.field(search, res -> search = res).growX().get();
-            s.button(Icon.zoom, () -> {
-                searchPage = 1;
-                search();
-            });
-        }).fillX().padBottom(4);
-        cont.row();
-        cont.pane(t -> {
-            t.top();
-            loadSearch = () -> {
-                if(searchResult.count > 0) {
-                    float width = Core.graphics.getWidth() / Scl.scl() * 0.9f;
-                    t.clear();
-                    for (byte i = 0; i < searchResult.count; i++) {
-                        MusicInfo info = searchResult.list[i];
-                        Button[] buttons = {null};//Variable 'button' might not have been initialized
-                        Button button = buttons[0] = t.button(b -> {
-                        }, () -> {
-                            if (!buttons[0].childrenPressed()) {
-                                player.stop();
-                                api.getMusicInfo(info.id, this::play);
-                            }
-                        }).width(width).pad(2f).get();
-                        Table inner = new Table(Tex.whiteui);
-                        inner.setColor(Color.black);
-                        button.clearChildren();
-                        button.add(inner).growX();
-                        inner.add(info.author + " - " + info.name).left().padLeft(10f).wrap().style(Styles.outlineLabel).growX();
-                        inner.button(Icon.download, Styles.emptyi, () -> download(info)).margin(3f).pad(2).padTop(6f).top().right();
-                        inner.button(Icon.link, Styles.emptyi, () -> share(info)).margin(3f).pad(2).pad(6).top().right();
-                        button.row();
-                        t.row();
+        if(api.canSearch()) {
+            cont.table(s -> {
+                s.left();
+                s.field(search, res -> search = res).growX().get();
+                s.button(Icon.zoom, () -> {
+                    searchPage = 1;
+                    search();
+                });
+            }).fillX().padBottom(4);
+            cont.row();
+            cont.pane(t -> {
+                t.top();
+                loadSearch = () -> {
+                    if (searchResult.count > 0) {
+                        float width = Core.graphics.getWidth() / Scl.scl() * 0.9f;
+                        t.clear();
+                        for (byte i = 0; i < searchResult.count; i++) {
+                            MusicInfo info = searchResult.list[i];
+                            Button[] buttons = {null};//Variable 'button' might not have been initialized
+                            Button button = buttons[0] = t.button(b -> {
+                            }, () -> {
+                                if (!buttons[0].childrenPressed()) {
+                                    player.stop();
+                                    api.getMusicInfo(info.id, this::play);
+                                }
+                            }).width(width).pad(2f).get();
+                            Table inner = new Table(Tex.whiteui);
+                            inner.setColor(Color.black);
+                            button.clearChildren();
+                            button.add(inner).growX();
+                            inner.add(info.author + " - " + info.name).left().padLeft(10f).wrap().style(Styles.outlineLabel).growX();
+                            inner.button(Icon.download, Styles.emptyi, () -> download(info)).margin(3f).pad(2).padTop(6f).top().right();
+                            inner.button(Icon.link, Styles.emptyi, () -> share(info)).margin(3f).pad(2).pad(6).top().right();
+                            button.row();
+                            t.row();
+                        }
+                        t.table(tt -> {
+                            tt.button(Icon.left, () -> {
+                                searchPage--;
+                                search();
+                            }).height(50f).width(150f).disabled(b -> searchPage <= 1);
+                            tt.add(searchPage + "/" + allPage);
+                            tt.button(Icon.right, () -> {
+                                searchPage++;
+                                search();
+                            }).height(50f).width(150f).disabled(b -> searchPage >= allPage);
+                        });
                     }
-                    t.table(tt -> {
-                        tt.button(Icon.left, () -> {
-                            searchPage--;
-                            search();
-                        }).height(50f).width(150f).disabled(b -> searchPage <= 1);
-                        tt.add(searchPage + "/" + allPage);
-                        tt.button(Icon.right, () -> {
-                            searchPage++;
-                            search();
-                        }).height(50f).width(150f).disabled(b -> searchPage >= allPage);
-                    });
-                }
-            };
-        }).growY();
-        cont.row();
+                };
+            }).growY();
+            cont.row();
+            loadSearch.run();
+        } else {
+            loadSearch = () -> {};
+        }
+        cont.bottom();
         cont.table(t -> loadStatus = () -> {
             t.clear();
             t.bottom();
@@ -169,7 +200,7 @@ public class MusicDialog extends BaseDialog{
                 tt.left();
                 Table[] img = {null};
                 tt.table(ttt -> img[0] = ttt).size(64).pad(2f);
-                if(nowMusic.img != null) Http.get(nowMusic.img, r -> {
+                if (nowMusic.img != null) Http.get(nowMusic.img, r -> {
                     Pixmap pix = new Pixmap(r.getResult());
                     Core.app.post(() -> {
                         TextureRegion cache = new TextureRegion(new Texture(pix));
@@ -181,14 +212,14 @@ public class MusicDialog extends BaseDialog{
                     ms.table(ttt -> {
                         ttt.add(nowMusic.name == null ? "松鼠音乐" : (nowMusic.author + " - " + nowMusic.name)).left().wrap().style(Styles.outlineLabel).growX();
                         ttt.button(Icon.play, Styles.emptyi, () -> {
-                            if(!player.isPlaying()) {
+                            if (!player.isPlaying()) {
                                 if (paused) {
                                     player.pause(false);
                                     paused = false;
                                 } else {
-                                    if(nowMusic.name != null) {
+                                    if (nowMusic.name != null) {
                                         Fi f = new Fi("/tmp/squirrel.mp3");
-                                        if(f.exists()) {
+                                        if (f.exists()) {
                                             try {
                                                 playDirectly(f);
                                             } catch (Exception ignored) {
@@ -204,11 +235,11 @@ public class MusicDialog extends BaseDialog{
                             paused = true;
                         }).margin(3f).pad(2).padTop(6f).top().right();
                         ttt.button(Icon.downloadSmall, Styles.emptyi, () -> {
-                            if(nowMusic.name != null) {
+                            if (nowMusic.name != null) {
                                 download(nowMusic);
                             }
                         }).margin(3f).pad(2).padTop(6f).top().right();
-                        ttt.label(() -> "音量:" + (byte)vol);
+                        ttt.label(() -> "音量:" + (byte) vol);
                         ttt.button(Icon.upSmall, Styles.emptyi, () -> {
                             vol = Math.min(vol + 10, 100);
                             player.setVolume(vol / 100);
@@ -222,27 +253,26 @@ public class MusicDialog extends BaseDialog{
                             ui.announce("单曲循环已" + (player.isLooping() ? "开启" : "关闭"), 1f);
                         }).margin(3f).pad(2).padTop(6f).top().right().checked(b -> player.isLooping());
                         ttt.button(Icon.linkSmall, Styles.emptyi, () -> {
-                            if(nowMusic.name != null) {
+                            if (nowMusic.name != null) {
                                 share(nowMusic);
                             }
                         }).margin(3f).pad(2).pad(6).top().right();
                     }).growX();
                     ms.row();
                     progressBar = ms.slider(0f, nowMusic.length, 0.01f, f -> {
-                        if(!updating) {
+                        if (!updating) {
                             player.setPosition(0);
                             player.setPosition(f);
                             player.pause(false);
                             paused = false;
                         }
-                    }).growX().get();
+                    }).growX().disabled(s -> nowMusic.length == 0).get();
                     ms.row();
-                    ms.label(() -> "" + (int)(progress / 60) + ":" + (int)(progress % 60) + "/" + (nowMusic.length / 60) + ":" + (nowMusic.length % 60));
+                    ms.label(() -> "" + (int) (progress / 60) + ":" + (int) (progress % 60) + (nowMusic.length == 0 ? "" : "/" + (nowMusic.length / 60) + ":" + (nowMusic.length % 60)));
                 }).growX().growY();
             }).width(width).height(100f);
         });
         loadStatus.run();
-        loadSearch.run();
     }
     private void updateProgress() {
         updating = true;
@@ -255,6 +285,12 @@ public class MusicDialog extends BaseDialog{
             fi.writeBytes(r.getResult());
             Core.app.post(() -> Vars.ui.showInfo("下载成功"));
         })));
+    }
+    private void upload(){
+        platform.showFileChooser(true, "选择音乐文件", "mp3", f -> {
+            ui.announce("正在上传...");
+            api.upload(f, this::share);
+        });
     }
     public boolean resolveMsg(String msg) {
         return resolveMsg(msg, null);
@@ -270,10 +306,11 @@ public class MusicDialog extends BaseDialog{
             byte src = Byte.parseByte(msg.substring(start, split));
             String id = msg.substring(split + 1);
             MusicApi current = apis[src];
-            current.getMusicInfo(id, info -> Core.app.post(() -> Vars.ui.showConfirm("松鼠音乐", (sender == null ? "" : sender.name) + "分享了一首音乐" + (info.name == null ? "" : ":\n" + info.author + " - " + info.name) + "\n播放?", () -> current.getMusicInfo(info.id, this::play))), true);
+            current.getMusicInfo(id, info -> Core.app.post(() -> ui.showConfirm("松鼠音乐", (sender == null ? "" : sender.name) + "分享了一首来自" + current.getName() + "的音乐" + (info.name == null ? "" : ":\n" + info.author + " - " + info.name) + "\n播放?", () -> current.getMusicInfo(info.id, this::play))), true);
+            return true;
         } catch (Exception e) {
             Log.err(e);
-            ui.arcInfo("[orange]音乐读取失败");
+            Core.app.post(() -> ui.arcInfo("[orange]音乐读取失败"));
         }
         return false;
     }
@@ -300,26 +337,70 @@ public class MusicDialog extends BaseDialog{
     }
 
     public interface MusicApi{
+        String getName();
+        byte getId();
+        boolean canSearch();
+        boolean canUpload();
         void getMusicInfo(String id, Cons<MusicInfo> callback);
         void getMusicInfo(String id, Cons<MusicInfo> callback, boolean noTip);
         void search(String name, int page, Cons<MusicSet> callback);
+        void upload(Fi file, Cons<MusicInfo> callback);
     }
-    public class Squirrel implements MusicApi{//TODO 松鼠站
+    private class Squirrel implements MusicApi{//松鼠站
         byte num = 1;
+        public String getName() {
+            return "松鼠站";
+        }
+        public byte getId() {
+            return num;
+        }
+        public boolean canSearch() {
+            return false;
+        }
+        public boolean canUpload() {
+            return true;
+        }
         public void getMusicInfo(String id, Cons<MusicInfo> callback) {
             getMusicInfo(id, callback, false);
         }
-        public void getMusicInfo(String id, Cons<MusicInfo> callback, boolean noTip) {
+        public void getMusicInfo(String rid, Cons<MusicInfo> callback, boolean noTip) {
             callback.get(new MusicInfo() {{
                 src = num;
+                url = "http://squirrel.gq/api/get?id=" + rid;
+                id = rid;
             }});
         }
         public void search(String name, int page, Cons<MusicSet> callback) {
-            Vars.ui.showInfo("");
+            Vars.ui.showInfo("松鼠站不支持搜索");
+        }
+        public void upload(Fi file, Cons<MusicInfo> callback) {
+            Http.HttpRequest post = Http.post("http://squirrel.gq/api/upload");
+            post.contentStream=file.read();
+            post.header("filename", file.name());
+            post.header("size", String.valueOf(file.length()));
+            post.header("token", "3ab6950d5970c57f938673911f42fd32");
+            post.timeout = 10000;
+            post.error(e -> Core.app.post(() -> ui.arcInfo("[orange]上传失败")));
+            post.submit(r -> callback.get(new MusicInfo(){{
+                src = num;
+                id = r.getResultAsString();
+            }}));
         }
     }
-    public class KuGouWeb implements MusicApi{//酷狗网页版api
+    private class KuGouWeb implements MusicApi{//酷狗网页版api
         byte num = 2;
+        public String getName() {
+            return "酷狗音乐";
+        }
+        public byte getId() {
+            return num;
+        }
+        public boolean canSearch(){
+            return true;
+        }
+        public boolean canUpload() {
+            return false;
+        }
         private final MessageDigest md5;
         public KuGouWeb() throws Exception{
             md5 = MessageDigest.getInstance("MD5");
@@ -393,6 +474,9 @@ public class MusicDialog extends BaseDialog{
                 }
                 callback.get(set);
             });
+        }
+        public void upload(Fi file, Cons<MusicInfo> callback) {
+
         }
     }
 }
