@@ -42,9 +42,8 @@ public class MusicDialog extends BaseDialog{
     private String search = "";
     private Runnable loadSearch, loadStatus;
     private MusicSet searchResult;
-    private int searchPage;
-    private int allPage;
-    private float progress;
+    private int searchPage, allPage;
+    private float progress, vol;
     private Slider progressBar;
     private MusicInfo nowMusic;
     private boolean loaded, updating, paused;
@@ -67,6 +66,7 @@ public class MusicDialog extends BaseDialog{
                 }
             });
             player = new Music();
+            vol = 100;
             loaded = true;
             Events.run(EventType.Trigger.update, this::updateProgress);
         } catch (Exception err) {
@@ -208,6 +208,15 @@ public class MusicDialog extends BaseDialog{
                                 download(nowMusic);
                             }
                         }).margin(3f).pad(2).padTop(6f).top().right();
+                        ttt.label(() -> "音量:" + (byte)vol);
+                        ttt.button(Icon.upSmall, Styles.emptyi, () -> {
+                            vol = Math.min(vol + 10, 100);
+                            player.setVolume(vol / 100);
+                        }).margin(3f).pad(2).padTop(6f).top().right();
+                        ttt.button(Icon.downSmall, Styles.emptyi, () -> {
+                            vol = Math.max(vol - 10, 0);
+                            player.setVolume(vol / 100);
+                        }).margin(3f).pad(2).padTop(6f).top().right();
                         ttt.button(Icon.refreshSmall, Styles.emptyi, () -> {
                             player.setLooping(!player.isLooping());
                             ui.announce("单曲循环已" + (player.isLooping() ? "开启" : "关闭"), 1f);
@@ -261,7 +270,7 @@ public class MusicDialog extends BaseDialog{
             byte src = Byte.parseByte(msg.substring(start, split));
             String id = msg.substring(split + 1);
             MusicApi current = apis[src];
-            current.getMusicInfo(id, info -> Vars.ui.showConfirm("松鼠音乐", (sender == null ? "" : sender.name) + "分享了一首音乐" + (info.name == null ? "" : ":\n" + info.author + " - " + info.name) + "\n播放?", () -> current.getMusicInfo(info.id, this::play)), true);
+            current.getMusicInfo(id, info -> Core.app.post(() -> Vars.ui.showConfirm("松鼠音乐", (sender == null ? "" : sender.name) + "分享了一首音乐" + (info.name == null ? "" : ":\n" + info.author + " - " + info.name) + "\n播放?", () -> current.getMusicInfo(info.id, this::play))), true);
         } catch (Exception e) {
             Log.err(e);
             ui.arcInfo("[orange]音乐读取失败");
