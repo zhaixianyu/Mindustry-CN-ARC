@@ -35,7 +35,7 @@ import static mindustry.Vars.ui;
 import static mindustry.arcModule.RFuncs.getPrefix;
 
 public class MusicDialog extends BaseDialog{
-    public static final String version = "1.0.1";
+    public static final String version = "1.0.2";
     public static final String ShareType = "[pink]<Music>";
     private MusicApi api;
     private MusicApi[] apis;
@@ -60,7 +60,7 @@ public class MusicDialog extends BaseDialog{
             api = apis[2];
             setup();
             addCloseButton();
-            button(Icon.info, () -> ui.showInfo("[pink]松鼠音乐v" + version + "\n[gold]松鼠制作"));
+            button(Icon.info, () -> ui.showInfo("[pink]松鼠音乐v" + version + "\n[gold]松鼠制作\n[cyan]松鼠站:squi2rel.tk"));
             buttons.button("切换api", this::switchApi);
             buttons.button("上传本地音乐", this::upload).disabled(b -> !api.canUpload());
             onResize(this::setup);
@@ -77,7 +77,7 @@ public class MusicDialog extends BaseDialog{
             switchDialog.cont.row();
             switchDialog.cont.pane(p -> {
                 for(MusicApi capi : apis) {
-                    if(capi != null) {//What JetBrains IDEA
+                    if(capi != null) {
                         byte id = capi.getId();
                         String name = capi.getName();
                         p.button("(" + id + ")" + name, () -> {
@@ -288,8 +288,8 @@ public class MusicDialog extends BaseDialog{
     }
     private void upload(){
         platform.showFileChooser(true, "选择音乐文件", "mp3", f -> {
-            ui.announce("正在上传...");
-            api.upload(f, this::share);
+            ui.announce("正在上传...\n很慢!(1-2分钟)\n上传完成后会自动播放");
+            api.upload(f, this::play);
         });
     }
     public boolean resolveMsg(String msg) {
