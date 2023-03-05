@@ -36,7 +36,7 @@ import static mindustry.Vars.ui;
 import static mindustry.arcModule.RFuncs.getPrefix;
 
 public class MusicDialog extends BaseDialog{
-    public static final String version = "1.0.3";
+    public static final String version = "1.0.4";
     public static final String ShareType = "[pink]<Music>";
     private MusicApi api;
     private MusicApi[] apis;
@@ -310,6 +310,10 @@ public class MusicDialog extends BaseDialog{
             int split = msg.indexOf("M", start);
             byte src = Byte.parseByte(msg.substring(start, split));
             String id = msg.substring(split + 1);
+            if(src > apis.length || apis[src] == null && src != 0) {
+                Core.app.post(() -> ui.showErrorMessage("无法找到api!\n可能是学术版本太旧或者伪造消息"));
+            }
+            if(src == 0) return true;
             MusicApi current = apis[src];
             current.getMusicInfo(id, info -> Core.app.post(() -> ui.showConfirm("松鼠音乐", (sender == null ? "" : sender.name) + "分享了一首来自" + current.getName() + "的音乐" + (info.name == null ? "" : ":\n" + info.author + " - " + info.name) + "\n播放?", () -> current.getMusicInfo(info.id, this::play))), true);
             return true;
