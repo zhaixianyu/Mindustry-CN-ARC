@@ -31,8 +31,7 @@ import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.util.Date;
 
-import static mindustry.Vars.platform;
-import static mindustry.Vars.ui;
+import static mindustry.Vars.*;
 import static mindustry.arcModule.RFuncs.getPrefix;
 
 public class MusicDialog extends BaseDialog{
@@ -115,7 +114,7 @@ public class MusicDialog extends BaseDialog{
         nowMusic = info;
         try {
             Http.get(info.url, r -> {
-                Fi tmp = new Fi("/tmp/squirrel.mp3");
+                Fi tmp = new Fi(tmpDirectory + "/squirrel.mp3");
                 tmp.writeBytes(r.getResult());
                 player.stop();
                 player.pause(false);
@@ -222,7 +221,7 @@ public class MusicDialog extends BaseDialog{
                                     paused = false;
                                 } else {
                                     if (nowMusic.url != null) {
-                                        Fi f = new Fi("/tmp/squirrel.mp3");
+                                        Fi f = new Fi(tmpDirectory + "/squirrel.mp3");
                                         if (f.exists()) {
                                             try {
                                                 playDirectly(f);
