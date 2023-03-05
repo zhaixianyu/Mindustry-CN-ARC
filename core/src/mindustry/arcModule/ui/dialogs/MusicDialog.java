@@ -59,20 +59,18 @@ public class MusicDialog extends BaseDialog{
             progress = 0;
             apis = new MusicApi[]{null, new Squirrel(), new KuGouWeb()};
             api = apis[2];
-            setup();
             addCloseButton();
             button(Icon.info, () -> ui.showInfo("[pink]松鼠音乐v" + version + "\n[gold]松鼠制作\n[cyan]松鼠站:squi2rel.tk"));
             buttons.button("切换api", this::switchApi);
             buttons.button("上传本地音乐", this::upload).disabled(b -> !api.canUpload());
             onResize(this::setup);
             shown(() -> {
-                if(check()) {
-                    setup();
-                }
+                if(check()) setup();
             });
             player = new Music();
             vol = 100;
             loaded = true;
+            setup();
             switchDialog = new BaseDialog("切换api");
             switchDialog.cont.label(() -> "当前api: (" + api.getId() + ")" + api.getName());
             switchDialog.cont.row();
@@ -140,6 +138,7 @@ public class MusicDialog extends BaseDialog{
         Vars.ui.showConfirm("分享","确认分享到聊天框?",() -> api.getMusicInfo(info.id, fullinfo -> Call.sendChatMessage(getPrefix("pink", "Music") + " " + fullinfo.src + "M" + fullinfo.id)));
     }
     private void setup() {
+        if(!loaded) return;
         cont.top();
         cont.clear();
         if(api.canSearch()) {
@@ -280,6 +279,7 @@ public class MusicDialog extends BaseDialog{
         loadStatus.run();
     }
     private void updateProgress() {
+        if(!loaded) return;
         updating = true;
         progress = player.getPosition();
         progressBar.setValue(progress);
@@ -376,7 +376,7 @@ public class MusicDialog extends BaseDialog{
             }});
         }
         public void search(String name, int page, Cons<MusicSet> callback) {
-            Vars.ui.showInfo("松鼠站不支持搜索");
+
         }
         public void upload(Fi file, Cons<MusicInfo> callback) {
             Http.HttpRequest post = Http.post("http://squirrel.gq/api/upload");
@@ -455,14 +455,14 @@ public class MusicDialog extends BaseDialog{
             try {
                 long timestamp = new Date().getTime();
                 String data = "NVPh5oo715z5DIWAeQlhMDsWXXQV4hwtappid=1014bitrate=0clienttime=" + timestamp + "clientver=1000dfid=-filter=10inputtype=0iscorrection=1isfuzzy=0keyword=" + name + "mid=" + timestamp + "page=" + page + "pagesize=10platform=WebFilterprivilege_filter=0srcappid=2919userid=0uuid=" + timestamp + "NVPh5oo715z5DIWAeQlhMDsWXXQV4hwt";
-                byte[] result = md5.digest(data.getBytes());
+                byte[] result = md5.digest(data.getBytes("UTF-8"));
                 StringBuilder sb = new StringBuilder();
                 for (byte b : result) {
                     sb.append(String.format("%02x", b));
                 }
                 Http.get("https://complexsearch.kugou.com/v2/search/song?appid=1014&bitrate=0&clienttime=" + timestamp + "&clientver=1000&dfid=-&filter=10&inputtype=0&iscorrection=1&isfuzzy=0&keyword=" + URLEncoder.encode(name, "UTF-8") + "&mid=" + timestamp + "&page=" + page + "&pagesize=10&platform=WebFilter&privilege_filter=0&srcappid=2919&userid=0&uuid=" + timestamp + "&signature=" + sb, res -> {
                     JsonValue j = new JsonReader().parse(res.getResultAsString());
-                    if (j.getByte("status") == 0) {
+                    if (j.getLong("error_code") != 0) {
                         Core.app.post(() -> Vars.ui.showErrorMessage("搜索出错:\nKuGou Error: (" + j.getLong("error_code") + ") " + j.getString("error_msg")));
                         return;
                     }
