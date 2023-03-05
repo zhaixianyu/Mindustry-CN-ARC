@@ -27,6 +27,7 @@ import mindustry.gen.Tex;
 import mindustry.ui.Styles;
 import mindustry.ui.dialogs.BaseDialog;
 
+import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.util.Date;
 
@@ -163,7 +164,6 @@ public class MusicDialog extends BaseDialog{
                             Button button = buttons[0] = t.button(b -> {
                             }, () -> {
                                 if (!buttons[0].childrenPressed()) {
-                                    player.stop();
                                     api.getMusicInfo(info.id, this::play);
                                 }
                             }).width(width).pad(2f).get();
@@ -452,36 +452,40 @@ public class MusicDialog extends BaseDialog{
             });
         }
         public void search(String name, int page, Cons<MusicSet> callback) {
-            long timestamp = new Date().getTime();
-            String data = "NVPh5oo715z5DIWAeQlhMDsWXXQV4hwtappid=1014bitrate=0clienttime=" + timestamp + "clientver=1000dfid=-filter=10inputtype=0iscorrection=1isfuzzy=0keyword=" + name + "mid=" + timestamp + "page=" + page + "pagesize=10platform=WebFilterprivilege_filter=0srcappid=2919userid=0uuid=" + timestamp + "NVPh5oo715z5DIWAeQlhMDsWXXQV4hwt";
-            byte[] result = md5.digest(data.getBytes());
-            StringBuilder sb = new StringBuilder();
-            for (byte b : result) {
-                sb.append(String.format("%02x", b));
-            }
-            Http.get("https://complexsearch.kugou.com/v2/search/song?appid=1014&bitrate=0&clienttime=" + timestamp + "&clientver=1000&dfid=-&filter=10&inputtype=0&iscorrection=1&isfuzzy=0&keyword=" + name + "&mid=" + timestamp + "&page=" + page + "&pagesize=10&platform=WebFilter&privilege_filter=0&srcappid=2919&userid=0&uuid=" + timestamp + "&signature=" + sb, res -> {
-                JsonValue j = new JsonReader().parse(res.getResultAsString());
-                if(j.getByte("status") == 0) {
-                    Core.app.post(() -> Vars.ui.showErrorMessage("搜索出错:\nKuGou Error: (" + j.getLong("error_code") + ") " + j.getString("error_msg")));
-                    return;
+            try {
+                long timestamp = new Date().getTime();
+                String data = "NVPh5oo715z5DIWAeQlhMDsWXXQV4hwtappid=1014bitrate=0clienttime=" + timestamp + "clientver=1000dfid=-filter=10inputtype=0iscorrection=1isfuzzy=0keyword=" + name + "mid=" + timestamp + "page=" + page + "pagesize=10platform=WebFilterprivilege_filter=0srcappid=2919userid=0uuid=" + timestamp + "NVPh5oo715z5DIWAeQlhMDsWXXQV4hwt";
+                byte[] result = md5.digest(data.getBytes());
+                StringBuilder sb = new StringBuilder();
+                for (byte b : result) {
+                    sb.append(String.format("%02x", b));
                 }
-                JsonValue lists = j.get("data").get("lists");
-                allPage = j.get("data").getInt("total") / 10 + 1;
-                MusicSet set = new MusicSet((byte)10);
-                for(byte i = 0; i < 10; i++) {
-                    JsonValue thisMusic = lists.get(i);
-                    if(thisMusic == null) {
-                        break;
+                Http.get("https://complexsearch.kugou.com/v2/search/song?appid=1014&bitrate=0&clienttime=" + timestamp + "&clientver=1000&dfid=-&filter=10&inputtype=0&iscorrection=1&isfuzzy=0&keyword=" + URLEncoder.encode(name, "UTF-8") + "&mid=" + timestamp + "&page=" + page + "&pagesize=10&platform=WebFilter&privilege_filter=0&srcappid=2919&userid=0&uuid=" + timestamp + "&signature=" + sb, res -> {
+                    JsonValue j = new JsonReader().parse(res.getResultAsString());
+                    if (j.getByte("status") == 0) {
+                        Core.app.post(() -> Vars.ui.showErrorMessage("搜索出错:\nKuGou Error: (" + j.getLong("error_code") + ") " + j.getString("error_msg")));
+                        return;
                     }
-                    set.add(new MusicInfo() {{
-                        name = thisMusic.getString("SongName");
-                        author = thisMusic.getString("SingerName");
-                        id = thisMusic.getString("EMixSongID");
-                        src = num;
-                    }});
-                }
-                callback.get(set);
-            });
+                    JsonValue lists = j.get("data").get("lists");
+                    allPage = j.get("data").getInt("total") / 10 + 1;
+                    MusicSet set = new MusicSet((byte) 10);
+                    for (byte i = 0; i < 10; i++) {
+                        JsonValue thisMusic = lists.get(i);
+                        if (thisMusic == null) {
+                            break;
+                        }
+                        set.add(new MusicInfo() {{
+                            name = thisMusic.getString("SongName");
+                            author = thisMusic.getString("SingerName");
+                            id = thisMusic.getString("EMixSongID");
+                            src = num;
+                        }});
+                    }
+                    callback.get(set);
+                });
+            } catch (Exception e){
+                Core.app.post(() -> ui.showException("搜索出错!", e));
+            }
         }
         public void upload(Fi file, Cons<MusicInfo> callback) {
 
