@@ -9,6 +9,8 @@ import mindustry.ctype.*;
 import mindustry.gen.*;
 import mindustry.ui.Fonts;
 import mindustry.ui.Styles;
+import mindustry.graphics.*;
+import mindustry.input.*;
 import mindustry.world.meta.*;
 
 import static arc.Core.*;
@@ -21,6 +23,12 @@ public class ContentInfoDialog extends BaseDialog{
         super("@info.title");
 
         addCloseButton();
+
+        keyDown(key -> {
+            if(key == keybinds.get(Binding.block_info).key){
+                Core.app.post(this::hide);
+            }
+        });
     }
 
     public void show(UnlockableContent content){
