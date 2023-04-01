@@ -594,31 +594,8 @@ public class StatValues{
                         sep(bt, (type.status.minfo.mod == null ? type.status.emoji() : "") + "[stat]" + type.status.localizedName + (type.status.reactive? "":"[lightgray]~[]" + Strings.autoFixed(type.statusDuration/60f,2)+"[lightgray]s"));
                     }
 
-<<<<<<< HEAD
                     if(type.suppressionRange > 0){
                         sep(bt, Core.bundle.format("bullet.suppression", Strings.autoFixed(type.suppressionDuration / 60f, 2), Strings.fixed(type.suppressionRange / tilesize, 1)));
-=======
-                    if (type.suppressionRange > -1f) {
-                        sep(bt, "[lightgray]压制场~[stat]" + type.suppressionRange / 8f + "[]格~[stat]" + type.suppressionDuration / 60f + "[]秒");
-                    }
-
-                    if(type.intervalBullet != null){
-                        bt.row();
-
-                        Table ic = new Table();
-                        ammo(ObjectMap.of(t, type.intervalBullet), indent + 1, false).display(ic);
-                        Collapser coll = new Collapser(ic, true);
-                        coll.setDuration(0.1f);
-
-                        bt.table(it -> {
-                            it.left().defaults().left();
-
-                            it.add(Core.bundle.format("bullet.interval", Strings.autoFixed(type.intervalBullets / type.bulletInterval * 60, 2)));
-                            it.button(Icon.downOpen, Styles.emptyi, () -> coll.toggle(false)).update(i -> i.getStyle().imageUp = (!coll.isCollapsed() ? Icon.upOpen : Icon.downOpen)).size(8).padLeft(16f).expandX();
-                        });
-                        bt.row();
-                        bt.add(coll);
->>>>>>> 4e6acf4b33da42c14241a44538b5756167b6cd83
                     }
 
                     if(type.fragBullet != null){
