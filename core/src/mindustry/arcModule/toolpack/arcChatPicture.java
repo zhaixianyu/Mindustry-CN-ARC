@@ -46,13 +46,16 @@ public class arcChatPicture {
         MessageDialog.addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.arcChatPicture, text));
 
         Http.get(url, res -> {
-            try {
-                Pixmap pix = new Pixmap(res.getResult());
-                Timer.schedule(() -> new floatFigure(pix, playersender), 0.01f);
-            } catch (Exception e) {
-                Log.err(e);
-                ui.arcInfo("[orange]图片读取失败");
-            }
+            byte[] data = res.getResult();
+            new Thread(() -> {
+                try {
+                    Pixmap pix = new Pixmap(data);
+                    Timer.schedule(() -> new floatFigure(pix, playersender), 0.01f);
+                } catch (Exception e) {
+                    Log.err(e);
+                    ui.arcInfo("[orange]图片读取失败");
+                }
+            }).start();
         });
 
         return true;
@@ -91,7 +94,7 @@ public class arcChatPicture {
                     });
                 } catch (Exception e) {
                     Log.err(e);
-                    ui.arcInfo("[orange]图片读取失败");
+                    Core.app.post(() -> ui.arcInfo("[orange]图片读取失败"));
                 }
 
             }).padTop(30f).width(400f);
@@ -123,8 +126,8 @@ public class arcChatPicture {
                 post.header("filename", figureFile.name());
                 post.header("size", String.valueOf(figureFile.length()));
                 post.header("token", "3ab6950d5970c57f938673911f42fd32");
-                post.timeout=10000;
-                post.error(e -> ui.arcInfo("发生了一个错误:"+e.toString()));
+                post.timeout = 10000;
+                post.error(e -> Core.app.post(() -> ui.arcInfo("发生了一个错误:"+e.toString())));
                 post.submit(r -> figureLink.setText("http://squirrel.gq/api/get?id=" + r.getResultAsString()));
             }).width(300f);
 
@@ -133,7 +136,7 @@ public class arcChatPicture {
 
     private static boolean checkPic() {
         if (curPicture >= maxPicture) {
-            ui.arcInfo("当前图片已达上限，仅允许自己添加图片", 10);
+            Core.app.post(() -> ui.arcInfo("当前图片已达上限，仅允许自己添加图片", 10));
             return false;
         } else
             return true;
@@ -145,6 +148,7 @@ public class arcChatPicture {
         private final Pixmap pix;
         private float sizeM = 1f;
         private final @Nullable Player sender;
+        private TextureRegion cache;
 
         floatFigure(Pixmap pixmap, @Nullable Player playersender) {
             curPicture += 1;
@@ -152,6 +156,7 @@ public class arcChatPicture {
             pix = pixmap;
             t = new Table(Styles.black3);
             sender = playersender;
+            cache = new TextureRegion(new Texture(pix));
 
             t.add(pic);
             t.visible = false;
@@ -164,14 +169,13 @@ public class arcChatPicture {
             Core.scene.add(t);
             buildTable();
             ui.arcInfo("已收到图片!，来源：" + (playersender != null ? playersender.isNull() ? "" : playersender.name : "") + "\n[gray]使用参考中央监控室-图片分享器");
+            pix.dispose();
         }
 
         private void buildTable() {
             pic.clear();
             float ratio = Math.max(pix.width, pix.height) / 500f / sizeM;
             t.visible = true;
-            TextureRegion cache = new TextureRegion(new Texture(pix));
-
             pic.image(cache).size(pix.width / ratio, pix.height / ratio).get();
             pic.row();
             pic.table(tp -> {

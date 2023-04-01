@@ -78,6 +78,8 @@ public class UI implements ApplicationListener, Loadable{
     public FullTextDialog fullText;
     public CampaignCompleteDialog campaignComplete;
 
+    public IntMap<Dialog> followUpMenus;
+
     public Cursor drillCursor, unloadCursor, targetCursor;
 
     public AboutCN_ARCDialog aboutcn_arc;
@@ -86,6 +88,8 @@ public class UI implements ApplicationListener, Loadable{
     public AchievementsDialog achievements;
     //public MindustryWikiDialog mindustrywiki;
     public mindustry.arcModule.ui.dialogs.MessageDialog MessageDialog;
+
+    public mindustry.arcModule.ui.dialogs.MusicDialog MusicDialog;
 
     private @Nullable Element lastAnnouncement;
 
@@ -223,6 +227,8 @@ public class UI implements ApplicationListener, Loadable{
         //mindustrywiki = new MindustryWikiDialog();
         MessageDialog = new MessageDialog();
         campaignComplete = new CampaignCompleteDialog();
+        MusicDialog = new MusicDialog();
+        followUpMenus = new IntMap<>();
 
         Group group = Core.scene.root;
 
@@ -634,9 +640,8 @@ public class UI implements ApplicationListener, Loadable{
         dialog.show();
     }
 
-    /** Shows a menu that fires a callback when an option is selected. If nothing is selected, -1 is returned. */
-    public void showMenu(String title, String message, String[][] options, Intc callback){
-        new Dialog(title){{
+    public Dialog newMenuDialog(String title, String message, String[][] options, Intc buttonListener, Runnable closeOnBack){
+        return new Dialog(title){{
             setFillParent(true);
             removeChild(titleTable);
             cont.add(titleTable).width(400f);
@@ -660,16 +665,46 @@ public class UI implements ApplicationListener, Loadable{
 
                         String optionName = optionsRow[i];
                         int finalOption = option;
-                        buttonRow.button(optionName, () -> {
-                            callback.get(finalOption);
-                            hide();
-                        }).size(i == optionsRow.length - 1 ? lastWidth : width, 50).pad(4);
+                        buttonRow.button(optionName, () -> buttonListener.get(finalOption))
+                                .size(i == optionsRow.length - 1 ? lastWidth : width, 50).pad(4);
                         option++;
                     }
                 }
             }).growX();
-            closeOnBack(() -> callback.get(-1));
-        }}.show();
+            closeOnBack(closeOnBack);
+        }};
+    }
+
+    /** Shows a menu that fires a callback when an option is selected. If nothing is selected, -1 is returned. */
+    public void showMenu(String title, String message, String[][] options, Intc callback){
+        newMenuDialog(title, message, options, option -> {
+            callback.get(option);
+            hide();
+        }, () -> callback.get(-1)).show();
+    }
+
+    /** Shows a menu that hides when another followUp-menu is shown or when nothing is selected.
+     * @see UI#showMenu(String, String, String[][], Intc) */
+    public void showFollowUpMenu(int menuId, String title, String message, String[][] options, Intc callback) {
+
+        Dialog dialog = newMenuDialog(title, message, options, callback, () -> {
+            followUpMenus.remove(menuId);
+            callback.get(-1);
+        });
+
+        Dialog oldDialog = followUpMenus.remove(menuId);
+        if(oldDialog != null){
+            dialog.show(Core.scene, null);
+            oldDialog.hide(null);
+        }else{
+            dialog.show();
+        }
+        followUpMenus.put(menuId, dialog);
+    }
+
+    public void hideFollowUpMenu(int menuId) {
+        if(!followUpMenus.containsKey(menuId)) return;
+        followUpMenus.remove(menuId).hide();
     }
 
     /** Formats time with hours:minutes:seconds. */
