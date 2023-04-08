@@ -59,6 +59,11 @@ public class PausedDialog extends BaseDialog{
 
             cont.row();
 
+            if(net.client()) cont.button("服务器列表", Icon.host, () -> {
+                this.hide();
+                ui.join.show();
+            });
+
             cont.button("@quit", Icon.exit, this::showQuitConfirm).colspan(2).width(dw + 10f).update(s -> s.setText(control.saves.getCurrent() != null && control.saves.getCurrent().isAutosave() ? "@save.quit" : "@quit"));
 
         }else{
