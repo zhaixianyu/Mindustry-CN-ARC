@@ -1,3 +1,14 @@
+[cyan]------------------------[v143.1-4/8]---------------------------
+Fixed startup crash when changing UI scale to 5%
+Fixed network error when calling world logic explosion instruction with a null team
+Fixed sector background simulation not taking into account builder/repair units
+Fixed server-side network error when placing certain large logic schematics
+Fixed force projector hitbox being a square
+Fixed blank weapon stat boxes for certain units
+Fixed various regressions from last release (batteries being broken in mods, server menus not closing...)
+Added support for multi-barrel recoil in mods (Contributed by @MEEPofFaith)
+Made duo barrels move separately when shooting
+Improved stat display for various blocks (Contributed by @JniTrRny)
 [cyan]------------------------[v143-4/1]---------------------------
 Fixed some keybinds missing translations
 Fixed a long-standing pathfinding issue of enemy wave units exhibiting "confused" behavior in certain maps

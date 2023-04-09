@@ -39,6 +39,8 @@ jobs:
         fi
     - name: Update JITpack repo
       run: |
+        git config --global user.name "Github Actions"
+        git config --global user.email "cli@github.com"
         cd ../
         cp -r ./Mindustry ./MindustryJitpack
         cd MindustryJitpack
