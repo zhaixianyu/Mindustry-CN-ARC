@@ -114,6 +114,7 @@ public class Stat implements Comparable<Stat>{
     cooldownTime = new Stat("cooldownTime", StatCat.function),
     moduleTier = new Stat("moduletier", StatCat.function),
     regenSpeed = new Stat("regenSpeed", StatCat.function),
+    unitType = new Stat("unittype", StatCat.function),
 
     booster = new Stat("booster", StatCat.optional),
     boostEffect = new Stat("boostEffect", StatCat.optional),
