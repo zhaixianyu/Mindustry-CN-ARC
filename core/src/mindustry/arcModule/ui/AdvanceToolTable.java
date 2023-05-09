@@ -68,14 +68,16 @@ public class AdvanceToolTable extends Table {
 
     public AdvanceToolTable() {
         rebuild();
-        Events.on(EventType.WorldLoadEvent.class, e -> {
-                if (!state.rules.editor) {
-                    Core.settings.put("worldCreator", false);
-                    Core.settings.put("forcePlacement", false);
-                    Core.settings.put("allBlocksReveal", false);
-                }
+        Events.on(EventType.ResetEvent.class, e -> {
+            if (!state.rules.editor) {
+                Core.settings.put("worldCreator", false);
+                Core.settings.put("forcePlacement", false);
+                Core.settings.put("allBlocksReveal", false);
             }
-        );
+            timeAcce = 1;
+            fpslock = false;
+            Time.setDeltaProvider(() -> Math.min(Core.graphics.getDeltaTime() * 60f, 3f));
+        });
     }
 
     void rebuild() {
@@ -156,7 +158,7 @@ public class AdvanceToolTable extends Table {
                             tBox.button("[green]N", cleart, () -> {
                                 timeAcce = 1;
                                 fpslock = false;
-                                Time.setDeltaProvider(() -> Math.min(Core.graphics.getDeltaTime() * 60 * timeAcce, 3 * timeAcce));
+                                Time.setDeltaProvider(() -> Math.min(Core.graphics.getDeltaTime() * 60f, 3f));
                                 ui.announce("当前时间倍率：" + timeAcce);
                             }).tooltip("[acid]恢复原速").size(30f, 30f);
                             tBox.button("[white]F", cleart, () -> {
