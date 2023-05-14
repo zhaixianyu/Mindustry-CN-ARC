@@ -94,6 +94,7 @@ public class Build{
             }
             if(result instanceof Floor floor){
                 tile.setFloor(floor);
+                pathfinder.updateTile(tile);
                 return;
             }
         }
