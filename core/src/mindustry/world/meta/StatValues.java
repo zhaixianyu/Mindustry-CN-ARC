@@ -577,8 +577,8 @@ public class StatValues{
                         bt.row();
                     }
 
-                    if (type instanceof LightningBulletType) {
-                        lightning(0, type.damage, type.lightningLength, type.lightningLengthRand).display(bt);
+                    if (type instanceof LightningBulletType lb) {
+                        lightning(0, lb.damage, lb.lightningLength, lb.lightningLengthRand).display(bt);
                     }
                     else if(type.damage > 0 && (type.collides || type.splashDamage <= 0)){
                         if(type.continuousDamage() > 0){
