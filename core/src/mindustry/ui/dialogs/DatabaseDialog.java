@@ -54,12 +54,11 @@ public class DatabaseDialog extends BaseDialog{
         for(int j = 0; j < allContent.length; j++){
             ContentType type = ContentType.all[j];
 
-            Seq<Content> array = allContent[j]
+            Seq<UnlockableContent> array = allContent[j]
                 .select(c -> c instanceof UnlockableContent u &&
+                    (Core.settings.getBool("allBlocksReveal") || !u.isHidden()) &&
                     (text.isEmpty() || u.localizedName.toLowerCase().contains(text.toLowerCase()))
-                    &&((Core.settings.getBool("allBlocksReveal")) || (!u.isHidden() || u.techNode != null))
-                );
-
+                ).as();
 
             if(array.size == 0) continue;
 
@@ -74,7 +73,7 @@ public class DatabaseDialog extends BaseDialog{
                 int count = 0;
 
                 for(int i = 0; i < array.size; i++){
-                    UnlockableContent unlock = (UnlockableContent)array.get(i);
+                    UnlockableContent unlock = array.get(i);
 
                     Image image = unlocked(unlock) ? new Image(unlock.uiIcon).setScaling(Scaling.fit) : new Image(Icon.lock, Pal.gray);
 

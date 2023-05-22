@@ -145,6 +145,11 @@ public class Stat implements Comparable<Stat>{
     }
 
     @Override
+    public String toString(){
+        return name;
+    }
+
+    @Override
     public int compareTo(Stat o){
         return id - o.id;
     }
