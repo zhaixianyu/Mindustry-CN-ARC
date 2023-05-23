@@ -1,3 +1,17 @@
+[cyan]------------------------[v144.3-5/23]---------------------------
+Fixed various crashes related to mods
+Fixed hail using incorrect heat sprite
+Fixed disabled payload conveyors still moving units on them
+Added new scorch sprite (Contributed by Fox1va_)
+[cyan]------------------------[v144.2-5/22]---------------------------
+Fixed Mindustry consuming ~44mb more RAM on startup than v6 did - this will fix random out-of-memory crashes on many low-end phones
+Fixed logic blocks not re-enabling blocks when unlinking from them
+Updated various Serpulo turret sprites/animations (Contributed by several community members on Discord)
+Re-added the base builder AI rule and enabled it in the existing custom game attack/PvP maps
+Buffed Tecta unit
+Made file chooser on Linux now use Zenity when possible
+Improved schematics used in base generation on Serpulo (Contributed by @BlueWolf3682)
+Various minor improvements to modding API
 [cyan]------------------------[v144.1-5/12]---------------------------
 Fixed Erekir missile units committing suicide after shooting (amazing I know)
 Reverted new gas sprites (too wacky)
