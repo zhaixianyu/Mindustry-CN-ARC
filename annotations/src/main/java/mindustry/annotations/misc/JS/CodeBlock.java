@@ -27,8 +27,8 @@ public class CodeBlock {
         list.add(code);
         return this;
     }
-    public CodeBlock addCond(String code) {
-        add("if("+code+"){");
+    public CodeBlock addSynx(String synx, String cond) {
+        add(synx + "(" + cond + "){");
         CodeBlock cb = new CodeBlock(spaces + 4);
         list.add(cb);
         return cb;
