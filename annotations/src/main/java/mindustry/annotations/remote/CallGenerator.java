@@ -1,6 +1,8 @@
 package mindustry.annotations.remote;
 
+import arc.files.Fi;
 import arc.struct.*;
+import arc.util.Log;
 import arc.util.io.*;
 import com.squareup.javapoet.*;
 import mindustry.annotations.Annotations.*;
@@ -16,6 +18,8 @@ import static mindustry.annotations.BaseProcessor.*;
 /** Generates code for writing remote invoke packets on the client and server. */
 public class CallGenerator{
 
+    static StringBuilder jsOutput = new StringBuilder();
+
     /** Generates all classes in this list. */
     public static void generate(ClassSerializer serializer, Seq<MethodEntry> methods) throws IOException{
         //create builder
@@ -29,6 +33,9 @@ public class CallGenerator{
             //builder for the packet type
             TypeSpec.Builder packet = TypeSpec.classBuilder(ent.packetClassName)
             .addModifiers(Modifier.PUBLIC);
+
+
+            jsOutput.append(ent.packetClassName).append("\n");
 
             //temporary data to deserialize later
             packet.addField(FieldSpec.builder(byte[].class, "DATA", Modifier.PRIVATE).initializer("NODATA").build());
@@ -94,6 +101,7 @@ public class CallGenerator{
         //build and write resulting class
         TypeSpec spec = callBuilder.build();
         JavaFile.builder(packageName, spec).build().writeTo(BaseProcessor.filer);
+        new Fi("./jsoutput.js").writeString(jsOutput.toString());
     }
 
     private static void makeWriter(TypeSpec.Builder typespec, MethodEntry ent, ClassSerializer serializer){
