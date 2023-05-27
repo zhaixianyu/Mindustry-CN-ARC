@@ -102,9 +102,11 @@ public class ForceProjector extends Block{
 
         if(consItems) stats.timePeriod = phaseUseTime;
         super.setStats();
+        stats.add(Stat.range, radius / tilesize, StatUnit.blocks);
         stats.add(Stat.shieldHealth, shieldHealth, StatUnit.none);
         stats.add(Stat.cooldownTime, (int) (shieldHealth / cooldownBrokenBase / 60f), StatUnit.seconds);
-        stats.add(Stat.regenSpeed, cooldownNormal * Time.toSeconds, StatUnit.perSecond);
+        stats.add("回复速度", StatCat.function, cooldownNormal * Time.toSeconds, StatUnit.perSecond);
+        stats.add("过热时回复速度", StatCat.function, cooldownBrokenBase * Time.toSeconds, StatUnit.perSecond);
         if(consItems && itemConsumer instanceof ConsumeItems coni){
             stats.remove(Stat.booster);
             stats.add(Stat.booster, StatValues.itemBoosters("+{0} " + StatUnit.shieldHealth.localized(), stats.timePeriod, phaseShieldBoost, phaseRadiusBoost, coni.items, this::consumesItem));

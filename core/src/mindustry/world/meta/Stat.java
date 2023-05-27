@@ -113,17 +113,13 @@ public class Stat implements Comparable<Stat>{
     shieldHealth = new Stat("shieldHealth", StatCat.function),
     cooldownTime = new Stat("cooldownTime", StatCat.function),
     moduleTier = new Stat("moduletier", StatCat.function),
-    regenSpeed = new Stat("regenSpeed", StatCat.function),
 
     unitType = new Stat("unittype", StatCat.function),
 
     booster = new Stat("booster", StatCat.optional),
     boostEffect = new Stat("boostEffect", StatCat.optional),
     affinities = new Stat("affinities", StatCat.optional),
-    opposites = new Stat("opposites", StatCat.optional),
-    startTime = new Stat("startTime", StatCat.power),
-    fullStartTime = new Stat("fullStartTime", StatCat.power),
-    startConsPower = new Stat("startConsPower", StatCat.power);
+    opposites = new Stat("opposites", StatCat.optional);
 
     public final StatCat category;
     public final String name;
