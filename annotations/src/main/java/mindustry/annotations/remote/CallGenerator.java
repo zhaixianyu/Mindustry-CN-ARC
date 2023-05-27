@@ -2,7 +2,6 @@ package mindustry.annotations.remote;
 
 import arc.files.Fi;
 import arc.struct.*;
-import arc.util.Log;
 import arc.util.io.*;
 import com.squareup.javapoet.*;
 import mindustry.annotations.Annotations.*;
@@ -14,6 +13,7 @@ import mindustry.annotations.util.TypeIOResolver.*;
 
 import javax.lang.model.element.*;
 import java.io.*;
+import java.util.ArrayList;
 
 import static mindustry.annotations.BaseProcessor.*;
 
@@ -29,14 +29,19 @@ public class CallGenerator{
         MethodSpec.Builder register = MethodSpec.methodBuilder("registerPackets")
             .addModifiers(Modifier.PUBLIC, Modifier.STATIC);
 
+        CodeBlock code = new CodeBlock(0);
+        int packetID = 4;
+
+        ArrayList<String> packets = new ArrayList<>();
+
         //go through each method entry in this class
         for(MethodEntry ent : methods){
             //builder for the packet type
             TypeSpec.Builder packet = TypeSpec.classBuilder(ent.packetClassName)
             .addModifiers(Modifier.PUBLIC);
 
-
-            ClassBuilder cb = new ClassBuilder(ent.packetClassName, "Packet", 0);
+            packets.add(ent.packetClassName);
+            ClassBuilder cb = code.newClass(ent.packetClassName, "Packet");
 
             //temporary data to deserialize later
             packet.addField(FieldSpec.builder(byte[].class, "DATA", Modifier.PRIVATE).initializer("NODATA").build());
@@ -97,6 +102,8 @@ public class CallGenerator{
 
             //write the completed packet class
             JavaFile.builder(packageName, packet.build()).build().writeTo(BaseProcessor.filer);
+
+            code.add("Packets.set(" + packetID++ + "," + ent.packetClassName + ")");
         }
 
         callBuilder.addMethod(register.build());
@@ -104,6 +111,16 @@ public class CallGenerator{
         //build and write resulting class
         TypeSpec spec = callBuilder.build();
         JavaFile.builder(packageName, spec).build().writeTo(BaseProcessor.filer);
+
+        code.add("{");
+        CodeBlock list = code.newBlock();
+        list.noWarp = true;
+        for(String name : packets) {
+            list.add("Packets.set");
+        }
+        code.add("}");
+
+        new Fi("jsoutput.js").writeString(code.build());
     }
 
     private static void makeWriter(TypeSpec.Builder typespec, MethodEntry ent, ClassSerializer serializer){
