@@ -7,8 +7,7 @@ public class ObjectBuilder extends JSBuilder{
     int spaces;
     ObjectBuilder(int spaces) {
         this.spaces = spaces;
-        noWarp = true;
-        noSemicolon = true;
+        noWarp = noSemicolon = true;
     }
 
     @Override

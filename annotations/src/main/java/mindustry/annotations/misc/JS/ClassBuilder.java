@@ -1,7 +1,5 @@
 package mindustry.annotations.misc.JS;
 
-import com.sun.tools.javac.jvm.Code;
-
 import java.util.ArrayList;
 
 public class ClassBuilder extends JSBuilder {
@@ -11,9 +9,14 @@ public class ClassBuilder extends JSBuilder {
     ArrayList<CodeBlock> func = new ArrayList<>();
     int spaces;
     public ClassBuilder(String name, int spaces) {
-        className = name;
+        className = name + " ";
         this.spaces = spaces;
-        isBlock = noSemicolon = forceWarp = noWarp = true;
+        isBlock = noSemicolon = true;
+    }
+    public ClassBuilder(int spaces) {
+        className = "";
+        this.spaces = spaces;
+        isBlock = noSemicolon = true;
     }
     public ClassBuilder(String name, String extend, int spaces) {
         className = name + " extends " + extend;

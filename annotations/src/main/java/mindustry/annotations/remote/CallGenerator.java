@@ -14,12 +14,14 @@ import mindustry.annotations.util.TypeIOResolver.*;
 import javax.lang.model.element.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import static mindustry.annotations.BaseProcessor.*;
 
 /** Generates code for writing remote invoke packets on the client and server. */
 public class CallGenerator{
 
+    static String bridgeTable = "booleancharbyte";
 
     /** Generates all classes in this list. */
     public static void generate(ClassSerializer serializer, Seq<MethodEntry> methods) throws IOException{
@@ -30,9 +32,7 @@ public class CallGenerator{
             .addModifiers(Modifier.PUBLIC, Modifier.STATIC);
 
         CodeBlock code = new CodeBlock(0);
-        int packetID = 4;
-
-        ArrayList<String> packets = new ArrayList<>();
+        int[] packetID = {4};
 
         //go through each method entry in this class
         for(MethodEntry ent : methods){
@@ -40,8 +40,8 @@ public class CallGenerator{
             TypeSpec.Builder packet = TypeSpec.classBuilder(ent.packetClassName)
             .addModifiers(Modifier.PUBLIC);
 
-            packets.add(ent.packetClassName);
             ClassBuilder cb = code.newClass(ent.packetClassName, "Packet");
+            cb.addVariable("_id", String.valueOf(packetID[0]));
 
             //temporary data to deserialize later
             packet.addField(FieldSpec.builder(byte[].class, "DATA", Modifier.PRIVATE).initializer("NODATA").build());
@@ -59,16 +59,16 @@ public class CallGenerator{
             }
 
             //implement read & write methods
-            makeWriter(packet, ent, serializer);
-            makeReader(packet, ent, serializer);
+            makeWriter(packet, ent, serializer, cb);
+            makeReader(packet, ent, serializer, cb);
 
             //generate handlers
             if(ent.where.isClient){
-                packet.addMethod(writeHandleMethod(ent, false));
+                packet.addMethod(writeHandleMethod(ent, false, cb));
             }
 
             if(ent.where.isServer){
-                packet.addMethod(writeHandleMethod(ent, true));
+                packet.addMethod(writeHandleMethod(ent, true, cb));
             }
 
             //register packet
@@ -87,23 +87,23 @@ public class CallGenerator{
 
             //write the 'send event to all players' variant: always happens for clients, but only happens if 'all' is enabled on the server method
             if(ent.where.isClient || ent.target.isAll){
-                writeCallMethod(callBuilder, ent, true, false);
+                writeCallMethod(callBuilder, ent, true, false, cb);
             }
 
             //write the 'send event to one player' variant, which is only applicable on the server
             if(ent.where.isServer && ent.target.isOne){
-                writeCallMethod(callBuilder, ent, false, false);
+                writeCallMethod(callBuilder, ent, false, false, cb);
             }
 
             //write the forwarded method version
             if(ent.where.isServer && ent.forward){
-                writeCallMethod(callBuilder, ent, true, true);
+                writeCallMethod(callBuilder, ent, true, true, cb);
             }
 
             //write the completed packet class
             JavaFile.builder(packageName, packet.build()).build().writeTo(BaseProcessor.filer);
 
-            code.add("Packets.set(" + packetID++ + "," + ent.packetClassName + ")");
+            code.add("Packets.set(" + packetID[0]++ + "," + ent.packetClassName + ")");
         }
 
         callBuilder.addMethod(register.build());
@@ -112,22 +112,16 @@ public class CallGenerator{
         TypeSpec spec = callBuilder.build();
         JavaFile.builder(packageName, spec).build().writeTo(BaseProcessor.filer);
 
-        code.add("{");
-        CodeBlock list = code.newBlock();
-        list.noWarp = true;
-        for(String name : packets) {
-            list.add("Packets.set");
-        }
-        code.add("}");
-
         new Fi("jsoutput.js").writeString(code.build());
     }
 
-    private static void makeWriter(TypeSpec.Builder typespec, MethodEntry ent, ClassSerializer serializer){
+    private static void makeWriter(TypeSpec.Builder typespec, MethodEntry ent, ClassSerializer serializer, ClassBuilder js){
         MethodSpec.Builder builder = MethodSpec.methodBuilder("write")
             .addParameter(Writes.class, "WRITE")
             .addModifiers(Modifier.PUBLIC).addAnnotation(Override.class);
         Seq<Svar> params = ent.element.params();
+
+        CodeBlock jsBuilder = js.addMethod("write", new String[]{"buf"});
 
         for(int i = 0; i < params.size; i++){
             //first argument is skipped as it is always the player caller
@@ -151,6 +145,7 @@ public class CallGenerator{
 
             if(BaseProcessor.isPrimitive(typeName)){ //check if it's a primitive, and if so write it
                 builder.addStatement("WRITE.$L($L)", typeName.equals("boolean") ? "bool" : typeName.charAt(0) + "", varName);
+                jsBuilder.add("buf.put" + (bridgeTable.contains(typeName) ? "" : typeName.substring(0,1).toUpperCase() + typeName.substring(1)) + "(" + "this." + varName + ")");
             }else{
                 //else, try and find a serializer
                 String ser = serializer.getNetWriter(typeName.replace("mindustry.gen.", ""), SerializerResolver.locate(ent.element.e, var.mirror(), true));
@@ -171,7 +166,7 @@ public class CallGenerator{
         typespec.addMethod(builder.build());
     }
 
-    private static void makeReader(TypeSpec.Builder typespec, MethodEntry ent, ClassSerializer serializer){
+    private static void makeReader(TypeSpec.Builder typespec, MethodEntry ent, ClassSerializer serializer, ClassBuilder js){
         MethodSpec.Builder readbuilder = MethodSpec.methodBuilder("read")
             .addParameter(Reads.class, "READ")
             .addParameter(int.class, "LENGTH")
@@ -185,6 +180,8 @@ public class CallGenerator{
         MethodSpec.Builder builder = MethodSpec.methodBuilder("handled")
             .addModifiers(Modifier.PUBLIC)
             .addAnnotation(Override.class);
+
+        CodeBlock jsBuilder = js.addMethod("read", new String[]{"buf"});
 
         //make sure data is present, begin reading it if so
         builder.addStatement("BAIS.setBytes(DATA)");
@@ -218,6 +215,8 @@ public class CallGenerator{
             //write primitives automatically
             if(BaseProcessor.isPrimitive(typeName)){
                 builder.addStatement("$L = READ.$L()", varName, pname);
+                js.addVariable(varName);
+                jsBuilder.add("this." + varName + "=buf.get" + (bridgeTable.contains(typeName) ? "" : typeName.substring(0,1).toUpperCase() + typeName.substring(1)) + "()");
             }else{
                 //else, try and find a serializer
                 String ser = serializer.readers.get(typeName.replace("mindustry.gen.", ""), SerializerResolver.locate(ent.element.e, var.mirror(), false));
@@ -239,7 +238,7 @@ public class CallGenerator{
     }
 
     /** Creates a specific variant for a method entry. */
-    private static void writeCallMethod(TypeSpec.Builder classBuilder, MethodEntry ent, boolean toAll, boolean forwarded){
+    private static void writeCallMethod(TypeSpec.Builder classBuilder, MethodEntry ent, boolean toAll, boolean forwarded, ClassBuilder js){
         Smethod elem = ent.element;
         Seq<Svar> params = elem.params();
 
@@ -374,7 +373,7 @@ public class CallGenerator{
     }
 
     /** Generates handleServer / handleClient methods. */
-    public static MethodSpec writeHandleMethod(MethodEntry ent, boolean isClient){
+    public static MethodSpec writeHandleMethod(MethodEntry ent, boolean isClient, ClassBuilder js){
 
         //create main method builder
         MethodSpec.Builder builder = MethodSpec.methodBuilder(isClient ? "handleClient" : "handleServer")

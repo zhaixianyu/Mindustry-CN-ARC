@@ -9,6 +9,7 @@ public class CodeBlock extends JSBuilder{
     String thisCode;
     Boolean isBlock = false;
     int spaces;
+    JSBuilder lastBlock;
     public CodeBlock(String code) {
         thisCode = code;
     }
@@ -33,8 +34,8 @@ public class CodeBlock extends JSBuilder{
         return this;
     }
     public CodeBlock addSynx(String synx, String cond) {
-        add(synx + "(" + cond + "){");
-        CodeBlock cb = new CodeBlock(spaces);
+        add(synx + "(" + cond + "){", cb -> cb.noSemicolon = true);
+        CodeBlock cb = new CodeBlock(spaces + 4);
         add(cb);
         add("}");
         cb.noSemicolon = true;
@@ -45,28 +46,25 @@ public class CodeBlock extends JSBuilder{
         if(!isBlock) return thisCode;
         StringBuilder sb = new StringBuilder();
         String space = calcSpace(spaces);
-        boolean[] next = {false};
-        boolean[] lastCond = {true};
-        JSBuilder[] lastBlock = {new CodeBlock(0)};
+        Boolean[] next = {false};
+        lastBlock = new CodeBlock(0);
         for(JSBuilder code : list) {
             if(code.isBlock) {
-                lastCond[0] = true;
-                if(code.forceWarp) sb.append("\n");
+                if(code.forceWarp || !lastBlock.noWarp && !code.noWarp) sb.append("\n");
                 sb.append(code.build());
+                if(code.forceSemicolon) sb.append(";");
             } else {
-                if(lastCond[0]) {
-                    lastCond[0] = false;
-                } else if(lastBlock[0].forceSemicolon || !code.noSemicolon) sb.append(";");//TODO wrong semicolon
                 if(next[0]) {
-                    if(code.forceWarp || !lastBlock[0].noWarp && !code.noWarp) sb.append("\n");
+                    if(code.forceWarp || !lastBlock.noWarp && !code.noWarp) sb.append("\n");
                 } else {
                     next[0] = true;
                 }
                 sb.append(space).append(code.build());
+                if(code.forceSemicolon || !code.noSemicolon) sb.append(";");
             }
-            lastBlock[0] = code;
+            lastBlock = code;
         }
-        return sb.toString();
+        return clean(sb);
     }
     public ClassBuilder newClass(String name) {
         ClassBuilder cb = new ClassBuilder(name, spaces);
@@ -98,5 +96,10 @@ public class CodeBlock extends JSBuilder{
         ObjectBuilder ob = new ObjectBuilder(spaces);
         add(ob);
         return ob;
+    }
+    public static String clean(StringBuilder input) {
+        if(input.length() == 0) return "";
+        if(input.charAt(input.length() - 1) == ';') input.deleteCharAt(input.length() - 1);
+        return input.toString();
     }
 }
