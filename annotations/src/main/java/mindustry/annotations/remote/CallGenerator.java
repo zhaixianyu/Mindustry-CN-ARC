@@ -13,8 +13,6 @@ import mindustry.annotations.util.TypeIOResolver.*;
 
 import javax.lang.model.element.*;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 import static mindustry.annotations.BaseProcessor.*;
 
@@ -33,6 +31,8 @@ public class CallGenerator{
 
         CodeBlock code = new CodeBlock(0);
         int[] packetID = {4};
+        code.add("//CODEGEN from squi2rel (github.com/squi2rel/Mindustry-CN-ARC)");
+        code.add("var Packets=new Map()");
 
         //go through each method entry in this class
         for(MethodEntry ent : methods){
@@ -145,7 +145,7 @@ public class CallGenerator{
 
             if(BaseProcessor.isPrimitive(typeName)){ //check if it's a primitive, and if so write it
                 builder.addStatement("WRITE.$L($L)", typeName.equals("boolean") ? "bool" : typeName.charAt(0) + "", varName);
-                jsBuilder.add("buf.put" + (bridgeTable.contains(typeName) ? "" : typeName.substring(0,1).toUpperCase() + typeName.substring(1)) + "(" + "this." + varName + ")");
+                jsBuilder.add("buf.put" + (bridgeTable.contains(typeName) ? "" : typeName.substring(0,1).toUpperCase() + typeName.substring(1)) + "(this." + varName + ")");
             }else{
                 //else, try and find a serializer
                 String ser = serializer.getNetWriter(typeName.replace("mindustry.gen.", ""), SerializerResolver.locate(ent.element.e, var.mirror(), true));
@@ -156,6 +156,7 @@ public class CallGenerator{
 
                 //add statement for writing it
                 builder.addStatement(ser + "(WRITE, " + varName + ")");
+                jsBuilder.add(ser.replace("mindustry.io.", "") + "(buf,this." + varName + ")");
             }
 
             if(writePlayerSkipCheck){ //write end check
@@ -212,10 +213,10 @@ public class CallGenerator{
             //capitalized version of type name for reading primitives
             String pname = typeName.equals("boolean") ? "bool" : typeName.charAt(0) + "";
 
+            js.addVariable(varName);
             //write primitives automatically
             if(BaseProcessor.isPrimitive(typeName)){
                 builder.addStatement("$L = READ.$L()", varName, pname);
-                js.addVariable(varName);
                 jsBuilder.add("this." + varName + "=buf.get" + (bridgeTable.contains(typeName) ? "" : typeName.substring(0,1).toUpperCase() + typeName.substring(1)) + "()");
             }else{
                 //else, try and find a serializer
@@ -227,6 +228,7 @@ public class CallGenerator{
 
                 //add statement for reading it
                 builder.addStatement("$L = $L(READ)", varName, ser);
+                jsBuilder.add("this." + varName + "=" + ser.replace("mindustry.io.", "") + "(buf)");
             }
 
             if(writePlayerSkipCheck){ //write end check

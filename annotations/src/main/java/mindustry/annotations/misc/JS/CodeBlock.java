@@ -35,9 +35,8 @@ public class CodeBlock extends JSBuilder{
     }
     public CodeBlock addSynx(String synx, String cond) {
         add(synx + "(" + cond + "){", cb -> cb.noSemicolon = true);
-        CodeBlock cb = new CodeBlock(spaces + 4);
-        add(cb);
-        add("}");
+        CodeBlock cb = newBlock();
+        add("}", cbcb -> cbcb.noSemicolon = true);
         cb.noSemicolon = true;
         return cb;
     }
@@ -47,7 +46,7 @@ public class CodeBlock extends JSBuilder{
         StringBuilder sb = new StringBuilder();
         String space = calcSpace(spaces);
         Boolean[] next = {false};
-        lastBlock = new CodeBlock(0);
+        lastBlock = new CodeBlock("");
         for(JSBuilder code : list) {
             if(code.isBlock) {
                 if(code.forceWarp || !lastBlock.noWarp && !code.noWarp) sb.append("\n");
@@ -96,6 +95,10 @@ public class CodeBlock extends JSBuilder{
         ObjectBuilder ob = new ObjectBuilder(spaces);
         add(ob);
         return ob;
+    }
+    public CodeBlock nextLine() {
+        add("", cb -> cb.noSemicolon = cb.forceWarp = true);
+        return this;
     }
     public static String clean(StringBuilder input) {
         if(input.length() == 0) return "";
