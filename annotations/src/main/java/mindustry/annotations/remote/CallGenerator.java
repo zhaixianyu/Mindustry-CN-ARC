@@ -13,13 +13,28 @@ import mindustry.annotations.util.TypeIOResolver.*;
 
 import javax.lang.model.element.*;
 import java.io.*;
+import java.util.HashMap;
+import java.util.Set;
 
 import static mindustry.annotations.BaseProcessor.*;
 
 /** Generates code for writing remote invoke packets on the client and server. */
 public class CallGenerator{
 
-    static String bridgeTable = "booleancharbyte";
+    static String[] bridgeTable = {"boolean", "char", "byte"};
+    static HashMap<String, String> methodTable = new HashMap<>();
+    static HashMap<String, String> methodTableString = new HashMap<>();
+
+    static {
+        methodTable.put(".*mindustry\\.ui\\..*", "");
+    }
+
+    static {
+        methodTableString.put("mindustry.core.NetClient", "n");
+        methodTableString.put("mindustry.core.NetServer", "n");
+        methodTableString.put("mindustry.world.Tile", "Tile");
+        methodTableString.put("mindustry.input.InputHandler", "InputHandler");
+    }
 
     /** Generates all classes in this list. */
     public static void generate(ClassSerializer serializer, Seq<MethodEntry> methods) throws IOException{
@@ -145,7 +160,7 @@ public class CallGenerator{
 
             if(BaseProcessor.isPrimitive(typeName)){ //check if it's a primitive, and if so write it
                 builder.addStatement("WRITE.$L($L)", typeName.equals("boolean") ? "bool" : typeName.charAt(0) + "", varName);
-                jsBuilder.add("buf.put" + (bridgeTable.contains(typeName) ? "" : typeName.substring(0,1).toUpperCase() + typeName.substring(1)) + "(this." + varName + ")");
+                jsBuilder.add("buf.put" + (contains(bridgeTable, typeName) ? "" : typeName.substring(0,1).toUpperCase() + typeName.substring(1)) + "(this." + varName + ")");
             }else{
                 //else, try and find a serializer
                 String ser = serializer.getNetWriter(typeName.replace("mindustry.gen.", ""), SerializerResolver.locate(ent.element.e, var.mirror(), true));
@@ -217,7 +232,7 @@ public class CallGenerator{
             //write primitives automatically
             if(BaseProcessor.isPrimitive(typeName)){
                 builder.addStatement("$L = READ.$L()", varName, pname);
-                jsBuilder.add("this." + varName + "=buf.get" + (bridgeTable.contains(typeName) ? "" : typeName.substring(0,1).toUpperCase() + typeName.substring(1)) + "()");
+                jsBuilder.add("this." + varName + "=buf.get" + (contains(bridgeTable, typeName) ? "" : typeName.substring(0,1).toUpperCase() + typeName.substring(1)) + "()");
             }else{
                 //else, try and find a serializer
                 String ser = serializer.readers.get(typeName.replace("mindustry.gen.", ""), SerializerResolver.locate(ent.element.e, var.mirror(), false));
@@ -383,6 +398,8 @@ public class CallGenerator{
         .addAnnotation(Override.class)
         .returns(void.class);
 
+        CodeBlock jsBuilder = js.addMethod(isClient ? "handleClient" : "handleServer", new String[]{"n"});
+
         Smethod elem = ent.element;
         Seq<Svar> params = elem.params();
 
@@ -402,6 +419,7 @@ public class CallGenerator{
         //execute the relevant method before the forward
         //if it throws a ValidateException, the method won't be forwarded
         builder.addStatement("$N." + elem.name() + "(" + params.toString(", ", s -> s.name()) + ")", ((TypeElement)elem.up()).getQualifiedName().toString());
+        jsBuilder.add(fullReplace(((TypeElement)elem.up()).getQualifiedName().toString() + "." + elem.name() + "(" + params.toString(", ", s -> s.name()) + ")"));
 
         //call forwarded method, don't forward on the client reader
         if(ent.forward && ent.where.isServer && !isClient){
@@ -410,5 +428,23 @@ public class CallGenerator{
         }
 
         return builder.build();
+    }
+    public static boolean contains(String[] arr, String name) {
+        for(String i : arr) {
+            if(name.equals(i)) return true;
+        }
+        return false;
+    }
+    public static String fullReplace(String str) {
+        Set<String> list = methodTable.keySet();
+        String[] result = {str};
+        for (String k : list) {
+            result[0] = result[0].replaceAll(k, methodTable.get(k));
+        }
+        Set<String> list2 = methodTableString.keySet();
+        for (String k : list2) {
+            result[0] = result[0].replace(k, methodTableString.get(k));
+        }
+        return result[0];
     }
 }

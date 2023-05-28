@@ -1,6 +1,7 @@
 package mindustry.annotations.misc.JS;
 
 import java.util.HashMap;
+import java.util.Set;
 
 public class ObjectBuilder extends JSBuilder{
     HashMap<String, JSBuilder> map = new HashMap<>();
@@ -14,7 +15,8 @@ public class ObjectBuilder extends JSBuilder{
     public String build() {
         StringBuilder sb = new StringBuilder("{");
         int codeSpaces = spaces + 4;
-        for(String name : map.keySet()) {
+        Set<String> list = map.keySet();
+        for(String name : list) {
             JSBuilder code = map.get(name);
             if(code.isBlock) continue;
             sb.append("\n").append(calcSpace(codeSpaces)).append(name).append(" : ").append(code.build()).append(",");
