@@ -8,6 +8,7 @@ import mindustry.annotations.Annotations.*;
 import mindustry.annotations.*;
 import mindustry.annotations.misc.JS.ClassBuilder;
 import mindustry.annotations.misc.JS.CodeBlock;
+import mindustry.annotations.misc.JS.ObjectBuilder;
 import mindustry.annotations.util.*;
 import mindustry.annotations.util.TypeIOResolver.*;
 
@@ -47,7 +48,74 @@ public class CallGenerator{
         CodeBlock code = new CodeBlock(0);
         int[] packetID = {4};
         code.add("//CODEGEN from squi2rel (github.com/squi2rel/Mindustry-CN-ARC)");
-        code.add("var Packets=new Map()");
+        code.add("const Packet=require(\"./Packet\")");
+        code.add("const Packets=new Map()");
+        code.add("class StreamBegin extends Packet{\n" +
+                "    _id=0;\n" +
+                "    static #lastid=0;\n" +
+                "    total;\n" +
+                "    type;\n" +
+                "    constructor(){\n" +
+                "        super();\n" +
+                "        this.id=StreamBegin.#lastid++\n" +
+                "    }\n" +
+                "    write(buf){\n" +
+                "        buf.putInt(this.id);\n" +
+                "        buf.putInt(this.total);\n" +
+                "        buf.put(type)\n" +
+                "    }\n" +
+                "    read(buf){\n" +
+                "        this.id=buf.getInt();\n" +
+                "        this.total=buf.getInt();\n" +
+                "        this.type=buf.get()\n" +
+                "    }\n" +
+                "}\n" +
+                "Packets.set(0,StreamBegin);\n" +
+                "class StreamChunk extends Packet{\n" +
+                "    _id=1;\n" +
+                "    id;\n" +
+                "    data;\n" +
+                "    write(buf){\n" +
+                "        buf.putInt(this.id);\n" +
+                "        buf.putShort(this.data.length);\n" +
+                "        buffer.put(this.data)\n" +
+                "    }\n" +
+                "    read(buf){\n" +
+                "        this.id=buf.getInt();\n" +
+                "        this.data=buf.get(buf.getShort())\n" +
+                "    }\n" +
+                "}\n" +
+                "Packets.set(1,StreamChunk);\n" +
+                "class WorldStream extends Packet{\n" +
+                "    _id=2;\n" +
+                "    stream;\n" +
+                "    handleClient(nc){\n" +
+                "        if(nc.game){\n" +
+                "            nc.loadWorld(this)\n" +
+                "        }\n" +
+                "    }\n" +
+                "}\n" +
+                "Packets.set(2,WorldStream);\n" +
+                "class ConnectPacket extends Packet{\n" +
+                "    _id=3;\n" +
+                "    name;\n" +
+                "    usid;\n" +
+                "    uuid;\n" +
+                "    write(buf){\n" +
+                "        buf.putInt(144);\n" +
+                "        TypeIO.writeString(buf,\"official\");\n" +
+                "        TypeIO.writeString(buf,this.name);\n" +
+                "        TypeIO.writeString(buf,\"Mars\");\n" +
+                "        TypeIO.writeString(buf,this.usid);\n" +
+                "        let uuidbuf=Buffer.from(this.uuid,\"base64\");\n" +
+                "        buf.put(uuidbuf);\n" +
+                "        buf.putLong(crc32.buf(uuidbuf));\n" +
+                "        buf.put(0);\n" +
+                "        buf.put([0xff,0xa1,0x08,0xff]);\n" +
+                "        buf.put(0)\n" +
+                "    }\n" +
+                "}\n" +
+                "Packets.set(3,ConnectPacket)");
 
         //go through each method entry in this class
         for(MethodEntry ent : methods){
@@ -123,11 +191,20 @@ public class CallGenerator{
 
         callBuilder.addMethod(register.build());
 
+        ObjectBuilder ob = code.add("module.exports=", cb -> cb.noSemicolon = true).newObject();
+        ob.set("StreamBegin").set("StreamChunk").set("WorldStream").set("ConnectPacket");
+
+        for(MethodEntry ent : methods){
+            ob.set(ent.packetClassName);
+        }
+
+        ob.set("get", new CodeBlock("Packets.get"));
+
         //build and write resulting class
         TypeSpec spec = callBuilder.build();
         JavaFile.builder(packageName, spec).build().writeTo(BaseProcessor.filer);
 
-        new Fi("jsoutput.js").writeString(code.build());
+        new Fi("Packets.js").writeString(code.build());
     }
 
     private static void makeWriter(TypeSpec.Builder typespec, MethodEntry ent, ClassSerializer serializer, ClassBuilder js){

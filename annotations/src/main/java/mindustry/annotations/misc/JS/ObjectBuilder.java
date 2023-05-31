@@ -1,10 +1,10 @@
 package mindustry.annotations.misc.JS;
 
-import java.util.HashMap;
-import java.util.Set;
+import arc.struct.ObjectMap;
+import arc.struct.OrderedMap;
 
 public class ObjectBuilder extends JSBuilder{
-    HashMap<String, JSBuilder> map = new HashMap<>();
+    OrderedMap<String, JSBuilder> map = new OrderedMap<>();
     int spaces;
     ObjectBuilder(int spaces) {
         this.spaces = spaces;
@@ -15,11 +15,15 @@ public class ObjectBuilder extends JSBuilder{
     public String build() {
         StringBuilder sb = new StringBuilder("{");
         int codeSpaces = spaces + 4;
-        Set<String> list = map.keySet();
-        for(String name : list) {
-            JSBuilder code = map.get(name);
-            if(code.isBlock) continue;
-            sb.append("\n").append(calcSpace(codeSpaces)).append(name).append(" : ").append(code.build()).append(",");
+        ObjectMap.Entries<String, JSBuilder> list = map.entries();
+        for(ObjectMap.Entry<String, JSBuilder> name : list) {
+            JSBuilder code = name.value;
+            if(code == null) {
+                sb.append("\n").append(calcSpace(codeSpaces)).append(name.key).append(",");
+            } else {
+                if (code.isBlock) continue;
+                sb.append("\n").append(calcSpace(codeSpaces)).append(name.key).append(":").append(code.build()).append(",");
+            }
         }
         sb.deleteCharAt(sb.length() - 1);
         sb.append("\n").append(calcSpace(spaces)).append("}");
@@ -27,6 +31,10 @@ public class ObjectBuilder extends JSBuilder{
     }
     public ObjectBuilder set(String name, JSBuilder code) {
         map.put(name, code);
+        return this;
+    }
+    public ObjectBuilder set(String name) {
+        map.put(name, null);
         return this;
     }
     public JSBuilder get(String name) {
