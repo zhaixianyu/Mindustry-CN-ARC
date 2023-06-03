@@ -61,7 +61,7 @@ public class MusicDialog extends BaseDialog{
             addCloseButton();
             button(Icon.info, () -> ui.showInfo("[pink]松鼠音乐v" + version + "\n[gold]松鼠制作\n[cyan]松鼠站:squi2rel.tk"));
             buttons.button("切换api", this::switchApi);
-            buttons.button("上传本地音乐", this::upload).disabled(b -> !api.canUpload());
+            buttons.button("上传本地音乐", this::upload).disabled(b -> !api.canUpload);
             onResize(this::setup);
             shown(() -> {
                 if(check()) setup();
@@ -71,13 +71,13 @@ public class MusicDialog extends BaseDialog{
             loaded = true;
             setup();
             switchDialog = new BaseDialog("切换api");
-            switchDialog.cont.label(() -> "当前api: (" + api.getId() + ")" + api.getName());
+            switchDialog.cont.label(() -> "当前api: (" + api.thisId + ")" + api.name);
             switchDialog.cont.row();
             switchDialog.cont.pane(p -> {
                 for(MusicApi capi : apis) {
                     if(capi != null) {
-                        byte id = capi.getId();
-                        String name = capi.getName();
+                        byte id = capi.thisId;
+                        String name = capi.name;
                         p.button("(" + id + ")" + name, () -> {
                             api = apis[id];
                             setup();
@@ -114,7 +114,7 @@ public class MusicDialog extends BaseDialog{
         nowMusic = info;
         try {
             Http.get(info.url, r -> {
-                Fi tmp = new Fi(tmpDirectory + "/squirrel.mp3");
+                Fi tmp = new Fi(tmpDirectory.child("music") + "/squirrel.mp3");
                 tmp.writeBytes(r.getResult());
                 player.stop();
                 player.pause(false);
@@ -138,9 +138,12 @@ public class MusicDialog extends BaseDialog{
     }
     private void setup() {
         if(!loaded) return;
+        Fi tmpDir = tmpDirectory.child("music");
+        tmpDir.mkdirs();
+        tmpDir.emptyDirectory();
         cont.top();
         cont.clear();
-        if(api.canSearch()) {
+        if(api.canSearch) {
             cont.table(s -> {
                 s.left();
                 s.field(search, res -> search = res).growX().get();
@@ -310,11 +313,11 @@ public class MusicDialog extends BaseDialog{
             byte src = Byte.parseByte(msg.substring(start, split));
             String id = msg.substring(split + 1);
             if(src > apis.length || apis[src] == null && src != 0) {
-                Core.app.post(() -> ui.showErrorMessage("无法找到api!\n可能是学术版本太旧或者伪造消息"));
+                Core.app.post(() -> ui.arcInfo("[red]无法找到api!\n可能是学术版本太旧"));
             }
             if(src == 0) return true;
             MusicApi current = apis[src];
-            current.getMusicInfo(id, info -> Core.app.post(() -> ui.showConfirm("松鼠音乐", (sender == null ? "" : sender.name) + "分享了一首来自" + current.getName() + "的音乐" + (info.name == null ? "" : ":\n" + info.author + " - " + info.name) + "\n播放?", () -> current.getMusicInfo(info.id, this::play))), true);
+            current.getMusicInfo(id, info -> Core.app.post(() -> ui.showConfirm("松鼠音乐", (sender == null ? "" : sender.name) + "分享了一首来自" + current.name + "的音乐" + (info.name == null ? "" : ":\n" + info.author + " - " + info.name) + "\n播放?", () -> current.getMusicInfo(info.id, this::play))), true);
             return true;
         } catch (Exception e) {
             Log.err(e);
@@ -344,43 +347,38 @@ public class MusicDialog extends BaseDialog{
         }
     }
 
-    public interface MusicApi{
-        String getName();
-        byte getId();
-        boolean canSearch();
-        boolean canUpload();
-        void getMusicInfo(String id, Cons<MusicInfo> callback);
-        void getMusicInfo(String id, Cons<MusicInfo> callback, boolean noTip);
-        void search(String name, int page, Cons<MusicSet> callback);
-        void upload(Fi file, Cons<MusicInfo> callback);
+    public abstract static class MusicApi{
+        public String name;
+        public byte thisId;
+        public boolean canSearch;
+        public boolean canUpload;
+        public abstract void getMusicInfo(String id, Cons<MusicInfo> callback);
+        public abstract void getMusicInfo(String id, Cons<MusicInfo> callback, boolean noTip);
+        public void search(String name, int page, Cons<MusicSet> callback){
+
+        }
+        public void upload(Fi file, Cons<MusicInfo> callback){
+
+        }
     }
-    private class Squirrel implements MusicApi{//松鼠站
-        byte num = 1;
-        public String getName() {
-            return "松鼠站";
-        }
-        public byte getId() {
-            return num;
-        }
-        public boolean canSearch() {
-            return false;
-        }
-        public boolean canUpload() {
-            return true;
+    private static class Squirrel extends MusicApi{//松鼠站
+        {
+            name = "松鼠站";
+            canSearch = false;
+            canUpload = true;
+            thisId = 1;
         }
         public void getMusicInfo(String id, Cons<MusicInfo> callback) {
             getMusicInfo(id, callback, false);
         }
         public void getMusicInfo(String rid, Cons<MusicInfo> callback, boolean noTip) {
             callback.get(new MusicInfo() {{
-                src = num;
+                src = thisId;
                 url = "http://squirrel.gq/api/get?id=" + rid;
                 id = rid;
             }});
         }
-        public void search(String name, int page, Cons<MusicSet> callback) {
-
-        }
+        @Override
         public void upload(Fi file, Cons<MusicInfo> callback) {
             Http.HttpRequest post = Http.post("http://squirrel.gq/api/upload");
             post.contentStream=file.read();
@@ -392,25 +390,18 @@ public class MusicDialog extends BaseDialog{
             post.submit(r -> {
                 Core.app.post(() -> ui.announce("上传成功"));
                 callback.get(new MusicInfo(){{
-                    src = num;
+                    src = thisId;
                     id = r.getResultAsString();
                 }});
             });
         }
     }
-    private class KuGouWeb implements MusicApi{//酷狗网页版api
-        byte num = 2;
-        public String getName() {
-            return "酷狗音乐";
-        }
-        public byte getId() {
-            return num;
-        }
-        public boolean canSearch(){
-            return true;
-        }
-        public boolean canUpload() {
-            return false;
+    private class KuGouWeb extends MusicApi{//酷狗网页版api
+        {
+            name = "酷狗网页版";
+            canSearch = true;
+            canUpload = false;
+            thisId = 2;
         }
         private final MessageDigest md5;
         public KuGouWeb() throws Exception{
@@ -438,7 +429,7 @@ public class MusicDialog extends BaseDialog{
                         url = data.getString("play_url");
                         img = data.getString("img");
                         id = data.getString("encode_album_audio_id");
-                        src = num;
+                        src = thisId;
                         length = data.getInt("timelength") / 1000;
                     }})));
                 } else {
@@ -448,12 +439,13 @@ public class MusicDialog extends BaseDialog{
                         url = data.getString("play_url");
                         img = data.getString("img");
                         id = data.getString("encode_album_audio_id");
-                        src = num;
+                        src = thisId;
                         length = data.getInt("timelength") / 1000;
                     }});
                 }
             });
         }
+        @Override
         public void search(String name, int page, Cons<MusicSet> callback) {
             try {
                 long timestamp = new Date().getTime();
@@ -481,7 +473,7 @@ public class MusicDialog extends BaseDialog{
                             name = thisMusic.getString("SongName");
                             author = thisMusic.getString("SingerName");
                             id = thisMusic.getString("EMixSongID");
-                            src = num;
+                            src = thisId;
                         }});
                     }
                     callback.get(set);
@@ -489,9 +481,6 @@ public class MusicDialog extends BaseDialog{
             } catch (Exception e){
                 Core.app.post(() -> ui.showException("搜索出错!", e));
             }
-        }
-        public void upload(Fi file, Cons<MusicInfo> callback) {
-
         }
     }
 }
