@@ -16,8 +16,8 @@ buildscript{
     }
 
     dependencies{
-        classpath "com.github.Anuken.Arc:packer:$arcHash"
-        classpath "com.github.Anuken.Arc:arc-core:$arcHash"
+        classpath "com.github.CN-ARC.Arc:packer:$arcHash"
+        classpath "com.github.CN-ARC.Arc:arc-core:$arcHash"
     }
 }
 
@@ -58,7 +58,7 @@ allprojects{
             }else{
                 //skip to last submodule
                 if(name.contains(':')) name = name.split(':').last()
-                return "com.github.Anuken.Arc:$name:${getArcHash()}"
+                return "com.github.CN-ARC.Arc:$name:${getArcHash()}"
             }
         }
 
