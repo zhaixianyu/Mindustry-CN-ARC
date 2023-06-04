@@ -177,8 +177,6 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
 
         assets.loadRun("contentinit", ContentLoader.class, () -> content.init(), () -> content.load());
         assets.loadRun("baseparts", BaseRegistry.class, () -> {}, () -> bases.load());
-
-        Events.on(Exception.class, e -> Vars.ui.showException("发生了一个崩溃错误,但学术端阻止了游戏崩溃\n如果游戏出现异常情况请重启", e));
     }
 
     @Override
