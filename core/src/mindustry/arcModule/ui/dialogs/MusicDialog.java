@@ -13,11 +13,16 @@ import arc.graphics.g2d.TextureRegion;
 import arc.input.KeyCode;
 import arc.math.Rand;
 import arc.math.geom.Vec2;
-import arc.scene.event.*;
+import arc.scene.event.HandCursorListener;
+import arc.scene.event.InputEvent;
+import arc.scene.event.InputListener;
+import arc.scene.event.Touchable;
 import arc.scene.ui.*;
 import arc.scene.ui.layout.Scl;
 import arc.scene.ui.layout.Table;
 import arc.util.*;
+import arc.util.Timer;
+import arc.util.serialization.Base64Coder;
 import arc.util.serialization.JsonReader;
 import arc.util.serialization.JsonValue;
 import mindustry.Vars;
@@ -30,27 +35,33 @@ import mindustry.gen.Tex;
 import mindustry.ui.Styles;
 import mindustry.ui.dialogs.BaseDialog;
 
+import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+import java.math.BigInteger;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.security.KeyFactory;
 import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Objects;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.RSAPublicKeySpec;
+import java.util.*;
 
 import static mindustry.Vars.*;
 import static mindustry.arcModule.RFuncs.getPrefix;
 
 public class MusicDialog extends BaseDialog{
-    public static final String version = "1.1.1";
+    public static final String version = "1.2.0";
     public static final String ShareType = "[pink]<Music>";
     private Table lrcTable;
     private MusicApi api;
-    private static MusicApi[] apis;
+    private static final ArrayList<MusicApi> apis = new ArrayList<>();
     private Music player;
     private Runnable loadStatus;
     private float progress, vol;
     private Slider progressBar;
     private MusicInfo nowMusic;
-    private boolean loaded, updating, paused, isPlaying;
+    private boolean loaded, updating, paused, playing;
     private BaseDialog switchDialog;
     private float fontScale = 1f;
     private String lrcColor, nextLrcColor, lrcLine1 = "松鼠音乐", lrcLine2 = "松鼠音乐";
@@ -58,7 +69,7 @@ public class MusicDialog extends BaseDialog{
     private Dialog settingsDialog;
     private ListDialog listDialog;
     private MusicList list;
-    private MusicList[] lists;
+    private final ArrayList<MusicList> lists = new ArrayList<>();
     private String uuid;
     private MessageDigest md5;
     public MusicDialog() {
@@ -67,18 +78,23 @@ public class MusicDialog extends BaseDialog{
             md5 = MessageDigest.getInstance("MD5");
             nowMusic = new MusicInfo();
             progress = 0;
-            apis = new MusicApi[]{null, new Squirrel(), new KuGouWeb()};
-            lists = new MusicList[]{null, new MusicList((byte) 1), new MusicList((byte) 2)};
-            api = apis[2];
-            list = lists[2];
+            addApi(null);
+            addApi(new Squirrel());
+            addApi(new KuGouWeb());
+            try {
+                addApi(new NetEaseMusic());
+            } catch (Exception e) {
+                Events.on(EventType.ClientLoadEvent.class, ee -> ui.showException("松鼠音乐api加载失败!", e));
+            }
+            api = apis.get(2);
+            list = lists.get(2);
             addCloseButton();
             settingsDialog = new SettingsDialog();
             listDialog = new ListDialog();
             buttons.button("切换api", this::switchApi);
-            buttons.button("上传本地音乐", this::upload).disabled(b -> !api.canUpload);
             buttons.row();
+            buttons.button("上传本地音乐", this::upload).disabled(b -> !api.canUpload);
             buttons.button("歌单", () -> listDialog.show());
-            buttons.button(Icon.info, () -> ui.showInfo("[pink]松鼠音乐v" + version + "\n[gold]松鼠制作\n[cyan]松鼠站:squi2rel.tk"));
             buttons.button(Icon.settings, () -> settingsDialog.show());
             onResize(this::setup);
             shown(() -> {
@@ -97,8 +113,8 @@ public class MusicDialog extends BaseDialog{
                         byte id = capi.thisId;
                         String name = capi.name;
                         p.button("(" + id + ")" + name, () -> {
-                            api = apis[id];
-                            list = lists[id];
+                            api = apis.get(id);
+                            list = lists.get(id);
                             setup();
                             switchDialog.hide();
                         }).width(200f);
@@ -125,6 +141,10 @@ public class MusicDialog extends BaseDialog{
             }
             Events.run(EventType.Trigger.update, this::updateProgress);
         } catch (Exception ignored) {}
+    }
+    public void addApi(MusicApi api) {
+        apis.add(api);
+        lists.add(api == null ? null : new MusicList(api.thisId));
     }
     private void buildLRC() {
         if(lrcTable != null) lrcTable.remove();
@@ -157,7 +177,7 @@ public class MusicDialog extends BaseDialog{
                 player.pause(false);
                 player.load(tmp);
                 player.play();
-                Timer.schedule(() -> isPlaying = true, 1f);//badly
+                Timer.schedule(() -> playing = true, 1f);//badly
                 loadStatus.run();
             });
         } catch (Exception e) {
@@ -170,26 +190,8 @@ public class MusicDialog extends BaseDialog{
         player.pause(false);
         player.load(f);
         player.play();
-        Timer.schedule(() -> isPlaying = true, 1);
+        Timer.schedule(() -> playing = true, 1);
         loadStatus.run();
-    }
-    private void share(MusicInfo info) {
-        Vars.ui.showConfirm("分享","确认分享到聊天框?", () -> api.getMusicInfo(info.id, fullInfo -> Call.sendChatMessage(getPrefix("pink", "Music") + " " + fullInfo.src + "M" + fullInfo.id)));
-    }
-    private void share(MusicList list) {
-        if(list.size() == 0) return;
-        Vars.ui.showConfirm("分享","确认分享到聊天框?", () -> {
-            try {
-                Http.HttpRequest req = Http.post("https://pastebin.com/api/api_post.php", "api_dev_key=sdBDjI5mWBnHl9vBEDMNiYQ3IZe0LFEk&api_option=paste&api_paste_expire_date=10M&api_paste_code=" + URLEncoder.encode(list.build(), "UTF-8"));
-                req.submit(r -> {
-                    String code = r.getResultAsString();
-                    Call.sendChatMessage(getPrefix("pink", "Music") + " $M" + code.substring(code.lastIndexOf('/') + 1));
-                });
-                req.error(e -> Core.app.post(() -> ui.showException("分享失败", e)));
-            } catch (Exception e) {
-                ui.showException("分享失败", e);
-            }
-        });
     }
     private void setup() {
         if(!loaded) return;
@@ -223,31 +225,33 @@ public class MusicDialog extends BaseDialog{
                 tt.table(ms -> {
                     ms.table(ttt -> {
                         ttt.add(nowMusic.name == null ? "松鼠音乐" : (nowMusic.author + " - " + nowMusic.name)).left().wrap().style(Styles.outlineLabel).growX();
-                        ttt.button(Icon.play, RStyles.clearLineNonei, this::play).margin(3f).padTop(6f).top().right();
-                        ttt.button(Icon.pause, RStyles.clearLineNonei, this::pause).margin(3f).pad(2).padTop(6f).top().right();
+                        ttt.button(Icon.leftSmall, RStyles.clearLineNonei, this::prev).margin(3f).padTop(6f).top().right().size(32);
+                        ttt.button(Icon.rightSmall, RStyles.clearLineNonei, this::playNext).margin(3f).pad(2).padTop(6f).top().right().size(32);
+                        ttt.button(Icon.play, RStyles.clearLineNonei, this::play).margin(3f).pad(2).padTop(6f).top().right().size(32);
+                        ttt.button(Icon.pause, RStyles.clearLineNonei, this::pause).margin(3f).pad(2).padTop(6f).top().right().size(32);
                         ttt.button(Icon.downloadSmall, RStyles.clearLineNonei, () -> {
                             if (nowMusic.url != null) {
                                 download(nowMusic);
                             }
-                        }).margin(3f).pad(2).padTop(6f).top().right();
+                        }).margin(3f).pad(2).padTop(6f).top().right().size(32);
                         ttt.label(() -> "音量:" + (byte) vol);
                         ttt.button(Icon.upSmall, RStyles.clearLineNonei, () -> {
                             vol = Math.min(vol + 10, 100);
-                            player.setVolume(vol / 100);
-                        }).margin(3f).pad(2).padTop(6f).top().right();
+                            player.setVolume(vol / 100 * 2);
+                        }).margin(3f).pad(2).padTop(6f).top().right().size(32);
                         ttt.button(Icon.downSmall, RStyles.clearLineNonei, () -> {
                             vol = Math.max(vol - 10, 0);
-                            player.setVolume(vol / 100);
-                        }).margin(3f).pad(2).padTop(6f).top().right();
+                            player.setVolume(vol / 100 * 2);
+                        }).margin(3f).pad(2).padTop(6f).top().right().size(32);
                         ttt.button(Icon.refreshSmall, RStyles.clearLineNoneTogglei, () -> {
                             player.setLooping(!player.isLooping());
                             ui.announce("单曲循环已" + (player.isLooping() ? "开启" : "关闭"), 1f);
-                        }).margin(3f).pad(2).padTop(6f).top().right().checked(b -> player.isLooping());
+                        }).margin(3f).pad(2).padTop(6f).top().right().checked(b -> player.isLooping()).size(32);
                         ttt.button(Icon.linkSmall, RStyles.clearLineNonei, () -> {
                             if (nowMusic.url != null) {
-                                share(nowMusic);
+                                apis.get(nowMusic.src).share(nowMusic);
                             }
-                        }).margin(3f).pad(2).pad(6).top().right();
+                        }).margin(3f).pad(2).pad(6).top().right().size(32);
                     }).growX();
                     ms.row();
                     progressBar = ms.slider(0.01f, nowMusic.length == 0.0 ? 0.01f : nowMusic.length, 0.01f, f -> {
@@ -273,9 +277,9 @@ public class MusicDialog extends BaseDialog{
                 build();
             }));
             build();
-            buttons.button(Icon.link, () -> share(list));
-            buttons.button(Icon.download, () -> platform.showFileChooser(false, "保存歌单文件", "list", f -> f.writeString(list.build())));
-            buttons.button(Icon.upload, () -> platform.showFileChooser(true, "加载歌单文件", "list", f -> MusicList.parse(f.readString(), MusicDialog.this::loadList)));
+            buttons.button(Icon.link, () -> apis.get(list.api).share(list)).disabled(b -> list.size() == 0);
+            buttons.button(Icon.download, () -> platform.showFileChooser(false, "保存歌单文件", "list", f -> f.writeString(api.buildList(list)))).disabled(b -> list.size() == 0);
+            buttons.button(Icon.upload, () -> platform.showFileChooser(true, "加载歌单文件", "list", f -> api.loadList(f.readString(), MusicDialog.this::loadList)));
             addCloseButton();
             onResize(this::build);
             shown(this::build);
@@ -303,7 +307,7 @@ public class MusicDialog extends BaseDialog{
                     build();
                 }).margin(3f).pad(2).padTop(6f).top().right();
                 inner.button(Icon.download, RStyles.clearLineNonei, () -> download(info)).margin(3f).pad(2).padTop(6f).top().right();
-                inner.button(Icon.link, RStyles.clearLineNonei, () -> share(info)).margin(3f).pad(2).pad(6).top().right();
+                inner.button(Icon.link, RStyles.clearLineNonei, () -> apis.get(info.src).share(info)).margin(3f).pad(2).pad(6).top().right();
                 button.row();
                 button.update(() -> button.setChecked(Objects.equals(list.currentMusic.id, nowMusic.id)));
                 cont.row();
@@ -322,15 +326,14 @@ public class MusicDialog extends BaseDialog{
             if (paused) {
                 player.pause(false);
                 paused = false;
-                isPlaying = true;
+                playing = true;
             } else {
                 if (nowMusic.url != null) {
                     Fi f = new Fi(tmpDirectory + "/squirrel.mp3");
                     if (f.exists()) {
                         try {
-                            isPlaying = false;
+                            playing = false;
                             playDirectly(f);
-                            Timer.schedule(() -> isPlaying = true, 1f);
                         } catch (Exception ignored) {}
                     }
                 }
@@ -340,7 +343,7 @@ public class MusicDialog extends BaseDialog{
     private void pause(){
         player.pause(true);
         paused = true;
-        isPlaying = false;
+        playing = false;
     }
     private void updateProgress() {
         if(!loaded) return;
@@ -350,13 +353,13 @@ public class MusicDialog extends BaseDialog{
         progressBar.setValue(progress);
         updating = false;
         updateLRC(pos * 1000);
-        if(pos == 0 && isPlaying && !player.isLooping()) {
-            isPlaying = false;
+        if(pos == 0 && playing && !player.isLooping()) {
+            playing = false;
             playNext();
         }
     }
     private void download(MusicInfo info) {
-        platform.showFileChooser(false, "下载音乐", "mp3", fi -> api.getMusicInfo(info.id, fullinfo -> Http.get(fullinfo.url, r -> {
+        platform.showFileChooser(false, "下载音乐", "mp3", fi -> api.getInfoOrCall(info, fullinfo -> Http.get(fullinfo.url, r -> {
             fi.writeBytes(r.getResult());
             Core.app.post(() -> Vars.ui.showInfo("下载成功"));
         })));
@@ -364,7 +367,7 @@ public class MusicDialog extends BaseDialog{
     private void upload(){
         platform.showFileChooser(true, "选择音乐文件", "mp3", f -> {
             ui.announce("正在上传...\n很慢!(1-2分钟)\n上传完成后会自动播放");
-            api.upload(f, info -> api.getMusicInfo(info.id, this::play));
+            api.upload(f, info -> api.getInfoOrCall(info, this::play));
         });
     }
     private void loadList(MusicList list){
@@ -376,7 +379,7 @@ public class MusicDialog extends BaseDialog{
     }
     private void stop(){
         player.stop();
-        isPlaying = false;
+        playing = false;
         paused = false;
     }
     private void playNext(){
@@ -385,12 +388,21 @@ public class MusicDialog extends BaseDialog{
     private void playNext(boolean next){
         stop();
         MusicInfo info = next ? list.getNext() : list.currentMusic;
+        playOrStop(info);
+    }
+    private void prev(){
+        stop();
+        MusicInfo info = list.getPrev();
+        playOrStop(info);
+    }
+    private void playOrStop(MusicInfo info){
         if(info == null) {
             nowMusic = new MusicInfo();
+            playing = false;
             loadStatus.run();
             return;
         }
-        if(info.url == null) apis[info.src].getMusicInfo(info.id, this::play); else this.play(info);
+        if(info.url == null) apis.get(info.src).getInfoOrCall(info, this::play); else this.play(info);
     }
     public boolean resolveMsg(String msg) {
         return resolveMsg(msg, null);
@@ -405,18 +417,16 @@ public class MusicDialog extends BaseDialog{
             int split = msg.indexOf('M', start);
             String mark = msg.substring(start + 1, split);
             if(mark.equals("$")) {
-                Core.app.post(() -> ui.showConfirm("松鼠音乐", (sender == null ? "" : sender.name) + "分享了一个歌单\n播放?", () -> {
-                    Http.get("https://pastebin.com/raw/" + msg.substring(split + 1), r -> MusicList.parse(r.getResultAsString(), this::loadList), e -> Core.app.post(() -> ui.showException(e)));
-                }));
+                Core.app.post(() -> ui.showConfirm("松鼠音乐", (sender == null ? "" : sender.name) + "分享了一个歌单\n播放?", () -> Http.get("https://pastebin.com/raw/" + msg.substring(split + 1), r -> MusicList.parse(URLDecoder.decode(r.getResultAsString(), "UTF-8"), this::loadList), e -> Core.app.post(() -> ui.showException(e)))));
             } else {
                 byte src = Byte.parseByte(mark);
                 String id = msg.substring(split + 1);
-                if (src > apis.length || apis[src] == null && src != 0) {
+                if (src > apis.size() || apis.get(src) == null && src != 0) {
                     Core.app.post(() -> ui.arcInfo("[red]无法找到api!\n可能是学术版本太旧"));
                 }
                 if (src == 0) return true;
-                MusicApi current = apis[src];
-                current.getMusicInfo(id, info -> Core.app.post(() -> ui.showConfirm("松鼠音乐", (sender == null ? "" : sender.name) + "分享了一首来自" + current.name + "的音乐" + (info.name == null ? "" : ":\n" + info.author + " - " + info.name) + "\n播放?", () -> current.getMusicInfo(info.id, this::play))), true);
+                MusicApi current = apis.get(src);
+                current.getMusicInfo(id, info -> Core.app.post(() -> ui.showConfirm("松鼠音乐", (sender == null ? "" : sender.name) + "分享了一首来自" + current.name + "的音乐" + (info.name == null ? "" : ":\n" + info.author + " - " + info.name) + "\n播放?", () -> current.getInfoOrCall(info, this::play))));
                 return true;
             }
         } catch (Exception e) {
@@ -453,12 +463,54 @@ public class MusicDialog extends BaseDialog{
         public String name;
         public byte thisId;
         public boolean canUpload;
-        public abstract void getMusicInfo(String id, Cons<MusicInfo> callback);
-        public abstract void getMusicInfo(String id, Cons<MusicInfo> callback, boolean noTip);
+        public void getMusicInfo(String id, Cons<MusicInfo> callback, MusicInfo src){
+            getMusicInfo(id, callback, false, src);
+        }
+        public void getMusicInfo(String str, Cons<MusicInfo> callback){
+            getMusicInfo(str, callback, null);
+        }
+        public abstract void getMusicInfo(String id, Cons<MusicInfo> callback, boolean noTip, MusicInfo src);
         public void upload(Fi file, Cons<MusicInfo> callback){
 
         }
         public abstract void build(Table root);
+        public void getInfoOrCall(MusicInfo info, Cons<MusicInfo> cb){
+            if(info.url != null) {
+                cb.get(info);
+                return;
+            }
+            getMusicInfo(info.id, cb, info);
+        }
+        public void share(MusicInfo info) {
+            Vars.ui.showConfirm("分享","确认分享到聊天框?", () -> getInfoOrCall(info, fullInfo -> Call.sendChatMessage(getPrefix("pink", "Music") + " " + fullInfo.src + "M" + fullInfo.id)));
+        }
+        public void share(MusicList list) {
+            if(list.size() == 0) return;
+            Vars.ui.showConfirm("分享","确认分享到聊天框?", () -> {
+                try {
+                    Http.HttpRequest req = Http.post("https://pastebin.com/api/api_post.php", "api_dev_key=sdBDjI5mWBnHl9vBEDMNiYQ3IZe0LFEk&api_option=paste&api_paste_expire_date=10M&api_paste_code=" + URLEncoder.encode(list.build(), "UTF-8"));
+                    req.submit(r -> {
+                        String code = r.getResultAsString();
+                        Call.sendChatMessage(getPrefix("pink", "Music") + " $M" + code.substring(code.lastIndexOf('/') + 1));
+                    });
+                    req.error(e -> Core.app.post(() -> ui.showException("分享失败", e)));
+                } catch (Exception e) {
+                    ui.showException("分享失败", e);
+                }
+            });
+        }
+        public void loadList(String str, Cons<MusicList> cb){
+            String[] all = str.split("\\$");
+            MusicList list = new MusicList(thisId);
+            getMusicInfo(all[1], info -> {
+                list.add(info);
+                for (int i = 2; i < all.length; i++) getMusicInfo(all[i], list::add, true, info);
+                cb.get(list);
+            }, true, null);
+        }
+        public String buildList(MusicList list){
+            return list.build();
+        }
     }
     private static class Squirrel extends MusicApi{//松鼠站
         {
@@ -467,11 +519,7 @@ public class MusicDialog extends BaseDialog{
             thisId = 1;
         }
         @Override
-        public void getMusicInfo(String id, Cons<MusicInfo> callback) {
-            getMusicInfo(id, callback, false);
-        }
-        @Override
-        public void getMusicInfo(String rid, Cons<MusicInfo> callback, boolean noTip) {
+        public void getMusicInfo(String rid, Cons<MusicInfo> callback, boolean noTip, MusicInfo src) {
             callback.get(new MusicInfo() {{
                 src = thisId;
                 url = "http://squirrel.gq/api/get?id=" + rid;
@@ -500,22 +548,92 @@ public class MusicDialog extends BaseDialog{
 
         }
     }
-    private class KuGouWeb extends MusicApi{//酷狗网页版api
+    public abstract class NetApi extends MusicApi{
         int searchPage = 1, allPage = 1;
         Table menu;
         String queryString = "";
         TextField searchUI;
+        public abstract void getTips(String str, Cons<String[]> cb);
+        @Override
+        public void build(Table root) {
+            root.table(s -> {
+                s.top();
+                searchUI = s.field(queryString, res -> getTips(queryString = res, st -> Core.app.post(() -> loadSearchTips(st)))).growX().get();
+                s.button(Icon.zoom, () -> {
+                    searchPage = 1;
+                    search();
+                });
+            }).fillX().padBottom(4);
+            root.row();
+            menu = root.table().growY().get();
+        }
+        public abstract void search(String name, int page, Cons<MusicSet> callback);
+        private void search() {
+            search(queryString, searchPage, s -> Core.app.post(() -> loadSearchResult(s)));
+        }
+        private void loadSearchTips(String[] tips){
+            menu.clear();
+            menu.pane(t -> {
+                float width = Core.graphics.getWidth() / Scl.scl() * 0.9f;
+                t.top();
+                for(String str : tips){
+                    t.button(str, RStyles.flatt, () -> {
+                        searchUI.setText(queryString = str);
+                        search();
+                    }).width(width);
+                    t.row();
+                }
+            });
+        }
+        private void loadSearchResult(MusicSet m){
+            menu.clear();
+            menu.pane(t -> {
+                t.top();
+                if(m.count > 0) {
+                    float width = Core.graphics.getWidth() / Scl.scl() * 0.9f;
+                    t.clear();
+                    for (byte i = 0; i < m.count; i++) {
+                        MusicInfo info = m.list[i];
+                        Button[] buttons = {null};
+                        Button button = buttons[0] = t.button(b -> {
+                        }, () -> {
+                            if (!buttons[0].childrenPressed()) {
+                                api.getInfoOrCall(info, MusicDialog.this::play);
+                            }
+                        }).width(width).pad(2f).get();
+                        Table inner = new Table(Tex.whiteui);
+                        inner.setColor(Color.black);
+                        button.clearChildren();
+                        button.add(inner).growX();
+                        inner.add(info.author + " - " + info.name).left().padLeft(10f).wrap().style(Styles.outlineLabel).growX();
+                        inner.button(Icon.download, RStyles.clearLineNonei, () -> download(info)).margin(3f).pad(2).padTop(6f).top().right();
+                        inner.button(Icon.link, RStyles.clearLineNonei, () -> share(info)).margin(3f).pad(2).pad(6).top().right();
+                        button.row();
+                        t.row();
+                    }
+                    t.table(tt -> {
+                        tt.button(Icon.left, () -> {
+                            searchPage--;
+                            search();
+                        }).height(50f).width(150f).disabled(b -> searchPage <= 1);
+                        tt.add(searchPage + "/" + allPage);
+                        tt.button(Icon.right, () -> {
+                            searchPage++;
+                            search();
+                        }).height(50f).width(150f).disabled(b -> searchPage >= allPage);
+                    });
+                }
+            }).growY();
+        }
+    }
+    private class KuGouWeb extends NetApi{//酷狗网页版api
         {
             name = "酷狗网页版";
             canUpload = false;
             thisId = 2;
         }
         @Override
-        public void getMusicInfo(String id, Cons<MusicInfo> callback) {
-            getMusicInfo(id, callback, false);
-        }
-        @Override
-        public void getMusicInfo(String id, Cons<MusicInfo> callback, boolean noTip) {
+        public void getMusicInfo(String id, Cons<MusicInfo> callback, boolean noTip, MusicInfo src) {
             Http.HttpRequest req = Http.get("https://wwwapi.kugou.com/yy/index.php?r=play/getdata&encode_album_audio_id="+id);
             req.header("Cookie","kg_mid=" + uuid);
             req.submit(res -> {
@@ -553,19 +671,7 @@ public class MusicDialog extends BaseDialog{
             });
         }
         @Override
-        public void build(Table root) {
-            root.table(s -> {
-                s.top();
-                searchUI = s.field(queryString, res -> getTips(queryString = res, st -> Core.app.post(() -> loadSearchTips(st)))).growX().get();
-                s.button(Icon.zoom, () -> {
-                    searchPage = 1;
-                    search();
-                });
-            }).fillX().padBottom(4);
-            root.row();
-            menu = root.table().growY().get();
-        }
-        public void search(String name, int page, Cons<MusicSet> callback) {
+        public void search(String name, int page, Cons<MusicSet> callback){
             try {
                 long timestamp = new Date().getTime();
                 String data = "NVPh5oo715z5DIWAeQlhMDsWXXQV4hwtappid=1014bitrate=0clienttime=" + timestamp + "clientver=1000dfid=-filter=10inputtype=0iscorrection=1isfuzzy=0keyword=" + name + "mid=" + uuid + "page=" + page + "pagesize=10platform=WebFilterprivilege_filter=0srcappid=2919userid=0uuid=" + uuid + "NVPh5oo715z5DIWAeQlhMDsWXXQV4hwt";
@@ -601,66 +707,10 @@ public class MusicDialog extends BaseDialog{
                 Core.app.post(() -> ui.showException("搜索出错!", e));
             }
         }
-        private void search() {
-            search(queryString, searchPage, s -> Core.app.post(() -> loadSearchResult(s)));
-        }
-        private void loadSearchTips(String[] tips){
-            menu.clear();
-            menu.pane(t -> {
-                float width = Core.graphics.getWidth() / Scl.scl() * 0.9f;
-                t.top();
-                for(String str : tips){
-                    t.button(str, RStyles.flatt, () -> {
-                        searchUI.setText(queryString = str);
-                        search();
-                    }).width(width);
-                    t.row();
-                }
-            });
-        }
-        private void loadSearchResult(MusicSet m){
-            menu.clear();
-            menu.pane(t -> {
-                t.top();
-                if(m.count > 0) {
-                    float width = Core.graphics.getWidth() / Scl.scl() * 0.9f;
-                    t.clear();
-                    for (byte i = 0; i < m.count; i++) {
-                        MusicInfo info = m.list[i];
-                        Button[] buttons = {null};
-                        Button button = buttons[0] = t.button(b -> {
-                        }, () -> {
-                            if (!buttons[0].childrenPressed()) {
-                                api.getMusicInfo(info.id, MusicDialog.this::play);
-                            }
-                        }).width(width).pad(2f).get();
-                        Table inner = new Table(Tex.whiteui);
-                        inner.setColor(Color.black);
-                        button.clearChildren();
-                        button.add(inner).growX();
-                        inner.add(info.author + " - " + info.name).left().padLeft(10f).wrap().style(Styles.outlineLabel).growX();
-                        inner.button(Icon.download, RStyles.clearLineNonei, () -> download(info)).margin(3f).pad(2).padTop(6f).top().right();
-                        inner.button(Icon.link, RStyles.clearLineNonei, () -> share(info)).margin(3f).pad(2).pad(6).top().right();
-                        button.row();
-                        t.row();
-                    }
-                    t.table(tt -> {
-                        tt.button(Icon.left, () -> {
-                            searchPage--;
-                            search();
-                        }).height(50f).width(150f).disabled(b -> searchPage <= 1);
-                        tt.add(searchPage + "/" + allPage);
-                        tt.button(Icon.right, () -> {
-                            searchPage++;
-                            search();
-                        }).height(50f).width(150f).disabled(b -> searchPage >= allPage);
-                    });
-                }
-            }).growY();
-        }
+        @Override
         public void getTips(String str, Cons<String[]> cb){
             try {
-                Http.get("https://searchtip.kugou.com/getSearchTip?MusicTipCount=7&MVTipCount=0&albumcount=0&keyword=" + URLEncoder.encode(str, "UTF-8"), r -> {
+                Http.get("https://searchtip.kugou.com/getSearchTip?MusicTipCount=10&MVTipCount=0&albumcount=0&keyword=" + URLEncoder.encode(str, "UTF-8"), r -> {
                     JsonValue j = new JsonReader().parse(r.getResultAsString());
                     if(j.getByte("status") != 1) return;
                     int count = j.get("data").get(0).getInt("RecordCount");
@@ -674,6 +724,236 @@ public class MusicDialog extends BaseDialog{
             } catch (Exception ignored){}
         }
     }
+    private class NetEaseMusic extends NetApi{
+        IvParameterSpec iv = new IvParameterSpec(new byte[]{48, 49, 48, 50, 48, 51, 48, 52, 48, 53, 48, 54, 48, 55, 48, 56});
+        BigInteger modulus = new BigInteger("1577947502671315022124768178003454981218727833333897474240115310"
+                + "2536627753526253991370180629076647918947753359785498960680319425"
+                + "3978660329941980786072432806427833685472618792592200595694346872"
+                + "9513017705807651353492595901674905361380824696806385144165942166"
+                + "29258349130257685001248172188325316586707301643237607");
+        BigInteger pk = new BigInteger("65537");
+        {
+            name = "网易云网页版";
+            canUpload = false;
+            thisId = 3;
+        }
+        @Override
+        public void getMusicInfo(String id, Cons<MusicInfo> callback, boolean noTip, MusicInfo raw){
+            Http.HttpRequest req = Http.post("https://music.163.com/weapi/song/enhance/player/url/v1?csrf_token=");
+            try {
+                encryptRequest(req, "{\"ids\":\"[" + id + "]\",\"level\":\"standard\",\"encodeType\":\"mp3\",\"csrf_token\":\"\"}");
+            } catch (Exception e) {
+                ui.showException("获取歌曲信息错误", e);
+            }
+            req.submit(r -> {
+                JsonValue j = new JsonReader().parse(r.getResultAsString());
+                if(j.getInt("code") != 200) {
+                    Core.app.post(() -> ui.showErrorMessage("网易云状态码错误:\n" + j.getInt("code")));
+                }
+                JsonValue data = j.get("data").get(0);
+                if(data.getInt("code") != 200) {
+                    Core.app.post(() -> ui.showInfo("此歌曲为vip专属 无法播放"));
+                }
+                if(raw == null) callback.get(new MusicInfo(){{
+                    name = data.getString("name");
+                    url = data.getString("url");
+                    id = data.getString("id");
+                    src = thisId;
+                    length = data.getInt("time") / 1000;
+                }}); else callback.get(new MusicInfo() {{
+                    name = raw.name;
+                    author = raw.author;
+                    url = data.getString("url");
+                    id = data.getString("id");
+                    src = thisId;
+                    length = data.getInt("time") / 1000;
+                }});
+            });
+        }
+        @Override
+        public void search(String name, int page, Cons<MusicSet> callback){
+            try {
+                Http.HttpRequest req = Http.post("https://music.163.com/weapi/cloudsearch/get/web?csrf_token=");
+                encryptRequest(req, "{\"s\":\"" + name.replace("\\", "\\\\").replace("\"", "\\\"") + "\",\"type\":\"1\",\"offset\":\"" + page + "\",\"total\":\"true\",\"limit\":\"10\",\"csrf_token\":\"\"}");
+                req.submit(res -> {
+                    try {
+                        JsonValue j = new JsonReader().parse(res.getResultAsString());
+                        if (j.getInt("code") != 200) {
+                            Core.app.post(() -> Vars.ui.showErrorMessage("搜索出错:\n网易云 Error: (" + j.getInt("code") + ") "));
+                            return;
+                        }
+                        JsonValue lists = j.get("result").get("songs");
+                        allPage = j.get("result").getInt("songCount") / 10 + 1;
+                        MusicSet set = new MusicSet((byte) 10);
+                        for (byte i = 0; i < 10; i++) {
+                            JsonValue thisMusic = lists.get(i);
+                            if (thisMusic == null) {
+                                break;
+                            }
+                            set.add(new MusicInfo() {{
+                                name = thisMusic.getString("name");
+                                author = thisMusic.get("al").getString("name");
+                                id = thisMusic.getString("id");
+                                src = thisId;
+                            }});
+                        }
+                        callback.get(set);
+                    } catch (Exception e){
+                        Core.app.post(() -> ui.showException("搜索出错!", e));
+                    }
+                });
+            } catch (Exception e){
+                ui.showException("搜索出错!", e);
+            }
+        }
+        @Override
+        public void getTips(String str, Cons<String[]> cb){
+            try {
+                Http.HttpRequest req = Http.post("https://music.163.com/weapi/search/suggest/web?csrf_token=");
+                encryptRequest(req, "{\"s\":\"" + str.replace("\\", "\\\\").replace("\"","\\\"") + "\",\"limit\":\"10\",\"csrf_token\":\"\"}");
+                req.submit(r -> {
+                    JsonValue j = new JsonReader().parse(r.getResultAsString());
+                    if(j.getInt("code") != 200) return;
+                    JsonValue all = j.get("result").get("songs");
+                    int count = all.size;
+                    String[] list = new String[count];
+                    for(int i = 0; i < count; i++){
+                        list[i] = all.get(i).getString("name");
+                    }
+                    cb.get(list);
+                });
+            } catch (Exception ignored){}
+        }
+        @Override
+        public void loadList(String str, Cons<MusicList> cb){
+            Http.HttpRequest req = Http.post("https://music.163.com/weapi/song/enhance/player/url/v1?csrf_token=");
+            String[] all = str.split("\\$");
+            MusicList list = new MusicList(thisId);
+            String[] nameAll = new String[all.length];
+            String[] authorAll = new String[all.length];
+            for(int i = 0; i < all.length; i++){
+                String[] n = all[i].split("ÿ");
+                all[i] = n[0];
+                nameAll[i] = n[1];
+                authorAll[i] = n[2];
+            }
+            try {
+                encryptRequest(req, "{\"ids\":\"[" + Arrays.toString(all) + "]\",\"level\":\"standard\",\"encodeType\":\"mp3\",\"csrf_token\":\"\"}");
+            } catch (Exception e) {
+                ui.showException("获取歌曲信息错误", e);
+            }
+            req.submit(r -> {
+                JsonValue j = new JsonReader().parse(r.getResultAsString());
+                if(j.getInt("code") != 200) {
+                    Core.app.post(() -> ui.showErrorMessage("网易云状态码错误:\n" + j.getInt("code")));
+                }
+                for(int i = 0; i < all.length; i++) {
+                    JsonValue data = j.get("data").get(i);
+                    if (data.getInt("code") != 200) {
+                        Core.app.post(() -> ui.showInfo("此歌曲为vip专属 无法播放"));
+                    }
+                    final int t = i;
+                    list.add(new MusicInfo() {{
+                        name = nameAll[t];
+                        author = authorAll[t];
+                        url = data.getString("url");
+                        id = data.getString("id");
+                        src = thisId;
+                        length = data.getInt("time") / 1000;
+                    }});
+                }
+                cb.get(list);
+            });
+        }
+        @Override
+        public String buildList(MusicList list){
+            StringBuilder sb = new StringBuilder();
+            sb.append(api).append("$");
+            for (MusicInfo musicInfo : list.list) {
+                sb.append(musicInfo.id).append("ÿ").append(musicInfo.name).append("ÿ").append(musicInfo.author).append("$");
+            }
+            sb.deleteCharAt(sb.length() - 1);
+            return sb.toString();
+        }
+        @Override
+        public void share(MusicInfo info) {
+            Vars.ui.showConfirm("分享","确认分享到聊天框?", () -> getInfoOrCall(info, fullInfo -> Call.sendChatMessage(getPrefix("pink", "Music") + " " + fullInfo.src + "M" + fullInfo.id + "ÿ" + fullInfo.name + "ÿ" + fullInfo.author)));
+        }
+        @Override
+        public void share(MusicList list) {
+            if(list.size() == 0) return;
+            Vars.ui.showConfirm("分享","确认分享到聊天框?", () -> {
+                StringBuilder sb = new StringBuilder();
+                sb.append(thisId).append("$");
+                for (MusicInfo musicInfo : list.list) {
+                    sb.append(musicInfo.id).append("ÿ").append(musicInfo.name).append("ÿ").append(musicInfo.author).append("$");
+                }
+                sb.deleteCharAt(sb.length() - 1);
+                try {
+                    Http.HttpRequest req = Http.post("https://pastebin.com/api/api_post.php", "api_dev_key=sdBDjI5mWBnHl9vBEDMNiYQ3IZe0LFEk&api_option=paste&api_paste_expire_date=10M&api_paste_code=" + URLEncoder.encode(sb.toString(), "UTF-8"));
+                    req.submit(r -> {
+                        String code = r.getResultAsString();
+                        Call.sendChatMessage(getPrefix("pink", "Music") + " $M" + code.substring(code.lastIndexOf('/') + 1));
+                    });
+                    req.error(e -> Core.app.post(() -> ui.showException("分享失败", e)));
+                } catch (Exception e) {
+                    ui.showException("分享失败", e);
+                }
+            });
+        }
+        @Override
+        public void getMusicInfo(String str, Cons<MusicInfo> callback) {
+            String[] n = str.split("ÿ");
+            getMusicInfo(n[0], info -> {
+                info.name = n[1];
+                info.author = n[2];
+                callback.get(info);
+            }, null);
+        }
+        class NetMusicData{
+            public String params, encSecKey;
+        }
+        private void encryptRequest(Http.HttpRequest req, String str) throws Exception{
+            req.header("content-type", "application/x-www-form-urlencoded");
+            NetMusicData data = encryptParams(str);
+            req.content("params=" + URLEncoder.encode(data.params, "UTF-8") + "&encSecKey=" + URLEncoder.encode(data.encSecKey, "UTF-8"));
+        }
+        private NetMusicData encryptParams(String raw) throws Exception{
+            String rnd = rndString();
+            String enc = encrypt(raw, "0CoJUm6Qyw8W8jud");
+            enc = encrypt(enc, rnd);
+            NetMusicData o = new NetMusicData();
+            o.params = enc;
+            rnd = new StringBuilder(rnd).reverse().toString();
+            Cipher cipher = Cipher.getInstance("RSA/ECB/nopadding");
+            RSAPublicKeySpec publicSpec = new RSAPublicKeySpec(modulus, pk);
+            RSAPublicKey key = (RSAPublicKey) KeyFactory.getInstance("RSA").generatePublic(publicSpec);
+            cipher.init(Cipher.ENCRYPT_MODE, key);
+            byte[] result = cipher.doFinal(rnd.getBytes());
+            StringBuilder sb = new StringBuilder();
+            for (byte b : result) {
+                sb.append(String.format("%02x", b));
+            }
+            o.encSecKey = sb.toString();
+            return o;
+        }
+        private String encrypt(String raw, String key) throws Exception{
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            byte[] bytes = key.getBytes("UTF-8");
+            SecretKeySpec s = new SecretKeySpec(bytes, "AES");
+            cipher.init(Cipher.ENCRYPT_MODE, s, iv);
+            byte[] e = cipher.doFinal(raw.getBytes("UTF-8"));
+            return String.valueOf(Base64Coder.encode(e));
+        }
+        private String rndString() {
+            String keys = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < 16; i++) {
+                sb.append(keys.charAt((int) Math.floor(Math.random() * 62)));
+            }
+            return sb.toString();
+        }
+    }
     private class LRCTable extends Table {
         public LRCTable() {
             setColor(new Color(127, 127, 127, 255));
@@ -684,32 +964,35 @@ public class MusicDialog extends BaseDialog{
                 t.addListener(new HandCursorListener());
                 t.margin(6f);
                 t.touchable = Touchable.enabled;
-                t.button(Icon.play, RStyles.clearLineNonei, MusicDialog.this::play).checked(false).margin(3f).padTop(6f).top().right();
-                t.button(Icon.pause, RStyles.clearLineNonei, MusicDialog.this::pause).checked(false).margin(3f).pad(2).padTop(6f).top().right();
+                t.label(() -> nowMusic.name == null ? "松鼠音乐" : (nowMusic.author + " - " + nowMusic.name));
+                t.button(Icon.leftSmall, RStyles.clearLineNonei, MusicDialog.this::prev).margin(3f).padTop(6f).top().right().size(32);
+                t.button(Icon.rightSmall, RStyles.clearLineNonei, MusicDialog.this::playNext).margin(3f).pad(2).padTop(6f).top().right().size(32);
+                t.button(Icon.play, RStyles.clearLineNonei, MusicDialog.this::play).margin(3f).pad(2).padTop(6f).top().right().size(32);
+                t.button(Icon.pause, RStyles.clearLineNonei, MusicDialog.this::pause).margin(3f).pad(2).padTop(6f).top().right().size(32);
                 t.button(Icon.downloadSmall, RStyles.clearLineNonei, () -> {
                     if (nowMusic.url != null) {
                         download(nowMusic);
                     }
-                }).margin(3f).pad(2).padTop(6f).top().right();
+                }).margin(3f).pad(2).padTop(6f).top().right().size(32);
                 t.label(() -> "音量:" + (byte) vol);
                 t.button(Icon.upSmall, RStyles.clearLineNonei, () -> {
                     vol = Math.min(vol + 10, 100);
-                    player.setVolume(vol / 100);
-                }).margin(3f).pad(2).padTop(6f).top().right();
+                    player.setVolume(vol / 100 * 2);
+                }).margin(3f).pad(2).padTop(6f).top().right().size(32);
                 t.button(Icon.downSmall, RStyles.clearLineNonei, () -> {
                     vol = Math.max(vol - 10, 0);
-                    player.setVolume(vol / 100);
-                }).margin(3f).pad(2).padTop(6f).top().right();
+                    player.setVolume(vol / 100 * 2);
+                }).margin(3f).pad(2).padTop(6f).top().right().size(32);
                 t.button(Icon.refreshSmall, RStyles.clearLineNoneTogglei, () -> {
                     player.setLooping(!player.isLooping());
                     ui.announce("单曲循环已" + (player.isLooping() ? "开启" : "关闭"), 1f);
-                }).margin(3f).pad(2).padTop(6f).top().right().checked(b -> player.isLooping());
+                }).margin(3f).pad(2).padTop(6f).top().right().checked(b -> player.isLooping()).size(32);
                 t.button(Icon.linkSmall, RStyles.clearLineNonei, () -> {
                     if (nowMusic.url != null) {
-                        share(nowMusic);
+                        apis.get(nowMusic.src).share(nowMusic);
                     }
-                }).margin(3f).pad(2).pad(6).top().right();
-                t.button(Icon.homeSmall, RStyles.clearLineNonei, MusicDialog.this::show).margin(3f).padTop(6f).top().right();
+                }).margin(3f).pad(2).pad(6).top().right().size(32);
+                t.button(Icon.homeSmall, RStyles.clearLineNonei, MusicDialog.this::show).margin(3f).padTop(6f).top().right().size(32);
                 t.add().growX();
                 translation.set(Core.settings.getFloat("lrcX", 200f), Core.settings.getFloat("lrcY", 200f));
                 t.addListener(new InputListener() {
@@ -840,6 +1123,7 @@ public class MusicDialog extends BaseDialog{
                 buildLRC();
             }).size(256, 48);
             cont.row();
+            cont.add("[pink]松鼠音乐v" + version + "\n[gold]松鼠制作\n[cyan]松鼠站:squi2rel.tk");
             addCloseButton();
         }
     }
@@ -869,14 +1153,8 @@ public class MusicDialog extends BaseDialog{
         }
         public static void parse(String input, Cons<MusicList> cb){
             try {
-                String[] all = input.split("\\$");
-                MusicList list = new MusicList(Byte.parseByte(all[0]));
-                MusicApi api = apis[list.api];
-                api.getMusicInfo(all[1], info -> {
-                    list.add(info);
-                    for (int i = 2; i < all.length; i++) api.getMusicInfo(all[i], list::add, true);
-                    cb.get(list);
-                }, true);
+                MusicApi api = apis.get(Byte.parseByte(input.substring(0, input.indexOf("$"))));
+                api.loadList(input, cb);
             } catch (Exception e) {
                 ui.showException(e);
             }
@@ -895,13 +1173,20 @@ public class MusicDialog extends BaseDialog{
         }
         public MusicInfo getNext(){
             if(++current >= list.size()) return null;
-            currentMusic = list.get(current);
-            return list.get(current);
+            current = Math.min(current, list.size() - 1);
+            return update();
+        }
+        public MusicInfo getPrev(){
+            current = Math.max(current - 1, 0);
+            return update();
         }
         public void set(int id){
             if(id >= list.size()) return;
             current = id;
-            currentMusic = list.get(current);
+            update();
+        }
+        private MusicInfo update(){
+            return currentMusic = list.get(current);
         }
         public int indexOf(MusicInfo info){
             for(int i = 0; i < list.size(); i++) {
