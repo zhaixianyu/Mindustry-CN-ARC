@@ -71,7 +71,6 @@ public class MusicDialog extends BaseDialog {
     private ListDialog listDialog;
     private MusicList list;
     private final ArrayList<MusicList> lists = new ArrayList<>();
-    private String uuid;
     private MessageDigest md5;
 
     public MusicDialog() {
@@ -126,23 +125,7 @@ public class MusicDialog extends BaseDialog {
             lrcColor = "[" + Core.settings.getString("lrcColor", "blue") + "]";
             nextLrcColor = "[" + Core.settings.getString("nextLrcColor", "white") + "]";
             buildLRC();
-            uuid = Core.settings.getString("kguuid");
-            if (uuid == null) {
-                byte[] buf = new byte[8];
-                new Rand().nextBytes(buf);
-                StringBuilder sb = new StringBuilder();
-                byte[] result = md5.digest(buf);
-                for (byte b : result) {
-                    sb.append(String.format("%02x", b));
-                }
-                uuid = sb.toString();
-                Core.settings.put("kguuid", sb.toString());
-            }
             Events.run(EventType.Trigger.update, this::updateProgress);
-            Events.on(EventType.ClientLoadEvent.class, e -> {
-                Core.scene.clear();
-                show();
-            });
         } catch (Exception ignored) {
         }
     }
@@ -684,11 +667,23 @@ public class MusicDialog extends BaseDialog {
     }
 
     private class KuGouWeb extends NetApi {//酷狗网页版api
-
+        String uuid;
         {
             name = "酷狗网页版";
             canUpload = false;
             thisId = 2;
+            uuid = Core.settings.getString("kguuid");
+            if (uuid == null) {
+                byte[] buf = new byte[8];
+                new Rand().nextBytes(buf);
+                StringBuilder sb = new StringBuilder();
+                byte[] result = md5.digest(buf);
+                for (byte b : result) {
+                    sb.append(String.format("%02x", b));
+                }
+                uuid = sb.toString();
+                Core.settings.put("kguuid", sb.toString());
+            }
         }
 
         @Override
