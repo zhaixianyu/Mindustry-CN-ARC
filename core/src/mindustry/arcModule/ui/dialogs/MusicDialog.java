@@ -21,7 +21,6 @@ import arc.scene.ui.*;
 import arc.scene.ui.layout.Scl;
 import arc.scene.ui.layout.Table;
 import arc.util.*;
-import arc.util.Timer;
 import arc.util.serialization.Base64Coder;
 import arc.util.serialization.JsonReader;
 import arc.util.serialization.JsonValue;
@@ -38,7 +37,6 @@ import mindustry.ui.dialogs.BaseDialog;
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -46,7 +44,9 @@ import java.security.KeyFactory;
 import java.security.MessageDigest;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.RSAPublicKeySpec;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Objects;
 
 import static mindustry.Vars.*;
 import static mindustry.arcModule.RFuncs.getPrefix;
@@ -54,6 +54,7 @@ import static mindustry.arcModule.RFuncs.getPrefix;
 public class MusicDialog extends BaseDialog {
     public static final String version = "1.2.1";
     public static final String ShareType = "[pink]<Music>";
+    private static final String E = "UTF-8";
     private Table lrcTable;
     private MusicApi api;
     private static final ArrayList<MusicApi> apis = new ArrayList<>();
@@ -80,9 +81,13 @@ public class MusicDialog extends BaseDialog {
             nowMusic = new MusicInfo();
             progress = 0;
             addApi(null);
-            addApi(Squirrel.class);
-            addApi(KuGouWeb.class);
-            addApi(NetEaseMusic.class);
+            addApi(new Squirrel());
+            addApi(new KuGouWeb());
+            try {
+                addApi(new NetEaseMusic());
+            } catch (Exception ignored) {
+                addApi(null);
+            }
             api = apis.get(2);
             list = lists.get(2);
             addCloseButton();
@@ -106,10 +111,10 @@ public class MusicDialog extends BaseDialog {
             switchDialog.cont.label(() -> "当前api: (" + api.thisId + ")" + api.name);
             switchDialog.cont.row();
             switchDialog.cont.pane(p -> {
-                for (MusicApi capi : apis) {
-                    if (capi != null) {
-                        byte id = capi.thisId;
-                        String name = capi.name;
+                for (MusicApi a : apis) {
+                    if (a != null) {
+                        byte id = a.thisId;
+                        String name = a.name;
                         p.button("(" + id + ")" + name, () -> {
                             api = apis.get(id);
                             list = lists.get(id);
@@ -130,12 +135,7 @@ public class MusicDialog extends BaseDialog {
         }
     }
 
-    public void addApi(Class<? extends MusicApi> c) {
-        MusicApi api = null;
-        try {
-            api = c.getDeclaredConstructor().newInstance();
-        } catch (Exception ignored) {
-        }
+    public void addApi(MusicApi api) {
         apis.add(api);
         lists.add(api == null ? null : new MusicList(api.thisId));
     }
@@ -434,7 +434,7 @@ public class MusicDialog extends BaseDialog {
             int split = msg.indexOf('M', start);
             String mark = msg.substring(start + 1, split);
             if (mark.equals("$")) {
-                Core.app.post(() -> ui.showConfirm("松鼠音乐", (sender == null ? "" : sender.name) + "分享了一个歌单\n播放?", () -> Http.get("https://pastebin.com/raw/" + msg.substring(split + 1), r -> MusicList.parse(URLDecoder.decode(r.getResultAsString(), "UTF-8"), MusicDialog.this::loadList), e -> Core.app.post(() -> ui.showException(e)))));
+                Core.app.post(() -> ui.showConfirm("松鼠音乐", (sender == null ? "" : sender.name) + "分享了一个歌单\n播放?", () -> Http.get("https://pastebin.com/raw/" + msg.substring(split + 1), r -> MusicList.parse(URLDecoder.decode(r.getResultAsString(), E), MusicDialog.this::loadList), e -> Core.app.post(() -> ui.showException(e)))));
             } else {
                 byte src = Byte.parseByte(mark);
                 String id = msg.substring(split + 1);
@@ -513,7 +513,7 @@ public class MusicDialog extends BaseDialog {
             if (list.size() == 0) return;
             Vars.ui.showConfirm("分享", "确认分享到聊天框?", () -> {
                 try {
-                    Http.HttpRequest req = Http.post("https://pastebin.com/api/api_post.php", "api_dev_key=sdBDjI5mWBnHl9vBEDMNiYQ3IZe0LFEk&api_option=paste&api_paste_expire_date=10M&api_paste_code=" + URLEncoder.encode(list.build(), "UTF-8"));
+                    Http.HttpRequest req = Http.post("https://pastebin.com/api/api_post.php", "api_dev_key=sdBDjI5mWBnHl9vBEDMNiYQ3IZe0LFEk&api_option=paste&api_paste_expire_date=10M&api_paste_code=" + URLEncoder.encode(list.build(), E));
                     req.submit(r -> {
                         String code = r.getResultAsString();
                         Call.sendChatMessage(getPrefix("pink", "Music") + " $M" + code.substring(code.lastIndexOf('/') + 1));
@@ -668,6 +668,7 @@ public class MusicDialog extends BaseDialog {
 
     private class KuGouWeb extends NetApi {//酷狗网页版api
         String uuid;
+
         {
             name = "酷狗网页版";
             canUpload = false;
@@ -693,9 +694,7 @@ public class MusicDialog extends BaseDialog {
             req.submit(res -> {
                 JsonValue j = new JsonReader().parse(res.getResultAsString());
                 if (j.getByte("status") == 0) {
-                    Core.app.post(() -> {
-                        Vars.ui.showErrorMessage("此歌曲无法播放:\nKuGou Error: (" + j.getLong("err_code") + ")");
-                    });
+                    Core.app.post(() -> Vars.ui.showErrorMessage("此歌曲无法播放:\nKuGou Error: (" + j.getLong("err_code") + ")"));
                     return;
                 }
                 JsonValue data = j.get("data");
@@ -730,12 +729,12 @@ public class MusicDialog extends BaseDialog {
             try {
                 long timestamp = new Date().getTime();
                 String data = "NVPh5oo715z5DIWAeQlhMDsWXXQV4hwtappid=1014bitrate=0clienttime=" + timestamp + "clientver=1000dfid=-filter=10inputtype=0iscorrection=1isfuzzy=0keyword=" + name + "mid=" + uuid + "page=" + page + "pagesize=10platform=WebFilterprivilege_filter=0srcappid=2919userid=0uuid=" + uuid + "NVPh5oo715z5DIWAeQlhMDsWXXQV4hwt";
-                byte[] result = md5.digest(data.getBytes("UTF-8"));
+                byte[] result = md5.digest(data.getBytes(E));
                 StringBuilder sb = new StringBuilder();
                 for (byte b : result) {
                     sb.append(String.format("%02x", b));
                 }
-                Http.get("https://complexsearch.kugou.com/v2/search/song?appid=1014&bitrate=0&clienttime=" + timestamp + "&clientver=1000&dfid=-&filter=10&inputtype=0&iscorrection=1&isfuzzy=0&keyword=" + URLEncoder.encode(name, "UTF-8") + "&mid=" + uuid + "&page=" + page + "&pagesize=10&platform=WebFilter&privilege_filter=0&srcappid=2919&userid=0&uuid=" + uuid + "&signature=" + sb, res -> {
+                Http.get("https://complexsearch.kugou.com/v2/search/song?appid=1014&bitrate=0&clienttime=" + timestamp + "&clientver=1000&dfid=-&filter=10&inputtype=0&iscorrection=1&isfuzzy=0&keyword=" + URLEncoder.encode(name, E) + "&mid=" + uuid + "&page=" + page + "&pagesize=10&platform=WebFilter&privilege_filter=0&srcappid=2919&userid=0&uuid=" + uuid + "&signature=" + sb, res -> {
                     JsonValue j = new JsonReader().parse(res.getResultAsString());
                     if (j.getLong("error_code") != 0) {
                         Core.app.post(() -> Vars.ui.showErrorMessage("搜索出错:\nKuGou Error: (" + j.getLong("error_code") + ") " + j.getString("error_msg")));
@@ -766,7 +765,7 @@ public class MusicDialog extends BaseDialog {
         @Override
         public void getTips(String str, Cons<String[]> cb) {
             try {
-                Http.get("https://searchtip.kugou.com/getSearchTip?MusicTipCount=10&MVTipCount=0&albumcount=0&keyword=" + URLEncoder.encode(str, "UTF-8"), r -> {
+                Http.get("https://searchtip.kugou.com/getSearchTip?MusicTipCount=10&MVTipCount=0&albumcount=0&keyword=" + URLEncoder.encode(str, E), r -> {
                     JsonValue j = new JsonReader().parse(r.getResultAsString());
                     if (j.getByte("status") != 1) return;
                     int count = j.get("data").get(0).getInt("RecordCount");
@@ -891,9 +890,10 @@ public class MusicDialog extends BaseDialog {
                 String[] args = s.split("\uf6aa");
                 try {
                     list.add(new MusicInfo() {{
+                        src = thisId;
                         id = args[0];
-                        name = URLDecoder.decode(args[1], "UTF-8");
-                        author = URLDecoder.decode(args[2], "UTF-8");
+                        name = URLDecoder.decode(args[1], E);
+                        author = URLDecoder.decode(args[2], E);
                     }});
                 } catch (Exception ignored) {
                 }
@@ -907,7 +907,7 @@ public class MusicDialog extends BaseDialog {
             sb.append(thisId).append("$");
             try {
                 for (MusicInfo musicInfo : list.list) {
-                    sb.append(musicInfo.id).append("\uf6aa").append(URLEncoder.encode(musicInfo.name, "UTF-8")).append("\uf6aa").append(URLEncoder.encode(musicInfo.author, "UTF-8")).append("\uf71d");
+                    sb.append(musicInfo.id).append("\uf6aa").append(URLEncoder.encode(musicInfo.name, E)).append("\uf6aa").append(URLEncoder.encode(musicInfo.author, E)).append("\uf71d");
                 }
             } catch (Exception ignored) {
             }
@@ -919,7 +919,7 @@ public class MusicDialog extends BaseDialog {
         public void share(MusicInfo info) {
             Vars.ui.showConfirm("分享", "确认分享到聊天框?", () -> getInfoOrCall(info, fullInfo -> {
                 try {
-                    Call.sendChatMessage(getPrefix("pink", "Music") + " " + fullInfo.src + "M" + fullInfo.id + "\uf6aa" + URLEncoder.encode(fullInfo.name, "UTF-8") + "\uf6aa" + URLEncoder.encode(fullInfo.author, "UTF-8"));
+                    Call.sendChatMessage(getPrefix("pink", "Music") + " " + fullInfo.src + "M" + fullInfo.id + "\uf6aa" + URLEncoder.encode(fullInfo.name, E) + "\uf6aa" + URLEncoder.encode(fullInfo.author, E));
                 } catch (Exception ignored) {
                 }
             }));
@@ -930,7 +930,7 @@ public class MusicDialog extends BaseDialog {
             if (list.size() == 0) return;
             Vars.ui.showConfirm("分享", "确认分享到聊天框?", () -> {
                 try {
-                    Http.HttpRequest req = Http.post("https://pastebin.com/api/api_post.php", "api_dev_key=sdBDjI5mWBnHl9vBEDMNiYQ3IZe0LFEk&api_option=paste&api_paste_expire_date=10M&api_paste_code=" + URLEncoder.encode(buildList(list), "UTF-8"));
+                    Http.HttpRequest req = Http.post("https://pastebin.com/api/api_post.php", "api_dev_key=sdBDjI5mWBnHl9vBEDMNiYQ3IZe0LFEk&api_option=paste&api_paste_expire_date=10M&api_paste_code=" + URLEncoder.encode(buildList(list), E));
                     req.submit(r -> {
                         String code = r.getResultAsString();
                         Call.sendChatMessage(getPrefix("pink", "Music") + " $M" + code.substring(code.lastIndexOf('/') + 1));
@@ -968,7 +968,7 @@ public class MusicDialog extends BaseDialog {
             public void encryptRequest(Http.HttpRequest req, String str) throws Exception {
                 req.header("content-type", "application/x-www-form-urlencoded");
                 NetMusicData data = encryptParams(str);
-                req.content("params=" + URLEncoder.encode(data.params, "UTF-8") + "&encSecKey=" + URLEncoder.encode(data.encSecKey, "UTF-8"));
+                req.content("params=" + URLEncoder.encode(data.params, E) + "&encSecKey=" + URLEncoder.encode(data.encSecKey, E));
             }
 
             public NetMusicData encryptParams(String raw) throws Exception {
@@ -993,10 +993,10 @@ public class MusicDialog extends BaseDialog {
 
             public String encrypt(String raw, String key) throws Exception {
                 Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-                byte[] bytes = key.getBytes("UTF-8");
+                byte[] bytes = key.getBytes(E);
                 SecretKeySpec s = new SecretKeySpec(bytes, "AES");
                 cipher.init(Cipher.ENCRYPT_MODE, s, iv);
-                byte[] e = cipher.doFinal(raw.getBytes("UTF-8"));
+                byte[] e = cipher.doFinal(raw.getBytes(E));
                 return String.valueOf(Base64Coder.encode(e));
             }
 
@@ -1266,7 +1266,7 @@ public class MusicDialog extends BaseDialog {
         }
 
         private MusicInfo update() {
-            return currentMusic = list.get(current);
+            return currentMusic = current >= size() ? null : list.get(current);
         }
 
         public int indexOf(MusicInfo info) {

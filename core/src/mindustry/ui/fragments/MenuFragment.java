@@ -96,7 +96,9 @@ public class MenuFragment{
             float fy = (int)(height - 6 - logoh) + logoh / 2 - (Core.graphics.isPortrait() ? Scl.scl(30f) : 0f);
 
             Draw.color();
-            Draw.rect(logo, fx, fy, logow, logoh);
+            Draw.rect(logo, fx, fy, logow, logoh, 1f);
+
+            //Fonts.outline.draw("test", fx + logow / 2, fy - logoh/2f - Scl.scl(2f), Color.gold, 2, false, Align.center);
 
             Fonts.outline.setColor(Color.white);
             Fonts.outline.draw(versionText+arcversionText, fx, fy - logoh/2f - Scl.scl(2f), Align.center);

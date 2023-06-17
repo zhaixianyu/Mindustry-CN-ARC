@@ -403,6 +403,7 @@ public class Vars implements Loadable{
                     }
 
                     ui.consolefrag.addMessage(Log.removeColors(result));
+                    ui.ConsoleDialog.addMessage(Log.removeColors(result));
                 }
             }
         };
