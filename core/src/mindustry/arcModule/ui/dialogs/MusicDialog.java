@@ -807,21 +807,45 @@ public class MusicDialog extends BaseDialog {
                 if (data.getInt("code") != 200) {
                     Core.app.post(() -> ui.showInfo("此歌曲为vip专属 无法播放"));
                 }
-                if (raw == null) callback.get(new MusicInfo() {{
-                    name = data.getString("name");
-                    url = data.getString("url");
-                    id = data.getString("id");
-                    src = thisId;
-                    length = data.getInt("time") / 1000;
-                }});
-                else callback.get(new MusicInfo() {{
-                    name = raw.name;
-                    author = raw.author;
-                    url = data.getString("url");
-                    id = data.getString("id");
-                    src = thisId;
-                    length = data.getInt("time") / 1000;
-                }});
+                Http.HttpRequest lr = Http.post("https://music.163.com/weapi/song/lyric?csrf_token=");
+                encryptor.encryptRequest(lr, "{\"id\":" + data.getString("id") + ",\"lv\":-1,\"tv\":-1,\"csrf_token\":\"\"}");
+                lr.submit(rr -> {
+                    JsonValue lrcData = new JsonReader().parse(rr.getResultAsString());
+                    if(lrcData.getInt("code") != 200 || !lrcData.get("lrc").has("lyric")) {
+                        if (raw == null) callback.get(new MusicInfo() {{
+                            name = data.getString("name");
+                            url = data.getString("url");
+                            id = data.getString("id");
+                            src = thisId;
+                            length = data.getInt("time") / 1000;
+                        }});
+                        else callback.get(new MusicInfo() {{
+                            name = raw.name;
+                            author = raw.author;
+                            url = data.getString("url");
+                            id = data.getString("id");
+                            src = thisId;
+                            length = data.getInt("time") / 1000;
+                        }});
+                    }
+                    if (raw == null) callback.get(new MusicInfo() {{
+                        name = data.getString("name");
+                        url = data.getString("url");
+                        id = data.getString("id");
+                        src = thisId;
+                        lrc = LRCParser.parse(lrcData.get("lrc").getString("lyric"));
+                        length = data.getInt("time") / 1000;
+                    }});
+                    else callback.get(new MusicInfo() {{
+                        name = raw.name;
+                        author = raw.author;
+                        url = data.getString("url");
+                        id = data.getString("id");
+                        src = thisId;
+                        lrc = LRCParser.parse(lrcData.get("lrc").getString("lyric"));
+                        length = data.getInt("time") / 1000;
+                    }});
+                });
             });
         }
 
@@ -845,9 +869,16 @@ public class MusicDialog extends BaseDialog {
                             if (thisMusic == null) {
                                 break;
                             }
+                            StringBuilder sb = new StringBuilder();
+                            int l = thisMusic.get("ar").size;
+                            JsonValue ar = thisMusic.get("ar");
+                            for(int k = 0; k < l; k++){
+                                sb.append(ar.get(k).getString("name")).append("/");
+                            }
+                            if(sb.length() != 0) sb.deleteCharAt(sb.length() - 1);
                             set.add(new MusicInfo() {{
                                 name = thisMusic.getString("name");
-                                author = thisMusic.get("al").getString("name");
+                                author = sb.toString();
                                 id = thisMusic.getString("id");
                                 src = thisId;
                             }});
@@ -1090,7 +1121,7 @@ public class MusicDialog extends BaseDialog {
 
     private static class LRCParser {
         public static LRC parse(String input) {
-            String[] lrcs = input.split("\\r\\n");
+            String[] lrcs = input.replace("\r", "").split("\\n");
             LRC output = new LRC();
             if (!input.contains("[00:")) {
                 output.add(0, "暂无歌词");
