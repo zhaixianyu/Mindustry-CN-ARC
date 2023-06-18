@@ -118,16 +118,6 @@ public class LogicDisplay extends Block{
                 Draw.blend();
             }
             else {
-
-                Draw.draw(Draw.z(), () -> {
-                    if (buffer == null) {
-                        buffer = new FrameBuffer(displaySize, displaySize);
-                        //clear the buffer - some OSs leave garbage in it
-                        buffer.begin(Pal.darkerMetal);
-                        buffer.end();
-                    }
-                });
-
                 //don't bother processing commands if displays are off
                 if (!commands.isEmpty()) {
                     Draw.draw(Draw.z(), () -> {
