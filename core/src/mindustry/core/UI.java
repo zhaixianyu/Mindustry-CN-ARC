@@ -91,6 +91,8 @@ public class UI implements ApplicationListener, Loadable{
 
     public mindustry.arcModule.ui.dialogs.MusicDialog MusicDialog;
 
+    public mindustry.arcModule.ui.dialogs.ConsoleDialog ConsoleDialog;
+
     private @Nullable Element lastAnnouncement;
 
     private @Nullable Element lastArcAnnouncement;
@@ -204,6 +206,7 @@ public class UI implements ApplicationListener, Loadable{
         listfrag = new PlayerListFragment();
         loadfrag = new LoadingFragment();
         consolefrag = new ConsoleFragment();
+        ConsoleDialog = new ConsoleDialog();
 
         picker = new ColorPicker();
         editor = new MapEditorDialog();
@@ -309,6 +312,7 @@ public class UI implements ApplicationListener, Loadable{
                 this.numeric = numbers;
                 this.maxLength = textLength;
                 this.accepted = confirmed;
+                this.canceled = closed;
                 this.allowEmpty = false;
             }});
         }else{

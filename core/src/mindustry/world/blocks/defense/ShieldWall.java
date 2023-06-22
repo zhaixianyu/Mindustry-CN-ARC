@@ -36,7 +36,7 @@ public class ShieldWall extends Wall{
 
         stats.add(Stat.shieldHealth, shieldHealth);
         stats.add(Stat.cooldownTime, breakCooldown / Time.toSeconds, StatUnit.seconds);
-        stats.add(Stat.regenSpeed, regenSpeed * Time.toSeconds, StatUnit.perSecond);
+        stats.add("回复速度", StatCat.function, regenSpeed * Time.toSeconds, StatUnit.perSecond);
     }
 
     @Override

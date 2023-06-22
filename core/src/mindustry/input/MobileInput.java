@@ -360,7 +360,7 @@ public class MobileInput extends InputHandler implements GestureListener{
                 //draw placing
                 for(int i = 0; i < linePlans.size; i++){
                     BuildPlan plan = linePlans.get(i);
-                    if(i == linePlans.size - 1 && plan.block.rotate){
+                    if(i == linePlans.size - 1 && plan.block.rotate && plan.block.drawArrow){
                         drawArrow(block, plan.x, plan.y, plan.rotation);
                     }
                     plan.block.drawPlan(plan, allPlans(), validPlace(plan.x, plan.y, plan.block, plan.rotation) && getPlan(plan.x, plan.y, plan.block.size, null) == null);
@@ -416,9 +416,10 @@ public class MobileInput extends InputHandler implements GestureListener{
 
             //draw last placed plan
             if(!plan.breaking && plan == lastPlaced && plan.block != null){
-                boolean valid = validPlace(tile.x, tile.y, plan.block, rotation);
+                int rot = plan.block.planRotation(rotation);
+                boolean valid = validPlace(tile.x, tile.y, plan.block, rot);
                 Draw.mixcol();
-                plan.block.drawPlace(tile.x, tile.y, rotation, valid);
+                plan.block.drawPlace(tile.x, tile.y, rot, valid);
 
                 drawOverlapCheck(plan.block, tile.x, tile.y, valid);
             }
@@ -1041,7 +1042,7 @@ public class MobileInput extends InputHandler implements GestureListener{
                     }
 
                     if(allowHealing && target == null){
-                        target = Geometry.findClosest(unit.x, unit.y, indexer.getDamaged(Team.sharded));
+                        target = Geometry.findClosest(unit.x, unit.y, indexer.getDamaged(player.team()));
                         if(target != null && !unit.within(target, range)){
                             target = null;
                         }

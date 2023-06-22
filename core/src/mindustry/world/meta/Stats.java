@@ -3,6 +3,7 @@ package mindustry.world.meta;
 import arc.struct.ObjectMap.*;
 import arc.struct.*;
 import arc.util.*;
+import mindustry.arcModule.ArcStat;
 import mindustry.type.*;
 
 /** Hold and organizes a list of block stats. */
@@ -71,6 +72,13 @@ public class Stats{
     /** Adds a single string value with this stat. */
     public void add(Stat stat, String format, Object... args){
         add(stat, StatValues.string(format, args));
+    }
+
+    public void add(String name, StatCat category, float value, StatUnit unit) {
+        add(ArcStat.get(name, category), value, unit);
+    }
+    public void add(String name, StatCat category, String format, Object... args) {
+        add(ArcStat.get(name, category), format, args);
     }
 
     /** Adds a stat value. */

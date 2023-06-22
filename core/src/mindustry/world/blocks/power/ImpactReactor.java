@@ -77,13 +77,13 @@ public class ImpactReactor extends PowerGenerator{
             stats.add(Stat.productionTime, itemDuration / 60f, StatUnit.seconds);
         }
         float startTime = warmupToTime(Mathf.pow(consPower.usage / powerProduction, 1f / 5f), 1f);
-        stats.add(Stat.startTime, startTime / 60f, StatUnit.seconds);
-        stats.add(Stat.fullStartTime, warmupToTime(0.999f, 1f) / 60f, StatUnit.seconds);
+        stats.add("启动时间", StatCat.power, startTime / 60f, StatUnit.seconds);
+        stats.add("完全启动时间", StatCat.power, warmupToTime(0.999f, 1f) / 60f, StatUnit.seconds);
         float startConsPower = 0;
         for (int tick = 1;tick < startTime;tick++) {
             startConsPower += consPower.usage - Mathf.pow(timeToWarmup(tick, 1f), 5f) * powerProduction;
         }
-        stats.add(Stat.startConsPower, Mathf.ceil(startConsPower / 50f) * 50f, StatUnit.none);
+        stats.add("启动总耗电", StatCat.power, Mathf.ceil(startConsPower / 50f) * 50f, StatUnit.none);
     }
 
     public class ImpactReactorBuild extends GeneratorBuild{

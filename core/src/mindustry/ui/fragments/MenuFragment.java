@@ -10,16 +10,21 @@ import arc.scene.event.*;
 import arc.scene.style.*;
 import arc.scene.ui.*;
 import arc.scene.ui.ImageButton.*;
-import arc.scene.ui.TextButton.*;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
+import arc.util.serialization.Jval;
 import mindustry.core.*;
 import mindustry.game.EventType.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
+import mindustry.io.versions.LegacyIO;
+import mindustry.net.ServerGroup;
 import mindustry.service.GameService;
 import mindustry.ui.*;
+import mindustry.ui.dialogs.JoinDialog;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static mindustry.Vars.*;
 import static mindustry.gen.Tex.*;
@@ -29,6 +34,9 @@ public class MenuFragment{
     private Button currentMenu;
     private MenuRenderer renderer;
     private Seq<MenuButton> customButtons = new Seq<>();
+    Label textLabel;
+    float tx, ty, base;
+    String[] labels = { "学术端!" };
 
     public void build(Group parent){
         renderer = new MenuRenderer();
@@ -46,6 +54,9 @@ public class MenuFragment{
         group.setFillParent(true);
         group.visible(() -> !ui.editor.isShown());
         parent.addChild(group);
+
+        WidgetGroup textGroup = new WidgetGroup();
+        parent.addChild(textGroup);
 
         parent = group;
 
@@ -94,6 +105,13 @@ public class MenuFragment{
 
             float fx = (int)(width / 2f);
             float fy = (int)(height - 6 - logoh) + logoh / 2 - (Core.graphics.isPortrait() ? Scl.scl(30f) : 0f);
+            if(Core.settings.getBool("macnotch") ){
+                fy -= Scl.scl(macNotchHeight);
+            }
+
+            tx = width / 2f + logow * 0.35f;
+            ty = fy - logoh / 2f - Scl.scl(2f) + logoh * 0.3f;
+            base = logoh * 0.01f;
 
             Draw.color();
             Draw.rect(logo, fx, fy, logow, logoh);
@@ -101,6 +119,46 @@ public class MenuFragment{
             Fonts.outline.setColor(Color.white);
             Fonts.outline.draw(versionText+arcversionText, fx, fy - logoh/2f - Scl.scl(2f), Align.center);
         }).touchable = Touchable.disabled;
+
+        textGroup.setTransform(true);//这个文字旋转要了我3天时间 臭猫的arc库不是标准libgdx 网上一堆教程都用不了
+        //最后还是搜libgdx旋转文字方法 在 https://www.cnblogs.com/keanuyaoo/p/3320223.html 找到了setRotation不起作用的原因
+        textGroup.setRotation(-30);
+        textGroup.addChild(textLabel = new Label("[yellow]学术端!"));
+        textLabel.setAlignment(Align.center);
+        {
+            final float[] mul = { 2 };
+            AtomicBoolean flip = new AtomicBoolean(false);
+            textGroup.update(() -> {
+                textGroup.x = tx;
+                textGroup.y = ty;
+                if(flip.get()) {
+                    mul[0] -= 0.08f;
+                    if(mul[0] < 1.6f) flip.set(false);
+                } else {
+                    mul[0] += 0.08f;
+                    if(mul[0] > 2.4f) flip.set(true);
+                }
+                textLabel.setFontScale((base == 0 ? 1f : base) * mul[0]);
+            });
+        }
+        loadLabels();
+    }
+
+    private void loadLabels(){
+        Http.get(userContentURL + "/CN-ARC/Mindustry-CN-ARC/master/core/assets/labels")
+                .error(e -> {
+                    Log.err("获取最新标语失败!加载本地标语", e);
+                    labels = Core.files.internal("labels").readString("UTF-8").replace("\r", "").replace("\\n", "\n").split("\n");
+                    randomLabel();
+                })
+                .submit(result -> {
+                    labels = result.getResultAsString().replace("\r", "").replace("\\n", "\n").split("\n");
+                    randomLabel();
+                });
+    }
+
+    private void randomLabel(){
+        Timer.schedule(() -> textLabel.setText("[yellow]" + labels[new Rand().random(0, labels.length - 1)]), 0.11f);
     }
 
     private void buildMobile(){
@@ -128,6 +186,17 @@ public class MenuFragment{
             database = new MobileButton(Icon.book, "@database",  ui.database::show),
             achievements = new MobileButton(Icon.star, "@achievements",  ui.achievements::show);
 
+        play.clicked(this::randomLabel);
+        custom.clicked(this::randomLabel);
+        maps.clicked(this::randomLabel);
+        join.clicked(this::randomLabel);
+        editor.clicked(this::randomLabel);
+        tools.clicked(this::randomLabel);
+        mods.clicked(this::randomLabel);
+        cn_arc.clicked(this::randomLabel);
+        updatedialog.clicked(this::randomLabel);
+        database.clicked(this::randomLabel);
+        achievements.clicked(this::randomLabel);
 
         Seq<MobileButton> customs = customButtons.map(b -> new MobileButton(b.icon, b.text, b.runnable == null ? () -> {} : b.runnable));
 
@@ -140,6 +209,7 @@ public class MenuFragment{
                 container.add(maps);
                 // add odd custom buttons
                 for(int i = 1; i < customs.size; i += 2){
+                    customs.get(i).clicked(this::randomLabel);
                     container.add(customs.get(i));
                 }
                 container.row();
@@ -150,6 +220,7 @@ public class MenuFragment{
             container.add(achievements);
             // add even custom buttons (before the exit button)
             for(int i = 0; i < customs.size; i += 2){
+                customs.get(i).clicked(this::randomLabel);
                 container.add(customs.get(i));
             }
             container.row();
@@ -173,6 +244,7 @@ public class MenuFragment{
             container.add(mods);
             // add custom buttons
             for(int i = 0; i < customs.size; i++){
+                customs.get(i).clicked(this::randomLabel);
                 container.add(customs.get(i));
                 if(i % 2 == 0) container.row();
             }
@@ -322,6 +394,7 @@ public class MenuFragment{
                     }else{
                         currentMenu = null;
                         fadeOutMenu();
+                        randomLabel();
                         b.runnable.run();
                     }
                 }
