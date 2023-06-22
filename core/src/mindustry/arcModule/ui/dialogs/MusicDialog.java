@@ -1118,10 +1118,13 @@ public class MusicDialog extends BaseDialog {
         @Override
         public void getMusicInfo(String str, Cons<MusicInfo> callback) {
             String[] n = str.split("\uf6aa");
-            getMusicInfo(n[0], callback, new MusicInfo(){{
-                name = n[1];
-                author = n[2];
-            }});
+            try {
+                getMusicInfo(n[0], callback, new MusicInfo() {{
+                    name = URLDecoder.decode(n[1], E);
+                    author = URLDecoder.decode(n[2], E);
+                }});
+            } catch (Exception ignored) {
+            }
         }
 
         class NetEastEncryptor {

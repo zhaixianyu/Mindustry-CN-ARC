@@ -93,6 +93,7 @@ public class UI implements ApplicationListener, Loadable{
 
     public mindustry.arcModule.ui.dialogs.ConsoleDialog ConsoleDialog;
 
+    public LabelController LabelController;
     private @Nullable Element lastAnnouncement;
 
     private @Nullable Element lastArcAnnouncement;
@@ -242,6 +243,7 @@ public class UI implements ApplicationListener, Loadable{
         campaignComplete = new CampaignCompleteDialog();
         MusicDialog = new MusicDialog();
         followUpMenus = new IntMap<>();
+        LabelController = new LabelController();
 
         Group group = Core.scene.root;
 
