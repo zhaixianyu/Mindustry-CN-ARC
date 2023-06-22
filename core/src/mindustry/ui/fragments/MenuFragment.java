@@ -110,7 +110,7 @@ public class MenuFragment{
             }
 
             tx = width / 2f + logow * 0.35f;
-            ty = fy - logoh / 2f - Scl.scl(2f) + logoh * 0.3f;
+            ty = fy - logoh / 2f - Scl.scl(2f) + logoh * 0.2f;
             base = logoh * 0.01f;
 
             Draw.color();
@@ -122,21 +122,21 @@ public class MenuFragment{
 
         textGroup.setTransform(true);//这个文字旋转要了我3天时间 臭猫的arc库不是标准libgdx 网上一堆教程都用不了
         //最后还是搜libgdx旋转文字方法 在 https://www.cnblogs.com/keanuyaoo/p/3320223.html 找到了setRotation不起作用的原因
-        textGroup.setRotation(-30);
+        textGroup.setRotation(30);
         textGroup.addChild(textLabel = new Label("[yellow]学术端!"));
         textLabel.setAlignment(Align.center);
         {
-            final float[] mul = { 2 };
+            final float[] mul = { 1.8f };
             AtomicBoolean flip = new AtomicBoolean(false);
             textGroup.update(() -> {
                 textGroup.x = tx;
                 textGroup.y = ty;
                 if(flip.get()) {
                     mul[0] -= 0.08f;
-                    if(mul[0] < 1.6f) flip.set(false);
+                    if(mul[0] < 1.4f) flip.set(false);
                 } else {
                     mul[0] += 0.08f;
-                    if(mul[0] > 2.4f) flip.set(true);
+                    if(mul[0] > 2.2f) flip.set(true);
                 }
                 textLabel.setFontScale((base == 0 ? 1f : base) * mul[0]);
             });
