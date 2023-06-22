@@ -25,6 +25,7 @@ public class CallGenerator{
     static String[] bridgeTable = {"boolean", "char", "byte"};
     static HashMap<String, String> methodTable = new HashMap<>();
     static HashMap<String, String> methodTableString = new HashMap<>();
+    static int build = 145;
 
     static {
         methodTable.put(".*mindustry\\.ui\\..*", "");
@@ -47,8 +48,10 @@ public class CallGenerator{
 
         CodeBlock code = new CodeBlock(0);
         int[] packetID = {4};
-        code.add("//CODEGEN from squi2rel (github.com/squi2rel/Mindustry-CN-ARC)");
+        code.add("//CODEGEN from squi2rel (github.com/squi2rel/Mindustry-CN-ARC) build" + build);
         code.add("const Packet=require(\"./Packet\")");
+        code.add("const TypeIO=require(\"./TypeIO\")");
+        code.add("const crc32=require(\"crc-32\")");
         code.add("const Packets=new Map()");
         code.add("class StreamBegin extends Packet{\n" +
                 "    _id=0;\n" +
@@ -102,7 +105,7 @@ public class CallGenerator{
                 "    usid;\n" +
                 "    uuid;\n" +
                 "    write(buf){\n" +
-                "        buf.putInt(144);\n" +
+                "        buf.putInt(" + build + ");\n" +
                 "        TypeIO.writeString(buf,\"official\");\n" +
                 "        TypeIO.writeString(buf,this.name);\n" +
                 "        TypeIO.writeString(buf,\"Mars\");\n" +
@@ -198,7 +201,7 @@ public class CallGenerator{
             ob.set(ent.packetClassName);
         }
 
-        ob.set("get", new CodeBlock("Packets.get"));
+        ob.set("get", new CodeBlock("n=>Packets.get(n)"));
 
         //build and write resulting class
         TypeSpec spec = callBuilder.build();
