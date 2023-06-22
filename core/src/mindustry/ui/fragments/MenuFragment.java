@@ -145,7 +145,7 @@ public class MenuFragment{
     }
 
     private void loadLabels(){
-        Http.get(userContentURL + "/CN-ARC/Mindustry/master/core/assets/labels")
+        Http.get(userContentURL + "/CN-ARC/Mindustry-CN-ARC/master/core/assets/labels")
                 .error(e -> {
                     Log.err("获取最新标语失败!加载本地标语", e);
                     labels = Core.files.internal("labels").readString("UTF-8").replace("\r", "").replace("\\n", "\n").split("\n");
