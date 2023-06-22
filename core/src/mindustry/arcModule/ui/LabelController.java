@@ -4,12 +4,14 @@ import arc.Core;
 import arc.Events;
 import arc.scene.actions.Actions;
 import arc.scene.event.Touchable;
+import arc.scene.style.TextureRegionDrawable;
 import arc.scene.ui.Label;
 import arc.scene.ui.ScrollPane;
 import arc.scene.ui.layout.Table;
 import mindustry.Vars;
 import mindustry.game.EventType;
-import mindustry.ui.Styles;
+
+import static mindustry.gen.Tex.whiteui;
 
 public class LabelController {
     Table t = new Table();
@@ -23,7 +25,7 @@ public class LabelController {
         Events.on(EventType.ClientLoadEvent.class, e -> init());
     }
     public void init() {
-        t.setBackground(Styles.black5);
+        t.setBackground(((TextureRegionDrawable) whiteui).tint(0, 0, 0, 0.4f));
         t.add(l);
         sp.visible = false;
         sp.color.a(0);
@@ -45,7 +47,7 @@ public class LabelController {
             l.setText(pad(showing));
             lastWidth = width;
         }
-        sp.setScrollXForce(sp.getScrollX() + 1);
+        sp.setScrollXForce(sp.getScrollX() + 3);
         if(sp.getScrollX() > l.getPrefWidth() - sp.getWidth()) end();
     }
     public void start(String str) {
