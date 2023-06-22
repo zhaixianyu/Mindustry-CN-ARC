@@ -52,7 +52,7 @@ import static mindustry.Vars.*;
 import static mindustry.arcModule.RFuncs.getPrefix;
 
 public class MusicDialog extends BaseDialog {
-    public static final String version = "1.2.2";
+    public static final String version = "1.2.3";
     public static final String ShareType = "[pink]<Music>";
     private static final String E = "UTF-8";
     private static final ArrayList<MusicApi> apis = new ArrayList<>();
@@ -166,7 +166,7 @@ public class MusicDialog extends BaseDialog {
         list.add(info);
         list.set(list.indexOf(info));
         try {
-            if (info.lrc != null) lyric = info.lrc;
+            if (info.lrc != null) lyric = info.lrc; else lyric = null;
             Http.get(info.url, r -> {
                 Fi tmp = new Fi(tmpDirectory.child("music") + "/squirrel.mp3");
                 tmp.writeBytes(r.getResult());
@@ -270,7 +270,10 @@ public class MusicDialog extends BaseDialog {
     }
 
     private void updateLRC(double pos) {
-        if (lyric == null) return;
+        if (lyric == null) {
+            lrcLine1 = lrcLine2 = "松鼠音乐";
+            return;
+        }
         lyric.get(pos, (s1, s2) -> {
             lrcLine1 = s1;
             lrcLine2 = s2;
@@ -391,7 +394,7 @@ public class MusicDialog extends BaseDialog {
             } else {
                 byte src = Byte.parseByte(mark);
                 String id = msg.substring(split + 1);
-                if (src > apis.size() || apis.get(src) == null && src != 0) {
+                if (src < 0 || src > apis.size() || apis.get(src) == null && src != 0) {
                     Core.app.post(() -> ui.arcInfo("[red]无法找到api!\n可能是学术版本太旧"));
                 }
                 MusicApi current = apis.get(src);
@@ -1115,11 +1118,10 @@ public class MusicDialog extends BaseDialog {
         @Override
         public void getMusicInfo(String str, Cons<MusicInfo> callback) {
             String[] n = str.split("\uf6aa");
-            getMusicInfo(n[0], info -> {
-                info.name = n[1];
-                info.author = n[2];
-                callback.get(info);
-            }, null);
+            getMusicInfo(n[0], callback, new MusicInfo(){{
+                name = n[1];
+                author = n[2];
+            }});
         }
 
         class NetEastEncryptor {
