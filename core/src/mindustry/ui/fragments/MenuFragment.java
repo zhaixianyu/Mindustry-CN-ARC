@@ -1,33 +1,39 @@
 package mindustry.ui.fragments;
 
-import arc.*;
-import arc.graphics.*;
-import arc.graphics.g2d.*;
-import arc.math.*;
-import arc.scene.*;
-import arc.scene.actions.*;
-import arc.scene.event.*;
-import arc.scene.style.*;
-import arc.scene.ui.*;
-import arc.scene.ui.ImageButton.*;
-import arc.scene.ui.layout.*;
-import arc.struct.*;
+import arc.Core;
+import arc.Events;
+import arc.graphics.Color;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.TextureRegion;
+import arc.math.Interp;
+import arc.math.Mathf;
+import arc.math.Rand;
+import arc.scene.Group;
+import arc.scene.actions.Actions;
+import arc.scene.event.Touchable;
+import arc.scene.style.Drawable;
+import arc.scene.ui.Button;
+import arc.scene.ui.ImageButton.ImageButtonStyle;
+import arc.scene.ui.Label;
+import arc.scene.ui.layout.Scl;
+import arc.scene.ui.layout.Table;
+import arc.scene.ui.layout.WidgetGroup;
+import arc.struct.Seq;
 import arc.util.*;
-import arc.util.serialization.Jval;
-import mindustry.core.*;
-import mindustry.game.EventType.*;
-import mindustry.gen.*;
-import mindustry.graphics.*;
-import mindustry.io.versions.LegacyIO;
-import mindustry.net.ServerGroup;
+import mindustry.core.Version;
+import mindustry.game.EventType.ResizeEvent;
+import mindustry.gen.Icon;
+import mindustry.graphics.MenuRenderer;
+import mindustry.graphics.Pal;
 import mindustry.service.GameService;
-import mindustry.ui.*;
-import mindustry.ui.dialogs.JoinDialog;
+import mindustry.ui.Fonts;
+import mindustry.ui.MobileButton;
+import mindustry.ui.Styles;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static mindustry.Vars.*;
-import static mindustry.gen.Tex.*;
+import static mindustry.gen.Tex.discordBanner;
 
 public class MenuFragment{
     private Table container, submenu;
@@ -110,7 +116,7 @@ public class MenuFragment{
             }
 
             tx = width / 2f + logow * 0.35f;
-            ty = fy - logoh / 2f - Scl.scl(2f) + logoh * 0.2f;
+            ty = fy - logoh / 2f - Scl.scl(2f) + logoh * 0.15f;
             base = logoh * 0.01f;
 
             Draw.color();
@@ -128,9 +134,7 @@ public class MenuFragment{
         {
             final float[] mul = { 1.8f };
             AtomicBoolean flip = new AtomicBoolean(false);
-            textGroup.update(() -> {
-                textGroup.x = tx;
-                textGroup.y = ty;
+            Timer.schedule(() -> {
                 if(flip.get()) {
                     mul[0] -= 0.08f;
                     if(mul[0] < 1.4f) flip.set(false);
@@ -138,6 +142,10 @@ public class MenuFragment{
                     mul[0] += 0.08f;
                     if(mul[0] > 2.2f) flip.set(true);
                 }
+            }, 0, 1 / 60f);//badly 曲线救国
+            textGroup.update(() -> {
+                textGroup.x = tx;
+                textGroup.y = ty;
                 textLabel.setFontScale((base == 0 ? 1f : base) * mul[0]);
             });
         }
@@ -147,7 +155,7 @@ public class MenuFragment{
     private void loadLabels(){
         Http.get(userContentURL + "/CN-ARC/Mindustry-CN-ARC/master/core/assets/labels")
                 .error(e -> {
-                    Log.err("获取最新标语失败!加载本地标语", e);
+                    Log.err("获取最新主页标语失败!加载本地标语", e);
                     labels = Core.files.internal("labels").readString("UTF-8").replace("\r", "").replace("\\n", "\n").split("\n");
                     randomLabel();
                 })
