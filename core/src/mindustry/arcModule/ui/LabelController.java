@@ -1,3 +1,58 @@
+
+
+
+//看看这个
+/*
+    已经问过lc了
+    整这个没有问题
+    https://github-production-user-asset-6210df.s3.amazonaws.com/102400902/248221421-07e46762-caf4-4fca-935d-6769de9de5b3.png
+    OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOooOOoooooooo`]*]]]***
+    OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOo***\ooooooo**
+    OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOoo*...*oooooooo**
+    OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOoo^*...*,oooooooo^*
+    OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOo/*.......oooooooo\*
+    OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOo^*****..*ooooooooooo
+    OOOOOOooooOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOo[`**........=oooooooooo
+    OOOOOOo^****oOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOoo/*.....****\/oooooooooo
+    OOOOOOoo**,]oooOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOoOOOOOOOOOOo][**......**oOoooooooooo
+    OOOOOOOoooo^***\oOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOo]\]]]******oooooooooooo
+    OOOOOOOOO/...***=oOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOoOOOOOOOOOOOooooooOOOOOOoooooo
+    OOOOOOOOOOOOooooOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOoOOOOOOOOOOOOOooooOOOOoOoOOOOoo
+    ooooooOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOo[[oOOOOOOO/oOOOOOOOOOOOOOOOOOOOOOOOOOOOOoo
+    ooo/=ooOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOo`    .`*oOOooOOOOOOOOOOOOOOOOOOOOOOOOOOOOooo
+    ooooooOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOo.         =OOOOoOOOOOOOOOOOOOOOOOOOOOOOOOOOOOo
+    ***]]`]OOOOOOOOOOOOOOOOOOOOOOOOOOOOo.          .OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+    OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO^            oOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+    OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO^            ,OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+    OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO^            .OOOOOOOo`,oOOOOOOOOOOOOOOOOOOOOOOO
+    OOOOOOOOOOOOOOOOOOOOOOOo.=OOOOO`\OO.             oOOOOOOO[..oOOOOOOOOOOOOOOOOOOOOOO
+    OOOOOOOOOOOOOOOOOOOOOO^.,OOOOOO^.=O^             /\\,OOOO/..OOOOOOOOOOOOOOOOOOOOOOO
+    OOOOOOOOOOOOOOOOOOOOOOO..OOOOOO`.=O\             /`*\OOO[../OOOOOOOOOOOOOOOOOOOOOOO
+    OOOOOOOOOOOOOOOOOOOOOOOO..,\/`..*oO^             \OO\`..]/OOOOOOOOOOOOOOOOOOOOOOOOO
+    OOOOOOOOOOOOOOOOOOOOOOOOOO]]`,]OOOO`             ...,[OOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+    OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO/                    .[oOOOOOOOOOOOOOOOOOOOOOOOOO
+    OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO[.                         .,OOOOOOOOOOOOOOOOOOOOOOO
+    OOOOOOOOOOOOOOOOOOOOOOOOOOOOO/.                            .oOOOOOOOOOOOOOOOOOOOOOO
+    OOOOOOOOOOOOOOOOOOOOOOOOOOO/`                              .,OOOOOOOOOOOOOOOOOOOOOO
+    OOOOOOOOOOOOOOOOOOOOOOOOOO^.                                .[[[oOOOOOOoOOOOOOOOOOO
+    OOOOOOOOOOOOOOOOOOOOOOOO/`.                                 .*,]]]]oooooOOOOOOOOOOO
+    OOOOOOOOOOOOOOOOOOOOOOOOo..               ...               .[oOOOOOOOOOOOOOOOOOOOO
+    OOOOOOOOOoOOOOOOOOOOOo/**..                ..              .**[\OoO]]o*,oOOOOOOOOOO
+    OOOOOOOOOoOOOOOOOOOOOOOOO/*.              .,].           ..*[ooO]`\oo/o,oooOOOOOOOO
+    OOOOOOOOO**oOOOOOOOOooo]/OOOo*..........]/OOOOO\]`.   .,/OOOOoOOOo/..  .OOOOOOOOOOO
+    OOOOOOOO^...\OOOOOOOOOOOOOooOOOOOoOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO`..     .oOOOOOOOOO
+    OOOOOOO^.   ..=OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO/..        =OOOOOOOOO
+    OOOOOOO`.    ..OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO/..          .OOOOOOOOO
+    OOOOOO/.      ..,oOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOo`..              ,OOOOOOOO
+    OOOOOO^         ......*[[oOOOOOOOOOOOOOOOOOOOOOOOOOOO[`.                   =OOOOOOO
+    OOOOOO.           ..........**,[oo/[\oo[\o[[***......                      .OOOOOOO
+    OOOOO^            . ................................                        \OOOOOO
+    OOOOO.              ...............*.......... ..                           =OOOOOO
+    OOOO^.              ............**`........*.. ..                           =OOOOOO
+*/
+
+
+
 package mindustry.arcModule.ui;
 
 import arc.Core;
@@ -15,6 +70,7 @@ import arc.util.Time;
 import arc.util.Timer;
 import mindustry.Vars;
 import mindustry.game.EventType;
+import mindustry.ui.Styles;
 
 import java.util.ArrayList;
 
@@ -25,7 +81,7 @@ public class LabelController {
     Table t = new Table();
     ScrollPane sp = new ScrollPane(t);
     String showing = "广告位招租";
-    Label l = new Label(showing);
+    Label l = new Label(showing, Styles.outlineLabel);
     float lastWidth = 0;
     boolean playing = false;
     ArrayList<String> buffer = new ArrayList<>();
@@ -41,8 +97,7 @@ public class LabelController {
         sp.touchable = Touchable.disabled;
         sp.update(this::pos);
         Core.scene.add(sp);
-        Vars.netClient.addPacketHandler("arcFloatText", this::start);
-        Vars.netClient.addPacketHandler("arcFloatTextEnd", s -> this.end());
+        Vars.netClient.addPacketHandler("arcFloatText", str -> start("[violet]来自服务器的消息：" + str));
         loadLabels();
     }
     private void pos() {
@@ -65,19 +120,19 @@ public class LabelController {
         Http.get(userContentURL + "/CN-ARC/Mindustry-CN-ARC/master/core/assets/floatLabels")
                 .error(e -> {
                     Log.err("获取最新浮动标语失败!加载本地标语", e);
-                    labels = Core.files.internal("floatLabels").readString("UTF-8").replace("\r", "").replace("\\n", "\n").split("\n");
-                    Timer.schedule(this::randomLabel, 600, 600);
+                    labels = Core.files.internal("floatLabels").readString("UTF-8").replace("\r", "").split("\n");
+                    Timer.schedule(this::randomLabel, 1200, 1200);
                 })
                 .submit(result -> {
-                    labels = result.getResultAsString().replace("\r", "").replace("\\n", "\n").split("\n");
-                    Timer.schedule(this::randomLabel, 600, 600);
+                    labels = result.getResultAsString().replace("\r", "").split("\n");
+                    Timer.schedule(this::randomLabel, 1200, 1200);
                 });
     }
 
     private void randomLabel(){
         start(labels[new Rand().random(0, labels.length - 1)]);
     }
-    public void start(String str) {
+    private void start(String str) {
         if(playing) {
             buffer.add(str);
             return;
@@ -97,7 +152,7 @@ public class LabelController {
         sp.setScrollX(0);
         pos();
     }
-    public void end() {
+    private void end() {
         if(buffer.size() != 0) {
             start();
             return;

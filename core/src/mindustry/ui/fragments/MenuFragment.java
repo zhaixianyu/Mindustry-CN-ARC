@@ -135,6 +135,7 @@ public class MenuFragment{
             final float[] mul = { 1.8f };
             AtomicBoolean flip = new AtomicBoolean(false);
             Timer.schedule(() -> {
+                if(!(textGroup.visible = Core.settings.getBool("menuFloatText", true))) return;
                 if(flip.get()) {
                     mul[0] -= 0.08f;
                     if(mul[0] < 1.4f) flip.set(false);
@@ -156,11 +157,11 @@ public class MenuFragment{
         Http.get(userContentURL + "/CN-ARC/Mindustry-CN-ARC/master/core/assets/labels")
                 .error(e -> {
                     Log.err("获取最新主页标语失败!加载本地标语", e);
-                    labels = Core.files.internal("labels").readString("UTF-8").replace("\r", "").replace("\\n", "\n").split("\n");
+                    labels = Core.files.internal("labels").readString("UTF-8").replace("\r", "").replace("\\n", "\n").replace("/n", "\n").split("\n");
                     randomLabel();
                 })
                 .submit(result -> {
-                    labels = result.getResultAsString().replace("\r", "").replace("\\n", "\n").split("\n");
+                    labels = result.getResultAsString().replace("\r", "").replace("\\n", "\n").replace("/n", "\n").split("\n");
                     randomLabel();
                 });
     }
