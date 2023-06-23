@@ -121,11 +121,11 @@ public class LabelController {
                 .error(e -> {
                     Log.err("获取最新浮动标语失败!加载本地标语", e);
                     labels = Core.files.internal("floatLabels").readString("UTF-8").replace("\r", "").split("\n");
-                    Timer.schedule(this::randomLabel, 1200, 1200);
+                    Timer.schedule(this::randomLabel, 900, 900);
                 })
                 .submit(result -> {
                     labels = result.getResultAsString().replace("\r", "").split("\n");
-                    Timer.schedule(this::randomLabel, 1200, 1200);
+                    Timer.schedule(this::randomLabel, 900, 900);
                 });
     }
 
