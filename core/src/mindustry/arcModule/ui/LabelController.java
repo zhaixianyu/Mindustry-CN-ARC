@@ -11,6 +11,7 @@ import arc.scene.ui.ScrollPane;
 import arc.scene.ui.layout.Table;
 import arc.util.Http;
 import arc.util.Log;
+import arc.util.Time;
 import arc.util.Timer;
 import mindustry.Vars;
 import mindustry.game.EventType;
@@ -57,7 +58,7 @@ public class LabelController {
             lastWidth = width;
         }
         float textWidth = l.getPrefWidth() - sp.getWidth();
-        sp.setScrollXForce(sp.getScrollX() + Math.max(Math.min((textWidth - sp.getWidth()) / sp.getWidth(), 4f), 1.5f));
+        sp.setScrollXForce(sp.getScrollX() + Math.max(Math.min((textWidth - sp.getWidth()) / sp.getWidth(), 6f), Core.scene.getWidth() / 1000) * Time.delta * 2);
         if(sp.getScrollX() > textWidth) end();
     }
     private void loadLabels(){
@@ -85,13 +86,12 @@ public class LabelController {
         prepareStart();
     }
     private void start() {
-        sp.actions();
         showing = buffer.get(0);
         buffer.remove(0);
         prepareStart();
     }
     private void prepareStart() {
-        sp.actions(Actions.sequence(Actions.fadeIn(0.5f), Actions.visible(true)));
+        sp.actions(Actions.sequence(Actions.fadeIn(0.5f)));
         playing = sp.visible = true;
         l.setText(pad(showing));
         sp.setScrollX(0);
@@ -104,7 +104,7 @@ public class LabelController {
         }
         if(!playing) return;
         playing = false;
-        sp.actions(Actions.sequence(Actions.fadeOut(0.5f), Actions.visible(false)));
+        sp.actions(Actions.sequence(Actions.fadeOut(0.5f), Actions.run(() -> sp.visible = playing)));
     }
     private String pad(String str) {
         StringBuilder sb = new StringBuilder();
