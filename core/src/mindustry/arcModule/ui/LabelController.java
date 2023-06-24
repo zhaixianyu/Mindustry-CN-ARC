@@ -52,7 +52,6 @@
 */
 
 
-
 package mindustry.arcModule.ui;
 
 import arc.Core;
@@ -85,13 +84,16 @@ public class LabelController {
     float lastWidth = 0;
     boolean playing = false;
     ArrayList<String> buffer = new ArrayList<>();
-    String[] labels = { "学术端!" };
+    String[] labels = {"学术端!"};
+
     public LabelController() {
         Events.on(EventType.ClientLoadEvent.class, e -> init());
     }
+
     private void init() {
         t.setBackground(((TextureRegionDrawable) whiteui).tint(0, 0, 0, 0.4f));
         t.add(l);
+        sp.setScrollBarPositions(false, false);
         sp.visible = false;
         sp.color.a(0);
         sp.touchable = Touchable.disabled;
@@ -100,23 +102,25 @@ public class LabelController {
         Vars.netClient.addPacketHandler("arcFloatText", str -> start("[violet]来自服务器的消息：" + str));
         loadLabels();
     }
+
     private void pos() {
         float width = Core.graphics.getWidth(), height = Core.graphics.getHeight() - Core.scene.marginTop - 75f;
         sp.setWidth(width * 0.8f);
-        sp.setHeight(l.getHeight());
+        t.setHeight(l.getHeight());
         sp.x = width * 0.1f;
         sp.y = height;
         sp.toFront();
-        if(!playing) return;
-        if(width != lastWidth) {
+        if (!playing) return;
+        if (width != lastWidth) {
             l.setText(pad(showing));
             lastWidth = width;
         }
         float textWidth = l.getPrefWidth() - sp.getWidth();
         sp.setScrollXForce(sp.getScrollX() + Math.max(Math.min((textWidth - sp.getWidth()) / sp.getWidth(), 6f), Core.scene.getWidth() / 1000) * Time.delta * 2);
-        if(sp.getScrollX() > textWidth) end();
+        if (sp.getScrollX() > textWidth) end();
     }
-    private void loadLabels(){
+
+    private void loadLabels() {
         Http.get(userContentURL + "/CN-ARC/Mindustry-CN-ARC/master/core/assets/floatLabels")
                 .error(e -> {
                     Log.err("获取最新浮动标语失败!加载本地标语", e);
@@ -129,22 +133,25 @@ public class LabelController {
                 });
     }
 
-    private void randomLabel(){
+    private void randomLabel() {
         start(labels[new Rand().random(0, labels.length - 1)]);
     }
+
     private void start(String str) {
-        if(playing) {
+        if (playing) {
             buffer.add(str);
             return;
         }
         showing = str;
         prepareStart();
     }
+
     private void start() {
         showing = buffer.get(0);
         buffer.remove(0);
         prepareStart();
     }
+
     private void prepareStart() {
         sp.actions(Actions.sequence(Actions.fadeIn(0.5f)));
         playing = sp.visible = true;
@@ -152,19 +159,21 @@ public class LabelController {
         sp.setScrollX(0);
         pos();
     }
+
     private void end() {
-        if(buffer.size() != 0) {
+        if (buffer.size() != 0) {
             start();
             return;
         }
-        if(!playing) return;
+        if (!playing) return;
         playing = false;
         sp.actions(Actions.sequence(Actions.fadeOut(0.5f), Actions.run(() -> sp.visible = playing)));
     }
+
     private String pad(String str) {
         StringBuilder sb = new StringBuilder();
         int count = (int) (sp.getWidth() / new Label(" ").getWidth() + 5);
-        for(int i = 0; i < count; i++) sb.append(' ');
+        for (int i = 0; i < count; i++) sb.append(' ');
         return sb + str + sb;
     }
 }

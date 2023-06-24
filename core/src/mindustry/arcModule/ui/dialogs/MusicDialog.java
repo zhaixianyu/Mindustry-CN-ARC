@@ -104,7 +104,7 @@ public class MusicDialog extends BaseDialog {
             });
             player = new Music();
             player.setVolume(2);
-            vol = 100;
+            vol = Core.settings.getFloat("musicVolume", 100f);;
             loaded = true;
             setup();
             switchDialog = new BaseDialog("切换api");
@@ -236,10 +236,12 @@ public class MusicDialog extends BaseDialog {
                         ttt.label(() -> "音量:" + (byte) vol);
                         ttt.button(Icon.upSmall, RStyles.clearLineNonei, () -> {
                             vol = Math.min(vol + 10, 100);
+                            Core.settings.put("musicVolume", vol);
                             player.setVolume(vol / 100 * 2);
                         }).margin(3f).pad(2).padTop(6f).top().right().size(32);
                         ttt.button(Icon.downSmall, RStyles.clearLineNonei, () -> {
                             vol = Math.max(vol - 10, 0);
+                            Core.settings.put("musicVolume", vol);
                             player.setVolume(vol / 100 * 2);
                         }).margin(3f).pad(2).padTop(6f).top().right().size(32);
                         ttt.button(Icon.refreshSmall, RStyles.clearLineNoneTogglei, () -> {
@@ -1209,10 +1211,12 @@ public class MusicDialog extends BaseDialog {
                 t.label(() -> "音量:" + (byte) vol);
                 t.button(Icon.upSmall, RStyles.clearLineNonei, () -> {
                     vol = Math.min(vol + 10, 100);
+                    Core.settings.put("musicVolume", vol);
                     player.setVolume(vol / 100 * 2);
                 }).margin(3f).pad(2).padTop(6f).top().right().size(32);
                 t.button(Icon.downSmall, RStyles.clearLineNonei, () -> {
                     vol = Math.max(vol - 10, 0);
+                    Core.settings.put("musicVolume", vol);
                     player.setVolume(vol / 100 * 2);
                 }).margin(3f).pad(2).padTop(6f).top().right().size(32);
                 t.button(Icon.refreshSmall, RStyles.clearLineNoneTogglei, () -> {
