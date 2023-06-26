@@ -55,7 +55,7 @@ public class BeControl{
 
     public BeControl(){
             checkUpdate(u -> {
-                if(u) Events.on(EventType.ClientLoadEvent.class, e -> Vars.ui.showConfirm("检测到新版学术!\n打开更新列表?", this::BeControlTable));
+                if(u && Core.settings.getBool("showUpdateDialog", true)) Events.on(EventType.ClientLoadEvent.class, e -> Vars.ui.showConfirm("检测到新版学术!\n打开更新列表?", this::BeControlTable));
             });
         if(active()){
             Timer.schedule(() -> {
