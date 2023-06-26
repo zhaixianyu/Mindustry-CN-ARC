@@ -94,6 +94,7 @@ public class MenuFragment{
             ui.loadfrag.show();
             becontrol.checkUpdate(result -> {
                 ui.loadfrag.hide();
+                becontrol.BeControlTable();
             });
         }).size(200, 60).name("检查更新").update(t -> {
             t.getLabel().setColor(becontrol.isUpdateAvailable() ? Tmp.c1.set(Color.white).lerp(Pal.accent, Mathf.absin(5f, 1f)) : Color.white);
@@ -128,20 +129,20 @@ public class MenuFragment{
 
         textGroup.setTransform(true);//这个文字旋转要了我3天时间 臭猫的arc库不是标准libgdx 网上一堆教程都用不了
         //最后还是搜libgdx旋转文字方法 在 https://www.cnblogs.com/keanuyaoo/p/3320223.html 找到了setRotation不起作用的原因
-        textGroup.setRotation(30);
+        textGroup.setRotation(15);
         textGroup.addChild(textLabel = new Label("[yellow]学术端!"));
         textLabel.setAlignment(Align.center);
         {
-            final float[] mul = { 1.8f };
+            final float[] mul = { 1.6f };
             AtomicBoolean flip = new AtomicBoolean(false);
             Timer.schedule(() -> {
                 if(!(textGroup.visible = Core.settings.getBool("menuFloatText", true))) return;
                 if(flip.get()) {
-                    mul[0] -= 0.08f;
+                    mul[0] -= 0.06f;
                     if(mul[0] < 1.4f) flip.set(false);
                 } else {
-                    mul[0] += 0.08f;
-                    if(mul[0] > 2.2f) flip.set(true);
+                    mul[0] += 0.06f;
+                    if(mul[0] > 1.8f) flip.set(true);
                 }
             }, 0, 1 / 60f);//badly 曲线救国
             textGroup.update(() -> {

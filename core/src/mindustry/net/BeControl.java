@@ -1,29 +1,32 @@
 package mindustry.net;
 
-import arc.*;
-import arc.files.*;
+import arc.Core;
+import arc.Events;
+import arc.files.Fi;
 import arc.func.*;
 import arc.graphics.Color;
-import arc.scene.ui.CheckBox;
 import arc.scene.ui.Dialog;
 import arc.scene.ui.Label;
 import arc.scene.ui.TextField;
 import arc.scene.ui.layout.Table;
 import arc.util.*;
-import arc.util.serialization.*;
-import mindustry.*;
-import mindustry.arcModule.ui.dialogs.MessageDialog;
-import mindustry.core.*;
-import mindustry.gen.*;
-import mindustry.graphics.*;
-import mindustry.io.*;
-import mindustry.net.Administration.*;
-import mindustry.net.Packets.*;
-import mindustry.ui.*;
-import mindustry.ui.dialogs.*;
+import arc.util.serialization.Jval;
+import mindustry.Vars;
+import mindustry.core.Version;
+import mindustry.game.EventType;
+import mindustry.gen.Icon;
+import mindustry.graphics.Pal;
+import mindustry.io.SaveIO;
+import mindustry.net.Administration.Config;
+import mindustry.net.Packets.KickReason;
+import mindustry.ui.Bar;
+import mindustry.ui.dialogs.BaseDialog;
 
-import java.io.*;
-import java.net.*;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 import static mindustry.Vars.*;
 
@@ -51,6 +54,9 @@ public class BeControl{
     }
 
     public BeControl(){
+            checkUpdate(u -> {
+                if(u) Events.on(EventType.ClientLoadEvent.class, e -> Vars.ui.showConfirm("检测到新版学术!\n打开更新列表?", this::BeControlTable));
+            });
         if(active()){
             Timer.schedule(() -> {
                 if((Vars.clientLoaded || headless) && checkUpdates && !mobile){
@@ -73,7 +79,7 @@ public class BeControl{
         }
     }
 
-    private void BeControlTable(){
+    public void BeControlTable(){
         BaseDialog beDialog = new BaseDialog("自动更新设置");
 
         beDialog.cont.table(t -> {
@@ -118,7 +124,7 @@ public class BeControl{
             t.labelWrap("\uE829 [acid]QQ红包[]\n" +
                     "\uE829 [acid]支付宝[](18851827232, 昵称CLOVER)--更推荐\n\n" +
                     "\uE837 你可以备注上想说的话、自己的名字、以及是否愿意公开~~如\n[lightgray](备注：[cyan]小鸽一会-REVOLC-可公开[][lightgray])[]\n\n" +
-                    "[orange]备注的内容可能后续会作为学术的首页动态文字出现，样式参考mc的那种").width(400f).left();
+                    "[orange]备注的内容会作为学术顶部的滚动文字出现，样式类似于大喇叭，15分钟会出现一条").width(400f).left();
         }).width(400f);
         dl.addCloseButton();
         dl.show();
@@ -172,7 +178,7 @@ public class BeControl{
                 }).height(50f).width(50f);
             });
         });
-        if(!mobile || Core.graphics.isPortrait()) {
+        if(!mobile || !Core.graphics.isPortrait()) {
             beTable.row();
             beTable.add("PC端").color(getThemeColor()).colspan(4).pad(10).padTop(15).padBottom(4).row();
             beTable.image().color(getThemeColor()).fillX().height(3).colspan(4).padTop(0).padBottom(10).row();
@@ -292,12 +298,9 @@ public class BeControl{
                 directMobileURL = mobileAsset.getString("browser_download_url", "");
                 mobileUrl = gitDownloadURL + "/" + mobileAsset.getString("browser_download_url", "");
 
-                Core.app.post(() -> {
-                    BeControlTable();
-                    done.get(true);
-                });
+                Core.app.post(() -> done.get(true));
             }else{
-                Core.app.post(() -> {BeControlTable();done.get(false);});
+                Core.app.post(() -> done.get(false));
             }
         });
     }

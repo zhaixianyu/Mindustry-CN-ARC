@@ -134,7 +134,7 @@ public class LabelController {
     }
 
     private void randomLabel() {
-        start(labels[new Rand().random(0, labels.length - 1)]);
+        start(labels[new Rand().random(0, labels.length - 1)].replace("\\n", "\n").replace("/n", "\n"));
     }
 
     private void start(String str) {
