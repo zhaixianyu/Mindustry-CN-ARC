@@ -41,6 +41,8 @@ public class BeControl{
     private String mobileUrl;
     private int updateBuild;
     public static String gitDownloadURL = "https://gh.tinylake.tk//";
+
+    private String patronURL = "https://afdian.net/a/Mindustry-CN-ARC";
     private String directDesktopURL,directMobileURL,directSteamURL;
 
     private Table beTable,upTable;
@@ -121,10 +123,13 @@ public class BeControl{
             t.row();
             t.add("[violet]支持说明").padTop(10f).width(500f).row();
             t.image().color(Color.violet).width(500f).padTop(10f).padBottom(10f).row();
-            t.labelWrap("\uE829 [acid]QQ红包[]\n" +
-                    "\uE829 [acid]支付宝[](18851827232, 昵称CLOVER)--更推荐\n\n" +
-                    "\uE837 你可以备注上想说的话、自己的名字、以及是否愿意公开~~如\n[lightgray](备注：[cyan]小鸽一会-REVOLC-可公开[][lightgray])[]\n\n" +
-                    "[orange]备注的内容会作为学术顶部的滚动文字出现，样式类似于大喇叭，15分钟会出现一条").width(400f).left();
+            t.labelWrap(patronURL).width(400f).left();
+            t.button("♐", () -> {
+                if (!Core.app.openURI(patronURL)) {
+                    ui.showErrorMessage("打开失败，网址已复制到粘贴板\n请自行在阅览器打开");
+                    Core.app.setClipboardText(patronURL);
+                }
+            }).width(50f);
         }).width(400f);
         dl.addCloseButton();
         dl.show();
