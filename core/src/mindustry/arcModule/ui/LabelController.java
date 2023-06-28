@@ -121,16 +121,18 @@ public class LabelController {
     }
 
     private void loadLabels() {
-        Http.get(userContentURL + "/CN-ARC/Mindustry-CN-ARC/master/core/assets/floatLabels")
-                .error(e -> {
-                    Log.err("获取最新浮动标语失败!加载本地标语", e);
-                    labels = Core.files.internal("floatLabels").readString("UTF-8").replace("\r", "").split("\n");
-                    Timer.schedule(this::randomLabel, 900, 900);
-                })
-                .submit(result -> {
-                    labels = result.getResultAsString().replace("\r", "").split("\n");
-                    Timer.schedule(this::randomLabel, 900, 900);
-                });
+        /*
+                Http.get(userContentURL + "/CN-ARC/Mindustry-CN-ARC/master/core/assets/floatLabels")
+                        .error(e -> {
+                            Log.err("获取最新浮动标语失败!加载本地标语", e);
+                            labels = Core.files.internal("floatLabels").readString("UTF-8").replace("\\r", "").split("\\n");
+                            Timer.schedule(this::randomLabel, 900, 900);
+                        })
+                        .submit(result -> {
+                            labels = result.getResultAsString().replace("\\r", "").split("\\n");
+                            Timer.schedule(this::randomLabel, 900, 900);
+                        });
+    */
     }
 
     private void randomLabel() {
