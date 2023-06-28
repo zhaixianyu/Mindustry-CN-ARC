@@ -269,13 +269,14 @@ public class LogicDialog extends BaseDialog{
                     t.row();
                     t.button("[orange]清空",Icon.trash,style,()-> canvas.clearAll()).marginLeft(12f);
                     t.row();
-                    t.button("丢弃更改", Icon.cancel, () -> {
+                    t.button("丢弃更改", Icon.cancel,style, () -> {
                         ui.showConfirm("确认丢弃?", () -> {
                             dispose = true;
                             dialog.hide();
                             hide();
                         });
                     }).marginLeft(12f);
+                    t.row();
                     t.button("[orange]逻辑辅助器",Icon.settings,style,()-> {
                         Core.settings.put("logicSupport",!Core.settings.getBool("logicSupport"));
                         rebuildMain();
