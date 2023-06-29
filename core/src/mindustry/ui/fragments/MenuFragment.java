@@ -30,8 +30,6 @@ import mindustry.ui.Fonts;
 import mindustry.ui.MobileButton;
 import mindustry.ui.Styles;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import static mindustry.Vars.*;
 import static mindustry.gen.Tex.discordBanner;
 
@@ -43,6 +41,8 @@ public class MenuFragment{
     Label textLabel;
     float tx, ty, base;
     String[] labels = { "学术端!" };
+    float period = 75f;
+    float varSize = 0.8f;
 
     public void build(Group parent){
         renderer = new MenuRenderer();
@@ -51,10 +51,6 @@ public class MenuFragment{
             ui.aboutcn_arc.show();
         }
         Core.settings.put("locale", "zh_CN");
-        /*
-        if(Core.settings.getString("locale") != "zh_ARC"){
-            ui.showConfirm("语言包警告","检测到语言包并未支持学术端，可能导致大部分内容无法正常显示。\n是否切换成学术语言包？",()->{Core.settings.put("locale", "zh_ARC");Core.app.exit();});
-        }*/
 
         Group group = new WidgetGroup();
         group.setFillParent(true);
@@ -118,7 +114,7 @@ public class MenuFragment{
 
             tx = width / 2f + logow * 0.35f;
             ty = fy - logoh / 2f - Scl.scl(2f) + logoh * 0.15f;
-            base = logoh * 0.01f;
+            base = logoh * 0.02f;
 
             Draw.color();
             Draw.rect(logo, fx, fy, logow, logoh);
@@ -132,25 +128,11 @@ public class MenuFragment{
         textGroup.setRotation(15);
         textGroup.addChild(textLabel = new Label("[yellow]学术端!"));
         textLabel.setAlignment(Align.center);
-        {
-            final float[] mul = { 1.6f };
-            AtomicBoolean flip = new AtomicBoolean(false);
-            Timer.schedule(() -> {
-                if(!(textGroup.visible = Core.settings.getBool("menuFloatText", true))) return;
-                if(flip.get()) {
-                    mul[0] -= 0.06f;
-                    if(mul[0] < 1.4f) flip.set(false);
-                } else {
-                    mul[0] += 0.06f;
-                    if(mul[0] > 1.8f) flip.set(true);
-                }
-            }, 0, 1 / 60f);//badly 曲线救国
-            textGroup.update(() -> {
-                textGroup.x = tx;
-                textGroup.y = ty;
-                textLabel.setFontScale((base == 0 ? 1f : base) * mul[0]);
-            });
-        }
+        textGroup.update(() -> {
+            textGroup.x = tx;
+            textGroup.y = ty;
+            textLabel.setFontScale((base == 0 ? 1f : base) * Math.abs(Time.time % period / period - 0.5f) * varSize + 1);
+        });
         loadLabels();
     }
 
