@@ -1,41 +1,51 @@
 package mindustry.core;
 
-import arc.*;
-import arc.assets.*;
-import arc.audio.*;
-import arc.graphics.g2d.*;
-import arc.input.*;
-import arc.math.*;
-import arc.scene.style.*;
-import arc.scene.ui.*;
-import arc.struct.*;
+import arc.ApplicationListener;
+import arc.Core;
+import arc.Events;
+import arc.assets.Loadable;
+import arc.audio.Music;
+import arc.graphics.g2d.Draw;
+import arc.input.KeyCode;
+import arc.math.Mathf;
+import arc.scene.style.TextureRegionDrawable;
+import arc.scene.ui.Dialog;
+import arc.struct.Seq;
 import arc.util.*;
-import mindustry.*;
-import mindustry.arcModule.DrawUtilities;
-import mindustry.audio.*;
-import mindustry.content.*;
-import mindustry.content.TechTree.*;
-import mindustry.core.GameState.*;
-import mindustry.entities.*;
-import mindustry.game.EventType.*;
-import mindustry.game.Objectives.*;
+import mindustry.Vars;
+import mindustry.audio.SoundControl;
+import mindustry.content.Fx;
+import mindustry.content.TechTree;
+import mindustry.content.TechTree.TechNode;
+import mindustry.core.GameState.State;
+import mindustry.entities.Effect;
 import mindustry.game.*;
-import mindustry.game.Saves.*;
+import mindustry.game.EventType.*;
+import mindustry.game.Objectives.SectorComplete;
+import mindustry.game.Saves.SaveSlot;
 import mindustry.gen.*;
-import mindustry.input.*;
-import mindustry.io.*;
-import mindustry.io.SaveIO.*;
+import mindustry.input.Binding;
+import mindustry.input.DesktopInput;
+import mindustry.input.InputHandler;
+import mindustry.input.MobileInput;
+import mindustry.io.SaveIO;
+import mindustry.io.SaveIO.SaveException;
 import mindustry.maps.Map;
-import mindustry.maps.*;
-import mindustry.net.*;
-import mindustry.type.*;
-import mindustry.ui.dialogs.*;
-import mindustry.world.*;
-import mindustry.world.blocks.storage.CoreBlock.*;
+import mindustry.maps.SectorDamage;
+import mindustry.net.WorldReloader;
+import mindustry.type.Sector;
+import mindustry.type.SectorPreset;
+import mindustry.ui.Styles;
+import mindustry.ui.dialogs.BaseDialog;
+import mindustry.world.Block;
+import mindustry.world.Tile;
+import mindustry.world.blocks.storage.CoreBlock.CoreBuild;
 
-import java.io.*;
-import java.text.*;
-import java.util.*;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Locale;
 
 import static arc.Core.*;
 import static mindustry.Vars.*;
@@ -603,6 +613,84 @@ public class Control implements ApplicationListener, Loadable{
                 dialog.show();
             }));
         }
+
+        settings.put("bossKeyPressing", false);
+        Events.on(EventType.ClientLoadEvent.class, e -> initCalc());
+    }
+
+    BaseDialog calcDialog;
+    StringBuilder formula = new StringBuilder();
+    String resultString = "";
+
+    private void initCalc() {
+        calcDialog = new BaseDialog("");
+        calcDialog.setBackground(Styles.black);
+        calcDialog.shown(this::buildCalc);
+        calcDialog.resized(this::buildCalc);
+        calcDialog.update(() -> calcDialog.toFront());
+    }
+
+    private void buildCalc() {
+        float width = Core.graphics.getWidth() * 0.9f;
+        calcDialog.cont.clear();
+        calcDialog.cont.label(() -> formula.toString()).width(width).get().setAlignment(Align.right);
+        calcDialog.cont.row();
+        calcDialog.cont.label(() -> resultString).width(width).get().setAlignment(Align.right);
+        calcDialog.cont.row();
+        HashMap<String, Runnable> map = new HashMap<>();
+        map.put("AC", () -> {
+            formula.setLength(0);
+            resultString = "";
+        });
+        map.put("<-", () -> {
+            if (formula.length() == 0) return;
+            formula.deleteCharAt(formula.length() - 1);
+        });
+        String[][] buttons = new String[][]{
+                {
+                    "(", ")", "AC", "<-"
+                },
+                {
+                    "7", "8", "9", "-"
+                },
+                {
+                    "4", "5", "6", "+"
+                },
+                {
+                    "1", "2", "3", "*"
+                },
+                {
+                    "0", ".", "e", "/"
+                },
+                {
+                    "&", "^", "|", "%"
+                }
+        };
+        calcDialog.cont.table(t -> {
+            for (String[] arr : buttons) {
+                for (String button : arr) {
+                    Runnable replace = map.get(button);
+                    if (replace == null) {
+                        t.button(button, () -> formula.append(button)).width(width / 4);
+                    } else {
+                        t.button(button, replace).width(width / 4);
+                    }
+                }
+                t.row();
+            }
+        });
+        calcDialog.cont.row();
+        calcDialog.cont.button("计算", () -> resultString = Vars.mods.getScripts().runConsole(formula.toString())).width(width);
+    }
+
+    public void loadIcon(String path){
+        mods.getScripts().runConsole("Vars.mods.getScripts().runConsole(" +
+                "\"{let p=new Pixmap(Core.files.get(\\\"" + path + "\\\",Files.FileType.internal));" +
+                "let s=Packages.arc.backend.sdl.jni.SDL.SDL_CreateRGBSurfaceFrom(p.pixels,p.width,p.height);" +
+                "Packages.arc.backend.sdl.jni.SDL.SDL_SetWindowIcon(Core.app.window,s);" +
+                "Packages.arc.backend.sdl.jni.SDL.SDL_FreeSurface(s);" +
+                "p.dispose()}\"" +
+                ")");//几把java 几把anuke
     }
 
     @Override
@@ -638,6 +726,37 @@ public class Control implements ApplicationListener, Loadable{
         }
         if(Float.isNaN(camera.position.x)) camera.position.x = world.unitWidth()/2f;
         if(Float.isNaN(camera.position.y)) camera.position.y = world.unitHeight()/2f;
+
+        if (Vars.clientLoaded && Core.input.keyTap(Binding.bossKey)) {
+            if (Core.input.keyDown(KeyCode.controlLeft)) {
+                if (!settings.getBool("bossKeyPressing", false)) return;
+                calcDialog.hide();
+                loadIcon("icons/icon_64.png");
+                settings.put("bossKeyPressing", false);
+            } else {
+                if (settings.getBool("bossKeyPressing", false)) return;
+                if (!settings.getBool("bossKeyPressed", false)) {
+                    ui.showInfo("你按下了老板键\n使用LCTRL+老板键还原\n（再按一次生效）");
+                    settings.put("bossKeyPressed", true);
+                    return;
+                }
+                settings.put("bossKeyPressing", true);
+                loadIcon("icons/calc.png");
+                settings.put("musicvol", 0);
+                settings.put("sfxvol", 0);
+                settings.put("ambientvol", 0);
+                ui.MusicDialog.vol = 0;
+                ui.MusicDialog.player.setVolume(0);
+                calcDialog.show();
+                mods.getScripts().runConsole(
+                        """
+                            Packages.arc.backend.sdl.jni.SDL.SDL_SetWindowFullscreen(Core.app.window,0);
+                            Packages.arc.backend.sdl.jni.SDL.SDL_SetWindowSize(Core.app.window,220,430);
+                            Timer.schedule(()=>Packages.arc.backend.sdl.jni.SDL.SDL_MinimizeWindow(Core.app.window),0.1)
+                            """
+                );//几把java
+            }
+        }
 
         if(state.isGame()){
             input.update();

@@ -1,25 +1,40 @@
 package mindustry;
 
-import arc.*;
-import arc.assets.*;
-import arc.assets.loaders.*;
-import arc.audio.*;
-import arc.files.*;
-import arc.graphics.*;
-import arc.graphics.g2d.*;
-import arc.math.*;
+import arc.ApplicationCore;
+import arc.ApplicationListener;
+import arc.Core;
+import arc.Events;
+import arc.assets.AssetDescriptor;
+import arc.assets.AssetManager;
+import arc.assets.Loadable;
+import arc.assets.loaders.MusicLoader;
+import arc.assets.loaders.SoundLoader;
+import arc.audio.Music;
+import arc.audio.Sound;
+import arc.files.Fi;
+import arc.graphics.Gl;
+import arc.graphics.Texture;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.PixmapPacker;
+import arc.graphics.g2d.SortedSpriteBatch;
+import arc.graphics.g2d.TextureAtlas;
+import arc.math.Mathf;
 import arc.util.*;
-import mindustry.ai.*;
+import mindustry.ai.BaseRegistry;
 import mindustry.core.*;
-import mindustry.ctype.*;
-import mindustry.game.EventType.*;
-import mindustry.game.*;
-import mindustry.gen.*;
-import mindustry.graphics.*;
-import mindustry.maps.*;
-import mindustry.mod.*;
-import mindustry.net.*;
-import mindustry.ui.*;
+import mindustry.ctype.Content;
+import mindustry.game.EventType.ClientCreateEvent;
+import mindustry.game.EventType.ClientLoadEvent;
+import mindustry.game.Schematics;
+import mindustry.gen.Musics;
+import mindustry.gen.Sounds;
+import mindustry.graphics.LoadRenderer;
+import mindustry.maps.Map;
+import mindustry.maps.MapPreviewLoader;
+import mindustry.mod.Mod;
+import mindustry.mod.Mods;
+import mindustry.net.Net;
+import mindustry.ui.Fonts;
 
 import java.security.NoSuchAlgorithmException;
 
@@ -253,6 +268,9 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
     }
 
     private String getWindowTitle() throws NoSuchAlgorithmException {
+        if(settings.getBool("bossKeyPressing", false)) {
+            return "计算器";
+        }
         int enabled = mods.mods.count(t->t.enabled());
         long time = (Time.millis() - startPlayTime) / 1000;
         return "Mindustry-CN-ARC | 版本号 " + (Version.arcBuild <= 0 ? "dev" : Version.arcBuild) + " | mod启用" + enabled + "/" + (mods == null ? 0 : mods.mods.size) + " | " +

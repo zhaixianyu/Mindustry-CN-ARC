@@ -54,14 +54,15 @@ import static mindustry.arcModule.RFuncs.getPrefix;
 public class MusicDialog extends BaseDialog {
     public static final String version = "1.2.3";
     public static final String ShareType = "[pink]<Music>";
+    public float vol;
+    public Music player;
     private static final String E = "UTF-8";
     private static final ArrayList<MusicApi> apis = new ArrayList<>();
     private final ArrayList<MusicList> lists = new ArrayList<>();
     private Table lrcTable;
     private MusicApi api;
-    private Music player;
     private Runnable loadStatus;
-    private float progress, vol;
+    private float progress;
     private Slider progressBar;
     private MusicInfo nowMusic;
     private boolean loaded, updating, paused, playing;
@@ -73,6 +74,7 @@ public class MusicDialog extends BaseDialog {
     private ListDialog listDialog;
     private MusicList list;
     private MessageDigest md5;
+    private Fi tmpDir;
 
     public MusicDialog() {
         super("松鼠音乐");
@@ -168,13 +170,13 @@ public class MusicDialog extends BaseDialog {
         try {
             if (info.lrc != null) lyric = info.lrc; else lyric = null;
             Http.get(info.url, r -> {
-                Fi tmp = new Fi(tmpDirectory.child("music") + "/squirrel.mp3");
+                Fi tmp = tmpDir.child("squirrel.mp3");
                 tmp.writeBytes(r.getResult());
                 player.stop();
                 player.pause(false);
                 player.load(tmp);
                 player.play();
-                Timer.schedule(() -> playing = true, 1f);//badly
+                Timer.schedule(() -> playing = true, 0.5f);//badly
                 loadStatus.run();
             });
         } catch (Exception e) {
@@ -194,7 +196,7 @@ public class MusicDialog extends BaseDialog {
 
     private void setup() {
         if (!loaded) return;
-        Fi tmpDir = tmpDirectory.child("music");
+        tmpDir = tmpDirectory.child("music");
         tmpDir.mkdirs();
         tmpDir.emptyDirectory();
         cont.top();
@@ -290,7 +292,7 @@ public class MusicDialog extends BaseDialog {
                 playing = true;
             } else {
                 if (nowMusic.url != null) {
-                    Fi f = new Fi(tmpDirectory + "/squirrel.mp3");
+                    Fi f = tmpDir.child("squirrel.mp3");
                     if (f.exists()) {
                         try {
                             playing = false;

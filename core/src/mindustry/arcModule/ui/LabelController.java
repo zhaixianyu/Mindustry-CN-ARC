@@ -63,17 +63,13 @@ import arc.scene.style.TextureRegionDrawable;
 import arc.scene.ui.Label;
 import arc.scene.ui.ScrollPane;
 import arc.scene.ui.layout.Table;
-import arc.util.Http;
-import arc.util.Log;
 import arc.util.Time;
-import arc.util.Timer;
 import mindustry.Vars;
 import mindustry.game.EventType;
 import mindustry.ui.Styles;
 
 import java.util.ArrayList;
 
-import static mindustry.Vars.userContentURL;
 import static mindustry.gen.Tex.whiteui;
 
 public class LabelController {
@@ -139,7 +135,7 @@ public class LabelController {
         start(labels[new Rand().random(0, labels.length - 1)].replace("\\n", "\n").replace("/n", "\n"));
     }
 
-    private void start(String str) {
+    public void start(String str) {
         if (playing) {
             buffer.add(str);
             return;
@@ -154,6 +150,11 @@ public class LabelController {
         prepareStart();
     }
 
+    public void clear() {
+        buffer.clear();
+        end();
+    }
+
     private void prepareStart() {
         sp.actions(Actions.sequence(Actions.fadeIn(0.5f)));
         playing = sp.visible = true;
@@ -162,7 +163,7 @@ public class LabelController {
         pos();
     }
 
-    private void end() {
+    public void end() {
         if (buffer.size() != 0) {
             start();
             return;
