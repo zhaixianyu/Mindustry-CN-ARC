@@ -1,11 +1,9 @@
 package mindustry.input;
 
-import arc.Core;
-import arc.KeyBinds.Axis;
-import arc.KeyBinds.KeyBind;
-import arc.KeyBinds.KeybindValue;
-import arc.input.InputDevice.DeviceType;
-import arc.input.KeyCode;
+import arc.*;
+import arc.KeyBinds.*;
+import arc.input.InputDevice.*;
+import arc.input.*;
 
 public enum Binding implements KeyBind{
     move_x(new Axis(KeyCode.a, KeyCode.d), "general"),
