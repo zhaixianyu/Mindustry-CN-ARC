@@ -41,9 +41,8 @@ public class MenuFragment{
     Label textLabel;
     float tx, ty, base;
     String[] labels = { "学术端!" };
-    float period = 23.5f;
-    float varSize = 1f;
-
+    float period = 75f;
+    float varSize = 0.8f;
     public void build(Group parent){
         renderer = new MenuRenderer();
 
