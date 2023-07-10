@@ -36,8 +36,6 @@ public class PlayerListFragment{
     private boolean teamMode = false;
 
     public void build(Group parent){
-        if (Core.settings.getBool("arcWayzerServerMode")) Core.settings.put("arcPlayerList",true);      //临时，处理历史遗留加载问题。将在若干个版本后移除
-
         content.name = "players";
         parent.fill(cont -> {
             cont.name = "playerlist";
