@@ -36,6 +36,8 @@ public class PlayerListFragment{
     private boolean teamMode = false;
 
     public void build(Group parent){
+        if (Core.settings.getBool("arcWayzerServerMode")) Core.settings.put("arcPlayerList",true);      //临时，处理历史遗留加载问题。将在若干个版本后移除
+
         content.name = "players";
         parent.fill(cont -> {
             cont.name = "playerlist";
@@ -70,7 +72,7 @@ public class PlayerListFragment{
                     menu.defaults().growX().height(50f).fillY();
                     menu.name = "menu";
 
-                    if (Core.settings.getBool("arcWayzerServerMode") && Core.settings.getBool("easyJS")) menu.button("js换队",() -> teamMode = !teamMode).checked(t->teamMode);
+                    if (Core.settings.getBool("arcPlayerList") && Core.settings.getBool("easyJS")) menu.button("js换队",() -> teamMode = !teamMode).checked(t->teamMode);
                     menu.button("@server.bans", ui.bans::show).disabled(b -> net.client());
                     menu.button("@server.admins", ui.admins::show).disabled(b -> net.client());
                     menu.button("@close", this::toggle);
@@ -161,7 +163,7 @@ public class PlayerListFragment{
             iconTable.add(new Image(user.icon()).setScaling(Scaling.bounded)).grow();
             iconTable.name = user.name();
 
-            if (Core.settings.getBool("arcWayzerServerMode")){
+            if (Core.settings.getBool("arcPlayerList")){
                 button.add(iconTable).size(h);
                 button.image(Icon.admin).visible(() -> user.admin && !(!user.isLocal() && net.server())).size(bs).get().updateVisibility();
                 button.table(
@@ -228,6 +230,23 @@ public class PlayerListFragment{
                     button.button("[violet]+",Styles.cleart,()->{
                         new TeamSelectDialog(team -> Call.adminRequest(user, AdminAction.switchTeam, team), user.team()).show();
                     }).size(buttonSize);
+                }
+                if((net.server() || (player.admin && (!user.admin || user == player))) && !net.client() && !user.isLocal()){
+                    button.button("" + Iconc.admin,Styles.cleart, () -> {
+                        String id = user.uuid();
+
+                        if(user.admin){
+                            ui.showConfirm("@confirm", Core.bundle.format("confirmunadmin",  user.name()), () -> {
+                                netServer.admins.unAdminPlayer(id);
+                                user.admin = false;
+                            });
+                        }else{
+                            ui.showConfirm("@confirm", Core.bundle.format("confirmadmin",  user.name()), () -> {
+                                netServer.admins.adminPlayer(id, user.usid());
+                                user.admin = true;
+                            });
+                        }
+                    }).checked(b -> user.admin).row();
                 }
             }
             //原版模式
