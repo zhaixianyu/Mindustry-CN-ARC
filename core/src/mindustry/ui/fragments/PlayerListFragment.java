@@ -70,7 +70,7 @@ public class PlayerListFragment{
                     menu.defaults().growX().height(50f).fillY();
                     menu.name = "menu";
 
-                    if (Core.settings.getBool("arcWayzerServerMode") && Core.settings.getBool("easyJS")) menu.button("快速换队",() -> teamMode = !teamMode);
+                    if (Core.settings.getBool("arcWayzerServerMode") && Core.settings.getBool("easyJS")) menu.button("js换队",() -> teamMode = !teamMode).checked(t->teamMode);
                     menu.button("@server.bans", ui.bans::show).disabled(b -> net.client());
                     menu.button("@server.admins", ui.admins::show).disabled(b -> net.client());
                     menu.button("@close", this::toggle);
@@ -213,18 +213,18 @@ public class PlayerListFragment{
                             () -> ui.showConfirm("@confirm", Core.bundle.format("confirmban",  user.name()), () -> Call.adminRequest(user, AdminAction.ban, null))).size(buttonSize);
                 }
                 if (teamMode) {
-                    state.teams.getActive().each(teamData -> {
-                        button.button("[#" + teamData.team.color + "]" + teamData.team.localized(), Styles.cleart,
-                                () -> Call.sendChatMessage("/js Groups.player.find(e=>e.name== \"" + user.name + "\").team(Team.get(" + teamData.team.id + "))")).size(buttonSize);
-                    });
+                    if (state.teams.getActive().size <= 5){
+                        state.teams.getActive().each(teamData -> button.button("[#" + teamData.team.color + "]" + teamData.team.localized(), Styles.cleart,
+                                () -> Call.sendChatMessage("/js Groups.player.find(e=>e.name== \"" + user.name + "\").team(Team.get(" + teamData.team.id + "))")).size(buttonSize));
+                    }
                     button.button("[violet]+",Styles.cleart,()->{
                         new TeamSelectDialog(team -> Call.sendChatMessage("/js Groups.player.find(e=>e.name== \"" + user.name + "\").team(Team.get(" + team.id + "))"), user.team()).show();
                     }).size(buttonSize);
                 } else if (net.server() || (player.admin && (!user.admin || user == player))) {
-                    state.teams.getActive().each(teamData -> {
-                        button.button("[#" + teamData.team.color + "]" + teamData.team.localized(), Styles.cleart,
-                                () -> Call.adminRequest(user, AdminAction.switchTeam, teamData.team)).size(buttonSize);
-                    });
+                    if (state.teams.getActive().size <= 5){
+                        state.teams.getActive().each(teamData -> button.button("[#" + teamData.team.color + "]" + teamData.team.localized(), Styles.cleart,
+                                () -> Call.adminRequest(user, AdminAction.switchTeam, teamData.team)).size(buttonSize));
+                    }
                     button.button("[violet]+",Styles.cleart,()->{
                         new TeamSelectDialog(team -> Call.adminRequest(user, AdminAction.switchTeam, team), user.team()).show();
                     }).size(buttonSize);
