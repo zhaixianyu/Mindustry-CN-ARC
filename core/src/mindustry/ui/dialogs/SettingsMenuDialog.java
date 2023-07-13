@@ -631,7 +631,7 @@ public class SettingsMenuDialog extends BaseDialog{
                     return s + "";
                 }
             });
-            arc.checkPref("arcWayzerServerMode", true);
+            arc.checkPref("arcPlayerList", true);
             arc.checkPref("ShowInfoPopup", true);
             arc.checkPref("arcShareWaveInfo", false);
             arc.checkPref("arcAlwaysTeamColor", false);
