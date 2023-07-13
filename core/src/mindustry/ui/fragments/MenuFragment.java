@@ -140,11 +140,11 @@ public class MenuFragment{
                 .error(e -> {
                     Log.err("获取最新主页标语失败!加载本地标语", e);
                     labels = Core.files.internal("labels").readString("UTF-8").replace("\r", "").replace("\\n", "\n").replace("/n", "\n").split("\n");
-                    randomLabel();
+                    Core.app.post(this::randomLabel);
                 })
                 .submit(result -> {
                     labels = result.getResultAsString().replace("\r", "").replace("\\n", "\n").replace("/n", "\n").split("\n");
-                    randomLabel();
+                    Core.app.post(this::randomLabel);
                 });
     }
 
