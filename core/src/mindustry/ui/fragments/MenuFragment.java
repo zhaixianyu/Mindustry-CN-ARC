@@ -21,6 +21,7 @@ import arc.scene.ui.layout.WidgetGroup;
 import arc.struct.Seq;
 import arc.util.*;
 import mindustry.core.Version;
+import mindustry.game.EventType;
 import mindustry.game.EventType.ResizeEvent;
 import mindustry.gen.Icon;
 import mindustry.graphics.MenuRenderer;
@@ -122,7 +123,7 @@ public class MenuFragment{
             Fonts.outline.draw(versionText+arcversionText, fx, fy - logoh/2f - Scl.scl(2f), Align.center);
         }).touchable = Touchable.disabled;
 
-        textGroup.setTransform(true);//这个文字旋转要了我3天时间 臭猫的arc库不是标准libgdx 网上一堆教程都用不了
+        textGroup.setTransform(true);//松鼠:这个文字旋转要了我3天时间 臭猫的arc库不是标准libgdx 网上一堆教程都用不了
         //最后还是搜libgdx旋转文字方法 在 https://www.cnblogs.com/keanuyaoo/p/3320223.html 找到了setRotation不起作用的原因
         textGroup.setRotation(15);
         textGroup.addChild(textLabel = new Label("[yellow]学术端!"));
@@ -132,11 +133,7 @@ public class MenuFragment{
             textGroup.y = ty;
             textLabel.setFontScale((base == 0 ? 1f : base) * Math.abs(Time.time % period / period - 0.5f) * varSize + 1);
         });
-        loadLabels();
-    }
-
-    private void loadLabels(){
-        Http.get(userContentURL + "/CN-ARC/Mindustry-CN-ARC/master/core/assets/labels")
+        Events.on(EventType.ClientLoadEvent.class, event -> Http.get(userContentURL + "/CN-ARC/Mindustry-CN-ARC/master/core/assets/labels")
                 .error(e -> {
                     Log.err("获取最新主页标语失败!加载本地标语", e);
                     labels = Core.files.internal("labels").readString("UTF-8").replace("\r", "").replace("\\n", "\n").replace("/n", "\n").split("\n");
@@ -145,7 +142,8 @@ public class MenuFragment{
                 .submit(result -> {
                     labels = result.getResultAsString().replace("\r", "").replace("\\n", "\n").replace("/n", "\n").split("\n");
                     Core.app.post(this::randomLabel);
-                });
+                })
+        );
     }
 
     private void randomLabel(){
