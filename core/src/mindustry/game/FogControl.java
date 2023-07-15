@@ -244,12 +244,6 @@ public final class FogControl implements CustomChunk{
                             data.dynamicUpdated = true;
                         }
                     }
-                    if (team.team.id == 255) {
-                        long event = FogEvent.get(0, 0, 10000, 255);
-                        unitEventQueue.add(event);
-                        pushEvent(event, false);
-                        data.dynamicUpdated = true;
-                    }
                 }
 
                 //if it's time for an update, flush *everything* onto the update queue
