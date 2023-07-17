@@ -40,11 +40,13 @@ import static arc.Core.*;
 
 public class Vars implements Loadable{
     /** ARC */
-    public static String arcVersion = Version.arcBuild == -1 ? "Dev" : String.valueOf(Version.arcBuild);
+    public static String arcVersion = Version.arcBuild <= 0 ? "dev" : String.valueOf(Version.arcBuild);
     public static String arcVersionPrefix = "<ARC~" + arcVersion + ">";
     public static int changeLogRead = 18;
     public static Seq<District.advDistrict> districtList = new Seq<>();
     public static String userContentURL = "https://raw.kgithub.com";
+    public static boolean replaying = false;
+    public static ReplayController replayController;
 
     /** 开始游玩时间 */
     public static Long startPlayTime = Time.millis();
@@ -357,6 +359,8 @@ public class Vars implements Loadable{
 
         String uuid = Core.settings.getString("uuid", "o");
         changeLogRead = Math.abs(Integer.parseInt(("" + uuid.hashCode()).substring(0, 2)));
+
+        replayController = new ReplayController();
     }
 
     /** Checks if a launch failure occurred.
