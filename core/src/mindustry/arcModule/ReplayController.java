@@ -2,6 +2,9 @@ package mindustry.arcModule;
 
 import arc.Core;
 import arc.files.Fi;
+import arc.scene.event.Touchable;
+import arc.scene.ui.layout.Table;
+import arc.scene.ui.layout.WidgetGroup;
 import arc.struct.IntSet;
 import arc.util.Log;
 import arc.util.Time;
@@ -9,6 +12,7 @@ import arc.util.io.ByteBufferOutput;
 import arc.util.io.Reads;
 import arc.util.io.Writes;
 import mindustry.Vars;
+import mindustry.core.GameState;
 import mindustry.gen.Groups;
 import mindustry.net.Net;
 import mindustry.net.Packet;
@@ -28,7 +32,7 @@ public class ReplayController {
     public static final int version = 1;
     Writes writes;
     Reads reads;
-    long startTime;
+    long startTime, nowTime;
     long lastTime, nextTime;
     Thread thread;
     Fi dir = Vars.dataDirectory.child("replays");
@@ -36,6 +40,8 @@ public class ReplayController {
     ByteBuffer tmpBuf = ByteBuffer.allocate(32768);
     Writes tmpWr = new Writes(new ByteBufferOutput(tmpBuf));
     boolean recording = false, recordEnabled = false;
+    float speed = 1f;
+    Table controller = new Table();
 
     public ReplayController() {
         dir.mkdirs();
@@ -44,13 +50,12 @@ public class ReplayController {
                 if (reads == null) {
                     try {
                         synchronized (thread) {
-                            Log.info("paused");
                             thread.wait();
                         }
                     } catch (InterruptedException ignored) {
                     }
-                    Log.info("continued");
                 }
+                if (state.getState() != GameState.State.playing && !netClient.isConnecting()) reads = null;
                 try {
                     readNextPacket();
                 } catch (Exception e) {
@@ -63,6 +68,12 @@ public class ReplayController {
         }, "ReplayController");
         thread.setPriority(3);
         thread.start();
+        WidgetGroup g = new WidgetGroup();
+        g.addChild(controller);
+        g.setFillParent(true);
+        g.touchable = Touchable.childrenOnly;
+        controller.setFillParent(true);
+        Core.scene.add(g);
     }
 
     public void createReplay(String ip) {
@@ -92,10 +103,11 @@ public class ReplayController {
 
     synchronized public void writePacket(Packet p) {
         if (!recording || p instanceof Packets.WorldStream) return;
-        writes.l(Time.nanos() - startTime);
         try {
-            writes.b(Net.getPacketId(p));
+            byte id = Net.getPacketId(p);
             try {
+                writes.l(Time.nanos() - startTime);
+                writes.b(id);
                 tmpBuf.position(0);
                 p.write(tmpWr);
                 int l = tmpBuf.position();
@@ -109,8 +121,14 @@ public class ReplayController {
         }
     }
 
+    public long timeEscaped() {
+        long escaped = (long) ((Time.nanos() - nowTime) * speed);
+        nowTime = Time.nanos();
+        return escaped;
+    }
+
     synchronized public void readNextPacket() {
-        if (Time.nanos() - lastTime < nextTime) {
+        if (timeEscaped() < nextTime) {
             Thread.yield();
             return;
         }
@@ -166,5 +184,10 @@ public class ReplayController {
     public void stopPlay() {
         reads = null;
         replaying = false;
+    }
+
+    public void setSpeed(float s) {
+        speed = s;
+        Time.setDeltaProvider(() -> Math.min(Core.graphics.getDeltaTime() * 60f * speed, 3f * speed));
     }
 }
