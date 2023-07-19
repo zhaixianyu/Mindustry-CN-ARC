@@ -1,6 +1,6 @@
 package mindustry.arcModule;
 
-import arc.Core;
+import arc.*;
 import arc.files.Fi;
 import arc.scene.event.Touchable;
 import arc.scene.ui.layout.Table;
@@ -77,7 +77,7 @@ public class ReplayController {
         g.touchable = Touchable.childrenOnly;
         controller.setFillParent(true);
 
-        Events.on(ClientLoadEvent, e -> {
+        Events.on(ClientLoadEvent.class, e -> {
             Core.scene.add(g);
         });
     }
