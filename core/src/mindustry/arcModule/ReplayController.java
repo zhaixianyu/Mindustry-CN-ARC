@@ -14,6 +14,7 @@ import arc.util.io.Writes;
 import mindustry.Vars;
 import mindustry.core.GameState;
 import mindustry.gen.Groups;
+import mindustry.game.EventType.*;
 import mindustry.net.Net;
 import mindustry.net.Packet;
 import mindustry.net.Packets;
@@ -41,6 +42,8 @@ public class ReplayController {
     Writes tmpWr = new Writes(new ByteBufferOutput(tmpBuf));
     boolean recording = false, recordEnabled = false;
     float speed = 1f;
+
+    WidgetGroup g = new WidgetGroup();
     Table controller = new Table();
 
     public ReplayController() {
@@ -68,12 +71,15 @@ public class ReplayController {
         }, "ReplayController");
         thread.setPriority(3);
         thread.start();
-        WidgetGroup g = new WidgetGroup();
+        
         g.addChild(controller);
         g.setFillParent(true);
         g.touchable = Touchable.childrenOnly;
         controller.setFillParent(true);
-        Core.scene.add(g);
+
+        Events.on(ClientLoadEvent, e -> {
+            Core.scene.add(g);
+        });
     }
 
     public void createReplay(String ip) {
