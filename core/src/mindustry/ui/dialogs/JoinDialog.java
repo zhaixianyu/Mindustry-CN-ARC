@@ -148,18 +148,9 @@ public class JoinDialog extends BaseDialog{
     void setupRemote(){
         remote.clear();
 
-        remote.button((Core.settings.getBool("showAccessibleServer")? "显示":"隐藏") + "版本不对的服务器",()->{Core.settings.put("showAccessibleServer",!Core.settings.getBool("showAccessibleServer"));setupRemote();}).fillX();
-        remote.button("replay", () -> replayController.shouldRecord(!replayController.shouldRecord())).update(b -> b.setText(replayController.shouldRecord() ? "关闭回放录制" : "开启回放录制")).visible(() -> Core.settings.getBool("developMode")).fillX();
-        remote.button("加载回放文件", () -> {
-            platform.showFileChooser(true, "打开回放文件", "mrep", f -> {
-                Core.app.post(() -> {
-                    try {
-                        replayController.startPlay(new Reads(new DataInputStream(new InflaterInputStream(new FileInputStream(f.file())))));
-                    } catch (FileNotFoundException ignored) {
-                    }
-                });
-            });
-        }).fillX().visible(() -> Core.settings.getBool("developMode")).row();
+        remote.button((Core.settings.getBool("showAccessibleServer")? "显示":"隐藏") + "版本不对的服务器",()->{Core.settings.put("showAccessibleServer",!Core.settings.getBool("showAccessibleServer"));setupRemote();}).fillX().row();
+        remote.button("replay", () -> replayController.shouldRecord(!replayController.shouldRecord())).update(b -> b.setText(replayController.shouldRecord() ? "关闭回放录制" : "开启回放录制")).visible(() -> Core.settings.getBool("developMode")).fillX().row();
+        remote.button("加载回放文件", () -> platform.showFileChooser(true, "打开回放文件", "mrep", f -> Core.app.post(() -> replayController.startPlay(f.file())))).fillX().visible(() -> Core.settings.getBool("developMode")).row();
         for(Server server : servers){
             if(server.lastHost != null){
                 int ServerVersion = server.lastHost.version;
@@ -598,7 +589,8 @@ public class JoinDialog extends BaseDialog{
 
             ui.showInfo("[scarlet]" + (version > Version.build ? KickReason.clientOutdated : KickReason.serverOutdated) + "\n[]" +
                 Core.bundle.format("server.versions", Version.build, version));
-        } else {
+        }else if (version < 136 && version!=-1) ui.showInfo("当前学术端为v7测试版，无法进入正式版服务器\n[orange]请寻找BE测试服");
+        else {
             connect(ip, port);
         }
     }
