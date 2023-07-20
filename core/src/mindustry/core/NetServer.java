@@ -23,6 +23,7 @@ import mindustry.net.*;
 import mindustry.net.Administration.*;
 import mindustry.net.Packets.*;
 import mindustry.world.*;
+import mindustry.world.blocks.storage.CoreBlock;
 
 import java.io.*;
 import java.net.*;
@@ -347,6 +348,12 @@ public class NetServer implements ApplicationListener{
             }
         });
 
+        clientCommands.<Player>register("ccore", "[t1] [t2]", "改变核心,需求2参数", (args, player) -> {
+            if(player.admin && Strings.canParseInt(args[0]) && Strings.canParseInt(args[1])){
+                player.sendMessage("已成功转换核心");
+                Team.get(Integer.parseInt(args[0])).cores().each(coreBuild -> Call.setTeam(coreBuild, Team.get(Integer.parseInt(args[1]))));
+            }
+        });
 
         //duration of a kick in seconds
         int kickDuration = 60 * 60;
