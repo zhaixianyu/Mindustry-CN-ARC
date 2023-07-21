@@ -7,7 +7,6 @@ import arc.scene.event.Touchable;
 import arc.scene.ui.layout.Table;
 import arc.scene.ui.layout.WidgetGroup;
 import arc.struct.IntMap;
-import arc.struct.IntSet;
 import arc.util.Log;
 import arc.util.Time;
 import arc.util.io.ByteBufferOutput;
@@ -20,6 +19,7 @@ import mindustry.gen.Groups;
 import mindustry.net.Net;
 import mindustry.net.Packet;
 import mindustry.net.Packets;
+import mindustry.ui.Styles;
 import mindustry.ui.dialogs.BaseDialog;
 
 import java.io.*;
@@ -27,7 +27,6 @@ import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.util.Date;
 import java.util.zip.DeflaterOutputStream;
-import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 
 import static mindustry.Vars.*;
@@ -38,7 +37,7 @@ public class ReplayController {
     Reads reads;
     long startTime, allTime;
     long lastTime, nextTime;
-    long length;
+    long length, skip = 0;
     Thread thread;
     Fi dir = Vars.dataDirectory.child("replays");
     DeflaterOutputStream dos;
@@ -81,6 +80,7 @@ public class ReplayController {
         g.addChild(controller);
         g.setFillParent(true);
         g.touchable = Touchable.childrenOnly;
+        g.visible(() -> replaying);
         controller.setFillParent(true);
         Events.on(EventType.ClientLoadEvent.class, e -> {
             Core.scene.add(g);
@@ -89,20 +89,33 @@ public class ReplayController {
                 dialog.cont.clear();
                 if (now == null) {
                     dialog.cont.add("未加载回放!");
-                    dialog.addCloseButton();
                     return;
                 }
                 dialog.cont.add("回放版本:" + now.version).row();
                 dialog.cont.add("回放创建时间:" + now.time).row();
                 dialog.cont.add("服务器ip:" + now.ip).row();
                 dialog.cont.add("玩家名:" + now.name).row();
-                dialog.cont.table(t -> {
-                    map.keys().toArray().each(b -> {
-                        t.add(Net.newPacket((byte) b).getClass().getName() + map.get(b)).row();
-                    });
-                }).growX().row();
-                dialog.addCloseButton();
+                int secs = (int) (length / 1000000000);
+                dialog.cont.add("回放长度:" + (secs / 3600) + ":" + (secs / 60 % 60) + ":" + (secs % 60)).row();
+                dialog.cont.pane(t -> map.keys().toArray().each(b -> t.add(Net.newPacket((byte) b).getClass().getSimpleName() + " " + map.get(b)).row())).growX().row();
             });
+            dialog.addCloseButton();
+            controller.table(t -> {
+                t.setBackground(Styles.black3);
+                t.table(tt -> {
+                    //tt.button("快进10s", () -> skip = timeEscaped() + 10000000000L);//TODO bug
+                    tt.button("倍率x2", () -> setSpeed(speed * 2));
+                    tt.button("倍率/2", () -> setSpeed(speed / 2));
+                    tt.button("回放信息", this::showInfo);
+                }).row();
+                t.label(() -> "当前倍率:" + speed).row();
+                t.label(() -> {
+                    int secs = (int) (length / 1000000000);
+                    int escaped = (int) (timeEscaped() / 1000000000);
+                    return (escaped / 3600) + ":" + (escaped / 60 % 60) + ":" + (escaped % 60) + "/" + (secs / 3600) + ":" + (secs / 60 % 60) + ":" + (secs % 60);
+                });
+            }).growX().top().padTop(150).row();
+            controller.add().grow();
         });
         Events.run(EventType.Trigger.update, () -> {
             synchronized (this) {
@@ -114,7 +127,7 @@ public class ReplayController {
         });
     }
 
-    private class ReplayData {
+    private static class ReplayData {
         int version;
         Date time;
         String ip;
@@ -172,7 +185,7 @@ public class ReplayController {
         }
     }
 
-    private long timeEscaped() {
+    synchronized private long timeEscaped() {
         long escaped = (long) ((Time.nanos() - lastTime) * speed);
         allTime += escaped;
         lastTime = Time.nanos();
@@ -180,7 +193,8 @@ public class ReplayController {
     }
 
     synchronized private void readNextPacket() {
-        if (timeEscaped() < nextTime) {
+        long escaped = timeEscaped();
+        if (escaped < nextTime && skip == 0) {
             Thread.yield();
             return;
         }
@@ -189,6 +203,7 @@ public class ReplayController {
         int l = reads.us();
         p.read(reads, l);
         Core.app.post(() -> net.handleClientReceived(p));
+        if (skip != 0 && escaped > skip) skip = 0;
     }
 
     public void shouldRecord(boolean should) {
@@ -199,15 +214,17 @@ public class ReplayController {
         return recordEnabled;
     }
 
-    public void startPlay(File input) {
-        InflaterInputStream is;
+    public Reads createReads(File input) {
         try {
-            is = new InflaterInputStream(new FileInputStream(input));
-        } catch (Exception e) {
-            Core.app.post(() -> ui.showException(e));
-            return;
+            return new Reads(new DataInputStream(new InflaterInputStream(new FileInputStream(input))));
+        } catch (Exception ignored) {
         }
-        Reads r = new Reads(new DataInputStream(is));
+        return null;
+    }
+
+    public void startPlay(File input) {
+        Reads r = createReads(input);
+        if (r == null) return;
         int version = r.i();
         Date time = new Date(r.l());
         String ip = r.str();
@@ -218,14 +235,14 @@ public class ReplayController {
             try {
                 long l = r.l();
                 byte id = r.b();
-                r.us();
+                r.skip(r.us());
                 map.put(id, map.get(id, 0) + 1);
                 length = l;
             } catch (Exception e) {
                 break;
             }
         }
-        r = new Reads(new DataInputStream(is));
+        r = createReads(input);
         r.skip(12);
         r.str();
         r.str();
@@ -248,7 +265,7 @@ public class ReplayController {
             netClient.disconnectQuietly();
             reads = null;
         });
-        nextTime = allTime = 0;
+        nextTime = allTime = skip = 0;
         lastTime = Time.nanos();
         synchronized (thread) {
             thread.notify();
