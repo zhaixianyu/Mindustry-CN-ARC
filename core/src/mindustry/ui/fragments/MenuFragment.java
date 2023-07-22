@@ -127,6 +127,7 @@ public class MenuFragment{
         //最后还是搜libgdx旋转文字方法 在 https://www.cnblogs.com/keanuyaoo/p/3320223.html 找到了setRotation不起作用的原因
         textGroup.setRotation(15);
         textGroup.addChild(textLabel = new Label("[yellow]学术端!"));
+        textGroup.visible(() -> Core.settings.getBool("menuFloatText", true));
         textLabel.setAlignment(Align.center);
         textGroup.update(() -> {
             textGroup.x = tx;
