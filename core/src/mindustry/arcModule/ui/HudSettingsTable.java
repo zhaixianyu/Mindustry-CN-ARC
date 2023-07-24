@@ -111,6 +111,7 @@ public class HudSettingsTable extends Table {
             checkPref("unitWeaponTargetLine", true);
 
             checkPref("blockWeaponTargetLine", true);
+            checkPref("unitbuildplan", false);
 
 
             for (Setting setting : list) {
