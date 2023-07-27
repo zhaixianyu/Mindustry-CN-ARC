@@ -139,7 +139,6 @@ public class MusicDialog extends BaseDialog {
                 try {
                     Fi tmp = tmpDir.child("server.mp3");
                     tmp.writeBytes(r.getResult());
-                    sounds.stop();
                     sounds.load(tmp);
                     sounds.play();
                 } catch (Exception ignored) {

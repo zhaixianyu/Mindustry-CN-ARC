@@ -266,7 +266,8 @@ public class Net{
         try {
             object.handled();
             replayController.writePacket(object);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            Log.err(e);
             return;
         }
 

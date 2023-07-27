@@ -15,7 +15,6 @@ import arc.util.io.Writes;
 import mindustry.Vars;
 import mindustry.core.GameState;
 import mindustry.game.EventType;
-import mindustry.gen.Groups;
 import mindustry.net.Net;
 import mindustry.net.Packet;
 import mindustry.net.Packets;
@@ -32,7 +31,7 @@ import java.util.zip.InflaterInputStream;
 import static mindustry.Vars.*;
 
 public class ReplayController {
-    public static final int version = 1;
+    public static final int version = 2;
     Writes writes;
     Reads reads;
     long startTime, allTime;
@@ -49,6 +48,7 @@ public class ReplayController {
     IntMap<Integer> map = new IntMap<>();
     ReplayData now = null;
     BaseDialog dialog = null;
+    public boolean writing = false;
 
     public ReplayController() {
         dir.mkdirs();
@@ -106,6 +106,8 @@ public class ReplayController {
                     //tt.button("快进10s", () -> skip = timeEscaped() + 10000000000L);//TODO bug
                     tt.button("倍率x2", () -> setSpeed(speed * 2));
                     tt.button("倍率/2", () -> setSpeed(speed / 2));
+                    tt.button("暂停回放", () -> setSpeed(0));
+                    tt.button("恢复原速", () -> setSpeed(1));
                     tt.button("回放信息", this::showInfo);
                 }).row();
                 t.label(() -> "当前倍率:" + speed).row();
@@ -119,9 +121,10 @@ public class ReplayController {
         });
         Events.run(EventType.Trigger.update, () -> {
             synchronized (this) {
-                if (state.getState() != GameState.State.playing && !netClient.isConnecting()) {
+                if (state.getState() == GameState.State.menu && !netClient.isConnecting()) {
                     reads = null;
                     replaying = false;
+                    stopPlay();
                 }
             }
         });
@@ -173,13 +176,15 @@ public class ReplayController {
                 writes.l(Time.nanos() - startTime);
                 writes.b(id);
                 tmpBuf.position(0);
+                writing = true;
                 p.write(tmpWr);
+                writing = false;
                 int l = tmpBuf.position();
                 writes.s(l);
                 writes.b(tmpBuf.array(), 0, l);
             } catch (Exception e) {
                 net.disconnect();
-                ui.showException("录制出错!", e);
+                Core.app.post(() -> ui.showException("录制出错!", e));
             }
         } catch (Exception ignored) {
         }
@@ -223,6 +228,7 @@ public class ReplayController {
     }
 
     public void startPlay(File input) {
+        setSpeed(1);
         Reads r = createReads(input);
         if (r == null) return;
         int version = r.i();
@@ -250,8 +256,6 @@ public class ReplayController {
         reads = r;
         logic.reset();
         net.reset();
-        netClient.beginConnecting();
-        Groups.clear();
         try {
             Field f = net.getClass().getDeclaredField("active");
             f.setAccessible(true);
@@ -259,7 +263,10 @@ public class ReplayController {
         } catch (Exception e) {
             ui.showException(e);
         }
-        ui.loadfrag.show("@connecting");
+        Packets.Connect c = new Packets.Connect();
+        c.addressTCP = ip;
+        net.handleClientReceived(c);
+        netClient.beginConnecting();
         ui.loadfrag.setButton(() -> {
             ui.loadfrag.hide();
             netClient.disconnectQuietly();
