@@ -786,6 +786,7 @@ public class SettingsMenuDialog extends BaseDialog{
             specmode.addCategory("specGameMode");
             specmode.checkPref("autoSelSchematic", false);
             specmode.checkPref("researchViewer", false);
+            specmode.checkPref("bossKeyValid",false);
             specmode.checkPref("developMode", false);
             //////////cheating
             cheating.addCategory("arcWeakCheat");
