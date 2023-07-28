@@ -135,15 +135,18 @@ public class MusicDialog extends BaseDialog {
             nextLrcColor = "[" + Core.settings.getString("nextLrcColor", "white") + "]";
             buildLRC();
             Events.run(EventType.Trigger.update, this::updateProgress);
-            netClient.addPacketHandler("forceAudio", url -> Http.get(url, r -> {
-                try {
-                    Fi tmp = tmpDir.child("server.mp3");
-                    tmp.writeBytes(r.getResult());
-                    sounds.load(tmp);
-                    sounds.play();
-                } catch (Exception ignored) {
-                }
-            }));
+            if (Core.settings.getBool("arcShareMedia")){
+                netClient.addPacketHandler("forceAudio", url -> Http.get(url, r -> {
+                    try {
+                        Fi tmp = tmpDir.child("server.mp3");
+                        tmp.writeBytes(r.getResult());
+                        sounds.load(tmp);
+                        sounds.play();
+                    } catch (Exception ignored) {
+                    }
+                }));
+            }
+
         } catch (Exception ignored) {
         }
     }
@@ -400,6 +403,7 @@ public class MusicDialog extends BaseDialog {
     }
 
     public boolean resolveMsg(String msg, @Nullable Player sender) {
+        if (!Core.settings.getBool("arcShareMedia")) return false;
         if ((!msg.contains(ShareType)) || (!loaded) || (!MessageDialog.arcMsgType.music.show)) {
             return false;
         }
