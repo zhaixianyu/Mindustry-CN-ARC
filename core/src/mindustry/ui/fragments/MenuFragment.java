@@ -44,6 +44,7 @@ public class MenuFragment{
     String[] labels = { "学术端!" };
     float period = 75f;
     float varSize = 0.8f;
+    String text = labels[0];
     public void build(Group parent){
         renderer = new MenuRenderer();
 
@@ -114,7 +115,7 @@ public class MenuFragment{
 
             tx = width / 2f + logow * 0.35f;
             ty = fy - logoh / 2f - Scl.scl(2f) + logoh * 0.15f;
-            base = logoh * 0.02f;
+            base = logoh * 0.03f;
 
             Draw.color();
             Draw.rect(logo, fx, fy, logow, logoh);
@@ -125,14 +126,15 @@ public class MenuFragment{
 
         textGroup.setTransform(true);//松鼠:这个文字旋转要了我3天时间 臭猫的arc库不是标准libgdx 网上一堆教程都用不了
         //最后还是搜libgdx旋转文字方法 在 https://www.cnblogs.com/keanuyaoo/p/3320223.html 找到了setRotation不起作用的原因
-        textGroup.setRotation(15);
-        textGroup.addChild(textLabel = new Label("[yellow]学术端!"));
+        textGroup.setRotation(20);
+        textGroup.addChild(textLabel = new Label(""));
         textGroup.visible(() -> Core.settings.getBool("menuFloatText", true));
         textLabel.setAlignment(Align.center);
         textGroup.update(() -> {
             textGroup.x = tx;
             textGroup.y = ty;
             textLabel.setFontScale((base == 0 ? 1f : base) * Math.abs(Time.time % period / period - 0.5f) * varSize + 1);
+            textLabel.setText(text);
         });
         Events.on(EventType.ClientLoadEvent.class, event -> Http.get(userContentURL + "/CN-ARC/Mindustry-CN-ARC/master/core/assets/labels")
                 .error(e -> {
@@ -148,7 +150,7 @@ public class MenuFragment{
     }
 
     private void randomLabel(){
-        Timer.schedule(() -> textLabel.setText("[yellow]" + labels[new Rand().random(0, labels.length - 1)]), 0.11f);
+        Timer.schedule(() -> text = "[yellow]" + labels[new Rand().random(0, labels.length - 1)], 0.11f);
     }
 
     private void buildMobile(){
