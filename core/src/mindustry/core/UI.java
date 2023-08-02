@@ -28,6 +28,7 @@ import mindustry.game.EventType.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.logic.*;
+import mindustry.squirrelModule.ui.InfoControl;
 import mindustry.ui.*;
 import mindustry.ui.dialogs.*;
 import mindustry.ui.fragments.*;
@@ -49,6 +50,7 @@ public class UI implements ApplicationListener, Loadable{
     public PlayerListFragment listfrag;
     public LoadingFragment loadfrag;
     public HintsFragment hints;
+    public InfoControl infoControl;
 
     public WidgetGroup menuGroup, hudGroup;
 
@@ -97,6 +99,8 @@ public class UI implements ApplicationListener, Loadable{
     private @Nullable Element lastAnnouncement;
 
     private @Nullable Element lastArcAnnouncement;
+
+    public WidgetGroup squirrelGroup;
 
     public UI(){
         Fonts.loadFonts();
@@ -202,6 +206,7 @@ public class UI implements ApplicationListener, Loadable{
 
         menuGroup = new WidgetGroup();
         hudGroup = new WidgetGroup();
+        squirrelGroup = new WidgetGroup();
 
         menufrag = new MenuFragment();
         hudfrag = new HudFragment();
@@ -212,6 +217,7 @@ public class UI implements ApplicationListener, Loadable{
         loadfrag = new LoadingFragment();
         consolefrag = new ConsoleFragment();
         ConsoleDialog = new ConsoleDialog();
+        infoControl = new InfoControl();
 
         picker = new ColorPicker();
         editor = new MapEditorDialog();
@@ -258,9 +264,12 @@ public class UI implements ApplicationListener, Loadable{
         hudGroup.setFillParent(true);
         hudGroup.touchable = Touchable.childrenOnly;
         hudGroup.visible(() -> state.isGame());
+        squirrelGroup.setFillParent(true);
+        squirrelGroup.touchable = Touchable.childrenOnly;
 
         Core.scene.add(menuGroup);
         Core.scene.add(hudGroup);
+        Core.scene.add(squirrelGroup);
 
         hudfrag.build(hudGroup);
         menufrag.build(menuGroup);
@@ -270,6 +279,7 @@ public class UI implements ApplicationListener, Loadable{
         consolefrag.build(hudGroup);
         loadfrag.build(group);
         new FadeInFragment().build(group);
+        infoControl.build(squirrelGroup);
 
         initArcWave();
 
