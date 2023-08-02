@@ -1,33 +1,38 @@
 package mindustry.ui.fragments;
 
-import arc.*;
-import arc.graphics.*;
-import arc.graphics.g2d.*;
-import arc.math.*;
-import arc.scene.*;
-import arc.scene.actions.*;
-import arc.scene.event.*;
-import arc.scene.style.*;
-import arc.scene.ui.*;
-import arc.scene.ui.ImageButton.*;
-import arc.scene.ui.layout.*;
-import arc.struct.*;
+import arc.Core;
+import arc.Events;
+import arc.graphics.Color;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.TextureRegion;
+import arc.math.Interp;
+import arc.math.Mathf;
+import arc.math.Rand;
+import arc.scene.Group;
+import arc.scene.actions.Actions;
+import arc.scene.event.Touchable;
+import arc.scene.style.Drawable;
+import arc.scene.ui.Button;
+import arc.scene.ui.ImageButton.ImageButtonStyle;
+import arc.scene.ui.Label;
+import arc.scene.ui.layout.Scl;
+import arc.scene.ui.layout.Table;
+import arc.scene.ui.layout.WidgetGroup;
+import arc.struct.Seq;
 import arc.util.*;
-import arc.util.serialization.Jval;
-import mindustry.core.*;
-import mindustry.game.EventType.*;
-import mindustry.gen.*;
-import mindustry.graphics.*;
-import mindustry.io.versions.LegacyIO;
-import mindustry.net.ServerGroup;
+import mindustry.core.Version;
+import mindustry.game.EventType;
+import mindustry.game.EventType.ResizeEvent;
+import mindustry.gen.Icon;
+import mindustry.graphics.MenuRenderer;
+import mindustry.graphics.Pal;
 import mindustry.service.GameService;
-import mindustry.ui.*;
-import mindustry.ui.dialogs.JoinDialog;
-
-import java.util.concurrent.atomic.AtomicBoolean;
+import mindustry.ui.Fonts;
+import mindustry.ui.MobileButton;
+import mindustry.ui.Styles;
 
 import static mindustry.Vars.*;
-import static mindustry.gen.Tex.*;
+import static mindustry.gen.Tex.discordBanner;
 
 public class MenuFragment{
     private Table container, submenu;
@@ -37,7 +42,9 @@ public class MenuFragment{
     Label textLabel;
     float tx, ty, base;
     String[] labels = { "学术端!" };
-
+    float period = 75f;
+    float varSize = 0.8f;
+    String text = labels[0];
     public void build(Group parent){
         renderer = new MenuRenderer();
 
@@ -45,10 +52,6 @@ public class MenuFragment{
             ui.aboutcn_arc.show();
         }
         Core.settings.put("locale", "zh_CN");
-        /*
-        if(Core.settings.getString("locale") != "zh_ARC"){
-            ui.showConfirm("语言包警告","检测到语言包并未支持学术端，可能导致大部分内容无法正常显示。\n是否切换成学术语言包？",()->{Core.settings.put("locale", "zh_ARC");Core.app.exit();});
-        }*/
 
         Group group = new WidgetGroup();
         group.setFillParent(true);
@@ -88,6 +91,7 @@ public class MenuFragment{
             ui.loadfrag.show();
             becontrol.checkUpdate(result -> {
                 ui.loadfrag.hide();
+                becontrol.BeControlTable();
             });
         }).size(200, 60).name("检查更新").update(t -> {
             t.getLabel().setColor(becontrol.isUpdateAvailable() ? Tmp.c1.set(Color.white).lerp(Pal.accent, Mathf.absin(5f, 1f)) : Color.white);
@@ -110,8 +114,8 @@ public class MenuFragment{
             }
 
             tx = width / 2f + logow * 0.35f;
-            ty = fy - logoh / 2f - Scl.scl(2f) + logoh * 0.3f;
-            base = logoh * 0.01f;
+            ty = fy - logoh / 2f - Scl.scl(2f) + logoh * 0.15f;
+            base = logoh * 0.03f;
 
             Draw.color();
             Draw.rect(logo, fx, fy, logow, logoh);
@@ -120,45 +124,33 @@ public class MenuFragment{
             Fonts.outline.draw(versionText+arcversionText, fx, fy - logoh/2f - Scl.scl(2f), Align.center);
         }).touchable = Touchable.disabled;
 
-        textGroup.setTransform(true);//这个文字旋转要了我3天时间 臭猫的arc库不是标准libgdx 网上一堆教程都用不了
+        textGroup.setTransform(true);//松鼠:这个文字旋转要了我3天时间 臭猫的arc库不是标准libgdx 网上一堆教程都用不了
         //最后还是搜libgdx旋转文字方法 在 https://www.cnblogs.com/keanuyaoo/p/3320223.html 找到了setRotation不起作用的原因
-        textGroup.setRotation(-30);
-        textGroup.addChild(textLabel = new Label("[yellow]学术端!"));
+        textGroup.setRotation(20);
+        textGroup.addChild(textLabel = new Label(""));
+        textGroup.visible(() -> Core.settings.getBool("menuFloatText", true));
         textLabel.setAlignment(Align.center);
-        {
-            final float[] mul = { 2 };
-            AtomicBoolean flip = new AtomicBoolean(false);
-            textGroup.update(() -> {
-                textGroup.x = tx;
-                textGroup.y = ty;
-                if(flip.get()) {
-                    mul[0] -= 0.08f;
-                    if(mul[0] < 1.6f) flip.set(false);
-                } else {
-                    mul[0] += 0.08f;
-                    if(mul[0] > 2.4f) flip.set(true);
-                }
-                textLabel.setFontScale((base == 0 ? 1f : base) * mul[0]);
-            });
-        }
-        loadLabels();
-    }
-
-    private void loadLabels(){
-        Http.get(userContentURL + "/CN-ARC/Mindustry-CN-ARC/master/core/assets/labels")
+        textGroup.update(() -> {
+            textGroup.x = tx;
+            textGroup.y = ty;
+            textLabel.setFontScale((base == 0 ? 1f : base) * Math.abs(Time.time % period / period - 0.5f) * varSize + 1);
+            textLabel.setText(text);
+        });
+        Events.on(EventType.ClientLoadEvent.class, event -> Http.get(userContentURL + "/CN-ARC/Mindustry-CN-ARC/master/core/assets/labels")
                 .error(e -> {
-                    Log.err("获取最新标语失败!加载本地标语", e);
-                    labels = Core.files.internal("labels").readString("UTF-8").replace("\r", "").replace("\\n", "\n").split("\n");
-                    randomLabel();
+                    Log.err("获取最新主页标语失败!加载本地标语", e);
+                    labels = Core.files.internal("labels").readString("UTF-8").replace("\r", "").replace("\\n", "\n").replace("/n", "\n").split("\n");
+                    Core.app.post(this::randomLabel);
                 })
                 .submit(result -> {
-                    labels = result.getResultAsString().replace("\r", "").replace("\\n", "\n").split("\n");
-                    randomLabel();
-                });
+                    labels = result.getResultAsString().replace("\r", "").replace("\\n", "\n").replace("/n", "\n").split("\n");
+                    Core.app.post(this::randomLabel);
+                })
+        );
     }
 
     private void randomLabel(){
-        Timer.schedule(() -> textLabel.setText("[yellow]" + labels[new Rand().random(0, labels.length - 1)]), 0.11f);
+        Timer.schedule(() -> text = "[yellow]" + labels[new Rand().random(0, labels.length - 1)], 0.11f);
     }
 
     private void buildMobile(){

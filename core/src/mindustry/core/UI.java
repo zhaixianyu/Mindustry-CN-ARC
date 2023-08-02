@@ -22,6 +22,7 @@ import arc.struct.*;
 import arc.util.*;
 import mindustry.arcModule.ui.*;
 import mindustry.arcModule.ui.dialogs.*;
+import mindustry.arcModule.ui.window.*;
 import mindustry.editor.*;
 import mindustry.game.EventType.*;
 import mindustry.gen.*;
@@ -80,7 +81,7 @@ public class UI implements ApplicationListener, Loadable{
 
     public IntMap<Dialog> followUpMenus;
 
-    public Cursor drillCursor, unloadCursor, targetCursor;
+    public Cursor drillCursor, unloadCursor, targetCursor, resizeHorizontalCursor, resizeVerticalCursor, resizeLeftCursor, resizeRightCursor;
 
     public AboutCN_ARCDialog aboutcn_arc;
     public UpdateDialog updatedialog;
@@ -90,9 +91,9 @@ public class UI implements ApplicationListener, Loadable{
     public mindustry.arcModule.ui.dialogs.MessageDialog MessageDialog;
 
     public mindustry.arcModule.ui.dialogs.MusicDialog MusicDialog;
-
     public mindustry.arcModule.ui.dialogs.ConsoleDialog ConsoleDialog;
-
+    public mindustry.arcModule.ui.window.WindowManager WindowManager;
+    public LabelController LabelController;
     private @Nullable Element lastAnnouncement;
 
     private @Nullable Element lastArcAnnouncement;
@@ -163,6 +164,10 @@ public class UI implements ApplicationListener, Loadable{
         drillCursor = Core.graphics.newCursor("drill", Fonts.cursorScale());
         unloadCursor = Core.graphics.newCursor("unload", Fonts.cursorScale());
         targetCursor = Core.graphics.newCursor("target", Fonts.cursorScale());
+        resizeHorizontalCursor = Core.graphics.newCursor("resizeHorizontal", Fonts.cursorScale());
+        resizeVerticalCursor = Core.graphics.newCursor("resizeVertical", Fonts.cursorScale());
+        resizeLeftCursor = Core.graphics.newCursor("resizeLeft", Fonts.cursorScale());
+        resizeRightCursor = Core.graphics.newCursor("resizeRight", Fonts.cursorScale());
     }
 
     @Override
@@ -242,6 +247,8 @@ public class UI implements ApplicationListener, Loadable{
         campaignComplete = new CampaignCompleteDialog();
         MusicDialog = new MusicDialog();
         followUpMenus = new IntMap<>();
+        LabelController = new LabelController();
+        WindowManager = new WindowManager();
 
         Group group = Core.scene.root;
 

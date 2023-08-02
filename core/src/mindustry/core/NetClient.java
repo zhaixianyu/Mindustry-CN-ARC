@@ -107,21 +107,25 @@ public class NetClient implements ApplicationListener{
                 return;
             }
 
+            replayController.createReplay(packet.addressTCP);
             net.send(c, true);
 
-            Timer timer=new Timer();
-            timer.schedule(new TimerTask(){
-            public void run(){
-                Call.serverPacketReliable("ARC",arcVersion);
-                Call.serverPacketReliable("ARC-build",Version.arcBuild + "");
-                Call.serverPacketReliable("CheatOverride",arcCheatServer + "");
-            }},5000);
-
+            if(!Core.settings.getBool("arcAnonymity")){
+                // 原则上都应该发送，仅用于测试
+                Timer timer=new Timer();
+                timer.schedule(new TimerTask(){
+                    public void run(){
+                        Call.serverPacketReliable("ARC",arcVersion);
+                        Call.serverPacketReliable("ARC-build",Version.arcBuild + "");
+                        Call.serverPacketReliable("CheatOverride",arcCheatServer + "");
+                    }},5000);
+            }
         });
 
         net.handleClient(Disconnect.class, packet -> {
             if(quietReset) return;
 
+            replayController.stop();
             connecting = false;
             logic.reset();
             platform.updateRPC();

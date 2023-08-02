@@ -54,14 +54,15 @@ import static mindustry.arcModule.RFuncs.getPrefix;
 public class MusicDialog extends BaseDialog {
     public static final String version = "1.2.3";
     public static final String ShareType = "[pink]<Music>";
+    public float vol;
+    public Music player, sounds;
     private static final String E = "UTF-8";
     private static final ArrayList<MusicApi> apis = new ArrayList<>();
     private final ArrayList<MusicList> lists = new ArrayList<>();
     private Table lrcTable;
     private MusicApi api;
-    private Music player;
     private Runnable loadStatus;
-    private float progress, vol;
+    private float progress;
     private Slider progressBar;
     private MusicInfo nowMusic;
     private boolean loaded, updating, paused, playing;
@@ -73,6 +74,7 @@ public class MusicDialog extends BaseDialog {
     private ListDialog listDialog;
     private MusicList list;
     private MessageDigest md5;
+    private Fi tmpDir;
 
     public MusicDialog() {
         super("松鼠音乐");
@@ -103,8 +105,10 @@ public class MusicDialog extends BaseDialog {
                 if (check()) setup();
             });
             player = new Music();
-            player.setVolume(2);
-            vol = 100;
+            sounds = new Music();
+            vol = Core.settings.getFloat("musicVolume", 100f);
+            player.setVolume(vol / 100 * 2);
+            sounds.setVolume(vol / 100 * 2);
             loaded = true;
             setup();
             switchDialog = new BaseDialog("切换api");
@@ -131,6 +135,18 @@ public class MusicDialog extends BaseDialog {
             nextLrcColor = "[" + Core.settings.getString("nextLrcColor", "white") + "]";
             buildLRC();
             Events.run(EventType.Trigger.update, this::updateProgress);
+            if (Core.settings.getBool("arcShareMedia")){
+                netClient.addPacketHandler("forceAudio", url -> Http.get(url, r -> {
+                    try {
+                        Fi tmp = tmpDir.child("server.mp3");
+                        tmp.writeBytes(r.getResult());
+                        sounds.load(tmp);
+                        sounds.play();
+                    } catch (Exception ignored) {
+                    }
+                }));
+            }
+
         } catch (Exception ignored) {
         }
     }
@@ -163,18 +179,20 @@ public class MusicDialog extends BaseDialog {
     private void play(MusicInfo info) {
         stop();
         nowMusic = info;
+        api = apis.get(info.src);
+        list = lists.get(info.src);
         list.add(info);
         list.set(list.indexOf(info));
         try {
             if (info.lrc != null) lyric = info.lrc; else lyric = null;
             Http.get(info.url, r -> {
-                Fi tmp = new Fi(tmpDirectory.child("music") + "/squirrel.mp3");
+                Fi tmp = tmpDir.child("squirrel.mp3");
                 tmp.writeBytes(r.getResult());
                 player.stop();
                 player.pause(false);
                 player.load(tmp);
                 player.play();
-                Timer.schedule(() -> playing = true, 1f);//badly
+                Timer.schedule(() -> playing = true, 0.5f);//badly
                 loadStatus.run();
             });
         } catch (Exception e) {
@@ -194,7 +212,7 @@ public class MusicDialog extends BaseDialog {
 
     private void setup() {
         if (!loaded) return;
-        Fi tmpDir = tmpDirectory.child("music");
+        tmpDir = tmpDirectory.child("music");
         tmpDir.mkdirs();
         tmpDir.emptyDirectory();
         cont.top();
@@ -236,11 +254,15 @@ public class MusicDialog extends BaseDialog {
                         ttt.label(() -> "音量:" + (byte) vol);
                         ttt.button(Icon.upSmall, RStyles.clearLineNonei, () -> {
                             vol = Math.min(vol + 10, 100);
+                            Core.settings.put("musicVolume", vol);
                             player.setVolume(vol / 100 * 2);
+                            sounds.setVolume(vol / 100 * 2);
                         }).margin(3f).pad(2).padTop(6f).top().right().size(32);
                         ttt.button(Icon.downSmall, RStyles.clearLineNonei, () -> {
                             vol = Math.max(vol - 10, 0);
+                            Core.settings.put("musicVolume", vol);
                             player.setVolume(vol / 100 * 2);
+                            sounds.setVolume(vol / 100 * 2);
                         }).margin(3f).pad(2).padTop(6f).top().right().size(32);
                         ttt.button(Icon.refreshSmall, RStyles.clearLineNoneTogglei, () -> {
                             player.setLooping(!player.isLooping());
@@ -288,7 +310,7 @@ public class MusicDialog extends BaseDialog {
                 playing = true;
             } else {
                 if (nowMusic.url != null) {
-                    Fi f = new Fi(tmpDirectory + "/squirrel.mp3");
+                    Fi f = tmpDir.child("squirrel.mp3");
                     if (f.exists()) {
                         try {
                             playing = false;
@@ -381,6 +403,7 @@ public class MusicDialog extends BaseDialog {
     }
 
     public boolean resolveMsg(String msg, @Nullable Player sender) {
+        if (!Core.settings.getBool("arcShareMedia")) return false;
         if ((!msg.contains(ShareType)) || (!loaded) || (!MessageDialog.arcMsgType.music.show)) {
             return false;
         }
@@ -454,15 +477,19 @@ public class MusicDialog extends BaseDialog {
         public abstract void build(Table root);
 
         public void getInfoOrCall(MusicInfo info, Cons<MusicInfo> cb) {
+            getInfoOrCall(info, cb, false);
+        }
+
+        public void getInfoOrCall(MusicInfo info, Cons<MusicInfo> cb, boolean noTip) {
             if (info.url != null) {
                 cb.get(info);
                 return;
             }
-            getMusicInfo(info.id, cb, info);
+            getMusicInfo(info.id, cb, noTip, info);
         }
 
         public void share(MusicInfo info) {
-            Vars.ui.showConfirm("分享", "确认分享到聊天框?", () -> getInfoOrCall(info, fullInfo -> Call.sendChatMessage(getPrefix("pink", "Music") + " " + fullInfo.src + "M" + fullInfo.id)));
+            Vars.ui.showConfirm("分享", "确认分享到聊天框?", () -> getInfoOrCall(info, fullInfo -> Call.sendChatMessage(getPrefix("pink", "Music") + " " + fullInfo.src + "M" + fullInfo.id), true));
         }
 
         public void share(MusicList list) {
@@ -808,7 +835,7 @@ public class MusicDialog extends BaseDialog {
         }
     }
 
-    private class KuGouWeb extends NetApi {//酷狗网页版api
+    private class KuGouWeb extends NetApi {
         String uuid;
 
         {
@@ -948,6 +975,7 @@ public class MusicDialog extends BaseDialog {
                 JsonValue data = j.get("data").get(0);
                 if (data.getInt("code") != 200) {
                     Core.app.post(() -> ui.showInfo("此歌曲为vip专属 无法播放"));
+                    return;
                 }
                 Http.HttpRequest lr = Http.post("https://music.163.com/weapi/song/lyric?csrf_token=");
                 encryptor.encryptRequest(lr, "{\"id\":" + data.getString("id") + ",\"lv\":-1,\"tv\":-1,\"csrf_token\":\"\"}");
@@ -1118,10 +1146,13 @@ public class MusicDialog extends BaseDialog {
         @Override
         public void getMusicInfo(String str, Cons<MusicInfo> callback) {
             String[] n = str.split("\uf6aa");
-            getMusicInfo(n[0], callback, new MusicInfo(){{
-                name = n[1];
-                author = n[2];
-            }});
+            try {
+                getMusicInfo(n[0], callback, new MusicInfo() {{
+                    name = URLDecoder.decode(n[1], E);
+                    author = URLDecoder.decode(n[2], E);
+                }});
+            } catch (Exception ignored) {
+            }
         }
 
         class NetEastEncryptor {
@@ -1193,35 +1224,41 @@ public class MusicDialog extends BaseDialog {
                 t.addListener(new HandCursorListener());
                 t.margin(6f);
                 t.touchable = Touchable.enabled;
-                t.label(() -> nowMusic.name == null ? "松鼠音乐" : (nowMusic.author + " - " + nowMusic.name));
-                t.button(Icon.leftSmall, RStyles.clearLineNonei, MusicDialog.this::prev).margin(3f).padTop(6f).top().right().size(32);
-                t.button(Icon.rightSmall, RStyles.clearLineNonei, MusicDialog.this::playNext).margin(3f).pad(2).padTop(6f).top().right().size(32);
-                t.button(Icon.play, RStyles.clearLineNonei, MusicDialog.this::play).margin(3f).pad(2).padTop(6f).top().right().size(32);
-                t.button(Icon.pause, RStyles.clearLineNonei, MusicDialog.this::pause).margin(3f).pad(2).padTop(6f).top().right().size(32);
-                t.button(Icon.downloadSmall, RStyles.clearLineNonei, () -> {
-                    if (nowMusic.url != null) {
-                        download(nowMusic);
-                    }
-                }).margin(3f).pad(2).padTop(6f).top().right().size(32);
-                t.label(() -> "音量:" + (byte) vol);
-                t.button(Icon.upSmall, RStyles.clearLineNonei, () -> {
-                    vol = Math.min(vol + 10, 100);
-                    player.setVolume(vol / 100 * 2);
-                }).margin(3f).pad(2).padTop(6f).top().right().size(32);
-                t.button(Icon.downSmall, RStyles.clearLineNonei, () -> {
-                    vol = Math.max(vol - 10, 0);
-                    player.setVolume(vol / 100 * 2);
-                }).margin(3f).pad(2).padTop(6f).top().right().size(32);
-                t.button(Icon.refreshSmall, RStyles.clearLineNoneTogglei, () -> {
-                    player.setLooping(!player.isLooping());
-                    ui.announce("单曲循环已" + (player.isLooping() ? "开启" : "关闭"), 1f);
-                }).margin(3f).pad(2).padTop(6f).top().right().checked(b -> player.isLooping()).size(32);
-                t.button(Icon.linkSmall, RStyles.clearLineNonei, () -> {
-                    if (nowMusic.url != null) {
-                        apis.get(nowMusic.src).share(nowMusic);
-                    }
-                }).margin(3f).pad(2).pad(6).top().right().size(32);
-                t.button(Icon.homeSmall, RStyles.clearLineNonei, MusicDialog.this::show).margin(3f).padTop(6f).top().right().size(32);
+                t.table(tt -> {
+                    tt.label(() -> nowMusic.name == null ? "松鼠音乐" : (nowMusic.author + " - " + nowMusic.name));
+                    tt.button(Icon.leftSmall, RStyles.clearLineNonei, MusicDialog.this::prev).margin(3f).padTop(6f).top().right().size(32);
+                    tt.button(Icon.rightSmall, RStyles.clearLineNonei, MusicDialog.this::playNext).margin(3f).pad(2).padTop(6f).top().right().size(32);
+                    tt.button(Icon.play, RStyles.clearLineNonei, MusicDialog.this::play).margin(3f).pad(2).padTop(6f).top().right().size(32);
+                    tt.button(Icon.pause, RStyles.clearLineNonei, MusicDialog.this::pause).margin(3f).pad(2).padTop(6f).top().right().size(32);
+                    tt.button(Icon.downloadSmall, RStyles.clearLineNonei, () -> {
+                        if (nowMusic.url != null) {
+                            download(nowMusic);
+                        }
+                    }).margin(3f).pad(2).padTop(6f).top().right().size(32);
+                    tt.label(() -> "音量:" + (byte) vol);
+                    tt.button(Icon.upSmall, RStyles.clearLineNonei, () -> {
+                        vol = Math.min(vol + 10, 100);
+                        Core.settings.put("musicVolume", vol);
+                        player.setVolume(vol / 100 * 2);
+                        sounds.setVolume(vol / 100 * 2);
+                    }).margin(3f).pad(2).padTop(6f).top().right().size(32);
+                    tt.button(Icon.downSmall, RStyles.clearLineNonei, () -> {
+                        vol = Math.max(vol - 10, 0);
+                        Core.settings.put("musicVolume", vol);
+                        player.setVolume(vol / 100 * 2);
+                        sounds.setVolume(vol / 100 * 2);
+                    }).margin(3f).pad(2).padTop(6f).top().right().size(32);
+                    tt.button(Icon.refreshSmall, RStyles.clearLineNoneTogglei, () -> {
+                        player.setLooping(!player.isLooping());
+                        ui.announce("单曲循环已" + (player.isLooping() ? "开启" : "关闭"), 1f);
+                    }).margin(3f).pad(2).padTop(6f).top().right().checked(b -> player.isLooping()).size(32);
+                    tt.button(Icon.linkSmall, RStyles.clearLineNonei, () -> {
+                        if (nowMusic.url != null) {
+                            apis.get(nowMusic.src).share(nowMusic);
+                        }
+                    }).margin(3f).pad(2).pad(6).top().right().size(32);
+                    tt.button(Icon.homeSmall, RStyles.clearLineNonei, MusicDialog.this::show).margin(3f).padTop(6f).top().right().size(32);
+                });
                 t.add().growX();
                 translation.set(Core.settings.getFloat("lrcX", 200f), Core.settings.getFloat("lrcY", 200f));
                 t.addListener(new InputListener() {
@@ -1247,15 +1284,17 @@ public class MusicDialog extends BaseDialog {
                     }
                 });
                 t.row();
-                t.label(() -> "").update(l -> {
-                    l.setFontScale(fontScale);
-                    l.setText(lrcColor + lrcLine1);
-                }).center();
-                t.row();
-                t.label(() -> "").update(l -> {
-                    l.setFontScale(fontScale);
-                    l.setText(nextLrcColor + lrcLine2);
-                }).center();
+                t.table(tt -> {
+                    t.label(() -> "").update(l -> {
+                        l.setFontScale(fontScale);
+                        l.setText(lrcColor + lrcLine1);
+                    }).center();
+                    t.row();
+                    t.label(() -> "").update(l -> {
+                        l.setFontScale(fontScale);
+                        l.setText(nextLrcColor + lrcLine2);
+                    }).center();
+                });
             });
         }
     }

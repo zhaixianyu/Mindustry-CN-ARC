@@ -15,6 +15,7 @@ Q群： 697981760 、602885791
 _[下载最新版本|前往最新构建版](https://github.com/Jackson11500/Mindustry-CN-ARC-Builds)_ 
 _[download latest version](https://github.com/Jackson11500/Mindustry-CN-ARC-Builds)_
 
+赞助广告联系Lucky Clover
 ## 学术端介绍
 完全功能提升性改端，提供各种辅助显示和功能，提供一端化完美解决方案。\
 包含大量游戏原版不显示机制，强烈建议至少已比较了解mindustry基础流程的玩家使用\

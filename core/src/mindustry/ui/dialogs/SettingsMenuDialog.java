@@ -1,32 +1,44 @@
 package mindustry.ui.dialogs;
 
-import arc.*;
-import arc.files.*;
-import arc.func.*;
-import arc.graphics.*;
-import arc.graphics.Texture.*;
-import arc.input.*;
-import arc.scene.*;
-import arc.scene.event.*;
-import arc.scene.style.*;
+import arc.Core;
+import arc.Events;
+import arc.files.Fi;
+import arc.files.ZipFi;
+import arc.func.Boolc;
+import arc.func.Cons;
+import arc.graphics.Texture;
+import arc.graphics.Texture.TextureFilter;
+import arc.input.KeyCode;
+import arc.scene.Element;
+import arc.scene.event.Touchable;
+import arc.scene.style.Drawable;
+import arc.scene.style.TextureRegionDrawable;
 import arc.scene.ui.*;
-import arc.scene.ui.TextButton.*;
-import arc.scene.ui.layout.*;
-import arc.struct.*;
-import arc.util.*;
-import arc.util.io.*;
-import mindustry.content.*;
-import mindustry.content.TechTree.*;
-import mindustry.core.*;
-import mindustry.ctype.*;
-import mindustry.game.EventType.*;
-import mindustry.gen.*;
-import mindustry.graphics.*;
-import mindustry.input.*;
-import mindustry.ui.*;
+import arc.scene.ui.TextButton.TextButtonStyle;
+import arc.scene.ui.layout.Table;
+import arc.struct.ObjectMap;
+import arc.struct.Seq;
+import arc.util.Nullable;
+import arc.util.OS;
+import arc.util.Scaling;
+import arc.util.Strings;
+import arc.util.io.Streams;
+import mindustry.content.TechTree;
+import mindustry.content.TechTree.TechNode;
+import mindustry.core.Version;
+import mindustry.ctype.UnlockableContent;
+import mindustry.game.EventType.Trigger;
+import mindustry.gen.Icon;
+import mindustry.gen.Tex;
+import mindustry.graphics.Shaders;
+import mindustry.input.DesktopInput;
+import mindustry.input.MobileInput;
+import mindustry.ui.Styles;
 
-import java.io.*;
-import java.util.zip.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import static arc.Core.*;
 import static mindustry.Vars.*;
@@ -599,6 +611,7 @@ public class SettingsMenuDialog extends BaseDialog{
 
             arc.checkPref("unitLogicMoveLine", false);
             arc.checkPref("unitLogicTimerBars", false);
+            arc.checkPref("unitbuildplan", false);
 
             arc.addCategory("arcRTSSupporter");
             arc.checkPref("arcCommandTable", true);
@@ -619,11 +632,10 @@ public class SettingsMenuDialog extends BaseDialog{
                     return s + "";
                 }
             });
-            arc.checkPref("arcWayzerServerMode", true);
+            arc.checkPref("arcPlayerList", true);
             arc.checkPref("ShowInfoPopup", true);
             arc.checkPref("arcShareWaveInfo", false);
             arc.checkPref("arcAlwaysTeamColor", false);
-            arc.checkPref("arcAutoGG", false);
 
             arc.addCategory("arcPlayerEffect");
             arc.stringInput("playerEffectColor", "ffd37f");
@@ -677,6 +689,8 @@ public class SettingsMenuDialog extends BaseDialog{
             arc.sliderPref("menuFlyersCount", 0, -15, 50, 5, i -> i + "");
             arc.checkPref("menuFlyersRange", false);
             arc.checkPref("menuFlyersFollower", false);
+            arc.checkPref("menuFloatText", true);
+            arc.checkPref("showUpdateDialog", true);
 
             //////////forcehide
             forcehide.addCategory("arcCDisplayBlock");
@@ -771,6 +785,8 @@ public class SettingsMenuDialog extends BaseDialog{
             specmode.addCategory("specGameMode");
             specmode.checkPref("autoSelSchematic", false);
             specmode.checkPref("researchViewer", false);
+            specmode.checkPref("bossKeyValid",false);
+            specmode.checkPref("arcShareMedia",true);
             specmode.checkPref("developMode", false);
             //////////cheating
             cheating.addCategory("arcWeakCheat");

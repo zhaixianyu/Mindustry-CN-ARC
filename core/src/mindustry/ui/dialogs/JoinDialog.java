@@ -10,6 +10,7 @@ import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
 import arc.util.Timer.*;
+import arc.util.io.Reads;
 import arc.util.serialization.*;
 import mindustry.*;
 import mindustry.core.*;
@@ -20,6 +21,11 @@ import mindustry.io.versions.*;
 import mindustry.net.*;
 import mindustry.net.Packets.*;
 import mindustry.ui.*;
+
+import java.io.DataInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.zip.InflaterInputStream;
 
 import static mindustry.Vars.*;
 
@@ -143,6 +149,8 @@ public class JoinDialog extends BaseDialog{
         remote.clear();
 
         remote.button((Core.settings.getBool("showAccessibleServer")? "显示":"隐藏") + "版本不对的服务器",()->{Core.settings.put("showAccessibleServer",!Core.settings.getBool("showAccessibleServer"));setupRemote();}).fillX().row();
+        remote.button("replay", () -> replayController.shouldRecord(!replayController.shouldRecord())).update(b -> b.setText(replayController.shouldRecord() ? "关闭回放录制" : "开启回放录制")).fillX().row();
+        remote.button("加载回放文件", () -> platform.showFileChooser(true, "打开回放文件", "mrep", f -> Core.app.post(() -> replayController.startPlay(f.file())))).fillX().row();
         for(Server server : servers){
             if(server.lastHost != null){
                 int ServerVersion = server.lastHost.version;
