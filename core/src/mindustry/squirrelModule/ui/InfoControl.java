@@ -1,6 +1,8 @@
 package mindustry.squirrelModule.ui;
 
+import arc.Core;
 import arc.graphics.Color;
+import arc.input.KeyCode;
 import arc.scene.Group;
 import arc.scene.ui.layout.Table;
 import arc.struct.Seq;
@@ -26,9 +28,10 @@ public class InfoControl {
         root.addChild(table);
         table.setFillParent(true);
         table.align(Align.topLeft);
-        table.update(this::update);
         manager = new Manager(root);
         Hack.init();
+        manager.buildClickHUD();
+        table.update(this::update);
     }
 
     public float getColor() {
@@ -48,7 +51,9 @@ public class InfoControl {
     }
 
     private void update() {
+        if (Core.input.keyTap(KeyCode.shiftRight)) manager.controlGroup.visible = !manager.controlGroup.visible;
         table.toFront();
+        manager.controlGroup.toFront();
         table.clear();
         final float[] thisColor = {color};
         theme = SMisc.color(color);
@@ -60,9 +65,5 @@ public class InfoControl {
             }
         }).left();
         color = (color + step * Time.delta) % 180;
-    }
-
-    public void buildClickHUD() {
-        manager.buildClickHUD();
     }
 }
