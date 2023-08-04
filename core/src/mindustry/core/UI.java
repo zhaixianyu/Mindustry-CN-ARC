@@ -266,6 +266,7 @@ public class UI implements ApplicationListener, Loadable{
         hudGroup.visible(() -> state.isGame());
         squirrelGroup.setFillParent(true);
         squirrelGroup.touchable = Touchable.childrenOnly;
+        squirrelGroup.update(() -> squirrelGroup.toFront());
 
         Core.scene.add(menuGroup);
         Core.scene.add(hudGroup);
