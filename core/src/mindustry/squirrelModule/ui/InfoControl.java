@@ -2,23 +2,24 @@ package mindustry.squirrelModule.ui;
 
 import arc.Core;
 import arc.graphics.Color;
-import arc.input.KeyCode;
 import arc.scene.Group;
 import arc.scene.ui.layout.Table;
 import arc.struct.Seq;
 import arc.util.Align;
 import arc.util.Time;
+import mindustry.input.Binding;
+import mindustry.squirrelModule.modules.Config;
 import mindustry.squirrelModule.modules.Hack;
 import mindustry.squirrelModule.modules.Manager;
 import mindustry.squirrelModule.modules.SMisc;
 
 public class InfoControl {
-    Seq<String> strings = new Seq<>();
-    Table table = new Table();
     public static final float step = 0.1f, lineAdd = 1.5f;
-    float color = 0;
     public Color theme;
     public Manager manager;
+    Seq<String> strings = new Seq<>();
+    Table table = new Table();
+    float color = 0;
 
     public void toggle(boolean show) {
         table.visible = show;
@@ -51,7 +52,7 @@ public class InfoControl {
     }
 
     private void update() {
-        if (Core.input.keyTap(KeyCode.shiftRight)) manager.controlGroup.visible = !manager.controlGroup.visible;
+        if (Core.input.keyTap(Binding.hack)) manager.controlGroup.visible = !manager.controlGroup.visible;
         table.toFront();
         manager.controlGroup.toFront();
         table.clear();
@@ -65,5 +66,9 @@ public class InfoControl {
             }
         }).left();
         color = (color + step * Time.delta) % 180;
+    }
+
+    public Config getConfig(String name) {
+        return manager.getConfig(name);
     }
 }

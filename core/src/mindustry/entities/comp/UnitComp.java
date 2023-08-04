@@ -21,6 +21,7 @@ import mindustry.game.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.logic.*;
+import mindustry.squirrelModule.modules.Hack;
 import mindustry.type.*;
 import mindustry.ui.*;
 import mindustry.world.*;
@@ -72,7 +73,7 @@ abstract class UnitComp implements Healthc, Physicsc, Hitboxc, Statusc, Teamc, I
 
     /** Move based on preferred unit movement type. */
     public void movePref(Vec2 movement){
-        if(type.omniMovement){
+        if(type.omniMovement || Hack.immediatelyTurn){
             moveAt(movement);
         }else{
             rotateMove(movement);

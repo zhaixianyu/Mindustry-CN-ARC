@@ -1,6 +1,5 @@
 package mindustry.squirrelModule.ui;
 
-import arc.Core;
 import arc.graphics.Color;
 import arc.input.KeyCode;
 import arc.math.geom.Vec2;
@@ -10,13 +9,10 @@ import arc.scene.event.InputEvent;
 import arc.scene.event.InputListener;
 import arc.scene.event.Touchable;
 import arc.scene.style.Drawable;
-import arc.scene.ui.Label;
 import arc.scene.ui.layout.Cell;
 import arc.scene.ui.layout.Table;
-import arc.scene.ui.layout.WidgetGroup;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
-import arc.util.Align;
 import arc.util.Tmp;
 import mindustry.squirrelModule.modules.Config;
 import mindustry.squirrelModule.modules.SMisc;
@@ -24,8 +20,8 @@ import mindustry.squirrelModule.modules.SMisc;
 import static mindustry.Vars.ui;
 
 public class ControlTable extends Table {
-    ObjectMap<String, Seq<Config>> list;
     static final float lineAdd = 2f;
+    ObjectMap<String, Seq<Config>> list;
 
     public ControlTable(ObjectMap<String, Seq<Config>> seq) {
         super();
@@ -114,9 +110,10 @@ public class ControlTable extends Table {
                                     ui.infoControl.add(name);
                                 }
                                 enabled[0] = !enabled[0];
+                                value.func.onChanged(enabled[0]);
                             });
                         }).grow();
-                        t3.table(t4 -> {
+                        if (value.element != null && value.element.length != 0) t3.table(t4 -> {
                             t4.touchable = Touchable.enabled;
                             t4.setBackground(gray2);
                             t4.center();

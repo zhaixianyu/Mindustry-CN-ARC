@@ -1,35 +1,25 @@
 package mindustry.squirrelModule.modules;
 
-import arc.scene.Element;
-import arc.scene.ui.Button;
-import arc.scene.ui.Label;
-import arc.scene.ui.Slider;
-import arc.util.Log;
-
+import static arc.Core.settings;
 import static mindustry.Vars.ui;
 
 public class Hack {
+    public static boolean immediatelyTurn = false;
+
     public static void init() {
+        if (!settings.getBool("squirrel")) System.exit(0);
         Manager manager = ui.infoControl.manager;
-        manager.register("test", "test", new Config("test", new Element[]{new Label("test")}, new HackFunc(){
+        manager.register("杂项", "noArcPacket", new Config("停发版本", null, new HackFunc() {
             @Override
-            public void onEnable() {
-                Log.info("test");
+            public void onChanged(boolean enabled) {
+                settings.put("arcAnonymity", enabled);
             }
         }));
-        manager.register("test", "test2", new Config("test2", new Element[]{new Slider(0, 1, 0.01f, false)}, new HackFunc(){
+        manager.register("移动", "immediatelyTurn", new Config("瞬间转向", null, new HackFunc() {
             @Override
-            public void onEnable() {
-                Log.info("test2");
+            public void onChanged(boolean enabled) {
+                immediatelyTurn = enabled;
             }
         }));
-        for (int i = 0 ; i < 10 ; i++) {
-            manager.register("test2", "test" + i, new Config("test" + i, new Element[]{new Label("aaaaaaaaa"), new Button()}, new HackFunc() {
-                @Override
-                public void onEnable() {
-                    Log.info("test");
-                }
-            }));
-        }
     }
 }

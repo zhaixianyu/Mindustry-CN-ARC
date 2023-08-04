@@ -11,10 +11,11 @@ import mindustry.squirrelModule.ui.ControlTable;
 import mindustry.ui.Styles;
 
 public class Manager {
+    public WidgetGroup controlGroup = new WidgetGroup();
     ControlTable control;
     ObjectMap<String, Seq<Config>> list = new ObjectMap<>();
     ObjectMap<String, Config> flatList = new ObjectMap<>();
-    public WidgetGroup controlGroup = new WidgetGroup();
+
     public Manager(Group root) {
         control = new ControlTable(list);
         root.addChild(control);
