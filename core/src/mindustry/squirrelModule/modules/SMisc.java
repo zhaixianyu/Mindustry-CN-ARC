@@ -4,11 +4,13 @@ import arc.func.Boolp;
 import arc.graphics.Color;
 import arc.input.KeyCode;
 import arc.math.Mathf;
+import arc.math.Rand;
 import arc.math.geom.Vec2;
 import arc.scene.event.InputEvent;
 import arc.scene.event.InputListener;
 import arc.scene.ui.layout.Table;
 import arc.util.Tmp;
+import arc.util.serialization.Base64Coder;
 import mindustry.arcModule.ui.window.Window;
 
 import javax.swing.text.Element;
@@ -54,5 +56,11 @@ public class SMisc {
                 lastY = v.y;
             }
         });
+    }
+
+    public static String randomBase64(int length) {
+        byte[] result = new byte[length];
+        new Rand().nextBytes(result);
+        return new String(Base64Coder.encode(result));
     }
 }

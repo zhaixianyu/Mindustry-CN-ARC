@@ -24,6 +24,8 @@ import mindustry.logic.*;
 import mindustry.net.Administration.*;
 import mindustry.net.*;
 import mindustry.net.Packets.*;
+import mindustry.squirrelModule.modules.Hack;
+import mindustry.squirrelModule.modules.SMisc;
 import mindustry.world.*;
 import mindustry.world.modules.*;
 
@@ -94,11 +96,11 @@ public class NetClient implements ApplicationListener{
             c.name = player.name;
             c.locale = locale;
             c.mods = mods.getModStrings();
-            c.mobile = mobile;
+            c.mobile = mobile || Hack.simMobile;
             c.versionType = Version.type;
             c.color = player.color.rgba();
-            c.usid = getUsid(packet.addressTCP);
-            c.uuid = platform.getUUID();
+            c.usid = Hack.randomUSID ? SMisc.randomBase64(8) : getUsid(packet.addressTCP);
+            c.uuid = Hack.randomUUID ? SMisc.randomBase64(8) : platform.getUUID();
 
             if(c.uuid == null){
                 ui.showErrorMessage("@invalidid");

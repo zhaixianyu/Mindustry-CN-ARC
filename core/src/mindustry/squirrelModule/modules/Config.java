@@ -3,7 +3,7 @@ package mindustry.squirrelModule.modules;
 import arc.scene.Element;
 
 public class Config {
-    public String displayName;
+    public String displayName, internalName;
     public Element[] element;
     public HackFunc func;
     public boolean enabled;

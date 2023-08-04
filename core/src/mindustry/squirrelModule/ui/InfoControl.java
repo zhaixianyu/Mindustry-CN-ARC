@@ -27,12 +27,12 @@ public class InfoControl {
 
     public void build(Group root) {
         root.addChild(table);
+        root.addChild(new Table(t -> t.update(this::update)));
         table.setFillParent(true);
         table.align(Align.topLeft);
         manager = new Manager(root);
         Hack.init();
         manager.buildClickHUD();
-        table.update(this::update);
     }
 
     public float getColor() {
@@ -53,18 +53,20 @@ public class InfoControl {
 
     private void update() {
         if (Core.input.keyTap(Binding.hack)) manager.controlGroup.visible = !manager.controlGroup.visible;
-        table.toFront();
-        manager.controlGroup.toFront();
-        table.clear();
         final float[] thisColor = {color};
         theme = SMisc.color(color);
-        table.table(t -> t.add(SMisc.packColor(thisColor[0]) + "VAPE").fontScale(2.5f).pad(50, 5, 0, 5)).row();
-        table.table(t -> {
-            for (String s : strings) {
-                table.add(SMisc.packColor(thisColor[0]) + s).fontScale(1.25f).pad(0, 5, 0, 5).left().row();
-                thisColor[0] = (thisColor[0] + lineAdd) % 180;
-            }
-        }).left();
+        if (table.visible) {
+            table.clear();
+            table.table(t -> t.add(SMisc.packColor(thisColor[0]) + "VAPE").fontScale(2.5f).pad(50, 5, 0, 5)).row();
+            table.table(t -> {
+                for (String s : strings) {
+                    table.add(SMisc.packColor(thisColor[0]) + s).fontScale(1.25f).pad(0, 5, 0, 5).left().row();
+                    thisColor[0] = (thisColor[0] + lineAdd) % 180;
+                }
+            }).left();
+            table.toFront();
+        }
+        manager.controlGroup.toFront();
         color = (color + step * Time.delta) % 180;
     }
 
