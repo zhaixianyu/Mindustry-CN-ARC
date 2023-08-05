@@ -3,6 +3,9 @@ package mindustry.squirrelModule.modules;
 public class HackFunc {
     public Config config;
 
+    public void onInit() {
+    }
+
     public void onEnable() {
     }
 
@@ -12,6 +15,10 @@ public class HackFunc {
     public void onChanged(boolean enabled) {
     }
 
-    public void onConfig(Config conf) {
+    public void onConfigure() {
+    }
+
+    public String text() {
+        return "";
     }
 }

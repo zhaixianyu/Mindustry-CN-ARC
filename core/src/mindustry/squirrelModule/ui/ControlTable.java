@@ -6,6 +6,7 @@ import arc.input.KeyCode;
 import arc.math.geom.Vec2;
 import arc.scene.Element;
 import arc.scene.Group;
+import arc.scene.event.ChangeListener;
 import arc.scene.event.InputEvent;
 import arc.scene.event.InputListener;
 import arc.scene.event.Touchable;
@@ -108,11 +109,9 @@ public class ControlTable extends Table {
                                 if (value.enabled) {
                                     value.func.onDisable();
                                     value.enabled = false;
-                                    ui.infoControl.remove(name);
                                 } else {
                                     value.func.onEnable();
                                     value.enabled = true;
-                                    ui.infoControl.add(name);
                                 }
                                 value.func.onChanged(value.enabled);
                                 Core.settings.put(value.internalName + "e", value.enabled);
@@ -131,7 +130,16 @@ public class ControlTable extends Table {
                                     settings[0].setElement(new Table(t5 -> {
                                         t5.setBackground(gray2);
                                         for (Element e : value.element) {
-                                            t5.add(e).growX().pad(5).row();
+                                            Element el = t5.add(e).growX().pad(5).left().get();
+                                            el.addListener(new ChangeListener() {
+                                                @Override
+                                                public void changed(ChangeEvent event, Element actor) {
+                                                    if (actor == el) {
+                                                        value.func.onConfigure();
+                                                    }
+                                                }
+                                            });
+                                            t5.row();
                                         }
                                     }));
                                     configShowed[0] = true;

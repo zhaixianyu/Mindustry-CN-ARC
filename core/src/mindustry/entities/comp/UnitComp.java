@@ -7,6 +7,7 @@ import arc.math.*;
 import arc.math.geom.*;
 import arc.scene.ui.layout.*;
 import arc.util.*;
+import mindustry.Vars;
 import mindustry.ai.*;
 import mindustry.ai.types.*;
 import mindustry.annotations.Annotations.*;
@@ -20,6 +21,7 @@ import mindustry.game.EventType.*;
 import mindustry.game.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
+import mindustry.input.Binding;
 import mindustry.logic.*;
 import mindustry.squirrelModule.modules.Hack;
 import mindustry.type.*;
@@ -73,8 +75,8 @@ abstract class UnitComp implements Healthc, Physicsc, Hitboxc, Statusc, Teamc, I
 
     /** Move based on preferred unit movement type. */
     public void movePref(Vec2 movement){
-        if (Hack.immediatelyTurn && movement.angle() != 0) rotation = movement.angle();
-        if(type.omniMovement || Hack.ignoreTurn){
+        if (!isShooting() && Hack.immediatelyTurn && movement.angle() != 0) rotation = movement.angle();
+        if(type.omniMovement || Hack.unitTrans){
             moveAt(movement);
         }else{
             rotateMove(movement);
@@ -82,7 +84,7 @@ abstract class UnitComp implements Healthc, Physicsc, Hitboxc, Statusc, Teamc, I
     }
 
     public void moveAt(Vec2 vector){
-        moveAt(vector, type.accel);
+        moveAt(vector, Hack.immeMove ? 1f : type.accel);
     }
 
     public void approach(Vec2 vector){
@@ -556,7 +558,7 @@ abstract class UnitComp implements Healthc, Physicsc, Hitboxc, Statusc, Teamc, I
         drag = type.drag * (isGrounded() ? (floorOn().dragMultiplier) : 1f) * dragMultiplier * state.rules.dragMultiplier;
 
         //apply knockback based on spawns
-        if(team != state.rules.waveTeam && state.hasSpawns() && (!net.client() || isLocal()) && hittable()){
+        if(!Hack.noSpawnKB && team != state.rules.waveTeam && state.hasSpawns() && (!net.client() || isLocal()) && hittable()){
             float relativeSize = state.rules.dropZoneRadius + hitSize/2f + 1f;
             for(Tile spawn : spawner.getSpawns()){
                 if(within(spawn.worldx(), spawn.worldy(), relativeSize)){
@@ -593,6 +595,10 @@ abstract class UnitComp implements Healthc, Physicsc, Hitboxc, Statusc, Teamc, I
             if(isGrounded() || health <= -maxHealth){
                 Call.unitDestroy(id);
             }
+        }
+
+        if (Hack.infDrag && getPlayer() == Vars.player && Core.input.axis(Binding.move_x) == 0 && Core.input.axis(Binding.move_y) == 0) {
+            vel.set(0, 0);
         }
 
         Tile tile = tileOn();

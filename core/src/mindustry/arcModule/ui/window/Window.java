@@ -36,7 +36,7 @@ public class Window {
     public Image iconImage;
     boolean removed = false, minSized = false;
     float minWidth = 200, minHeight = 200;
-    public Runnable onClose;
+    public Runnable onClose = () -> {};
 
     public Window() {
         this(ui.WindowManager);
