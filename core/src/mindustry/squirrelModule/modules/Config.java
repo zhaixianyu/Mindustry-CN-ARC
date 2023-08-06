@@ -1,6 +1,7 @@
 package mindustry.squirrelModule.modules;
 
 import arc.scene.Element;
+import mindustry.squirrelModule.ui.MemorySlider;
 
 public class Config {
     public String displayName, internalName;
@@ -12,5 +13,12 @@ public class Config {
         this.element = element;
         this.func = func;
         func.config = this;
+        if (element != null) {
+            for (Element e : element) {
+                if (e instanceof MemorySlider m) {
+                    m.conf = this;
+                }
+            }
+        }
     }
 }

@@ -4,8 +4,10 @@ import arc.Core;
 import arc.scene.Element;
 import arc.scene.event.ChangeListener;
 import arc.scene.ui.Slider;
+import mindustry.squirrelModule.modules.Config;
 
 public class MemorySlider extends Slider {
+    public Config conf;
 
     public MemorySlider(String name, float min, float max, float stepSize, float def, boolean vertical) {
         super(min, max, stepSize, vertical);

@@ -3,13 +3,11 @@ package mindustry.squirrelModule.modules;
 import arc.Core;
 import arc.Events;
 import arc.func.Cons;
-import arc.func.Cons2;
 import arc.math.Mathf;
 import arc.scene.Element;
+import arc.scene.event.ChangeListener;
 import arc.scene.ui.Label;
-import arc.scene.ui.Slider;
 import arc.struct.ObjectMap;
-import arc.struct.Seq;
 import arc.util.Time;
 import arc.util.Tmp;
 import mindustry.content.Blocks;
@@ -24,10 +22,9 @@ import mindustry.squirrelModule.ui.MemorySlider;
 import mindustry.type.Item;
 import mindustry.type.ItemStack;
 import mindustry.world.Block;
+import mindustry.world.blocks.defense.OverdriveProjector;
 import mindustry.world.blocks.defense.turrets.ItemTurret;
-import mindustry.world.blocks.production.GenericCrafter;
 import mindustry.world.blocks.storage.CoreBlock;
-import mindustry.world.blocks.units.Reconstructor;
 import mindustry.world.blocks.units.UnitFactory;
 import mindustry.world.consumers.ConsumeItems;
 
@@ -38,12 +35,16 @@ public class Hack {
     public static boolean noFog, useWindowedMenu;
     public static boolean randomUUID, randomUSID, simMobile;
 
-    public static boolean immediatelyTurn, ignoreTurn, unitTrans, noKB, noHitbox, noSpawnKB, infDrag, immeMove;
+    public static boolean immediatelyTurn, ignoreTurn, unitTrans, noKB, noHitbox, noSpawnKB, infDrag, immeMove, ignoreShield;
     public static float KBMulti;
     public static boolean weaponImmeTurn, forceControl, holdFill, autoFill;
     public static int holdFillInterval, holdFillMinItem, autoFillInterval;
     public static long lastFillTime, lastAutoFillTime;
-    static ObjectMap<Block, Item[]> fillIndexer = new ObjectMap<>();
+    public static ObjectMap<Block, Item[]> fillIndexer = new ObjectMap<>();
+
+    interface StrInt<T> {
+        String get(T p);
+    }
 
     public static void init() {
         if (!settings.getBool("squirrel")) System.exit(0);
@@ -67,50 +68,13 @@ public class Hack {
         manager.register("移动", "noSpawnKB", new Config("无视刷怪圈", null, changed(e -> noSpawnKB = e)));
         manager.register("移动", "infDrag", new Config("立即停止", new Element[]{}, changed(e -> infDrag = e)));
         manager.register("移动", "immeMove", new Config("立即移动", new Element[]{}, changed(e -> immeMove = e)));
-        manager.register("移动", "noKB", new Config("减少击退", new Element[]{new Label("减少百分比"), new MemorySlider("noKB", 0f, 1f, 0.01f, 50f, false)}, changedOrConfigure(e -> noKB = e, c -> KBMulti = ((Slider) c.element[1]).getValue(), (c, cb) -> {
-            String s = Mathf.ceil(KBMulti * 100) + "%";
-            cb.get(s);
-            ((Label) c.element[0]).setText("减少百分比 " + s);
-        })));
+        manager.register("移动", "noKB", new Config("减少击退", new Element[]{new Label("减少百分比"), slider("noKB", 0f, 100f, 1f, 50f, f -> KBMulti = f, 0, f -> "减少百分比 " + Mathf.ceil(KBMulti * 100) + "%")}, changed(e -> noKB = e, c -> Mathf.ceil(KBMulti * 100) + "%")));
+        manager.register("移动", "ignoreShield", new Config("进入护盾", new Element[]{}, changed(e -> ignoreShield = e)));
 
         manager.register("交互", "weaponImmeTurn", new Config("武器瞬间转向", null, changed(e -> weaponImmeTurn = e)));
         manager.register("交互", "forceControl", new Config("强制控制", null, changed(e -> forceControl = e)));
-        manager.register("交互", "holdFill", new Config("按住装填", new Element[]{new Label(""), new MemorySlider("holdFill", 10f, 500f, 1f, 100f, false), new Label(""), new MemorySlider("holdFill2", 0f, 1000f, 1f, 500f, false)}, new HackFunc() {
-            @Override
-            public void onChanged(boolean enabled) {
-                holdFill = enabled;
-            }
-
-            @Override
-            public void onConfigure() {
-                holdFillInterval = Mathf.ceil(((Slider) config.element[1]).getValue());
-                ((Label) config.element[0]).setText("间隔 " + holdFillInterval + "ms");
-                holdFillMinItem = Mathf.ceil(((Slider) config.element[3]).getValue());
-                ((Label) config.element[2]).setText("核心物资下限 " + holdFillMinItem);
-            }
-
-            @Override
-            public String text() {
-                return holdFillInterval + "ms";
-            }
-        }));
-        manager.register("交互", "autoFill", new Config("自动装超速", new Element[]{new Label(""), new MemorySlider("autoFill", 10f, 1000f, 1f, 100f, false)}, new HackFunc() {
-            @Override
-            public void onChanged(boolean enabled) {
-                autoFill = enabled;
-            }
-
-            @Override
-            public void onConfigure() {
-                autoFillInterval = Mathf.ceil(((Slider) config.element[1]).getValue());
-                ((Label) config.element[0]).setText("检测间隔 " + holdFillInterval + "ms");
-            }
-
-            @Override
-            public String text() {
-                return autoFillInterval + "ms";
-            }
-        }));
+        manager.register("交互", "holdFill", new Config("按住装填", new Element[]{new Label(""), slider("holdFill", 50f, 500f, 1f, 100f, f -> holdFillInterval = Mathf.ceil(f), 0, f -> "间隔 " + holdFillInterval + "ms"), new Label(""), slider("holdFill2", 0f, 1000f, 1f, 500f, f -> holdFillMinItem = Mathf.ceil(f), 2, f -> "核心物资下限 " + holdFillMinItem)}, changed(e -> holdFill = e, c -> holdFillInterval + "ms")));
+        manager.register("交互", "autoFill", new Config("自动装超速", new Element[]{new Label(""), slider("autoFill", 50f, 2000f, 1f, 100f, f -> autoFillInterval = Mathf.ceil(f), 0, f -> "检测间隔 " + autoFillInterval + "ms")}, changed(e -> autoFill = e, c -> autoFillInterval + "ms")));
         initFill();
 
         manager.register("杂项", "noArcPacket", new Config("停发版本", null, changed(e -> settings.put("arcAnonymity", e))));
@@ -125,39 +89,38 @@ public class Hack {
         };
     }
 
-    public static HackFunc changedOrConfigure(Cons<Boolean> func1, Cons<Config> func2) {
+    public static HackFunc changed(Cons<Boolean> func, StrInt<Config> func2) {
         return new HackFunc() {
             @Override
             public void onChanged(boolean enabled) {
-                func1.get(enabled);
-            }
-
-            @Override
-            public void onConfigure() {
-                func2.get(config);
-            }
-        };
-    }
-
-    public static HackFunc changedOrConfigure(Cons<Boolean> func1, Cons<Config> func2, Cons2<Config, Cons<String>> text) {
-        return new HackFunc() {
-            String tmp = "";
-            @Override
-            public void onChanged(boolean enabled) {
-                func1.get(enabled);
-            }
-
-            @Override
-            public void onConfigure() {
-                func2.get(config);
+                func.get(enabled);
             }
 
             @Override
             public String text() {
-                text.get(config, s -> tmp = s);
-                return tmp;
+                return func2.get(config);
             }
         };
+    }
+
+    public static MemorySlider slider(String name, float min, float max, float step, float def, Cons<Float> func, int bind, StrInt<Float> warp) {
+        MemorySlider s = new MemorySlider(name, min, max, step, def, false);
+        s.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Element actor) {
+                if (actor == s) {
+                    float v = s.getValue();
+                    func.get(v);
+                    ((Label) s.conf.element[bind]).setText(warp.get(v));
+                }
+            }
+        });
+        Core.app.post(() -> {
+            float v = s.getValue();
+            func.get(v);
+            ((Label) s.conf.element[bind]).setText(warp.get(v));
+        });
+        return s;
     }
 
     private static void initFill() {
@@ -167,51 +130,59 @@ public class Hack {
         fillIndexer.put(Blocks.ripple, new Item[]{Items.plastanium, Items.silicon, Items.graphite, Items.blastCompound, Items.pyratite});
         fillIndexer.put(Blocks.duo, new Item[]{Items.copper, Items.graphite, Items.silicon});
         fillIndexer.put(Blocks.hail, new Item[]{Items.silicon, Items.graphite, Items.pyratite});
+        fillIndexer.put(Blocks.scorch, new Item[]{Items.pyratite, Items.coal});
         fillIndexer.put(Blocks.salvo, new Item[]{Items.thorium, Items.copper, Items.silicon});
         fillIndexer.put(Blocks.scatter, new Item[]{Items.metaglass, Items.lead, Items.scrap});
         fillIndexer.put(Blocks.foreshadow, new Item[]{Items.surgeAlloy});
         fillIndexer.put(Blocks.spectre, new Item[]{Items.thorium, Items.graphite, Items.pyratite});
         Events.run(EventType.Trigger.update, () -> {
-            if (!holdFill) return;
-            if (state.getState() != GameState.State.playing) return;
-            if (Time.millis() - lastFillTime < holdFillInterval) return;
-            lastFillTime = Time.millis();
-            if (!Core.input.keyDown(Binding.select)) return;
-            if (Core.input.mouseWorld().sub(Tmp.v1.set(player.x, player.y)).len() > itemTransferRange) return;
-            Unit unit = player.unit();
-            if (unit.type.itemCapacity == 0) return;
-            CoreBlock.CoreBuild core = player.closestCore();
-            if (core == null) return;
-            if (!unit.hasItem() && Tmp.v1.set(player.x, player.y).sub(Tmp.v2.set(core.x, core.y)).len() > itemTransferRange) return;
-            Building build = world.tileWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y).build;
-            if (build == null) return;
-            Block type = build.block;
-            if (type instanceof ItemTurret) {
-                Item[] items = fillIndexer.get(type);
-                if (items == null) return;
-                if (unit.stack.amount != 0 && Seq.with(items).indexOf(unit.stack.item) != -1 && build.acceptItem(null, unit.stack.item)) {
-                    Call.transferInventory(player, build);
+            try {
+                if (!holdFill) return;
+                if (state.getState() != GameState.State.playing) return;
+                if (Time.millis() - lastFillTime < holdFillInterval) return;
+                lastFillTime = Time.millis();
+                if (player.dead()) return;
+                if (!Core.input.keyDown(Binding.select)) return;
+                if (Core.input.mouseWorld().sub(Tmp.v1.set(player.x, player.y)).len() > itemTransferRange) return;
+                Unit unit = player.unit();
+                if (unit.type.itemCapacity == 0) return;
+                CoreBlock.CoreBuild core = player.closestCore();
+                if (core == null) return;
+                if (!unit.hasItem() && Tmp.v1.set(player.x, player.y).sub(Tmp.v2.set(core.x, core.y)).len() > itemTransferRange)
                     return;
-                }
-                for (Item i : items) {
-                    if (!core.items.has(i, holdFillMinItem)) continue;
-                    if (!build.acceptItem(null, i)) continue;
-                    if (unit.stack.amount != 0) {
-                        Call.transferInventory(player, core);
+                Building build = world.tileWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y).build;
+                if (build == null) return;
+                Block type = build.block;
+                if (type instanceof ItemTurret it) {
+                    Item[] items = fillIndexer.get(type);
+                    if (items == null) {
+                        items = it.ammoTypes.keys().toSeq().toArray(Item.class);
                     }
-                    Call.requestItem(player, core, i, unit.type.itemCapacity);
-                    Call.transferInventory(player, build);
-                    break;
+                    if (items == null) return;
+                    for (Item i : items) {
+                        if (!core.items.has(i, holdFillMinItem)) continue;
+                        if (!build.acceptItem(null, i)) continue;
+                        if (unit.stack.amount != 0 && unit.stack.item == i) {
+                            Call.transferInventory(player, build);
+                            return;
+                        }
+                        if (unit.stack.amount != 0) {
+                            Call.transferInventory(player, core);
+                        }
+                        Call.requestItem(player, core, i, unit.type.itemCapacity);
+                        Call.transferInventory(player, build);
+                        return;
+                    }
                 }
-            }
-            if (type instanceof UnitFactory || type instanceof GenericCrafter || type instanceof Reconstructor) {
                 ItemStack[] items;
                 if (type instanceof UnitFactory) {
                     int plan = ((UnitFactory.UnitFactoryBuild) build).currentPlan;
                     if (plan == -1) return;
                     items = ((UnitFactory) type).plans.get(plan).requirements;
                 } else {
-                    items = ((ConsumeItems) type.consumeBuilder.find(c -> c instanceof ConsumeItems)).items;
+                    ConsumeItems consume = ((ConsumeItems) type.consumeBuilder.find(c -> c instanceof ConsumeItems));
+                    if (consume == null) return;
+                    items = consume.items;
                 }
                 if (items == null) return;
                 for (ItemStack i : items) {
@@ -222,15 +193,46 @@ public class Hack {
                     }
                     Call.requestItem(player, core, i.item, unit.type.itemCapacity);
                     Call.transferInventory(player, build);
+                    return;
                 }
+            } catch (Exception e) {
+                ui.showException(e);
             }
         });
         Events.run(EventType.Trigger.update, () -> {
-            if (!autoFill) return;
-            if (state.getState() != GameState.State.playing) return;
-            if (Time.millis() - lastAutoFillTime < autoFillInterval) return;
-            lastAutoFillTime = Time.millis();
-            //TODO
+            try {
+                if (!autoFill) return;
+                if (state.getState() != GameState.State.playing) return;
+                if (Time.millis() - lastAutoFillTime < autoFillInterval) return;
+                lastAutoFillTime = Time.millis();
+                if (player.dead()) return;
+                Unit unit = player.unit();
+                if (unit.type.itemCapacity == 0) return;
+                CoreBlock.CoreBuild core = player.closestCore();
+                if (core == null) return;
+                if (Tmp.v1.set(player.x, player.y).sub(Tmp.v2.set(core.x, core.y)).len() > itemTransferRange) return;
+                indexer.eachBlock(player.team(), player.x, player.y, itemTransferRange, b -> b.block instanceof OverdriveProjector, b -> {
+                    ConsumeItems consume = ((ConsumeItems) b.block.consumeBuilder.find(c -> c instanceof ConsumeItems));
+                    if (consume == null) return;
+                    ItemStack[] items = consume.items;
+                    if (items == null) return;
+                    for (ItemStack i : items) {
+                        if (b.items.has(i.item, i.amount)) continue;
+                        if (!core.items.has(i.item)) continue;
+                        if (unit.stack.amount != 0 && b.acceptItem(null, unit.stack.item)) {
+                            Call.transferInventory(player, b);
+                            return;
+                        }
+                        if (unit.stack.amount != 0) {
+                            Call.transferInventory(player, core);
+                        }
+                        Call.requestItem(player, core, i.item, unit.type.itemCapacity);
+                        Call.transferInventory(player, b);
+                    }
+                });
+            } catch (Exception e) {
+                ui.showException(e);
+            }
         });
     }
 }

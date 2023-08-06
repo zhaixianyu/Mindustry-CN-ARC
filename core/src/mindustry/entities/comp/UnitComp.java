@@ -598,7 +598,7 @@ abstract class UnitComp implements Healthc, Physicsc, Hitboxc, Statusc, Teamc, I
         }
 
         if (Hack.infDrag && getPlayer() == Vars.player && Core.input.axis(Binding.move_x) == 0 && Core.input.axis(Binding.move_y) == 0) {
-            vel.set(0, 0);
+            vel.setZero();
         }
 
         Tile tile = tileOn();
