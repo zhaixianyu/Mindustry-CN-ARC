@@ -68,7 +68,7 @@ public class Hack {
         manager.register("移动", "noSpawnKB", new Config("无视刷怪圈", null, changed(e -> noSpawnKB = e)));
         manager.register("移动", "infDrag", new Config("立即停止", new Element[]{}, changed(e -> infDrag = e)));
         manager.register("移动", "immeMove", new Config("立即移动", new Element[]{}, changed(e -> immeMove = e)));
-        manager.register("移动", "noKB", new Config("减少击退", new Element[]{new Label("减少百分比"), slider("noKB", 0f, 100f, 1f, 50f, f -> KBMulti = f, 0, f -> "减少百分比 " + Mathf.ceil(KBMulti * 100) + "%")}, changed(e -> noKB = e, c -> Mathf.ceil(KBMulti * 100) + "%")));
+        manager.register("移动", "noKB", new Config("减少击退", new Element[]{new Label("减少百分比"), slider("noKB", 0f, 1, 0.01f, 0.5f, f -> KBMulti = f, 0, f -> "减少百分比 " + Mathf.ceil(KBMulti * 100) + "%")}, changed(e -> noKB = e, c -> Mathf.ceil(KBMulti * 100) + "%")));
         manager.register("移动", "ignoreShield", new Config("进入护盾", new Element[]{}, changed(e -> ignoreShield = e)));
 
         manager.register("交互", "weaponImmeTurn", new Config("武器瞬间转向", null, changed(e -> weaponImmeTurn = e)));
