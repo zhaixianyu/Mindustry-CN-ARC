@@ -3,12 +3,16 @@ package mindustry.squirrelModule.modules;
 import arc.Core;
 import arc.Events;
 import arc.func.Cons;
+import arc.graphics.Color;
+import arc.graphics.g2d.Draw;
+import arc.graphics.g2d.Lines;
 import arc.math.Mathf;
 import arc.scene.Element;
 import arc.scene.event.ChangeListener;
 import arc.scene.ui.Label;
 import arc.struct.ObjectMap;
 import arc.util.Time;
+import arc.util.Timer;
 import arc.util.Tmp;
 import mindustry.content.Blocks;
 import mindustry.content.Items;
@@ -17,11 +21,14 @@ import mindustry.game.EventType;
 import mindustry.gen.Building;
 import mindustry.gen.Call;
 import mindustry.gen.Unit;
+import mindustry.gen.UpdateGameOverCallPacket;
+import mindustry.graphics.Layer;
 import mindustry.input.Binding;
 import mindustry.squirrelModule.ui.MemorySlider;
 import mindustry.type.Item;
 import mindustry.type.ItemStack;
 import mindustry.world.Block;
+import mindustry.world.Tile;
 import mindustry.world.blocks.defense.OverdriveProjector;
 import mindustry.world.blocks.defense.turrets.ItemTurret;
 import mindustry.world.blocks.storage.CoreBlock;
@@ -33,12 +40,13 @@ import static mindustry.Vars.*;
 
 public class Hack {
     public static boolean noFog, useWindowedMenu;
-    public static boolean randomUUID, randomUSID, simMobile;
+    public static boolean randomUUID, randomUSID, simMobile, autoGG;
+    public static int autoGGDelay;
 
-    public static boolean immediatelyTurn, ignoreTurn, unitTrans, noKB, noHitbox, noSpawnKB, infDrag, immeMove, ignoreShield;
-    public static float KBMulti;
+    public static boolean immediatelyTurn, ignoreTurn, unitTrans, noKB, noHitbox, noSpawnKB, infDrag, immeMove, ignoreShield, voidWalk;
+    public static float KBMulti, boundX, boundY, boundW, boundH;
     public static boolean weaponImmeTurn, forceControl, holdFill, autoFill;
-    public static int holdFillInterval, holdFillMinItem, autoFillInterval;
+    public static int holdFillInterval, holdFillMinItem, autoFillInterval, autoFillMaxCount;
     public static long lastFillTime, lastAutoFillTime;
     public static ObjectMap<Block, Item[]> fillIndexer = new ObjectMap<>();
 
@@ -47,7 +55,7 @@ public class Hack {
     }
 
     public static void init() {
-        if (!settings.getBool("squirrel")) System.exit(0);
+        if (!settings.getBool("squirrel")) return;
         Manager manager = ui.infoControl.manager;
 
         manager.register("显示", "noFog", new Config("强制透雾", null, changed(e -> noFog = e)));
@@ -60,6 +68,10 @@ public class Hack {
         manager.register("多人", "randomUUID", new Config("随机UUID", null, changed(e -> randomUUID = e)));
         manager.register("多人", "randomUSID", new Config("随机USID", null, changed(e -> randomUSID = e)));
         manager.register("多人", "simMobile", new Config("伪装手机", null, changed(e -> simMobile = e)));
+        manager.register("多人", "autoGG", new Config("自动gg", new Element[]{new Label(""), slider("autoGG", 0f, 5000f, 1f, 0f, f -> autoGGDelay = Mathf.ceil(f), 0, f -> "自动gg延时 " + autoGGDelay + "ms")}, changed(e -> autoGG = e)));
+        Events.on(UpdateGameOverCallPacket.class, e -> {
+            if (autoGG) Timer.schedule(() -> Call.sendChatMessage("gg"), (float) autoGGDelay / 1000);
+        });
 
         manager.register("移动", "immediatelyTurn", new Config("瞬间转向", null, changed(e -> immediatelyTurn = e)));
         manager.register("移动", "ignoreTurn", new Config("无视旋转", null, changed(e -> ignoreTurn = e)));
@@ -68,13 +80,22 @@ public class Hack {
         manager.register("移动", "noSpawnKB", new Config("无视刷怪圈", null, changed(e -> noSpawnKB = e)));
         manager.register("移动", "infDrag", new Config("立即停止", new Element[]{}, changed(e -> infDrag = e)));
         manager.register("移动", "immeMove", new Config("立即移动", new Element[]{}, changed(e -> immeMove = e)));
-        manager.register("移动", "noKB", new Config("减少击退", new Element[]{new Label("减少百分比"), slider("noKB", 0f, 1, 0.01f, 0.5f, f -> KBMulti = f, 0, f -> "减少百分比 " + Mathf.ceil(KBMulti * 100) + "%")}, changed(e -> noKB = e, c -> Mathf.ceil(KBMulti * 100) + "%")));
+        manager.register("移动", "noKB", new Config("减少击退", new Element[]{new Label("减少百分比"), slider("noKB", 0f, 1f, 0.01f, 0.5f, f -> KBMulti = f, 0, f -> "减少百分比 " + Mathf.ceil(KBMulti * 100) + "%")}, changed(e -> noKB = e, c -> Mathf.ceil(KBMulti * 100) + "%")));
         manager.register("移动", "ignoreShield", new Config("进入护盾", new Element[]{}, changed(e -> ignoreShield = e)));
+        manager.register("移动", "voidWalk", new Config("虚空行者", new Element[]{}, changed(e -> voidWalk = e)));
+        Events.run(EventType.Trigger.draw, () -> {
+            if (!voidWalk && state.getState() == GameState.State.menu) return;
+            Draw.z(Layer.background + 1);
+
+            Draw.color(Color.red);
+            Lines.stroke(2f);
+            Lines.rect(boundX, boundY, boundW, boundH);
+        });
 
         manager.register("交互", "weaponImmeTurn", new Config("武器瞬间转向", null, changed(e -> weaponImmeTurn = e)));
         manager.register("交互", "forceControl", new Config("强制控制", null, changed(e -> forceControl = e)));
         manager.register("交互", "holdFill", new Config("按住装填", new Element[]{new Label(""), slider("holdFill", 50f, 500f, 1f, 100f, f -> holdFillInterval = Mathf.ceil(f), 0, f -> "间隔 " + holdFillInterval + "ms"), new Label(""), slider("holdFill2", 0f, 1000f, 1f, 500f, f -> holdFillMinItem = Mathf.ceil(f), 2, f -> "核心物资下限 " + holdFillMinItem)}, changed(e -> holdFill = e, c -> holdFillInterval + "ms")));
-        manager.register("交互", "autoFill", new Config("自动装超速", new Element[]{new Label(""), slider("autoFill", 50f, 2000f, 1f, 100f, f -> autoFillInterval = Mathf.ceil(f), 0, f -> "检测间隔 " + autoFillInterval + "ms")}, changed(e -> autoFill = e, c -> autoFillInterval + "ms")));
+        manager.register("交互", "autoFill", new Config("自动装超速", new Element[]{new Label(""), slider("autoFill", 50f, 2000f, 1f, 100f, f -> autoFillInterval = Mathf.ceil(f), 0, f -> "检测间隔 " + autoFillInterval + "ms"), new Label(""), slider("autoFill2", 1f, 20f, 1f, 5f, f -> autoFillMaxCount = Mathf.ceil(f), 2, f -> "每次装 " + autoFillMaxCount + " 个超速")}, changed(e -> autoFill = e, c -> autoFillInterval + "ms")));
         initFill();
 
         manager.register("杂项", "noArcPacket", new Config("停发版本", null, changed(e -> settings.put("arcAnonymity", e))));
@@ -148,10 +169,11 @@ public class Hack {
                 if (unit.type.itemCapacity == 0) return;
                 CoreBlock.CoreBuild core = player.closestCore();
                 if (core == null) return;
-                if (!unit.hasItem() && Tmp.v1.set(player.x, player.y).sub(Tmp.v2.set(core.x, core.y)).len() > itemTransferRange)
-                    return;
-                Building build = world.tileWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y).build;
-                if (build == null) return;
+                if (!unit.hasItem() && Tmp.v1.set(player.x, player.y).sub(Tmp.v2.set(core.x, core.y)).len() > itemTransferRange) return;
+                Tile tile = world.tileWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
+                if (tile == null) return;
+                Building build = tile.build;
+                if (build == null || build.team != player.team()) return;
                 Block type = build.block;
                 if (type instanceof ItemTurret it) {
                     Item[] items = fillIndexer.get(type);
@@ -160,7 +182,7 @@ public class Hack {
                     }
                     if (items == null) return;
                     for (Item i : items) {
-                        if (!core.items.has(i, holdFillMinItem)) continue;
+                        if (!core.items.has(i, holdFillMinItem == 0 ? 1 : holdFillMinItem)) continue;
                         if (!build.acceptItem(null, i)) continue;
                         if (unit.stack.amount != 0 && unit.stack.item == i) {
                             Call.transferInventory(player, build);
@@ -187,7 +209,7 @@ public class Hack {
                 if (items == null) return;
                 for (ItemStack i : items) {
                     if (build.items.has(i.item, i.amount)) continue;
-                    if (!core.items.has(i.item, holdFillMinItem)) continue;
+                    if (!core.items.has(i.item, holdFillMinItem == 0 ? 1 : holdFillMinItem)) continue;
                     if (unit.stack.amount != 0) {
                         Call.transferInventory(player, core);
                     }
@@ -211,24 +233,30 @@ public class Hack {
                 CoreBlock.CoreBuild core = player.closestCore();
                 if (core == null) return;
                 if (Tmp.v1.set(player.x, player.y).sub(Tmp.v2.set(core.x, core.y)).len() > itemTransferRange) return;
+                final int[] cnt = {0};
                 indexer.eachBlock(player.team(), player.x, player.y, itemTransferRange, b -> b.block instanceof OverdriveProjector, b -> {
+                    if (cnt[0] >= autoFillMaxCount) return;
                     ConsumeItems consume = ((ConsumeItems) b.block.consumeBuilder.find(c -> c instanceof ConsumeItems));
                     if (consume == null) return;
                     ItemStack[] items = consume.items;
                     if (items == null) return;
+                    boolean filled = false;
                     for (ItemStack i : items) {
                         if (b.items.has(i.item, i.amount)) continue;
                         if (!core.items.has(i.item)) continue;
                         if (unit.stack.amount != 0 && b.acceptItem(null, unit.stack.item)) {
                             Call.transferInventory(player, b);
-                            return;
+                            filled = true;
+                            break;
                         }
                         if (unit.stack.amount != 0) {
                             Call.transferInventory(player, core);
                         }
                         Call.requestItem(player, core, i.item, unit.type.itemCapacity);
                         Call.transferInventory(player, b);
+                        filled = true;
                     }
+                    if (filled) cnt[0]++;
                 });
             } catch (Exception e) {
                 ui.showException(e);
