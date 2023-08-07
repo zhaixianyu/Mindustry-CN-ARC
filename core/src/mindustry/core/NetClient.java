@@ -5,7 +5,6 @@ import arc.audio.*;
 import arc.func.*;
 import arc.graphics.*;
 import arc.math.*;
-import arc.math.geom.Vec2;
 import arc.struct.*;
 import arc.util.*;
 import arc.util.CommandHandler.*;
@@ -13,7 +12,6 @@ import arc.util.io.*;
 import arc.util.serialization.*;
 import mindustry.*;
 import mindustry.annotations.Annotations.*;
-import mindustry.arcModule.ui.dialogs.MessageDialog;
 import mindustry.core.GameState.*;
 import mindustry.entities.*;
 import mindustry.game.EventType.*;
@@ -100,7 +98,7 @@ public class NetClient implements ApplicationListener{
             c.versionType = Version.type;
             c.color = player.color.rgba();
             c.usid = Hack.randomUSID ? SMisc.randomBase64(8) : getUsid(packet.addressTCP);
-            c.uuid = Hack.randomUUID ? SMisc.randomBase64(8) : platform.getUUID();
+            c.uuid = !Hack.chooseUUID || Hack.chosenUUID == null ? platform.getUUID() : Hack.chosenUUID;
 
             if(c.uuid == null){
                 ui.showErrorMessage("@invalidid");

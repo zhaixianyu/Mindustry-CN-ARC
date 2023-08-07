@@ -63,4 +63,12 @@ public class SMisc {
         new Rand().nextBytes(result);
         return new String(Base64Coder.encode(result));
     }
+
+    public static boolean base64Valid(String s, int length) {
+        try {
+            return Base64Coder.decode(s).length == length;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }

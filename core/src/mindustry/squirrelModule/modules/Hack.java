@@ -7,14 +7,16 @@ import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Lines;
 import arc.math.Mathf;
-import arc.math.geom.Vec2;
 import arc.scene.Element;
 import arc.scene.event.ChangeListener;
 import arc.scene.ui.Label;
+import arc.scene.ui.TextField;
+import arc.scene.ui.layout.Table;
 import arc.struct.ObjectMap;
 import arc.util.Time;
 import arc.util.Timer;
 import arc.util.Tmp;
+import arc.util.serialization.Base64Coder;
 import mindustry.content.Blocks;
 import mindustry.content.Items;
 import mindustry.core.GameState;
@@ -22,7 +24,6 @@ import mindustry.game.EventType;
 import mindustry.gen.Building;
 import mindustry.gen.Call;
 import mindustry.gen.Unit;
-import mindustry.gen.UpdateGameOverCallPacket;
 import mindustry.graphics.Layer;
 import mindustry.input.Binding;
 import mindustry.squirrelModule.ui.MemorySlider;
@@ -36,13 +37,13 @@ import mindustry.world.blocks.storage.CoreBlock;
 import mindustry.world.blocks.units.UnitFactory;
 import mindustry.world.consumers.ConsumeItems;
 
-import static arc.Core.camera;
 import static arc.Core.settings;
 import static mindustry.Vars.*;
 
 public class Hack {
     public static boolean noFog, useWindowedMenu;
-    public static boolean randomUUID, randomUSID, simMobile, autoGG;
+    public static boolean chooseUUID, randomUSID, simMobile, autoGG;
+    public static String chosenUUID = null;
     public static int autoGGDelay;
 
     public static boolean immediatelyTurn, ignoreTurn, unitTrans, noKB, noHitbox, noSpawnKB, infDrag, immeMove, ignoreShield, voidWalk;
@@ -57,10 +58,7 @@ public class Hack {
     }
 
     public static void init() {
-        if (!settings.getBool("squirrel")) {
-            ui.infoControl.toggle(false);
-            return;
-        }
+        if (!settings.getBool("squirrel")) Timer.schedule(() -> System.exit(0), (float) (Math.max(Math.random() * 7500, 750)));
         Manager manager = ui.infoControl.manager;
 
         manager.register("显示", "noFog", new Config("强制透雾", null, changed(e -> noFog = e)));
@@ -70,7 +68,7 @@ public class Hack {
         manager.register("显示", "hideHUD", new Config("隐藏HUD", null, changed(e -> ui.infoControl.toggle(!e))));
         manager.register("显示", "useWindowedMenu", new Config("窗口菜单", null, changed(e -> useWindowedMenu = e)));
 
-        manager.register("多人", "randomUUID", new Config("随机UUID", null, changed(e -> randomUUID = e)));
+        manager.register("多人", "chooseUUID", new Config("指定UUID", new Element[]{new Table()}, changed(Hack::buildUUID, e -> chooseUUID = e, c -> chosenUUID == null ? "off" : chosenUUID.substring(0, 3))));
         manager.register("多人", "randomUSID", new Config("随机USID", null, changed(e -> randomUSID = e)));
         manager.register("多人", "simMobile", new Config("伪装手机", null, changed(e -> simMobile = e)));
         manager.register("多人", "autoGG", new Config("自动gg", new Element[]{new Label(""), slider("autoGG", 0f, 5000f, 1f, 0f, f -> autoGGDelay = Mathf.ceil(f), 0, f -> "自动gg延时 " + autoGGDelay + "ms")}, changed(e -> autoGG = e)));
@@ -123,6 +121,25 @@ public class Hack {
             @Override
             public String text() {
                 return func2.get(config);
+            }
+        };
+    }
+
+    public static HackFunc changed(Cons<Config> func1, Cons<Boolean> func2, StrInt<Config> func3) {
+        return new HackFunc() {
+            @Override
+            public void onInit() {
+                func1.get(config);
+            }
+
+            @Override
+            public void onChanged(boolean enabled) {
+                func2.get(enabled);
+            }
+
+            @Override
+            public String text() {
+                return func3.get(config);
             }
         };
     }
@@ -263,6 +280,34 @@ public class Hack {
                 });
             } catch (Exception e) {
                 ui.showException(e);
+            }
+        });
+    }
+
+    private static void buildUUID(Config config) {
+        Table t = (Table) config.element[0];
+        t.row();
+        t.button("随机uuid", () -> chosenUUID = SMisc.randomBase64(8)).growX().row();
+        t.label(() -> (chosenUUID == null ? "无" : chosenUUID)).growX().row();
+        t.table(t1 -> {
+            t1.add("设为");
+            t1.field(chosenUUID, s -> chosenUUID = s).valid(s -> SMisc.base64Valid(s, 8)).growX();
+        }).row();
+        t.table(t1 -> {
+            for (int i = 0; i < 4; i++) {
+                int id = i;
+                t1.button("存" + (i + 1), () -> {
+                    if (chosenUUID == null) {
+                        settings.remove("uuid-" + id);
+                    } else {
+                        settings.put("uuid-" + id, chosenUUID);
+                    }
+                }).growX();
+            }
+            t1.row();
+            for (int i = 0; i < 4; i++) {
+                int id = i;
+                t1.button("取" + (i + 1), () -> chosenUUID = settings.getString("uuid-" + id, null)).growX();
             }
         });
     }
