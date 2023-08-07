@@ -39,8 +39,8 @@ abstract class BoundedComp implements Velc, Posc, Healthc, Flyingc{
             right += finalWorldBounds;
             Hack.boundX = left;
             Hack.boundY = bot;
-            Hack.boundW = top - bot;
-            Hack.boundH = right - left;
+            Hack.boundW = right - left;
+            Hack.boundH = top - bot;
         }
 
         if(!net.client() || isLocal()){

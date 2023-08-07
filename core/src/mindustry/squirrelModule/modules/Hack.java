@@ -7,6 +7,7 @@ import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Lines;
 import arc.math.Mathf;
+import arc.math.geom.Vec2;
 import arc.scene.Element;
 import arc.scene.event.ChangeListener;
 import arc.scene.ui.Label;
@@ -35,12 +36,13 @@ import mindustry.world.blocks.storage.CoreBlock;
 import mindustry.world.blocks.units.UnitFactory;
 import mindustry.world.consumers.ConsumeItems;
 
+import static arc.Core.camera;
 import static arc.Core.settings;
 import static mindustry.Vars.*;
 
 public class Hack {
     public static boolean noFog, useWindowedMenu;
-    public static boolean randomUUID, randomUSID, simMobile, autoGG;
+    public static boolean randomUUID, randomUSID, simMobile, autoGG, allowBlue;
     public static int autoGGDelay;
 
     public static boolean immediatelyTurn, ignoreTurn, unitTrans, noKB, noHitbox, noSpawnKB, infDrag, immeMove, ignoreShield, voidWalk;
@@ -72,6 +74,7 @@ public class Hack {
         Events.on(UpdateGameOverCallPacket.class, e -> {
             if (autoGG) Timer.schedule(() -> Call.sendChatMessage("gg"), (float) autoGGDelay / 1000);
         });
+        manager.register("多人", "allowBlue", new Config("强制蓝图", null, changed(e -> allowBlue = e)));
 
         manager.register("移动", "immediatelyTurn", new Config("瞬间转向", null, changed(e -> immediatelyTurn = e)));
         manager.register("移动", "ignoreTurn", new Config("无视旋转", null, changed(e -> ignoreTurn = e)));
@@ -84,12 +87,12 @@ public class Hack {
         manager.register("移动", "ignoreShield", new Config("进入护盾", new Element[]{}, changed(e -> ignoreShield = e)));
         manager.register("移动", "voidWalk", new Config("虚空行者", new Element[]{}, changed(e -> voidWalk = e)));
         Events.run(EventType.Trigger.draw, () -> {
-            if (!voidWalk && state.getState() == GameState.State.menu) return;
-            Draw.z(Layer.background + 1);
-
+            if (!voidWalk || state.getState() == GameState.State.menu) return;
+            Draw.z(Layer.max);
             Draw.color(Color.red);
             Lines.stroke(2f);
             Lines.rect(boundX, boundY, boundW, boundH);
+            Draw.reset();
         });
 
         manager.register("交互", "weaponImmeTurn", new Config("武器瞬间转向", null, changed(e -> weaponImmeTurn = e)));
