@@ -150,7 +150,7 @@ public class MenuFragment{
     }
 
     private void randomLabel(){
-        Timer.schedule(() -> text = "[yellow]" + labels[new Rand().random(0, labels.length - 1)], 0.11f);
+        Timer.schedule(() -> Core.app.post(() -> text = "[yellow]" + labels[new Rand().random(0, labels.length - 1)]), 0.11f);
     }
 
     private void buildMobile(){

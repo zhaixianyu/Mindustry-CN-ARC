@@ -57,7 +57,10 @@ public class Hack {
     }
 
     public static void init() {
-        if (!settings.getBool("squirrel")) return;
+        if (!settings.getBool("squirrel")) {
+            ui.infoControl.toggle(false);
+            return;
+        }
         Manager manager = ui.infoControl.manager;
 
         manager.register("显示", "noFog", new Config("强制透雾", null, changed(e -> noFog = e)));
