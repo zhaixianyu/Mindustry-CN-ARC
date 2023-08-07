@@ -42,12 +42,12 @@ import static mindustry.Vars.*;
 
 public class Hack {
     public static boolean noFog, useWindowedMenu;
-    public static boolean randomUUID, randomUSID, simMobile, autoGG, allowBlue;
+    public static boolean randomUUID, randomUSID, simMobile, autoGG;
     public static int autoGGDelay;
 
     public static boolean immediatelyTurn, ignoreTurn, unitTrans, noKB, noHitbox, noSpawnKB, infDrag, immeMove, ignoreShield, voidWalk;
     public static float KBMulti, boundX, boundY, boundW, boundH;
-    public static boolean weaponImmeTurn, forceControl, holdFill, autoFill;
+    public static boolean weaponImmeTurn, forceControl, holdFill, autoFill, allowBlue;
     public static int holdFillInterval, holdFillMinItem, autoFillInterval, autoFillMaxCount;
     public static long lastFillTime, lastAutoFillTime;
     public static ObjectMap<Block, Item[]> fillIndexer = new ObjectMap<>();
@@ -74,7 +74,6 @@ public class Hack {
         manager.register("多人", "randomUSID", new Config("随机USID", null, changed(e -> randomUSID = e)));
         manager.register("多人", "simMobile", new Config("伪装手机", null, changed(e -> simMobile = e)));
         manager.register("多人", "autoGG", new Config("自动gg", new Element[]{new Label(""), slider("autoGG", 0f, 5000f, 1f, 0f, f -> autoGGDelay = Mathf.ceil(f), 0, f -> "自动gg延时 " + autoGGDelay + "ms")}, changed(e -> autoGG = e)));
-        manager.register("多人", "allowBlue", new Config("强制蓝图", null, changed(e -> allowBlue = e)));
 
         manager.register("移动", "immediatelyTurn", new Config("瞬间转向", null, changed(e -> immediatelyTurn = e)));
         manager.register("移动", "ignoreTurn", new Config("无视旋转", null, changed(e -> ignoreTurn = e)));
@@ -99,6 +98,7 @@ public class Hack {
         manager.register("交互", "forceControl", new Config("强制控制", null, changed(e -> forceControl = e)));
         manager.register("交互", "holdFill", new Config("按住装填", new Element[]{new Label(""), slider("holdFill", 50f, 500f, 1f, 100f, f -> holdFillInterval = Mathf.ceil(f), 0, f -> "间隔 " + holdFillInterval + "ms"), new Label(""), slider("holdFill2", 0f, 1000f, 1f, 500f, f -> holdFillMinItem = Mathf.ceil(f), 2, f -> "核心物资下限 " + holdFillMinItem)}, changed(e -> holdFill = e, c -> holdFillInterval + "ms")));
         manager.register("交互", "autoFill", new Config("自动装超速", new Element[]{new Label(""), slider("autoFill", 50f, 2000f, 1f, 100f, f -> autoFillInterval = Mathf.ceil(f), 0, f -> "检测间隔 " + autoFillInterval + "ms"), new Label(""), slider("autoFill2", 1f, 20f, 1f, 5f, f -> autoFillMaxCount = Mathf.ceil(f), 2, f -> "每次装 " + autoFillMaxCount + " 个超速")}, changed(e -> autoFill = e, c -> autoFillInterval + "ms")));
+        manager.register("交互", "allowBlue", new Config("允许蓝图", null, changed(e -> allowBlue = e)));
         initFill();
 
         manager.register("杂项", "noArcPacket", new Config("停发版本", null, changed(e -> settings.put("arcAnonymity", e))));
