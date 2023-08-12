@@ -24,7 +24,7 @@ public class WindowedMenu {
             table.add(message).get().setAlignment(Align.center);
             table.row();
             int option = 0;
-            for(var optionsRow : options){
+            for(String[] optionsRow : options){
                 Table buttonRow = table.table().growX().get();
                 table.row();
                 for (String s : optionsRow) {
@@ -34,7 +34,7 @@ public class WindowedMenu {
                     option++;
                 }
             }
-        }).grow();
+        }).grow().get().setScrollingDisabledX(true);
         return t;
     }
 }

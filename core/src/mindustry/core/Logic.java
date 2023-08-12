@@ -13,7 +13,7 @@ import mindustry.game.*;
 import mindustry.game.Teams.*;
 import mindustry.gen.*;
 import mindustry.maps.*;
-import mindustry.squirrelModule.modules.Hack;
+import mindustry.squirrelModule.modules.hack.Hack;
 import mindustry.type.*;
 import mindustry.type.Weather.*;
 import mindustry.world.*;

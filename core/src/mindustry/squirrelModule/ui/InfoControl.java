@@ -4,14 +4,13 @@ import arc.Core;
 import arc.graphics.Color;
 import arc.scene.Group;
 import arc.scene.ui.layout.Table;
-import arc.struct.Seq;
 import arc.util.Align;
 import arc.util.Time;
 import mindustry.input.Binding;
-import mindustry.squirrelModule.modules.Config;
-import mindustry.squirrelModule.modules.Hack;
-import mindustry.squirrelModule.modules.Manager;
-import mindustry.squirrelModule.modules.SMisc;
+import mindustry.squirrelModule.modules.hack.Config;
+import mindustry.squirrelModule.modules.hack.Hack;
+import mindustry.squirrelModule.modules.hack.Manager;
+import mindustry.squirrelModule.modules.tools.SMisc;
 
 public class InfoControl {
     public static final float step = 0.1f, lineAdd = 1.5f;

@@ -22,8 +22,8 @@ import mindustry.logic.*;
 import mindustry.net.Administration.*;
 import mindustry.net.*;
 import mindustry.net.Packets.*;
-import mindustry.squirrelModule.modules.Hack;
-import mindustry.squirrelModule.modules.SMisc;
+import mindustry.squirrelModule.modules.hack.Hack;
+import mindustry.squirrelModule.modules.tools.SMisc;
 import mindustry.world.*;
 import mindustry.world.modules.*;
 

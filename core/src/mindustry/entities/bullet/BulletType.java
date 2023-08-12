@@ -19,7 +19,7 @@ import mindustry.game.EventType.*;
 import mindustry.game.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
-import mindustry.squirrelModule.modules.Hack;
+import mindustry.squirrelModule.modules.hack.Hack;
 import mindustry.type.*;
 import mindustry.world.*;
 import mindustry.world.blocks.*;

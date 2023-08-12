@@ -21,7 +21,7 @@ import mindustry.entities.pattern.*;
 import mindustry.entities.units.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
-import mindustry.squirrelModule.modules.Hack;
+import mindustry.squirrelModule.modules.hack.Hack;
 import mindustry.world.meta.*;
 
 import static arc.math.Mathf.doubleRadDeg;

@@ -1,4 +1,4 @@
-package mindustry.squirrelModule.modules;
+package mindustry.squirrelModule.modules.hack;
 
 import arc.scene.Element;
 import mindustry.squirrelModule.ui.MemorySlider;

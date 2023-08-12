@@ -16,8 +16,8 @@ import arc.scene.ui.layout.Table;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.util.Tmp;
-import mindustry.squirrelModule.modules.Config;
-import mindustry.squirrelModule.modules.SMisc;
+import mindustry.squirrelModule.modules.hack.Config;
+import mindustry.squirrelModule.modules.tools.SMisc;
 
 import static mindustry.Vars.ui;
 

@@ -4,7 +4,7 @@ import arc.Core;
 import arc.scene.Element;
 import arc.scene.event.ChangeListener;
 import arc.scene.ui.Slider;
-import mindustry.squirrelModule.modules.Config;
+import mindustry.squirrelModule.modules.hack.Config;
 
 public class MemorySlider extends Slider {
     public Config conf;

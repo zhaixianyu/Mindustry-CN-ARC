@@ -1,4 +1,4 @@
-package mindustry.squirrelModule.modules;
+package mindustry.squirrelModule.modules.tools;
 
 import arc.func.Boolp;
 import arc.graphics.Color;

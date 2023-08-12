@@ -5,7 +5,7 @@ import arc.util.*;
 import mindustry.annotations.Annotations.*;
 import mindustry.game.*;
 import mindustry.gen.*;
-import mindustry.squirrelModule.modules.Hack;
+import mindustry.squirrelModule.modules.hack.Hack;
 import mindustry.type.*;
 
 import static mindustry.Vars.*;

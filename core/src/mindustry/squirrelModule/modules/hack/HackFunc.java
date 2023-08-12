@@ -1,4 +1,4 @@
-package mindustry.squirrelModule.modules;
+package mindustry.squirrelModule.modules.hack;
 
 public class HackFunc {
     public Config config;

@@ -1,4 +1,4 @@
-package mindustry.squirrelModule.modules;
+package mindustry.squirrelModule.modules.hack;
 
 import arc.Core;
 import arc.Events;
@@ -10,13 +10,11 @@ import arc.math.Mathf;
 import arc.scene.Element;
 import arc.scene.event.ChangeListener;
 import arc.scene.ui.Label;
-import arc.scene.ui.TextField;
 import arc.scene.ui.layout.Table;
 import arc.struct.ObjectMap;
 import arc.util.Time;
 import arc.util.Timer;
 import arc.util.Tmp;
-import arc.util.serialization.Base64Coder;
 import mindustry.content.Blocks;
 import mindustry.content.Items;
 import mindustry.core.GameState;
@@ -26,6 +24,7 @@ import mindustry.gen.Call;
 import mindustry.gen.Unit;
 import mindustry.graphics.Layer;
 import mindustry.input.Binding;
+import mindustry.squirrelModule.modules.tools.SMisc;
 import mindustry.squirrelModule.ui.MemorySlider;
 import mindustry.type.Item;
 import mindustry.type.ItemStack;
@@ -53,12 +52,9 @@ public class Hack {
     public static long lastFillTime, lastAutoFillTime;
     public static ObjectMap<Block, Item[]> fillIndexer = new ObjectMap<>();
 
-    interface StrInt<T> {
-        String get(T p);
-    }
-
     public static void init() {
-        if (!settings.getBool("squirrel")) Timer.schedule(() -> System.exit(0), (float) (Math.max(Math.random() * 7500, 750)));
+        if (!settings.getBool("squirrel"))
+            Timer.schedule(() -> System.exit(0), (float) (Math.max(Math.random() * 7500, 750)));
         Manager manager = ui.infoControl.manager;
 
         manager.register("显示", "noFog", new Config("强制透雾", null, changed(e -> noFog = e)));
@@ -78,11 +74,11 @@ public class Hack {
         manager.register("移动", "unitTrans", new Config("单位平移", null, changed(e -> unitTrans = e)));
         manager.register("移动", "noHitbox", new Config("无视碰撞", null, changed(e -> noHitbox = e)));
         manager.register("移动", "noSpawnKB", new Config("无视刷怪圈", null, changed(e -> noSpawnKB = e)));
-        manager.register("移动", "infDrag", new Config("立即停止", new Element[]{}, changed(e -> infDrag = e)));
-        manager.register("移动", "immeMove", new Config("立即移动", new Element[]{}, changed(e -> immeMove = e)));
+        manager.register("移动", "infDrag", new Config("立即停止", null, changed(e -> infDrag = e)));
+        manager.register("移动", "immeMove", new Config("立即移动", null, changed(e -> immeMove = e)));
         manager.register("移动", "noKB", new Config("减少击退", new Element[]{new Label("减少百分比"), slider("noKB", 0f, 1f, 0.01f, 0.5f, f -> KBMulti = f, 0, f -> "减少百分比 " + Mathf.ceil(KBMulti * 100) + "%")}, changed(e -> noKB = e, c -> Mathf.ceil(KBMulti * 100) + "%")));
-        manager.register("移动", "ignoreShield", new Config("进入护盾", new Element[]{}, changed(e -> ignoreShield = e)));
-        manager.register("移动", "voidWalk", new Config("虚空行者", new Element[]{}, changed(e -> voidWalk = e)));
+        manager.register("移动", "ignoreShield", new Config("进入护盾", null, changed(e -> ignoreShield = e)));
+        manager.register("移动", "voidWalk", new Config("虚空行者", null, changed(e -> voidWalk = e)));
         Events.run(EventType.Trigger.draw, () -> {
             if (!voidWalk || state.getState() == GameState.State.menu) return;
             Draw.z(Layer.max);
@@ -189,7 +185,8 @@ public class Hack {
                 if (unit.type.itemCapacity == 0) return;
                 CoreBlock.CoreBuild core = player.closestCore();
                 if (core == null) return;
-                if (!unit.hasItem() && Tmp.v1.set(player.x, player.y).sub(Tmp.v2.set(core.x, core.y)).len() > itemTransferRange) return;
+                if (!unit.hasItem() && Tmp.v1.set(player.x, player.y).sub(Tmp.v2.set(core.x, core.y)).len() > itemTransferRange)
+                    return;
                 Tile tile = world.tileWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
                 if (tile == null) return;
                 Building build = tile.build;
@@ -310,5 +307,9 @@ public class Hack {
                 t1.button("取" + (i + 1), () -> chosenUUID = settings.getString("uuid-" + id, null)).growX();
             }
         });
+    }
+
+    interface StrInt<T> {
+        String get(T p);
     }
 }

@@ -8,7 +8,7 @@ import mindustry.*;
 import mindustry.async.PhysicsProcess.PhysicsWorld.*;
 import mindustry.entities.*;
 import mindustry.gen.*;
-import mindustry.squirrelModule.modules.Hack;
+import mindustry.squirrelModule.modules.hack.Hack;
 
 public class PhysicsProcess implements AsyncProcess{
     private static final int

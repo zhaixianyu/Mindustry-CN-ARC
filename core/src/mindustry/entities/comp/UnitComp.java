@@ -23,7 +23,7 @@ import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.input.Binding;
 import mindustry.logic.*;
-import mindustry.squirrelModule.modules.Hack;
+import mindustry.squirrelModule.modules.hack.Hack;
 import mindustry.type.*;
 import mindustry.ui.*;
 import mindustry.world.*;

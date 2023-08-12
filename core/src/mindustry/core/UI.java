@@ -28,7 +28,7 @@ import mindustry.game.EventType.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.logic.*;
-import mindustry.squirrelModule.modules.Hack;
+import mindustry.squirrelModule.modules.hack.Hack;
 import mindustry.squirrelModule.ui.InfoControl;
 import mindustry.squirrelModule.ui.WindowedMenu;
 import mindustry.ui.*;
