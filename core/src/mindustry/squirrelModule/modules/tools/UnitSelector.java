@@ -18,6 +18,7 @@ import arc.util.Structs;
 import mindustry.Vars;
 import mindustry.arcModule.ui.window.Window;
 import mindustry.gen.*;
+import mindustry.graphics.Drawf;
 import mindustry.input.DesktopInput;
 import mindustry.ui.Styles;
 
@@ -40,10 +41,16 @@ public class UnitSelector extends Selector{
         Groups.unit.copy(units);
 
         //units.sort(Structs.comps(Structs.comparing(u.)));
-        t.pane(t1 -> units.each(filter, u -> {
+        t.pane(t1 -> build(t1, w, cb)).grow().get().setScrollingDisabledX(true);
+    }
+
+    public void build(Table t1, Window w, Cons<Entityc> cb) {
+        t1.clear();
+        units.each(filter, u -> {
             Button[] button = {null};
             button[0] = t1.button(b -> {
                 ClickListener listener = new ClickListener();
+                ClickListener listener2 = new ClickListener();
                 Table iconTable = new Table() {
                     @Override
                     public void draw(){
@@ -56,6 +63,7 @@ public class UnitSelector extends Selector{
                     }
                 };
                 iconTable.addListener(listener);
+                Drawf.square(u.x, u.y, u.hitSize, u.rotation + 45);
                 iconTable.addListener(new HandCursorListener());
                 iconTable.touchable = Touchable.enabled;
                 iconTable.tapped(() -> {
@@ -68,16 +76,17 @@ public class UnitSelector extends Selector{
                 });
                 iconTable.add(new Image(u.icon()).setScaling(Scaling.bounded)).grow();
                 b.clearChildren();
-                b.add(iconTable).size(32);
+                b.add(iconTable).size(48);
                 b.label(() -> u.type.localizedName + " #"  + u.id).growX();
                 b.setDisabled(() -> u.dead);
+                b.addListener(listener2);
             }, Styles.clearNonei, () -> {
                 if (button[0].childrenPressed()) return;
                 w.remove();
                 cb.get(u);
-            }).height(32).growX().get();
+            }).height(48).growX().get();
             t1.row();
-        })).grow().get().setScrollingDisabledX(true);
+        });
     }
 
     public UnitSelector filter(Boolf<Unit> filter) {
