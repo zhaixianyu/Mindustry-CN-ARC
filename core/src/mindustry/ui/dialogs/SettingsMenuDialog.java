@@ -638,6 +638,7 @@ public class SettingsMenuDialog extends BaseDialog{
             arc.checkPref("arcAlwaysTeamColor", false);
 
             arc.addCategory("arcPlayerEffect");
+            arc.checkPref("arcBuildInfo",false);
             arc.stringInput("playerEffectColor", "ffd37f");
             arc.sliderPref("unitTargetType", 0, 0, 5, 1, s -> {
                 if (s == 0) {
