@@ -162,7 +162,7 @@ public class arcPlayerEffect {
         Lines.stroke(2f);
 
         for (int i = 0; i < 3; i++) {
-            float rot = player.unit().rotation + i * 360f / 3;
+            float rot = player.unit().rotation + i * 360f / 3 + 15f;
             Lines.arc(unit.x, unit.y, unit.type.buildRange, 0.25f, rot, (int) (50 + unit.type.buildRange / 10));
             Draw.rect(Icon.wrench.getRegion(), unit.x + player.unit().type.buildRange * Mathf.cos((float) Math.toRadians(rot-15f)),  unit.y + player.unit().type.buildRange * Mathf.sin((float) Math.toRadians(rot-15f)),8f,8f);
         }
