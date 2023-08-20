@@ -1291,7 +1291,7 @@ public class UnitType extends UnlockableContent{
                 Lines.dashCircle(unit.x, unit.y, maxRange);
             }
 
-            if (!control.input.commandMode && Core.settings.getBool("alwaysShowUnitRTSAi") && unit.isCommandable() && unit.command().command.name.equals("move") && arcInfoControl()) {
+            if (!control.input.commandMode && Core.settings.getBool("alwaysShowUnitRTSAi") && unit.isCommandable() && unit.command().command != null && unit.command().command.name.equals("move") && arcInfoControl()) {
                 Draw.z(Layer.effect);
                 CommandAI ai = unit.command();
                 //draw target line
