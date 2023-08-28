@@ -651,6 +651,34 @@ public class StatValues{
                         sep(bt, Core.bundle.format("bullet.suppression", Strings.autoFixed(type.suppressionDuration / 60f, 2), Strings.fixed(type.suppressionRange / tilesize, 1)));
                     }
 
+                    if(type instanceof EmpBulletType eb) {
+                        bt.row();
+
+                        Table fc = new Table();
+                        fc.left().defaults().left().padLeft(16f);
+                        sep(fc,Strings.format("[stat]对敌方电网建筑造成@%子弹伤害", Strings.autoFixed(eb.powerDamageScl * 100, 0)));
+                        sep(fc,Strings.format("[stat]对敌方单位造成@%子弹伤害", Strings.autoFixed(eb.unitDamageScl * 100, 0)));
+                        sep(fc,Strings.format("[stat]对我方耗电建筑超速至@%", Strings.autoFixed(eb.timeIncrease * 100, 0)));
+                        sep(fc,Strings.format("[stat]对敌方电网建筑减速至@%", Strings.autoFixed(eb.powerSclDecrease * 100, 0)));
+                        Collapser coll = new Collapser(fc, true);
+                        coll.setDuration(0.1f);
+
+                        bt.table(ft -> {
+                            ft.left().defaults().left();
+
+                            ft.add(Strings.format("[stat]EMP~@[lightgray]格[]~[white]\uE810[]@%/[white]\uE86D[]@%~[white]\uF899[][green]@%[]/[red]@%[]",
+                                Strings.autoFixed(eb.radius / tilesize, 0),
+                                Strings.autoFixed(eb.powerDamageScl * 100, 0),
+                                Strings.autoFixed(eb.unitDamageScl * 100, 0),
+                                Strings.autoFixed(eb.timeIncrease * 100, 0),
+                                Strings.autoFixed(eb.powerSclDecrease * 100, 0)
+                            ));
+                            ft.button(Icon.downOpen, Styles.emptyi, () -> coll.toggle(false)).update(i -> i.getStyle().imageUp = (!coll.isCollapsed() ? Icon.upOpen : Icon.downOpen)).size(8).padLeft(16f).expandX();
+                        });
+                        bt.row();
+                        bt.add(coll);
+                    }
+
                     if(type.fragBullet != null){
                         bt.row();
 
