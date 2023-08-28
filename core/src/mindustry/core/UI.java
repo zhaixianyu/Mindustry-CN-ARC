@@ -22,6 +22,7 @@ import arc.struct.*;
 import arc.util.*;
 import mindustry.arcModule.ui.*;
 import mindustry.arcModule.ui.dialogs.*;
+import mindustry.arcModule.ui.logic.Test;
 import mindustry.arcModule.ui.window.*;
 import mindustry.editor.*;
 import mindustry.game.EventType.*;
@@ -272,7 +273,7 @@ public class UI implements ApplicationListener, Loadable{
         new FadeInFragment().build(group);
 
         initArcWave();
-
+        Test.test();
     }
 
     @Override
