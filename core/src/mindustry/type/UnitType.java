@@ -698,6 +698,9 @@ public class UnitType extends UnlockableContent{
         stats.add(Stat.estimateDPS,estimateDps());
         stats.add(Stat.ammoType, ammoType.icon());
         stats.add(Stat.ammoCapacity, ammoCapacity);
+        if (crushDamage > 0) {
+            stats.add("碾压伤害(每格)", StatCat.combat, crushDamage * 60f, StatUnit.perSecond);
+        }
 
         stats.add(Stat.flying, flying);
 
