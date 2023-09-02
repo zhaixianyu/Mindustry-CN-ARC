@@ -27,7 +27,7 @@ import static mindustry.content.Blocks.sorter;
 
 public class picToMindustry {
 
-    Pixmap oriImage, image, Cimage, Dimage;
+    Pixmap oriImage, image, Cimage;
     Integer closest = null;
     Table tTable;
     Fi originFile;
@@ -37,9 +37,7 @@ public class picToMindustry {
 
     float scale = 1f;
     float[] scaleList = {0.02f, 0.05f, 0.1f, 0.15f, 0.2f, 0.25f, 0.3f, 0.4f, 0.5f, 0.65f, 0.8f, 1f, 1.25f, 1.5f, 2f, 3f, 5f};
-    int colorDisFun = 2;
-
-    boolean dithering = false;
+    int colorDisFun = 0;
     String[] disFunList = {"基础对比", "平方对比", "LAB"};
 
     public picToMindustry() {
@@ -78,7 +76,6 @@ public class picToMindustry {
                 rebuilt();
             }).width(200f);
         }).padBottom(20f).visible(() -> oriImage != null).row();
-        pt.cont.check("FS扩散抖动算法[lightgray](测试)", dithering, di -> dithering = di).row();
         pt.cont.table(t -> {
             t.add("色调函数: ");
             Label zoom = t.add(disFunList[0]).padRight(20f).get();
@@ -89,7 +86,7 @@ public class picToMindustry {
         }).padBottom(20f).visible(() -> oriImage != null).row();
         pt.cont.table(a -> tTable = a);
         pt.cont.row();
-        pt.cont.button("逻辑画网站 " + Blocks.logicDisplay.emoji(), () -> {
+        pt.cont.button("逻辑画网站 " + Blocks.logicDisplay.emoji(),()->{
             String imageUrl = "https://buibiu.github.io/imageToMLogicPage/#/";
             if (!Core.app.openURI(imageUrl)) {
                 ui.showErrorMessage("打开失败，网址已复制到粘贴板\n请自行在阅览器打开");
@@ -135,15 +132,16 @@ public class picToMindustry {
                     sorterGenerator();
                 }).size(100, 50);
                 tt.add("大小：" + formatNumber(image.width) + "\uE815" + formatNumber(image.height));
-            }).row();
+            }).row();/*
+            t.table(tt -> {
+                tt.button("逻辑画 " + Blocks.logicDisplay.emoji(), Styles.cleart, () -> {
+                    //https://buibiu.github.io/imageToMLogicPage/#/
+                }).size(100, 50).disabled(true);
+            }).row();*/
         });
     }
 
     private float diff_rbg(Integer a, Integer b) {
-        return diff_rbg(a, b, colorDisFun);
-    }
-
-    private float diff_rbg(Integer a, Integer b, int colorDisFunc) {
         int ar = a >> 24 & 0xFF,
                 ag = a >> 16 & 0xFF,
                 ab = a >> 8 & 0xFF;
@@ -154,7 +152,7 @@ public class picToMindustry {
         int dr = Math.abs(ar - br),
                 dg = Math.abs(ag - bg),
                 db = Math.abs(ab - bb);
-        switch (colorDisFunc) {
+        switch (colorDisFun) {
             case 1:
                 return dr * dr + dg * dg + db * db;
             case 2: {
@@ -166,71 +164,20 @@ public class picToMindustry {
         }
     }
 
-    private void setDithering(int x, int y, int pixel, float ratio) {
-        x = Math.min(image.width, Math.max(0, x));
-        y = Math.min(image.height, Math.max(0, y));
-        Color cColor = new Color(Cimage.get(x,y)), pColor = new Color(pixel), dColor = new Color();
-        dColor.r = pColor.r - cColor.r;
-        dColor.g = pColor.g - cColor.g;
-        dColor.b = pColor.b - cColor.b;
-        dColor.a = pColor.a - cColor.a;
-
-        int color = Color.rgba8888(cColor.r + dColor.r * ratio,cColor.g + dColor.g * ratio,cColor.b + dColor.b * ratio,cColor.a);
-        Cimage.set(x, y, color);
-    }
-
     private void create_rbg(int[] colorBar) {
-        if (!dithering){
-            for (int x = 0; x < image.width; x++) {
-                for (int y = 0; y < image.height; y++) {
-                    Integer pixel = image.get(x, y);
-                    float egg = 1000;
-                    for (int other : colorBar) {
-                        float h = diff_rbg(pixel, other);
-                        if (h < egg) {
-                            closest = other;
-                            egg = h;
-                        }
+        for (int x = 0; x < image.width; x++) {
+            for (int y = 0; y < image.height; y++) {
+                Integer pixel = image.get(x, y);
+                float egg = 1000;
+                for (int other : colorBar) {
+                    float h = diff_rbg(pixel, other);
+                    if (h < egg) {
+                        closest = other;
+                        egg = h;
                     }
-                    Cimage.set(x, y, closest);
                 }
+                Cimage.set(x, y, closest);
             }
-        }else {
-            for (int x = 0; x < image.width; x++) {
-                for (int y = image.height - 1; y >= 0; y--) {
-                    Integer pixel = image.get(x, y);
-                    float egg = 1000;
-                    for (int other : colorBar) {
-                        float h = diff_rbg(pixel, other);
-                        if (h < egg) {
-                            closest = other;
-                            egg = h;
-                        }
-                    }
-                    Cimage.set(x, y, closest);
-                    setDithering(x + 1, y, pixel, 7f / 16);
-                    setDithering(x - 1, y + 1, pixel, 5f / 16);
-                    setDithering(x, y + 1, pixel, 3f / 16);
-                    setDithering(x + 1, y + 1, pixel, 1f / 16);
-                }
-            }
-
-            for (int x = 0; x < image.width; x++) {
-                for (int y = 0; y < image.height; y++) {
-                    Integer pixel = Cimage.get(x, y);
-                    float egg = 10000;
-                    for (int other : colorBar) {
-                        float h = diff_rbg(pixel, other);
-                        if (h < egg) {
-                            closest = other;
-                            egg = h;
-                        }
-                    }
-                    Cimage.set(x, y, closest);
-                }
-            }
-
-
         }
     }
 
