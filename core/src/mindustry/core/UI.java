@@ -28,9 +28,6 @@ import mindustry.game.EventType.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.logic.*;
-import mindustry.squirrelModule.modules.hack.Hack;
-import mindustry.squirrelModule.ui.InfoControl;
-import mindustry.squirrelModule.ui.WindowedMenu;
 import mindustry.ui.*;
 import mindustry.ui.dialogs.*;
 import mindustry.ui.fragments.*;
@@ -52,7 +49,6 @@ public class UI implements ApplicationListener, Loadable{
     public PlayerListFragment listfrag;
     public LoadingFragment loadfrag;
     public HintsFragment hints;
-    public InfoControl infoControl;
 
     public WidgetGroup menuGroup, hudGroup;
 
@@ -84,7 +80,6 @@ public class UI implements ApplicationListener, Loadable{
     public CampaignCompleteDialog campaignComplete;
 
     public IntMap<Dialog> followUpMenus;
-    public IntMap<Window> followUpWindowedMenus = new IntMap<>();
 
     public Cursor drillCursor, unloadCursor, targetCursor, resizeHorizontalCursor, resizeVerticalCursor, resizeLeftCursor, resizeRightCursor;
 
@@ -102,8 +97,6 @@ public class UI implements ApplicationListener, Loadable{
     private @Nullable Element lastAnnouncement;
 
     private @Nullable Element lastArcAnnouncement;
-
-    public WidgetGroup squirrelGroup;
 
     public UI(){
         Fonts.loadFonts();
@@ -209,7 +202,6 @@ public class UI implements ApplicationListener, Loadable{
 
         menuGroup = new WidgetGroup();
         hudGroup = new WidgetGroup();
-        squirrelGroup = new WidgetGroup();
 
         menufrag = new MenuFragment();
         hudfrag = new HudFragment();
@@ -220,7 +212,6 @@ public class UI implements ApplicationListener, Loadable{
         loadfrag = new LoadingFragment();
         consolefrag = new ConsoleFragment();
         ConsoleDialog = new ConsoleDialog();
-        infoControl = new InfoControl();
 
         picker = new ColorPicker();
         editor = new MapEditorDialog();
@@ -267,13 +258,9 @@ public class UI implements ApplicationListener, Loadable{
         hudGroup.setFillParent(true);
         hudGroup.touchable = Touchable.childrenOnly;
         hudGroup.visible(() -> state.isGame());
-        squirrelGroup.setFillParent(true);
-        squirrelGroup.touchable = Touchable.childrenOnly;
-        squirrelGroup.update(() -> squirrelGroup.toFront());
 
         Core.scene.add(menuGroup);
         Core.scene.add(hudGroup);
-        Core.scene.add(squirrelGroup);
 
         hudfrag.build(hudGroup);
         menufrag.build(menuGroup);
@@ -283,7 +270,6 @@ public class UI implements ApplicationListener, Loadable{
         consolefrag.build(hudGroup);
         loadfrag.build(group);
         new FadeInFragment().build(group);
-        infoControl.build(squirrelGroup);
 
         initArcWave();
 
@@ -713,15 +699,6 @@ public class UI implements ApplicationListener, Loadable{
 
     /** Shows a menu that fires a callback when an option is selected. If nothing is selected, -1 is returned. */
     public void showMenu(String title, String message, String[][] options, Intc callback){
-        if (Hack.useWindowedMenu) {
-            Window w = WindowedMenu.newMenu(title, message, options, (i, t) -> {
-                callback.get(i);
-                t.onClose = () -> {};
-                t.remove();
-            });
-            w.onClose = () -> callback.get(-1);
-            return;
-        }
         Dialog dialog = newMenuDialog(title, message, options, (option, myself) -> {
             callback.get(option);
             myself.hide();
@@ -733,21 +710,6 @@ public class UI implements ApplicationListener, Loadable{
     /** Shows a menu that hides when another followUp-menu is shown or when nothing is selected.
      * @see UI#showMenu(String, String, String[][], Intc) */
     public void showFollowUpMenu(int menuId, String title, String message, String[][] options, Intc callback) {
-        if (Hack.useWindowedMenu) {
-            Window old = followUpWindowedMenus.get(menuId);
-            if (old != null) {
-                old.setTitle(title);
-                old.setBody(WindowedMenu.buildMenu(message, options, callback::get));
-                return;
-            }
-            Window w = WindowedMenu.newMenu(title, message, options, (i, t) -> callback.get(i));
-            w.onClose = () -> {
-                followUpWindowedMenus.remove(menuId);
-                callback.get(-1);
-            };
-            followUpWindowedMenus.put(menuId, w);
-            return;
-        }
         Dialog dialog = newMenuDialog(title, message, options, (option, myself) -> callback.get(option));
         dialog.closeOnBack(() -> {
             followUpMenus.remove(menuId);
@@ -765,10 +727,6 @@ public class UI implements ApplicationListener, Loadable{
     }
 
     public void hideFollowUpMenu(int menuId) {
-        if (Hack.useWindowedMenu) {
-            if (followUpWindowedMenus.containsKey(menuId)) followUpWindowedMenus.remove(menuId).remove();
-            return;
-        }
         if(!followUpMenus.containsKey(menuId)) return;
         followUpMenus.remove(menuId).hide();
     }

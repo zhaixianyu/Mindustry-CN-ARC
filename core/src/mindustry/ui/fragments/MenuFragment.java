@@ -13,7 +13,6 @@ import arc.scene.actions.Actions;
 import arc.scene.event.Touchable;
 import arc.scene.style.Drawable;
 import arc.scene.ui.Button;
-import arc.scene.ui.Image;
 import arc.scene.ui.ImageButton.ImageButtonStyle;
 import arc.scene.ui.Label;
 import arc.scene.ui.layout.Scl;
