@@ -27,7 +27,8 @@ public class LogicDisplay extends Block{
         commandPoly = 7,
         commandLinePoly = 8,
         commandTriangle = 9,
-        commandImage = 10;
+        commandImage = 10,
+        commandCharacter = 11;
 
     public int maxSides = 25;
 
@@ -98,6 +99,9 @@ public class LogicDisplay extends Block{
                                 case commandColor -> Draw.color(this.color = Color.toFloatBits(x, y, p1, p2));
                                 case commandStroke -> Lines.stroke(this.stroke = x);
                                 case commandImage -> Draw.rect(Fonts.logicIcon(p1), x, y, p2, p2, p3);
+                            }
+                            case commandCharacter -> {
+                                //TODO
                             }
                         }
 
@@ -197,7 +201,8 @@ public class LogicDisplay extends Block{
         poly,
         linePoly,
         triangle,
-        image,;
+        image,
+        ;//character;
 
         public static final GraphicsType[] all = values();
     }
