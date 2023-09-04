@@ -32,8 +32,8 @@ public class Version{
         type = map.get("type");
         number = Integer.parseInt(map.get("number", "4"));
         modifier = map.get("modifier");
-        build = 145;
-        revision = 1;
+        build = 146;
+        revision = 0;
         /*
         if(map.get("build").contains(".")){
             String[] split = map.get("build").split("\\.");
