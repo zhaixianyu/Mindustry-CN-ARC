@@ -100,9 +100,6 @@ public class LogicDisplay extends Block{
                                 case commandStroke -> Lines.stroke(this.stroke = x);
                                 case commandImage -> Draw.rect(Fonts.logicIcon(p1), x, y, p2, p2, p3);
                             }
-                            case commandCharacter -> {
-                                //TODO
-                            }
                         }
 
                         buffer.end();
