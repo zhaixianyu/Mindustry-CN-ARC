@@ -41,7 +41,7 @@ public class MenuFragment{
     private Seq<MenuButton> customButtons = new Seq<>();
     Label textLabel;
     float tx, ty, base;
-    String[] labels = { "学术端!" };
+    String[] labels = { "[yellow]学术端!" };
     float period = 75f;
     float varSize = 0.8f;
     String text = labels[0];
@@ -124,8 +124,7 @@ public class MenuFragment{
             Fonts.outline.draw(versionText+arcversionText, fx, fy - logoh/2f - Scl.scl(2f), Align.center);
         }).touchable = Touchable.disabled;
 
-        textGroup.setTransform(true);//松鼠:这个文字旋转要了我3天时间 臭猫的arc库不是标准libgdx 网上一堆教程都用不了
-        //最后还是搜libgdx旋转文字方法 在 https://www.cnblogs.com/keanuyaoo/p/3320223.html 找到了setRotation不起作用的原因
+        textGroup.setTransform(true);
         textGroup.setRotation(20);
         textGroup.addChild(textLabel = new Label(""));
         textGroup.visible(() -> Core.settings.getBool("menuFloatText", true));
@@ -136,7 +135,7 @@ public class MenuFragment{
             textLabel.setFontScale((base == 0 ? 1f : base) * Math.abs(Time.time % period / period - 0.5f) * varSize + 1);
             textLabel.setText(text);
         });
-        Events.on(EventType.ClientLoadEvent.class, event -> Http.get(userContentURL + "/CN-ARC/Mindustry-CN-ARC/master/core/assets/labels")
+        Events.on(EventType.ClientLoadEvent.class, event -> Http.get("https://cn-arc.github.io/labels")
                 .error(e -> {
                     Log.err("获取最新主页标语失败!加载本地标语", e);
                     labels = Core.files.internal("labels").readString("UTF-8").replace("\r", "").replace("\\n", "\n").replace("/n", "\n").split("\n");
