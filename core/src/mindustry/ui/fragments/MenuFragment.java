@@ -168,7 +168,6 @@ public class MenuFragment{
                         boolean haveNews = false;
                         Table t = new Table();
                         ScrollPane p = new ScrollPane(t);
-                        t.setBackground(Styles.black3);
                         for (int i = 0; i < news.length; i += 3) {
                             if (Time.millis() - Long.parseLong(news[0]) < 86400000 * 14) {//14天
                                 haveNews = true;
@@ -210,7 +209,9 @@ public class MenuFragment{
                             t.add("这里什么都没有");
                         }
                         Window w = new Window("学术日报", 600, 400, Icon.book.getRegion(), ui.WindowManager);
-                        w.setBody(new Table(t2 -> t2.add(p).grow()));
+                        w.setBody(new Table(t2 -> t2.add(p).grow()) {{
+                            setBackground(Styles.black3);
+                        }});
                         w.add();
                     });
                 }));
