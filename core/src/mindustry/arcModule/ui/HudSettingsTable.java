@@ -164,7 +164,7 @@ public class HudSettingsTable extends Table {
                     }).checked(a -> Core.settings.getBool("removeLogicLock")).size(30, 30).tooltip("逻辑锁定");
                     t.button("[cyan]雾", textStyle, () -> {
                         renderer.fogEnabled = !renderer.fogEnabled;
-                    }).checked(a -> renderer.fogEnabled).size(30, 30).disabled(b -> state.rules.pvp && player.team().id != 255).tooltip("战争迷雾").visible(net.client());
+                    }).checked(a -> renderer.fogEnabled).size(30, 30).tooltip("战争迷雾").visible(() -> !state.rules.pvp || player.team().id == 255);
                 }).left();
                 sp.row();
                 sp.table(t -> {
