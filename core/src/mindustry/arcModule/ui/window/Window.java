@@ -11,7 +11,6 @@ import arc.graphics.g2d.TextureRegion;
 import arc.input.KeyCode;
 import arc.math.geom.Vec2;
 import arc.scene.Element;
-import arc.scene.actions.Actions;
 import arc.scene.event.InputEvent;
 import arc.scene.event.InputListener;
 import arc.scene.event.Touchable;
@@ -67,15 +66,6 @@ public class Window {
     public void add() {
         manager.addWindow(this);
         front = this;
-        fadeIn();
-    }
-
-    public void fadeIn() {
-        table.actions(Actions.sequence(Actions.alpha(0), Actions.fadeIn(10f / 60f)));
-    }
-
-    public void fadeOut() {
-        table.actions(Actions.sequence(Actions.alpha(1), Actions.fadeOut(10f / 60f)));
     }
 
     public Window setIcon(TextureRegion icon) {
