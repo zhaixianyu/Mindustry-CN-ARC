@@ -21,15 +21,10 @@ public class WindowManager {
 
     public Window createWindow() {
         Window w = new Window(this);
-        w.add();
-        return w;
-    }
-
-    public void addWindow(Window w) {
-        if (windows.contains(w)) return;
-        windows.add(w);
         group.addChild(w.table);
+        windows.add(w);
         w.center();
+        return w;
     }
 
     public void removeWindow(Window w) {

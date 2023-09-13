@@ -11,7 +11,6 @@ import arc.graphics.g2d.TextureRegion;
 import arc.input.KeyCode;
 import arc.math.geom.Vec2;
 import arc.scene.Element;
-import arc.scene.actions.Actions;
 import arc.scene.event.InputEvent;
 import arc.scene.event.InputListener;
 import arc.scene.event.Touchable;
@@ -45,37 +44,24 @@ public class Window {
         this(ui.WindowManager);
     }
 
-    public Window(WindowManager manager) {
+    Window(WindowManager manager) {
         this("Title", manager);
     }
 
-    public Window(String title, WindowManager manager) {
+    Window(String title, WindowManager manager) {
         this(title, 600, 400, manager);
     }
 
-    public Window(String title, float width, float height, WindowManager manager) {
+    Window(String title, float width, float height, WindowManager manager) {
         this(title, width, height, new TextureRegion((Texture) Core.assets.get("sprites/error.png")), manager);
     }
 
-    public Window(String title, float width, float height, TextureRegion icon, WindowManager manager) {
+    Window(String title, float width, float height, TextureRegion icon, WindowManager manager) {
         this.manager = manager;
         this.title = title;
         this.icon = icon;
         table = new WindowTable(width, height);
-    }
-
-    public void add() {
-        manager.addWindow(this);
         front = this;
-        fadeIn();
-    }
-
-    public void fadeIn() {
-        table.actions(Actions.sequence(Actions.alpha(0), Actions.fadeIn(10f / 60f)));
-    }
-
-    public void fadeOut() {
-        table.actions(Actions.sequence(Actions.alpha(1), Actions.fadeOut(10f / 60f)));
     }
 
     public Window setIcon(TextureRegion icon) {
