@@ -30,7 +30,7 @@ import static mindustry.Vars.ui;
 public class Window {
     public WindowTable table;
     WindowManager manager;
-    String title;
+    String title, titlePrefix;
     Table cont;
     TextureRegion icon;
     public Image iconImage;
@@ -44,23 +44,27 @@ public class Window {
         this(ui.WindowManager);
     }
 
-    Window(WindowManager manager) {
+    public Window(WindowManager manager) {
         this("Title", manager);
     }
 
-    Window(String title, WindowManager manager) {
+    public Window(String title, WindowManager manager) {
         this(title, 600, 400, manager);
     }
 
-    Window(String title, float width, float height, WindowManager manager) {
+    public Window(String title, float width, float height, WindowManager manager) {
         this(title, width, height, new TextureRegion((Texture) Core.assets.get("sprites/error.png")), manager);
     }
 
-    Window(String title, float width, float height, TextureRegion icon, WindowManager manager) {
+    public Window(String title, float width, float height, TextureRegion icon, WindowManager manager) {
         this.manager = manager;
         this.title = title;
         this.icon = icon;
         table = new WindowTable(width, height);
+    }
+
+    public void add() {
+        manager.addWindow(this);
         front = this;
     }
 
@@ -212,8 +216,7 @@ public class Window {
                 t.add(iconImage).size(12).pad(10, 12, 10, 12);
                 t.table(tt -> {
                     tt.add("").update(l -> {
-                        l.setText(calcString(title, l.getWidth()));
-                        l.setColor(front == Window.this ? Color.black : Color.gray);
+                        l.setText(calcString("[#" + (front == Window.this ? Color.black : Color.gray) + "]" +  title, l.getWidth()));
                     }).grow();
                     tt.addListener(new InputListener() {
                         float lastX, lastY;
