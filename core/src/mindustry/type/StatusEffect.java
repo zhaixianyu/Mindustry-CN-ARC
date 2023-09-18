@@ -56,7 +56,8 @@ public class StatusEffect extends UnlockableContent{
     /** Should the apply effect be given a parent. */
     public boolean parentizeApplyEffect;
     /** Affinity & opposite values for stat displays. */
-    public ObjectSet<StatusEffect> affinities = new ObjectSet<>(), opposites = new ObjectSet<>();
+    public ObjectMap<StatusEffect, StatValue> affinities = new ObjectMap<>(), reacts = new ObjectMap<>();
+    public ObjectSet<StatusEffect> opposites = new ObjectSet<>();
     /** Set to false to disable outline generation. */
     public boolean outline = true;
     /** Transition handler map. */
@@ -73,6 +74,7 @@ public class StatusEffect extends UnlockableContent{
         if(initblock != null){
             initblock.run();
         }
+        details = "若单位有效果A时被添加效果B会产生反应\n则称A亲和B，B反应A\n(如果触发反应，效果B不会挂到单位上)\n永久效果:此buff不会随时间消失\n瞬间效果:只能触发反应，不会挂到单位上";
     }
 
     public void init(Runnable run){
@@ -86,6 +88,8 @@ public class StatusEffect extends UnlockableContent{
 
     @Override
     public void setStats(){
+        stats.add("瞬间效果", StatCat.general, StatValues.bool(reactive));
+        stats.add("永久效果", StatCat.general, StatValues.bool(permanent));
         if(damageMultiplier != 1) stats.addPercent(Stat.damageMultiplier, damageMultiplier);
         if(healthMultiplier != 1) stats.addPercent(Stat.healthMultiplier, healthMultiplier);
         if(speedMultiplier != 1) stats.addPercent(Stat.speedMultiplier, speedMultiplier);
@@ -95,31 +99,16 @@ public class StatusEffect extends UnlockableContent{
         if(damage > 0) stats.add(Stat.damage, damage * 60f, StatUnit.perSecond);
         if(damage < 0) stats.add(Stat.healing, -damage * 60f, StatUnit.perSecond);
 
-        boolean reacts = false;
-
         for(var e : opposites.toSeq().sort()){
             stats.add(Stat.opposites, e.emoji() + "" + e);
         }
 
-        if(reactive){
-            var other = Vars.content.statusEffects().find(f -> f.affinities.contains(this));
-            if(other != null && other.transitionDamage > 0){
-                stats.add(Stat.reactive, other.emoji() + other + " / [accent]" + (int)other.transitionDamage + "[lightgray] " + Stat.damage.localized());
-                reacts = true;
-            }
+        for (var e : affinities) {
+            stats.add(Stat.affinities, e.value);
         }
-
-        //don't list affinities *and* reactions, as that would be redundant
-        if(!reacts){
-            for(var e : affinities.toSeq().sort()){
-                stats.add(Stat.affinities, e.emoji() + "" + e);
-            }
-
-            if(affinities.size > 0 && transitionDamage != 0){
-                stats.add(Stat.affinities, "/ [accent]" + (int)transitionDamage + " " + Stat.damage.localized());
-            }
+        for (var e : reacts) {
+            stats.add(Stat.reactive, e.value);
         }
-
     }
 
     @Override
@@ -144,10 +133,9 @@ public class StatusEffect extends UnlockableContent{
     protected void trans(StatusEffect effect, TransitionHandler handler){
         transitions.put(effect, handler);
     }
-
-    protected void affinity(StatusEffect effect, TransitionHandler handler){
-        affinities.add(effect);
-        effect.affinities.add(this);
+    protected void affinity(StatusEffect effect, TransitionHandler handler, String... desc){
+        affinities.put(effect, StatValues.statusReact(effect, desc));
+        effect.reacts.put(this, StatValues.statusReact(this, desc));
         trans(effect, handler);
     }
 

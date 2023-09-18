@@ -745,10 +745,6 @@ public class UnitType extends UnlockableContent implements Senseable{
 
         if(immunities.size > 0){
             var imm = immunities.toSeq().sort();
-            //it's redundant to list wet for naval units
-            if(naval){
-                imm.remove(StatusEffects.wet);
-            }
             stats.add(Stat.immunities, StatValues.statusEffects(imm));
         }
     }
