@@ -10,22 +10,20 @@ import arc.math.geom.*;
 import arc.util.*;
 import arc.util.io.*;
 import mindustry.annotations.Annotations.*;
+import mindustry.arcModule.NumberFormat;
 import mindustry.content.*;
-import mindustry.core.UI;
 import mindustry.entities.*;
 import mindustry.game.EventType.*;
 import mindustry.game.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.logic.*;
-import mindustry.type.*;
 import mindustry.ui.*;
 import mindustry.world.*;
 import mindustry.world.consumers.*;
 import mindustry.world.meta.*;
 
 import static mindustry.Vars.*;
-import static mindustry.arcModule.RFuncs.*;
 
 public class ForceProjector extends Block{
     public final int timerUse = timers++;
@@ -87,7 +85,7 @@ public class ForceProjector extends Block{
     public void setBars(){
         super.setBars();
         addBar("shield", (ForceBuild entity) -> new Bar(
-                () ->  percentFormat("\uE84D", shieldHealth + phaseShieldBoost * entity.phaseHeat - entity.buildup, shieldHealth + phaseShieldBoost * entity.phaseHeat),
+                () ->  NumberFormat.percentFormat("\uE84D", shieldHealth + phaseShieldBoost * entity.phaseHeat - entity.buildup, shieldHealth + phaseShieldBoost * entity.phaseHeat),
                 () -> Pal.accent,
                 () -> entity.broken ? 0f : 1f - entity.buildup / (shieldHealth + phaseShieldBoost * entity.phaseHeat))
                 .blink(Color.white));

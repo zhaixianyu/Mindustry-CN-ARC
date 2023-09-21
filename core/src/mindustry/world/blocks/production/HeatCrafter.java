@@ -2,13 +2,11 @@ package mindustry.world.blocks.production;
 
 import arc.*;
 import arc.math.*;
-import mindustry.core.UI;
+import mindustry.arcModule.NumberFormat;
 import mindustry.graphics.*;
 import mindustry.ui.*;
 import mindustry.world.blocks.heat.*;
 import mindustry.world.meta.*;
-
-import static mindustry.arcModule.RFuncs.*;
 
 /** A crafter that requires contact from heater blocks to craft. */
 public class HeatCrafter extends GenericCrafter{
@@ -29,7 +27,7 @@ public class HeatCrafter extends GenericCrafter{
 
         addBar("heat", (HeatCrafterBuild entity) ->
             new Bar(
-                () -> percentFormat("热量", entity.heat , heatRequirement, buildPercent((int)entity.efficiencyScale())),
+                () -> NumberFormat.percentFormat("热量", entity.heat , heatRequirement, NumberFormat.buildPercent((int)entity.efficiencyScale())),
                 () -> Pal.lightOrange,
                 () -> entity.heat / heatRequirement));
     }

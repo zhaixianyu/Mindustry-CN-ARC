@@ -6,13 +6,12 @@ import arc.math.*;
 import arc.util.*;
 import arc.util.io.*;
 import mindustry.annotations.Annotations.*;
-import mindustry.core.UI;
+import mindustry.arcModule.NumberFormat;
 import mindustry.graphics.*;
 import mindustry.ui.Bar;
 import mindustry.world.meta.*;
 
 import static mindustry.Vars.*;
-import static mindustry.arcModule.RFuncs.*;
 
 public class ShieldWall extends Wall{
     public float shieldHealth = 900f;
@@ -43,7 +42,7 @@ public class ShieldWall extends Wall{
     public void setBars(){
         super.setBars();
         addBar("charge", (ShieldWallBuild entity) -> new Bar(
-                () -> percentFormat("\uE84D", entity.shield , shieldHealth),
+                () -> NumberFormat.percentFormat("\uE84D", entity.shield , shieldHealth),
                 () -> Pal.shield,
                 () -> (entity.shield / shieldHealth)));
     }

@@ -16,10 +16,8 @@ import mindustry.ui.*;
 import mindustry.world.meta.*;
 
 import static mindustry.Vars.*;
-
-import static mindustry.Vars.tilesize;
 import static mindustry.arcModule.RFuncs.abilitysFormat;
-import static mindustry.arcModule.RFuncs.percentFormat;
+import static mindustry.arcModule.NumberFormat.percentFormat;
 
 public class ForceFieldAbility extends Ability{
     /** Shield radius. */

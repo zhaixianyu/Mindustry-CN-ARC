@@ -40,7 +40,7 @@ import mindustry.world.meta.*;
 
 import static arc.graphics.g2d.Draw.*;
 import static mindustry.Vars.*;
-import static mindustry.arcModule.RFuncs.percentFormat;
+import static mindustry.arcModule.NumberFormat.percentFormat;
 import static mindustry.arcModule.toolpack.arcPlayerEffect.drawPlayerEffect;
 
 public class UnitType extends UnlockableContent implements Senseable{

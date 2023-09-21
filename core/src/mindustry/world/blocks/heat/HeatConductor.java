@@ -5,15 +5,13 @@ import arc.graphics.g2d.*;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.*;
-import mindustry.core.UI;
+import mindustry.arcModule.NumberFormat;
 import mindustry.entities.units.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.ui.*;
 import mindustry.world.*;
 import mindustry.world.draw.*;
-
-import static mindustry.arcModule.RFuncs.*;
 
 public class HeatConductor extends Block{
     public float visualMaxHeat = 15f;
@@ -31,7 +29,7 @@ public class HeatConductor extends Block{
     public void setBars(){
         super.setBars();
 
-        addBar("heat", (HeatConductorBuild entity) -> new Bar(() -> percentFormat("热量", entity.heat , visualMaxHeat), () -> Pal.lightOrange, () -> entity.heat / visualMaxHeat));
+        addBar("heat", (HeatConductorBuild entity) -> new Bar(() -> NumberFormat.percentFormat("热量", entity.heat , visualMaxHeat), () -> Pal.lightOrange, () -> entity.heat / visualMaxHeat));
     }
 
     @Override
