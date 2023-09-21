@@ -743,29 +743,6 @@ public class StatValues{
         return table -> table.add((turret.shoot.totalShots() == 1f ? "" : turret.shoot.totalShots() + " x ") + Strings.autoFixed(60f / turret.reload, 2) + "/s");
     }
 
-    public static StatValue statusReact(StatusEffect effect, String... args) {
-        return table -> {
-            table.table(Styles.grayPanel, bt -> {
-                bt.left().top().defaults().padRight(3).left();
-
-                bt.table(title -> {
-                    title.image(icon(effect)).size(2 * 8).padRight(4).right().scaling(Scaling.fit).top();
-                    title.add(effect.localizedName).padRight(10).left().top();
-                });
-                if (args.length == 0) {
-                    if (effect.transitionDamage > 0) {
-                        sep(bt, Strings.format("[stat]@[lightgray]伤害", effect.transitionDamage));
-                    }
-                    sep(bt, "[lightgray]此反应未填写描述或为mod添加，无法获取更多信息");
-                }
-                for (String desc : args) {
-                    sep(bt, desc);
-                }
-            }).padLeft(5).padTop(5).padBottom(5).growX().margin(10);
-            table.row();
-        };
-    }
-
     //for AmmoListValue
     private static Cell<Label> sep(Table table, String text){
         table.row();

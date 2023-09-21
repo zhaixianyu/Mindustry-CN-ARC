@@ -42,6 +42,7 @@ public class Stat implements Comparable<Stat>{
     speedMultiplier = new Stat("speedMultiplier"),
     reloadMultiplier = new Stat("reloadMultiplier"),
     buildSpeedMultiplier = new Stat("buildSpeedMultiplier"),
+    reactive = new Stat("reactive"),
     healing = new Stat("healing"),
     immunities = new Stat("immunities"),
 
@@ -117,10 +118,8 @@ public class Stat implements Comparable<Stat>{
 
     booster = new Stat("booster", StatCat.optional),
     boostEffect = new Stat("boostEffect", StatCat.optional),
-
-    opposites = new Stat("opposites", StatCat.optional),
     affinities = new Stat("affinities", StatCat.optional),
-    reactive = new Stat("reactive", StatCat.optional);
+    opposites = new Stat("opposites", StatCat.optional);
 
     public final StatCat category;
     public final String name;

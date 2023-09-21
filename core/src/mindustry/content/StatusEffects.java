@@ -3,7 +3,6 @@ package mindustry.content;
 import arc.*;
 import arc.graphics.*;
 import arc.math.*;
-import arc.util.Strings;
 import mindustry.game.EventType.*;
 import mindustry.game.*;
 import mindustry.graphics.*;
@@ -30,7 +29,7 @@ public class StatusEffects{
                     unit.damagePierce(transitionDamage);
                     Fx.burning.at(unit.x + Mathf.range(unit.bounds() / 2f), unit.y + Mathf.range(unit.bounds() / 2f));
                     result.set(burning, Math.min(time + result.time, 300f));
-                }, pierceDamage(transitionDamage), refresh(burning, 300f));
+                });
             });
         }};
 
@@ -49,7 +48,7 @@ public class StatusEffects{
                     if(unit.team == state.rules.waveTeam){
                         Events.fire(Trigger.blastFreeze);
                     }
-                }, pierceDamage(transitionDamage));
+                });
             });
         }};
 
@@ -88,7 +87,7 @@ public class StatusEffects{
                     if(unit.team == state.rules.waveTeam){
                         Events.fire(Trigger.shock);
                     }
-                }, damage((1 - 0.3f) * transitionDamage), pierceDamage(0.3f * transitionDamage));
+                });
                 opposite(burning, melting);
             });
         }};
@@ -114,7 +113,7 @@ public class StatusEffects{
                     unit.damagePierce(8f);
                     Fx.burning.at(unit.x + Mathf.range(unit.bounds() / 2f), unit.y + Mathf.range(unit.bounds() / 2f));
                     result.set(melting, Math.min(time + result.time, 200f));
-                }, pierceDamage(8f), refresh(melting, 200f));
+                });
             });
         }};
 
@@ -147,10 +146,8 @@ public class StatusEffects{
             effect = Fx.oily;
 
             init(() -> {
-                affinity(melting, (unit, result, time) -> result.set(melting, result.time + time),
-                        conversion(tarred, melting));
-                affinity(burning, (unit, result, time) -> result.set(burning, result.time + time),
-                        conversion(tarred, burning));
+                affinity(melting, (unit, result, time) -> result.set(melting, result.time + time));
+                affinity(burning, (unit, result, time) -> result.set(burning, result.time + time));
             });
         }};
 
@@ -209,26 +206,5 @@ public class StatusEffects{
             healthMultiplier = Float.POSITIVE_INFINITY;
             color = Color.red;
         }};
-    }
-    public static String damage(float damage) {
-        return Strings.format("[stat]@[lightgray]伤害", Strings.autoFixed(damage, 1));
-    }
-    public static String pierceDamage(float damage) {
-        return Strings.format("[stat]@[lightgray]穿甲伤害", Strings.autoFixed(damage, 1));
-    }
-    public static String refresh(StatusEffect effect, float time) {
-        return Strings.format("[lightgray]增加[white]@@[lightgray]的持续时间(上限[stat]@[lightgray]秒)",
-                effect.emoji(),
-                effect.localizedName,
-                Strings.autoFixed(time / 60f, 1)
-        );
-    }
-    public static String conversion(StatusEffect effect, StatusEffect to) {
-        return Strings.format("[lightgray]将[white]@@[lightgray]转化为[white]@@",
-                effect.emoji(),
-                effect.localizedName,
-                to.emoji(),
-                to.localizedName
-        );
     }
 }
