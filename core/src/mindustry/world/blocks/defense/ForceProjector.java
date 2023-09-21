@@ -25,6 +25,7 @@ import mindustry.world.consumers.*;
 import mindustry.world.meta.*;
 
 import static mindustry.Vars.*;
+import static mindustry.arcModule.RFuncs.*;
 
 public class ForceProjector extends Block{
     public final int timerUse = timers++;
@@ -85,7 +86,8 @@ public class ForceProjector extends Block{
     @Override
     public void setBars(){
         super.setBars();
-        addBar("shield", (ForceBuild entity) -> new Bar(() ->  UI.simpleFormat("盾容", shieldHealth + phaseShieldBoost * entity.phaseHeat - entity.buildup,shieldHealth + phaseShieldBoost * entity.phaseHeat),
+        addBar("shield", (ForceBuild entity) -> new Bar(
+                () ->  percentFormat("\uE84D", shieldHealth + phaseShieldBoost * entity.phaseHeat - entity.buildup, shieldHealth + phaseShieldBoost * entity.phaseHeat),
                 () -> Pal.accent,
                 () -> entity.broken ? 0f : 1f - entity.buildup / (shieldHealth + phaseShieldBoost * entity.phaseHeat))
                 .blink(Color.white));

@@ -9,6 +9,8 @@ import mindustry.world.blocks.production.*;
 import mindustry.world.draw.*;
 import mindustry.world.meta.*;
 
+import static mindustry.arcModule.RFuncs.*;
+
 public class HeatProducer extends GenericCrafter{
     public float heatOutput = 10f;
     public float warmupRate = 0.15f;
@@ -34,7 +36,7 @@ public class HeatProducer extends GenericCrafter{
     public void setBars(){
         super.setBars();
 
-        addBar("heat", (HeatProducerBuild entity) -> new Bar(()-> UI.simpleFormat("热量",entity.heat,heatOutput,0), () -> Pal.lightOrange, () -> entity.heat / heatOutput));
+        addBar("heat", (HeatProducerBuild entity) -> new Bar(()-> percentFormat("热量", entity.heat , heatOutput), () -> Pal.lightOrange, () -> entity.heat / heatOutput));
     }
 
     public class HeatProducerBuild extends GenericCrafterBuild implements HeatBlock{

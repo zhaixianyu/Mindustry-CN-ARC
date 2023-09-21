@@ -8,6 +8,8 @@ import mindustry.ui.*;
 import mindustry.world.blocks.heat.*;
 import mindustry.world.meta.*;
 
+import static mindustry.arcModule.RFuncs.*;
+
 /** A crafter that requires contact from heater blocks to craft. */
 public class HeatCrafter extends GenericCrafter{
     /** Base heat requirement for 100% efficiency. */
@@ -26,10 +28,10 @@ public class HeatCrafter extends GenericCrafter{
         super.setBars();
 
         addBar("heat", (HeatCrafterBuild entity) ->
-            new Bar(() ->
-            UI.simpleFormat("热量",entity.heat,heatRequirement,0) + "[lightgray](" + (int)(entity.efficiencyScale() * 100 + 0.01f) + ")",
-            () -> Pal.lightOrange,
-            () -> entity.heat / heatRequirement));
+            new Bar(
+                () -> percentFormat("热量", entity.heat , heatRequirement, buildPercent((int)entity.efficiencyScale())),
+                () -> Pal.lightOrange,
+                () -> entity.heat / heatRequirement));
     }
 
     @Override

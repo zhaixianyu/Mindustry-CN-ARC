@@ -39,7 +39,7 @@ public class RFuncs {
         });
     }
 
-    private static String colorized(Color color, String name) {
+    public static String colorized(Color color, String name) {
         if (colorized) return "[#" + color + "]" + name + "[]";
         else return name;
     }
@@ -128,7 +128,7 @@ public class RFuncs {
         return arcColorTime(timer, true);
     }
 
-    public static String arcColorTime(int timer, boolean units){
+    public static String arcColorTime(int timer, boolean units) {
         StringBuilder str = new StringBuilder();
         String color = timer > 0 ? "[orange]" : "[acid]";
         timer = Math.abs(timer);
@@ -183,8 +183,8 @@ public class RFuncs {
         StringBuilder prefix = new StringBuilder();
         if (teamMark) prefix.append("/t ");
         prefix.append(arcVersionPrefix);
-        prefix.append("[" + color + "]");
-        prefix.append("<" + type + ">");
+        prefix.append("[").append(color).append("]");
+        prefix.append("<").append(type).append(">");
         prefix.append("[white]");
         return prefix;
     }
@@ -194,6 +194,51 @@ public class RFuncs {
             values[i] = values[i] instanceof Number n ? "[stat]" + Strings.autoFixed(n.floatValue(), 1) + "[]" : "[white]" + values[i] + "[]";
         }
         return Strings.format("[lightgray]" + format.replace("~", "[#" + getThemeColor() + "]~[]"), values);
+    }
+
+
+    public static String percentFormat(String prefix, float cur, float max) {
+        /**
+         最通用的情况
+         */
+        return percentFormat(prefix, cur, cur > 0.0001f, max,  cur / max < 0.9f, 2);
+    }
+
+    public static String percentFormat(String prefix, float cur, float max, int arcFixed) {
+        // 用于处理血量等需要精细显示的
+        return percentFormat(prefix, cur, cur > 0.0001f, max, cur / max < 0.9f, arcFixed);
+    }
+
+    public static String percentFormat(String prefix, float cur, boolean showMin, float max, boolean showPercent, int arcFixed) {
+        return percentFormat(prefix, cur,showMin, max, showMin & showPercent ? buildPercent(cur, max) : "", arcFixed);
+    }
+
+    public static String percentFormat(String prefix, float cur, float max, String format) {
+        /** 用于有自定义百分比需求的，如热量相关 */
+        return percentFormat(prefix, cur, cur > 0.0001f, max, format, 2);
+    }
+
+    public static String percentFormat(String prefix, float cur, boolean showMin, float max, String format, int arcFixed) {
+        /** 只不处理showMax */
+        return percentFormat(prefix, cur, showMin, max, Math.abs(cur/max - 1) > 0.01f, format, arcFixed);
+    }
+
+    public static String percentFormat(String prefix, float cur, boolean showMin, float max, boolean showMax, String format, int arcFixed) {
+        /** 用于建筑等的bar显示，保持统一格式 */
+        StringBuilder text = new StringBuilder(prefix).append(" ");
+        text.append(showMin ? UI.arcFixed(cur, arcFixed) : "\uE815");
+        if (showMax) text.append("/").append(UI.arcFixed(max, arcFixed));
+        text.append(format);
+        return text.toString();
+    }
+
+    private static String buildPercent(float cur, float max) {
+        return buildPercent(100 * cur / max);
+    }
+
+    public static String buildPercent(float percent) {
+        //return " [lightgray]| " + UI.arcFixed(percent, 2) + "%";
+        return " [lightgray]| " + (int)percent + "%";
     }
 
 }

@@ -40,6 +40,7 @@ import mindustry.world.meta.*;
 
 import static arc.graphics.g2d.Draw.*;
 import static mindustry.Vars.*;
+import static mindustry.arcModule.RFuncs.percentFormat;
 import static mindustry.arcModule.toolpack.arcPlayerEffect.drawPlayerEffect;
 
 public class UnitType extends UnlockableContent implements Senseable{
@@ -582,7 +583,7 @@ public class UnitType extends UnlockableContent implements Senseable{
                 }else if(unit.maxHealth == unit.health){
                     return UI.formatAmount((long)unit.health);
                 }else{
-                    return UI.formatAmount((long)unit.health) + "/" + UI.formatAmount((long)unit.maxHealth) + " (" + (int)(100 * unit.health / unit.maxHealth) + "%)";
+                    return percentFormat("\uE813", unit.health, unit.maxHealth, 5);
                 }
             }, () -> Pal.health, unit::healthf).blink(Color.white));
             bars.row();
