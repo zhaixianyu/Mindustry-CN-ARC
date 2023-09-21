@@ -513,25 +513,15 @@ public class UnitType extends UnlockableContent implements Senseable{
     public void landed(Unit unit){}
 
     private void displayStatusEffect(Unit unit,Table table){
-        for(StatusEffect e : content.statusEffects()){
-            if(unit.hasEffect(e)){
-                table.row();
-                table.table(t->{
-                    int i = 0;
-                    for(StatusEffect eff : content.statusEffects()){
-                        if(unit.hasEffect(eff)){
-                            i+=1;
-                            if((i-1) % 5 != 0) t.add().width(20f);
-                            t.add(new ItemImage(eff.uiIcon,(unit.getEffectTime(eff) >= 1000000f || unit.getEffectTime(eff) == -1f)?"inf" : UI.formatTime(unit.getEffectTime(eff))));
-                            if(i % 5==0)
-                                t.row();
-                        }
-                    }
-                }).growX().left();
-                break;
+        if (unit.statuses().isEmpty()) return;
+        table.row().table(t -> {
+            for(StatusEntry entry : unit.statuses().copy()) {
+                if (t.getChildren().size % 5 == 0) t.row();
+                t.add(new ItemImage(entry.effect.uiIcon,
+                        entry.effect.permanent || entry.time > Time.toHours * 10f ? "Inf" : UI.formatTime(entry.time)
+                )).padLeft(8f);
             }
-        }
-
+        });
     }
 
     private void updateStatusTable(Unit unit){
@@ -1477,15 +1467,15 @@ public class UnitType extends UnlockableContent implements Senseable{
             }
 
             float index = 0f;
-            float iconSize = Mathf.ceil(unit.hitSize() / 4f);
-            for(StatusEffect eff : Vars.content.statusEffects()){
-                if(unit.hasEffect(eff)){
-                    Draw.rect(eff.uiIcon,
-                            unit.x - unit.hitSize() * 0.6f + 0.5f * iconSize * Mathf.mod(index, 4f),
-                            unit.y + (unit.hitSize() / 2f) + 3f + 4f * Mathf.floor(index / 4f),
-                            4f, 4f);
-                    index++;
-                }
+            float iconSize = 4f;
+            int iconColumns = Math.max((int) (unit.hitSize() / (iconSize + 1f)), 4);
+            float iconWidth = Math.min(unit.hitSize() / iconColumns, iconSize + 1f);
+            for(var entry : unit.statuses()){
+                Draw.rect(entry.effect.uiIcon,
+                        unit.x - unit.hitSize() * 0.6f + iconWidth * (index % iconColumns),
+                        unit.y + (unit.hitSize() / 2f) + 3f + iconSize * Mathf.floor(index / iconColumns),
+                        iconSize, iconSize);
+                index++;
             }
 
             index = 0f;
