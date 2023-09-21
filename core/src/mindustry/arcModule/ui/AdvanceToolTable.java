@@ -7,10 +7,11 @@ import arc.math.Mathf;
 import arc.math.geom.Vec2;
 import arc.scene.ui.*;
 import arc.scene.ui.layout.Table;
-import arc.struct.ObjectMap;
+import arc.struct.OrderedSet;
 import arc.struct.Seq;
 import arc.util.Strings;
 import arc.util.Tmp;
+import arc.util.pooling.Pools;
 import mindustry.Vars;
 import mindustry.arcModule.*;
 import mindustry.arcModule.ui.dialogs.TeamSelectDialog;
@@ -19,6 +20,7 @@ import mindustry.content.Items;
 import mindustry.content.StatusEffects;
 import mindustry.content.UnitTypes;
 import mindustry.core.World;
+import mindustry.entities.units.StatusEntry;
 import mindustry.game.EventType;
 import mindustry.game.Team;
 import mindustry.gen.*;
@@ -51,7 +53,7 @@ public class AdvanceToolTable extends Table {
     private int unitCount = 1;
     private float unitRandDst = 1f;
     private Vec2 unitLoc = new Vec2(0, 0);
-    private ObjectMap<StatusEffect, Float> unitStatus = new ObjectMap<>();
+    private OrderedSet<StatusEntry> unitStatus = new OrderedSet<>();
     private final float[] statusTime = {10, 30f, 60f, 120f, 180f, 300f, 600f, 900f, 1200f, 1500f, 1800f, 2700f, 3600f, Float.MAX_VALUE};
     private Unit spawnUnit = UnitTypes.emanate.create(Team.sharded);
     private Boolean showUnitSelect = false;
@@ -411,8 +413,8 @@ public class AdvanceToolTable extends Table {
                     Unit unit = cloneUnit(spawnUnit);
                     if (elevation != 0) unit.elevation = elevation;
                     unit.set(unitLoc.x * tilesize + Tmp.v1.x, unitLoc.y * tilesize + Tmp.v1.y);
-                    unitStatus.each((status, statusDuration) -> {
-                        unit.apply(status, statusDuration * 60f);
+                    unitStatus.each(e -> {
+                        unit.addEntry(e.effect, e.time * 60f);
                     });
                     unit.add();
                 }
@@ -435,8 +437,8 @@ public class AdvanceToolTable extends Table {
                     if (spawnUnit.shield != 0) Call.sendChatMessage("/js unit.shield = " + spawnUnit.shield);
                     if (spawnUnit.elevation != 0) Call.sendChatMessage("/js unit.elevation = " + spawnUnit.elevation);
                     Call.sendChatMessage("/js unit.set(" + x + "," + y + ")");
-                    unitStatus.each((status, statusDuration) -> {
-                        Call.sendChatMessage("/js unit.apply(StatusEffects." + status.name + "," + statusDuration + "*60)");
+                    unitStatus.each(e -> {
+                        Call.sendChatMessage("/js unit.apply(StatusEffects." + e.effect.name + "," + e.time + "*60)");
                     });
                     Call.sendChatMessage("/js unit.add()");
                     if (control.input instanceof DesktopInput input) {
@@ -543,8 +545,8 @@ public class AdvanceToolTable extends Table {
             }
 
             StringBuilder unitStatusText = new StringBuilder("单位状态 ");
-            for (StatusEffect effects : content.statusEffects()) {
-                if (unitStatus.containsKey(effects)) unitStatusText.append(effects.emoji());
+            for (var entry : unitStatus) {
+                unitStatusText.append(entry.effect.emoji());
             }
             table.button(unitStatusText.toString(), showStatesEffect ? Icon.upOpen : Icon.downOpen, Styles.togglet, () -> {
                 showStatesEffect = !showStatesEffect;
@@ -556,40 +558,48 @@ public class AdvanceToolTable extends Table {
                     t.table(list -> {
                         int i = 0;
                         for (StatusEffect effects : content.statusEffects()) {
+                            if (effects == StatusEffects.none) continue;
                             if (i++ % 8 == 0) list.row();
                             list.button(effects.emoji(), squareTogglet, () -> {
-                                if (unitStatus.get(effects) == null) unitStatus.put(effects, 600f);
-                                else unitStatus.remove(effects);
+                                unitStatus.add(new StatusEntry().set(effects, 600f));
                                 rebuildTable[0].run();
-                            }).size(50f).color(unitStatus.get(effects) == null ? Color.gray : Color.white).tooltip(effects.localizedName);
+                            }).size(50f).color(unitStatus.select(e -> e.effect == effects).isEmpty() ? Color.gray : Color.white).tooltip(effects.localizedName);
                         }
                     }).top().center();
 
                     t.row();
 
                     t.table(list -> {
-                        for (StatusEffect effects : content.statusEffects()) {
-                            if (!unitStatus.containsKey(effects)) continue;
-                            list.add(effects.emoji() + effects.localizedName + " ");
-                            if (effects.permanent) {
-                                list.add("<永久buff>");
+                        for (var entry : unitStatus) {
+                            list.add(entry.effect.emoji() + entry.effect.localizedName + " ");
+
+                            if (entry.effect.permanent) {
+                                list.add("<永久状态>");
+                            } else if(entry.effect.reactive) {
+                                list.add("<瞬间状态>");
                             } else {
-                                TextField sField = list.field(checkInf(unitStatus.get(effects)), text -> {
-                                    unitStatus.remove(effects);
-                                    if (Objects.equals(text, "Inf")) {
-                                        unitStatus.put(effects, Float.MAX_VALUE);
-                                    } else unitStatus.put(effects, Float.parseFloat(text));
-                                }).valid(text -> Objects.equals(text, "Inf") || Strings.canParsePositiveFloat(text)).tooltip("buff持续时间(单位：秒)").maxTextLength(10).get();
-                                list.add("秒");
-                                Slider sSlider = list.slider(0f, statusTime.length - 1f, 1f, statusTimeIndex(unitStatus.get(effects)), n -> {
-                                    if (statusTimeIndex(unitStatus.get(effects)) != n) {//用一种神奇的方式阻止了反复更新
-                                        sField.setText(checkInf(statusTime[(int) n]));
-                                    }
-                                    unitStatus.remove(effects);
-                                    unitStatus.put(effects, statusTime[(int) n]);
-                                }).get();
-                                sField.update(() -> sSlider.setValue(statusTimeIndex(unitStatus.get(effects))));
+                                list.table(et -> {
+                                    TextField sField = et.field(checkInf(entry.time), text -> {
+                                        entry.time = Objects.equals(text, "Inf") ? Float.MAX_VALUE : Float.parseFloat(text);
+                                    }).valid(text -> Objects.equals(text, "Inf") || Strings.canParsePositiveFloat(text)).tooltip("buff持续时间(单位：秒)").maxTextLength(10).get();
+
+                                    et.add("秒");
+
+                                    Slider sSlider = et.slider(0f, statusTime.length - 1f, 1f, statusTimeIndex(entry.time), n -> {
+                                        if (statusTimeIndex(entry.time) != n) {
+                                            sField.setText(checkInf(statusTime[(int) n]));
+                                        }
+                                        entry.time = statusTime[(int) n];
+                                    }).get();
+
+                                    sField.update(() -> sSlider.setValue(statusTimeIndex(entry.time)));
+                                });
                             }
+
+                            list.button(Icon.cancel, () -> {
+                                unitStatus.remove(entry);
+                                rebuildTable[0].run();
+                            });
                             list.row();
                         }
                     });
@@ -732,6 +742,7 @@ public class AdvanceToolTable extends Table {
             table.row();
             table.button("[red]重置出厂状态", () -> {
                 resetUnitType(unit, unit.type);
+                rebuildTable[0].run();
                 rebuildFabricatorTable.closeOnBack();
             }).fillX().row();
             //table.add("[orange]单位加工车间。 [white]Made by [violet]Lucky Clover\n").width(400f);
