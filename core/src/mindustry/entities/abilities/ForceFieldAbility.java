@@ -19,6 +19,7 @@ import static mindustry.Vars.*;
 
 import static mindustry.Vars.tilesize;
 import static mindustry.arcModule.RFuncs.abilitysFormat;
+import static mindustry.arcModule.RFuncs.percentFormat;
 
 public class ForceFieldAbility extends Ability{
     /** Shield radius. */
@@ -140,7 +141,7 @@ public class ForceFieldAbility extends Ability{
 
     @Override
     public void displayBars(Unit unit, Table bars){
-        bars.add(new Bar("stat.shieldhealth", Pal.accent, () -> unit.shield / max)).row();
+        bars.add(new Bar(() -> percentFormat((unit.shield < 0? "[red]":"") + "\uE84D", unit.shield, max), () -> Pal.accent, () -> unit.shield / max)).row();
     }
 
     public void checkRadius(Unit unit){

@@ -38,7 +38,6 @@ import java.util.*;
 
 import static mindustry.Vars.*;
 import static mindustry.arcModule.RFuncs.*;
-import static mindustry.arcModule.RFuncs.*;
 
 public class Block extends UnlockableContent implements Senseable{
     /** If true, buildings have an ItemModule. */

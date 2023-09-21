@@ -201,7 +201,7 @@ public class RFuncs {
         /**
          最通用的情况
          */
-        return percentFormat(prefix, cur, cur > 0.0001f, max,  cur / max < 0.9f, 2);
+        return percentFormat(prefix, cur, Math.abs(cur) > 0.001f, max,  cur / max < 0.9f, 2);
     }
 
     public static String percentFormat(String prefix, float cur, float max, int arcFixed) {
