@@ -85,7 +85,7 @@ public class ForceProjector extends Block{
     public void setBars(){
         super.setBars();
         addBar("shield", (ForceBuild entity) -> new Bar(
-                () ->  NumberFormat.percentFormat("\uE84D", shieldHealth + phaseShieldBoost * entity.phaseHeat - entity.buildup, shieldHealth + phaseShieldBoost * entity.phaseHeat),
+                () ->  NumberFormat.formatPercent("\uE84D", shieldHealth + phaseShieldBoost * entity.phaseHeat - entity.buildup, shieldHealth + phaseShieldBoost * entity.phaseHeat),
                 () -> Pal.accent,
                 () -> entity.broken ? 0f : 1f - entity.buildup / (shieldHealth + phaseShieldBoost * entity.phaseHeat))
                 .blink(Color.white));

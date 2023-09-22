@@ -29,7 +29,7 @@ public class HeatConductor extends Block{
     public void setBars(){
         super.setBars();
 
-        addBar("heat", (HeatConductorBuild entity) -> new Bar(() -> NumberFormat.percentFormat("热量", entity.heat , visualMaxHeat), () -> Pal.lightOrange, () -> entity.heat / visualMaxHeat));
+        addBar("heat", (HeatConductorBuild entity) -> new Bar(() -> NumberFormat.formatPercent("热量", entity.heat , visualMaxHeat), () -> Pal.lightOrange, () -> entity.heat / visualMaxHeat));
     }
 
     @Override

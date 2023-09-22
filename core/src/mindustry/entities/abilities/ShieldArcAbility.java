@@ -134,6 +134,6 @@ public class ShieldArcAbility extends Ability{
 
     @Override
     public void displayBars(Unit unit, Table bars){
-        bars.add(new Bar(() -> NumberFormat.percentFormat((data < 0? "[red]":"") + "\uE84D", data, max), () -> Pal.accent, () -> data / max)).row();
+        bars.add(new Bar(() -> NumberFormat.formatPercent((data < 0? "[red]":"") + "\uE84D", data, max), () -> Pal.accent, () -> data / max)).row();
     }
 }

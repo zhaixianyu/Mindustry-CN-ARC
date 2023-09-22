@@ -17,6 +17,7 @@ import mindustry.ai.*;
 import mindustry.ai.Pathfinder.*;
 import mindustry.ai.types.*;
 import mindustry.annotations.Annotations.*;
+import mindustry.arcModule.NumberFormat;
 import mindustry.content.*;
 import mindustry.core.*;
 import mindustry.ctype.*;
@@ -40,7 +41,6 @@ import mindustry.world.meta.*;
 
 import static arc.graphics.g2d.Draw.*;
 import static mindustry.Vars.*;
-import static mindustry.arcModule.NumberFormat.percentFormat;
 import static mindustry.arcModule.toolpack.arcPlayerEffect.drawPlayerEffect;
 
 public class UnitType extends UnlockableContent implements Senseable{
@@ -579,11 +579,9 @@ public class UnitType extends UnlockableContent implements Senseable{
             bars.add(new Bar(() -> {
                 updateStatusTable(unit);
                 if(unit.shield() > 0){
-                    return UI.formatAmount((long)unit.health) + "[gray]+[white]" + UI.formatAmount((long)unit.shield);
-                }else if(unit.maxHealth == unit.health){
-                    return UI.formatAmount((long)unit.health);
+                    return NumberFormat.autoFixed(unit.health) + "[gray]+[white]" + NumberFormat.autoFixed(unit.shield);
                 }else{
-                    return percentFormat("\uE813", unit.health, unit.maxHealth, 5);
+                    return NumberFormat.formatPercent("\uE813", unit.health, unit.maxHealth, 4);
                 }
             }, () -> Pal.health, unit::healthf).blink(Color.white));
             bars.row();

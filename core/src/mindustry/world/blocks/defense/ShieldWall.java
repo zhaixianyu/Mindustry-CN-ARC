@@ -42,7 +42,7 @@ public class ShieldWall extends Wall{
     public void setBars(){
         super.setBars();
         addBar("charge", (ShieldWallBuild entity) -> new Bar(
-                () -> NumberFormat.percentFormat("\uE84D", entity.shield , shieldHealth),
+                () -> NumberFormat.formatPercent("\uE84D", entity.shield , shieldHealth),
                 () -> Pal.shield,
                 () -> (entity.shield / shieldHealth)));
     }
