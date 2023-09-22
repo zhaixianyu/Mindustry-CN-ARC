@@ -34,7 +34,7 @@ public class HeatProducer extends GenericCrafter{
     public void setBars(){
         super.setBars();
 
-        addBar("heat", (HeatProducerBuild entity) -> new Bar(()-> NumberFormat.percentFormat("热量", entity.heat , heatOutput), () -> Pal.lightOrange, () -> entity.heat / heatOutput));
+        addBar("heat", (HeatProducerBuild entity) -> new Bar(()-> NumberFormat.formatPercent("热量", entity.heat , heatOutput), () -> Pal.lightOrange, () -> entity.heat / heatOutput));
     }
 
     public class HeatProducerBuild extends GenericCrafterBuild implements HeatBlock{

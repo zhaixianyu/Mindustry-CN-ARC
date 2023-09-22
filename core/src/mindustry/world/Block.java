@@ -618,7 +618,7 @@ public class Block extends UnlockableContent implements Senseable{
 
     public void addLiquidBar(Liquid liq){
         addBar("liquid-" + liq.name, entity -> !liq.unlockedNow() ? null : new Bar(
-                () -> NumberFormat.percentFormat(liq.localizedName + " " + liq.emoji(), entity.liquids.get(liq), liquidCapacity),
+                () -> NumberFormat.formatPercent(liq.localizedName + " " + liq.emoji(), entity.liquids.get(liq), liquidCapacity),
                 liq::barColor,
                 () -> entity.liquids.get(liq) / liquidCapacity
         ));
@@ -628,14 +628,14 @@ public class Block extends UnlockableContent implements Senseable{
     public <T extends Building> void addLiquidBar(Func<T, Liquid> current){
         addBar("liquid", entity -> new Bar(
                 () -> current.get((T)entity) == null || entity.liquids.get(current.get((T)entity)) <= 0.001f ? Core.bundle.get("bar.liquid") :
-                        NumberFormat.percentFormat(current.get((T)entity).localizedName + " " + current.get((T)entity).emoji(), entity.liquids.get(current.get((T)entity)), liquidCapacity),
+                        NumberFormat.formatPercent(current.get((T)entity).localizedName + " " + current.get((T)entity).emoji(), entity.liquids.get(current.get((T)entity)), liquidCapacity),
                 () -> current.get((T)entity) == null ? Color.clear : current.get((T)entity).barColor(),
                 () -> current.get((T)entity) == null ? 0f : entity.liquids.get(current.get((T)entity)) / liquidCapacity)
         );
     }
 
     public void setBars(){
-        addBar("health", entity -> new Bar(() -> NumberFormat.percentFormat("\uE813", entity.health, entity.maxHealth, 5),
+        addBar("health", entity -> new Bar(() -> NumberFormat.formatPercent("\uE813", entity.health, entity.maxHealth, 4),
                 () -> Pal.health, entity::healthf).blink(Color.white));
 
         if(consPower != null){
@@ -645,7 +645,7 @@ public class Block extends UnlockableContent implements Senseable{
 
             addBar("power", entity -> new Bar(
                     () -> buffered ? Core.bundle.format("bar.poweramount", Float.isNaN(entity.power.status * capacity) ? "<ERROR>" : UI.formatAmount((int)(entity.power.status * capacity))) :
-                            NumberFormat.percentFormat(String.valueOf(Iconc.power),
+                            NumberFormat.formatPercent(String.valueOf(Iconc.power),
                                     entity.power.status * consPower.usage * 60 * entity.timeScale() * (entity.shouldConsume() ? 1f : 0f),
                                     consPower.usage * 60 * entity.timeScale() * (entity.shouldConsume() ? 1f : 0f),
                                      NumberFormat.buildPercent((int)(entity.timeScale() * 100 * (entity.shouldConsume() ? 1f : 0f) * entity.efficiency))),
