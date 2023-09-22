@@ -31,14 +31,14 @@ public class NumberFormat {
     }
     public static String formatInteger(long number, int maxDeci, String format){
 
-        String unit;
+        String unit, sign = number < 0 ? "-" : "";
         number = Math.abs(number);
         double fnumber;
 
         if (number >= 1_000_000_000_000L) {//直接比较float和long可能有精度问题，大概?
             int exponent = (int) Math.log10(number);
             float mantissa = (float) (number / Math.pow(10, exponent));
-            return format(format, format("@E@", Strings.autoFixed(mantissa, 1), exponent), "");
+            return format(format, sign + format("@E@", Strings.autoFixed(mantissa, 1), exponent), "");
         } else if (number >= 1_000_000_000L) {
             fnumber = number / 1E9;
             unit = "B";
@@ -49,8 +49,8 @@ public class NumberFormat {
             fnumber = number / 1E3;
             unit = "K";
         }
-        else return format(format, number, "");
-        return format(format, fixed((float) fnumber, maxDeci - (int) Math.log10(fnumber)), unit);
+        else return format(format, sign + number, "");
+        return format(format, sign + fixed((float) fnumber, maxDeci - (int) Math.log10(fnumber)), unit);
     }
 
     public static String formatFloat(float number, int maxDeci, String format){
@@ -58,12 +58,12 @@ public class NumberFormat {
         if(number == Float.POSITIVE_INFINITY) return "Inf";
         if(number == Float.NEGATIVE_INFINITY) return "-Inf";
 
-        String unit = "";
+        String unit = "", sign = number < 0 ? "-" : "";
         number = Math.abs(number);
         if (number >= 1E12f) {
             int exponent = (int) Math.log10(number);
             float mantissa = (float) (number / Math.pow(10, exponent));
-            return format(format, format("@E@", Strings.autoFixed(mantissa, 1), exponent), "");
+            return format(format, sign + format("@E@", Strings.autoFixed(mantissa, 1), exponent), "");
         } else if (number >= 1E9f) {
             number /= 1E9f;
             unit = "B";
@@ -74,8 +74,8 @@ public class NumberFormat {
             number /= 1E3f;
             unit = "K";
         }
-        if (number < 0.00001f) return format(format, Float.toString(number), unit);
-        return format(format, fixed(number, maxDeci - (int) Math.log10(number)), unit);
+        if (number < 0.00001f) return format(format, sign + number, unit);
+        return format(format, sign + fixed(number, maxDeci - (int) Math.log10(number)), unit);
     }
 
     public static String autoFixed(float number, int maxDeci, String format) {
