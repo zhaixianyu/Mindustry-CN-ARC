@@ -462,11 +462,13 @@ public class AdvanceToolTable extends Table {
                             }
                             else sendFormatChat("/js u.apply(StatusEffects.@)", entry.effect.name);
                         });
+                        sendFormatChat("/js delete statuses");
                     }
                     if (spawnUnit.hasItem()) {
                         sendFormatChat("/js u.addItem(Items.@, @)", spawnUnit.stack.item.name, spawnUnit.stack.amount);
                     }
                     sendFormatChat("/js u.add()");
+                    sendFormatChat("/js delete u");
                     Time.run(chatTime, () -> chatTime = 0f);
                     if (control.input instanceof DesktopInput input) {
                         input.panning = true;
