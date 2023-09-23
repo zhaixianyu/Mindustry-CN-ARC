@@ -93,7 +93,6 @@ public class UI implements ApplicationListener, Loadable{
     public mindustry.arcModule.ui.dialogs.MessageDialog MessageDialog;
 
     public mindustry.arcModule.ui.dialogs.MusicDialog MusicDialog;
-    public mindustry.arcModule.ui.dialogs.ConsoleDialog ConsoleDialog;
     public mindustry.arcModule.ui.window.WindowManager WindowManager;
     public LabelController LabelController;
     private @Nullable Element lastAnnouncement;
@@ -213,7 +212,6 @@ public class UI implements ApplicationListener, Loadable{
         listfrag = new PlayerListFragment();
         loadfrag = new LoadingFragment();
         consolefrag = new ConsoleFragment();
-        ConsoleDialog = new ConsoleDialog();
 
         picker = new ColorPicker();
         effects = new EffectsDialog();
