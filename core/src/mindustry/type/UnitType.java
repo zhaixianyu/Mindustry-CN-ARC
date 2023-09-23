@@ -595,8 +595,13 @@ public class UnitType extends UnlockableContent implements Senseable{
                 ability.displayBars(unit, bars);
             }
 
-            if(unit instanceof Payloadc payload && payload.payloadUsed() > 0){
-                bars.add(new Bar("装载：" + String.format("%.2f", payload.payloadUsed() / 9) + "/" + String.format("%.2f", unit.type().payloadCapacity / 9), Pal.items, () -> payload.payloadUsed() / unit.type().payloadCapacity));
+            if(unit instanceof Payloadc payload){
+                bars.add(new Bar(NumberFormat.formatPercent("装载：",
+                        payload.payloadUsed() / tilesize / tilesize, true,
+                        unit.type().payloadCapacity / tilesize / tilesize, true,
+                        StatUnit.blocksSquared.localized(),
+                        4
+                ), Pal.items, () -> payload.payloadUsed() / unit.type().payloadCapacity));
                 bars.row();
 
                 var count = new float[]{-1};
