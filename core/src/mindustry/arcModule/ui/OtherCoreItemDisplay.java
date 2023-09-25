@@ -149,10 +149,10 @@ public class OtherCoreItemDisplay extends Table {
             addTeamData(teamsTable, Blocks.siliconSmelter.uiIcon, team -> team.rules().cheat, false);
             addTeamData(teamsTable, Blocks.arc.uiIcon, team -> state.rules.blockDamage(team));
             addTeamData(teamsTable, Blocks.titaniumWall.uiIcon, team -> state.rules.blockHealth(team));
+            addTeamData(teamsTable, Blocks.buildTower.uiIcon, team -> state.rules.buildSpeed(team));
             addTeamData(teamsTable, UnitTypes.corvus.uiIcon, team -> state.rules.unitDamage(team));
-            addTeamData(teamsTable, Blocks.repairTurret.uiIcon, team -> state.rules.unitHealth(team));
+            addTeamData(teamsTable, UnitTypes.oct.uiIcon, team -> state.rules.unitHealth(team));
             addTeamData(teamsTable, UnitTypes.zenith.uiIcon, team -> state.rules.unitCrashDamage(team));
-            addTeamData(teamsTable, UnitTypes.poly.uiIcon, team -> state.rules.buildSpeed(team));
             addTeamData(teamsTable, Blocks.tetrativeReconstructor.uiIcon, team -> state.rules.unitBuildSpeed(team));
             addTeamData(teamsTable, Blocks.basicAssemblerModule.uiIcon, team -> state.rules.unitCost(team));
             teamsTable.row();
