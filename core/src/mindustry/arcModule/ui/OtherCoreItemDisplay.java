@@ -171,6 +171,7 @@ public class OtherCoreItemDisplay extends Table {
 
     private void updateTeamList() {
         teams = Vars.state.teams.getActive().copy();
+        if (state.rules.waveTimer) teams.addUnique(state.rules.waveTeam.data());
         forceShowTeam.each(team -> teams.addUnique(team));
     }
 
