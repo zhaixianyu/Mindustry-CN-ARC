@@ -29,7 +29,7 @@ public class ChatFragment extends Table{
     private boolean shown = false;
     private TextField chatfield;
     private Label fieldlabel = new Label(">");
-    private ChatMode mode = ChatMode.normal;
+    public ChatMode mode = ChatMode.normal;
     private Font font;
     private GlyphLayout layout = new GlyphLayout();
     private float offsetx = Scl.scl(4), offsety = Scl.scl(4), fontoffsetx = Scl.scl(2), chatspace = Scl.scl(50);
@@ -71,7 +71,6 @@ public class ChatFragment extends Table{
                     updateChat();
                 }
                 if(input.keyTap(Binding.chat_history_next) && historyPos > 0){
-                    if(historyPos == 0) history.set(0, chatfield.getText());
                     while(!chatValidType(messages.get(historyPos)) && historyPos < history.size - 1 && historyPos > 0) historyPos--;
                     historyPos = Math.max(historyPos - 1,0);
                     updateChat();
@@ -392,7 +391,7 @@ public class ChatFragment extends Table{
     }
 
 
-    private enum ChatMode{
+    public enum ChatMode{
         normal(""),
         team("/t"),
         admin("/a", player::admin)
