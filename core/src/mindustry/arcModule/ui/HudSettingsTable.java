@@ -210,7 +210,7 @@ public class HudSettingsTable extends Table {
             });
         }
 
-        button("[cyan]控", () -> {
+        button("[cyan]控", textStyle, () -> {
             expandList = !expandList;
             rebuild();
         }).width(32f).fillY();
