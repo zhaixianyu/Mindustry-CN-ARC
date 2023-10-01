@@ -89,10 +89,10 @@ public class ItemTurret extends Turret{
         super.setBars();
 
         addBar("ammo", (ItemTurretBuild entity) ->
-            new Bar(NumberFormat.formatPercent("子弹" + ((ItemTurret.ItemEntry)entity.ammo.peek()).item.emoji(), entity.totalAmmo, maxAmmo),
-                Pal.ammo,
-                () -> (float)entity.totalAmmo / maxAmmo
-            )
+                new Bar("子弹" + ((float) entity.totalAmmo > 0 ? NumberFormat.formatPercent(((ItemTurret.ItemEntry) entity.ammo.peek()).item.emoji(), entity.totalAmmo, maxAmmo) : ""),
+                        Pal.ammo,
+                        () -> (float) entity.totalAmmo / maxAmmo
+                )
         );
     }
 
