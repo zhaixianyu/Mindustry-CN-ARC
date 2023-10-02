@@ -1,10 +1,12 @@
 package mindustry.arcModule.ui;
 
 import arc.Core;
+import arc.func.Boolf;
 import arc.graphics.Color;
 import arc.scene.ui.*;
 import arc.scene.ui.layout.Cell;
 import arc.scene.ui.layout.Table;
+import mindustry.Vars;
 import mindustry.arcModule.ui.dialogs.BlockSelectDialog;
 import mindustry.content.Blocks;
 import mindustry.entities.units.BuildPlan;
@@ -12,6 +14,8 @@ import mindustry.ui.Fonts;
 import mindustry.ui.Styles;
 import mindustry.ui.dialogs.BaseDialog;
 import mindustry.world.Block;
+import mindustry.world.Tile;
+import mindustry.world.Tiles;
 
 import static mindustry.Vars.*;
 import static mindustry.gen.Tex.*;
@@ -28,6 +32,7 @@ public class AdvanceBuildTool extends Table {
     public boolean writeInProperty = false;
 
     private Block original = Blocks.conveyor, newBlock = Blocks.titaniumConveyor;
+    private Block autoBuild = Blocks.turbineCondenser;
 
     public AdvanceBuildTool() {
         textStyle = new TextButton.TextButtonStyle() {{
@@ -54,18 +59,20 @@ public class AdvanceBuildTool extends Table {
 
     void rebuild() {
         clearChildren();
-
         if (expandList) {
-            /*
-            table(t->{
-                t.check("\uE869",writeInProperty, tp -> writeInProperty = tp);
-            }).row();*/
             table(t -> {
                 t.setBackground(Styles.black6);
-                t.table(tt->{
+                t.table(tt -> {
                     tt.button("R", NCtextStyle, this::replaceBlock).tooltip("[cyan]替换方块").size(30f);
                     tt.button(replaceBlockName(), NCtextStyle, this::replaceBlockSetting).tooltip("[acid]设置替换").width(100f).height(30f);
                 }).row();
+                t.table(tt -> {
+                    tt.button(autoBuild.emoji(), NCtextStyle, () -> blockAutoPlacer(autoBuild)).size(30f);
+                    tt.button("\uE87C", NCtextStyle, () -> {
+                        new BlockSelectDialog(Block::isPlaceable, block -> autoBuild = block, block -> autoBuild == block).show();
+                        rebuild();
+                    }).size(30f);
+                });
             });
         }
 
@@ -114,16 +121,20 @@ public class AdvanceBuildTool extends Table {
     }
 
     void replaceBlock() {
-        replaceBlock(original, newBlock, buildingRange);
+        replaceBlock(original, newBlock);
     }
 
-    void replaceBlock(Block ori, Block re, Float range) {
-        indexer.eachBlock(player.team(), player.x, player.y, range, building -> building.block() == ori,
+    void replaceBlock(Block ori, Block re) {
+        player.team().data().buildings.each(building -> building.block() == ori,
                 building -> player.unit().addBuild(new BuildPlan(building.tile.x, building.tile.y, building.rotation, re, building.config())));
     }
 
-    void blockAutoPlacer(Block block, Block placed, int size) {
-
+    void blockAutoPlacer(Block block) {
+        world.tiles.eachTile(tile -> {
+            if (tile == null) return;
+            if (!block.canPlaceOn(tile, player.team(), 0)) return;
+            player.unit().addBuild(new BuildPlan(tile.x, tile.y, 0, block));
+        });
     }
 
 }
