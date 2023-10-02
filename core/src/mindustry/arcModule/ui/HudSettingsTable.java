@@ -161,7 +161,7 @@ public class HudSettingsTable extends Table {
                         control.input.logicCutscene = false;
                         ui.arcInfo("已移除逻辑视角锁定");
                     }).checked(a -> Core.settings.getBool("removeLogicLock")).size(30, 30).tooltip("逻辑锁定");
-                    t.button("\uF6C2", NCtextStyle, RFuncs::worldProcessor).size(30).tooltip("地图世处信息");
+                    //t.button("\uF6C2", NCtextStyle, RFuncs::worldProcessor).size(30).tooltip("地图世处信息");
                     t.button("[cyan]雾", textStyle, () -> {
                         if (!state.rules.pvp || player.team().id == 255) renderer.fogEnabled = !renderer.fogEnabled;
                     }).checked(a -> renderer.fogEnabled).size(30, 30).tooltip("战争迷雾").visible(() -> !state.rules.pvp || player.team().id == 255);
