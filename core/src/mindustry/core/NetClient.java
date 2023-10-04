@@ -14,6 +14,7 @@ import arc.util.serialization.*;
 import mindustry.*;
 import mindustry.annotations.Annotations.*;
 import mindustry.arcModule.ui.dialogs.MessageDialog;
+import mindustry.arcModule.ui.dialogs.USIDDialog;
 import mindustry.core.GameState.*;
 import mindustry.entities.*;
 import mindustry.game.EventType.*;
@@ -65,6 +66,15 @@ public class NetClient implements ApplicationListener{
 
         net.handleClient(Connect.class, packet -> {
             Log.info("Connecting to server: @", packet.addressTCP);
+            String ip = packet.addressTCP;
+            if (ip.contains("/")) {
+                ip = ip.substring(ip.indexOf("/") + 1);
+            }
+            if (USIDDialog.chooseUSID && Core.settings.getString("usid-" + ip, null) == null) {
+                disconnectQuietly();
+                USIDDialog.showSet(ip);
+                return;
+            }
 
             player.admin = false;
 
