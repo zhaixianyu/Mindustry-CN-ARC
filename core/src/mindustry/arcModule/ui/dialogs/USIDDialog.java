@@ -1,9 +1,11 @@
 package mindustry.arcModule.ui.dialogs;
 
 import arc.Core;
+import arc.math.Rand;
 import arc.struct.Seq;
 import arc.util.Align;
 import arc.util.Reflect;
+import arc.util.serialization.Base64Coder;
 import mindustry.Vars;
 import mindustry.gen.Icon;
 import mindustry.graphics.Pal;
@@ -11,6 +13,7 @@ import mindustry.ui.Styles;
 import mindustry.ui.dialogs.BaseDialog;
 
 import java.util.HashMap;
+import java.util.Objects;
 
 public class USIDDialog extends BaseDialog {
     public static boolean chooseUSID = false;
@@ -66,8 +69,15 @@ public class USIDDialog extends BaseDialog {
     }
 
     public static void showSet(String ip) {
-        Vars.ui.showTextInput("设置usid", "选择对于ip " + ip + " 的usid", 32, "", false, s -> {
-            Core.settings.put("usid-" + ip, s);
+        Vars.ui.showTextInput("设置usid", "选择对于ip " + ip + " 的usid\n填入\"rand\"可自动生成", 32, "", false, s -> {
+            if (Objects.equals(s, "rand")) {
+                byte[] bytes = new byte[8];
+                new Rand().nextBytes(bytes);
+                String result = new String(Base64Coder.encode(bytes));
+                Core.settings.put("usid-" + ip, result);
+            } else {
+                Core.settings.put("usid-" + ip, s);
+            }
             Vars.ui.join.reconnect();
         }, () -> Vars.ui.loadfrag.hide());
     }
