@@ -169,7 +169,7 @@ public class HudSettingsTable extends Table {
                 sp.row();
                 sp.table(t -> {
                     t.button("[red]灯", textStyle, () -> {
-                        state.rules.lighting = !state.rules.lighting;
+                        settings.put("drawlight", !settings.getBool("drawlight"));
                     }).checked(a -> state.rules.lighting).size(30, 30).name("灯光").tooltip("[cyan]开灯啊！");
                     t.button("[acid]效", textStyle, () -> {
                         Core.settings.put("effects", !Core.settings.getBool("effects"));
