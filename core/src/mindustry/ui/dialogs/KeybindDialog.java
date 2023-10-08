@@ -155,7 +155,7 @@ public class KeybindDialog extends Dialog{
                     }).width(100f);
                 }
                 table.button("取消绑定", tstyle, () -> {
-                    section.binds.get(section.device.type(), OrderedMap::new).put(keybind, new Axis(KeyCode.unset));
+                    section.binds.get(section.device.type(), OrderedMap::new).put(keybind, new Axis(KeyCode.unknown));
                 }).width(100f).pad(2f).padLeft(4f);
                 table.button("@settings.resetKey", tstyle, () -> keybinds.resetToDefault(section, keybind)).width(100f).pad(2f).padLeft(4f);
                 table.row();
