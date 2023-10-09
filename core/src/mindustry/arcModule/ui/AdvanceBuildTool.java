@@ -1,6 +1,7 @@
 package mindustry.arcModule.ui;
 
 import arc.Core;
+import arc.Events;
 import arc.func.Cons;
 import arc.func.Floatf;
 import arc.graphics.Color;
@@ -11,11 +12,13 @@ import arc.scene.ui.*;
 import arc.scene.ui.layout.Table;
 import arc.struct.Seq;
 import arc.util.Tmp;
+import mindustry.arcModule.RFuncs;
 import mindustry.arcModule.ui.dialogs.BlockSelectDialog;
 import mindustry.content.Blocks;
 import mindustry.content.Liquids;
 import mindustry.content.UnitTypes;
 import mindustry.entities.units.BuildPlan;
+import mindustry.game.EventType;
 import mindustry.game.Teams;
 import mindustry.gen.Building;
 import mindustry.graphics.Layer;
@@ -48,7 +51,7 @@ public class AdvanceBuildTool extends Table {
     private Block original = Blocks.conveyor, newBlock = Blocks.titaniumConveyor;
     private Block autoBuild = Blocks.turbineCondenser;
 
-    private Block searchBlock = Blocks.worldProcessor;
+    private Block searchBlock = Blocks.itemSource;
     private Building searchBuild;
     private Seq<Building> buildingSeq = new Seq<>();
     private int searchBlockIndex = 0;
@@ -76,6 +79,9 @@ public class AdvanceBuildTool extends Table {
         }};
         rebuild();
         right();
+        Events.on(EventType.WorldLoadEvent.class, e -> {
+            rebuild();
+        });
     }
 
     void rebuild() {
@@ -130,7 +136,7 @@ public class AdvanceBuildTool extends Table {
                     });
                 }).fillX().row();
                 t.table(tt -> {
-                    tt.button("S", NCtextStyle, this::searchBlock).tooltip("[cyan]搜索方块").width(100f).height(30f).update(button -> {
+                    tt.button("S", NCtextStyle, this::searchBlock).tooltip("[cyan]搜索方块").growX().height(30f).update(button -> {
                         buildingSeq = player.team().data().buildings.select(building1 -> building1.block == searchBlock);
                         if (buildingSeq.size == 0) button.setText("[lightgray]\uE88A");
                         else button.setText("\uE88A " + searchBlockIndex + "/" + buildingSeq.size);
@@ -139,6 +145,12 @@ public class AdvanceBuildTool extends Table {
                         new BlockSelectDialog(Block::isPlaceable, block -> searchBlock = block, block -> searchBlock == block).show().hidden(this::rebuild);
                         searchBlockIndex = 0;
                     }).tooltip("[acid]搜索替换").width(30f).height(30f);
+                }).fillX().row();
+                t.table(tt -> {
+                    tt.button(Blocks.worldMessage.emoji(), textStyle, () -> {
+                        Core.settings.put("displayallmessage", !Core.settings.getBool("displayallmessage", false));
+                    }).checked(a -> Core.settings.getBool("displayallmessage")).size(30, 30).tooltip("开关信息板全显示");
+                    tt.button(Blocks.worldProcessor.emoji(), NCtextStyle, RFuncs::worldProcessor).size(30).tooltip("地图世处信息");
                 }).fillX().row();
             });
         }
