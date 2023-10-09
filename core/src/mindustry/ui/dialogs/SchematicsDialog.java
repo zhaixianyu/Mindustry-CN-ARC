@@ -15,9 +15,11 @@ import arc.scene.ui.layout.*;
 import arc.scene.utils.*;
 import arc.struct.*;
 import arc.util.*;
+import mindustry.Vars;
 import mindustry.arcModule.toolpack.picToMindustry;
 import mindustry.arcModule.ui.dialogs.MessageDialog;
 import mindustry.content.Blocks;
+import mindustry.content.Items;
 import mindustry.content.Planets;
 import mindustry.content.UnitTypes;
 import mindustry.ctype.*;
@@ -28,7 +30,9 @@ import mindustry.input.*;
 import mindustry.type.*;
 import mindustry.ui.*;
 import mindustry.world.Block;
+import mindustry.world.blocks.defense.turrets.ItemTurret;
 import mindustry.world.blocks.production.GenericCrafter;
+import mindustry.world.blocks.storage.CoreBlock;
 import mindustry.world.meta.StatUnit;
 
 import java.util.regex.*;
@@ -88,7 +92,7 @@ public class SchematicsDialog extends BaseDialog{
                 Core.app.setClipboardText(blueprintlink);
             }
         });
-        buttons.button("[violet]转换器[white] " + Blocks.canvas.emoji() + Blocks.logicDisplay.emoji() + Blocks.sorter.emoji(),Icon.image, picToMindustry::new);
+        buttons.button("[violet]转换器[white] " + Blocks.canvas.emoji() + Blocks.logicDisplay.emoji() + Blocks.sorter.emoji(), Icon.image, picToMindustry::show);
         makeButtonOverlay();
         shown(this::setup);
         onResize(this::setup);
@@ -173,9 +177,12 @@ public class SchematicsDialog extends BaseDialog{
                 rebuildTags.run();
             }).fillX().height(tagh).scrollY(false);
 
-            in.button(Icon.refreshSmall, () -> {
-                syncPlanetTags();
-            }).size(tagh).pad(2).tooltip("刷新");
+            in.button(Icon.refreshSmall, this::syncPlanetTags).size(tagh).pad(2).tooltip("刷新");
+            in.add("辅助筛选：").padLeft(20f).padRight(4);
+            in.button(copper.emoji(), Styles.togglet, () -> {
+                        Core.settings.put("arcSchematicCanBuild", !Core.settings.getBool("arcSchematicCanBuild"));
+                        rebuildPane.run();
+                    }).size(tagh).pad(2).tooltip("可建造(核心有此类资源+地图未禁用)").checked(t->Core.settings.getBool("arcSchematicCanBuild"));
         }).height(tagh).fillX();
 
         cont.row();
@@ -210,6 +217,7 @@ public class SchematicsDialog extends BaseDialog{
                     if(!search.isEmpty() && !ignoreSymbols.matcher(s.name().toLowerCase()).replaceAll("").contains(searchString)) continue;
 
                     if(Core.settings.getBool("autoSelSchematic") && control.input.block!=null && !s.containsBlock(control.input.block)) continue;
+                    if (Core.settings.getBool("arcSchematicCanBuild") && !arcSchematicCanBuild(s)) continue;
                     if(firstSchematic == null) firstSchematic = s;
 
                     Button[] sel = {null};
@@ -231,7 +239,7 @@ public class SchematicsDialog extends BaseDialog{
                             }else{
                                 buttons.button(Icon.trash, style, () -> {
                                     if(s.mod != null){
-                                        ui.showInfo(Core.bundle.format("mod.item.remove", s.mod.meta.displayName()));
+                                        ui.showInfo(Core.bundle.format("mod.item.remove", s.mod.meta.displayName));
                                     }else{
                                         ui.showConfirm("@confirm", "@schematic.delete.confirm", () -> {
                                             schematics.remove(s);
@@ -863,6 +871,16 @@ public class SchematicsDialog extends BaseDialog{
             if(erekir && !s.labels.contains(erekirTags)) addTag(s,erekirTags);
         }
         ui.arcInfo("标签分类完成");
+    }
+
+    boolean arcSchematicCanBuild(Schematic s){
+        for (ItemStack item : s.requirements()){
+            if (!ui.hudfrag.coreItems.hadItem(item.item)) return false;
+        }
+        for (Block block: state.rules.bannedBlocks){
+            if (s.containsBlock(block)) return false;
+        }
+        return true;
     }
 
     void buildTags(Schematic schem, Table t){

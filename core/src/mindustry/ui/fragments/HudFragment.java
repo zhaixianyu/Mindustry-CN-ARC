@@ -47,11 +47,12 @@ public class HudFragment{
 
     private ImageButton flip;
     private Slider minimapSlider;
-    private CoreItemsDisplay coreItems = new RCoreItemsDisplay();
+    public RCoreItemsDisplay coreItems = new RCoreItemsDisplay();
     public OtherCoreItemDisplay otherCoreItemDisplay = new OtherCoreItemDisplay();
     private AuxilliaryTable auxilliaryTable;
     private AdvanceToolTable advanceToolTable = new AdvanceToolTable();
-    private HudSettingsTable hudSettingsTable = new HudSettingsTable();
+    public HudSettingsTable hudSettingsTable = new HudSettingsTable();
+    public AdvanceBuildTool advanceBuildTool = new AdvanceBuildTool();
 
     private Boolean arcShowObjectives = false, hideObjectives = true;
 
@@ -108,7 +109,6 @@ public class HudFragment{
         });
 
         Events.on(WorldLoadEvent.class,e->{
-            otherCoreItemDisplay.updateTeamList();
             auxilliaryTable.toggle();
             hideObjectives = false;
             rebuildArcStatus();
@@ -513,9 +513,12 @@ public class HudFragment{
         });
 
         parent.fill(t -> {
-            t.name = "FloatingSettings";
             t.right().add(hudSettingsTable);
             t.visible(() -> Core.settings.getBool("showFloatingSettings") && shown);
+        });
+        parent.fill(t -> {
+            t.right().add(advanceBuildTool).padTop(100f);
+            t.visible(() -> Core.settings.getBool("showAdvanceBuildTool") && shown);
         });
 
         //spawner warning
@@ -525,7 +528,7 @@ public class HudFragment{
             t.table(Styles.black6, c -> c.add("@nearpoint")
             .update(l -> l.setColor(Tmp.c1.set(Color.white).lerp(Color.scarlet, Mathf.absin(Time.time, 10f, 1f))))
             .labelAlign(Align.center, Align.center))
-            .margin(6).update(u -> u.color.a = Mathf.lerpDelta(u.color.a, Mathf.num(spawner.playerNear()), 0.1f)).get().color.a = 0f;
+            .margin(6).update(u -> u.color.a = Mathf.lerpDelta(u.color.a, Mathf.num(spawner.playerNear() && player.unit().hittable()), 0.1f)).get().color.a = 0f;
         });
 
         //'saving' indicator
@@ -1105,7 +1108,7 @@ public class HudFragment{
         });
 
         if (!getStatusText().isEmpty()) {
-            arcStatus.labelWrap(() -> hideObjectives ? getStatusText().substring(0, 20) : getStatusText()).width(showSkipWave? 150f : 190f);
+            arcStatus.labelWrap(() -> hideObjectives && getStatusText().length() > 20 ? getStatusText().substring(0, 20) : getStatusText()).width(showSkipWave ? 150f : 190f);
         } else {
             arcStatus.table(tt->{
                 tt.update(() -> {

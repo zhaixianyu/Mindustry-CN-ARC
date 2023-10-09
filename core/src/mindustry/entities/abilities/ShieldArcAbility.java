@@ -8,14 +8,13 @@ import arc.math.geom.*;
 import arc.scene.ui.layout.*;
 import arc.util.*;
 import mindustry.*;
+import mindustry.arcModule.NumberFormat;
 import mindustry.content.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.type.*;
 import mindustry.ui.*;
-
-import static mindustry.Vars.tilesize;
-import static mindustry.arcModule.RFuncs.abilitysFormat;
+import mindustry.world.meta.*;
 
 public class ShieldArcAbility extends Ability{
     private static Unit paramUnit;
@@ -70,13 +69,13 @@ public class ShieldArcAbility extends Ability{
     protected float widthScale, alpha;
 
     @Override
-    public String description(UnitType unit){
-        return abilitysFormat("@盾容~@格~@恢复~@s冷却",
-                max,
-                radius / tilesize,
-                regen * 60f,
-                cooldown / 60f
-                );
+    public void addStats(Table t){
+        t.add("[lightgray]" + Stat.health.localized() + ": [white]" + Math.round(max));
+        t.row();
+        t.add("[lightgray]" + Stat.repairSpeed.localized() + ": [white]" + Strings.autoFixed(regen * 60f, 2) + StatUnit.perSecond.localized());
+        t.row();
+        t.add("[lightgray]" + Stat.cooldownTime.localized() + ": [white]" + Strings.autoFixed(cooldown / 60f, 2) + " " + StatUnit.seconds.localized());
+        t.row();
     }
 
     @Override
@@ -135,6 +134,6 @@ public class ShieldArcAbility extends Ability{
 
     @Override
     public void displayBars(Unit unit, Table bars){
-        bars.add(new Bar("stat.shieldhealth", Pal.accent, () -> data / max)).row();
+        bars.add(new Bar(() -> NumberFormat.formatPercent((data < 0? "[red]":"") + "\uE84D", data, max), () -> Pal.accent, () -> data / max)).row();
     }
 }

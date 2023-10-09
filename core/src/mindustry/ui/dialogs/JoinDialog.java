@@ -13,6 +13,7 @@ import arc.util.Timer.*;
 import arc.util.io.Reads;
 import arc.util.serialization.*;
 import mindustry.*;
+import mindustry.arcModule.ui.dialogs.USIDDialog;
 import mindustry.core.*;
 import mindustry.game.EventType.*;
 import mindustry.gen.*;
@@ -147,10 +148,6 @@ public class JoinDialog extends BaseDialog{
 
     void setupRemote(){
         remote.clear();
-
-        remote.button((Core.settings.getBool("showAccessibleServer")? "显示":"隐藏") + "版本不对的服务器",()->{Core.settings.put("showAccessibleServer",!Core.settings.getBool("showAccessibleServer"));setupRemote();}).fillX().row();
-        remote.button("replay", () -> replayController.shouldRecord(!replayController.shouldRecord())).update(b -> b.setText(replayController.shouldRecord() ? "关闭回放录制" : "开启回放录制")).fillX().row();
-        remote.button("加载回放文件", () -> platform.showFileChooser(true, "打开回放文件", "mrep", f -> Core.app.post(() -> replayController.startPlay(f.file())))).fillX().row();
         for(Server server : servers){
             if(server.lastHost != null){
                 int ServerVersion = server.lastHost.version;
@@ -342,6 +339,16 @@ public class JoinDialog extends BaseDialog{
         hosts.marginBottom(70f);
 
         section(steam ? "@servers.local.steam" : "@servers.local", local, false);
+        section("学术功能", new Table(t -> {
+            t.button((Core.settings.getBool("showAccessibleServer") ? "显示" : "隐藏") + "版本不对的服务器", Styles.flatBordert, () -> {
+                Core.settings.put("showAccessibleServer", !Core.settings.getBool("showAccessibleServer"));
+                setupRemote();
+            }).growX().height(48);
+            t.button("", Styles.flatBordert, () -> replayController.shouldRecord(!replayController.shouldRecord())).update(b -> b.setText(replayController.shouldRecord() ? "关闭回放录制" : "开启回放录制")).growX().height(48);
+            t.button("加载回放文件", Styles.flatBordert, () -> platform.showFileChooser(true, "打开回放文件", "mrep", f -> Core.app.post(() -> replayController.startPlay(f.file())))).growX().height(48);
+            t.button("usid管理器", Styles.flatBordert, () -> new USIDDialog().show()).growX().height(48);
+            USIDDialog.chooseUSID = Core.settings.getBool("arc-chooseUSID", false);
+        }), false);
         section("@servers.remote", remote, false);
         section("@servers.global", global, true);
 
@@ -431,6 +438,9 @@ public class JoinDialog extends BaseDialog{
 
             Table[] groupTable = {null, null};
 
+            if(group.prioritized){
+                addHeader(groupTable, group, hidden, false);
+            }
             //table containing all groups
             for(String address : group.addresses){
                 String resaddress = address.contains(":") ? address.split(":")[0] : address;
@@ -444,29 +454,10 @@ public class JoinDialog extends BaseDialog{
                         || res.mapname.toLowerCase().contains(serverSearch)
                         || (res.modeName != null && res.modeName.toLowerCase().contains(serverSearch)))) return;
 
-                    //add header
                     if(groupTable[0] == null){
-                        global.table(t -> groupTable[0] = t).fillX().left().row();
-
-                        groupTable[0].table(head -> {
-                            if(!group.name.isEmpty()){
-                                head.add(group.name).color(Color.lightGray).padRight(4);
-                            }
-                            head.image().height(3f).growX().color(Color.lightGray);
-
-                            //button for showing/hiding servers
-                            ImageButton[] image = {null};
-                            image[0] = head.button(hidden ? Icon.eyeOffSmall : Icon.eyeSmall, Styles.grayi, () -> {
-                               group.setHidden(!group.hidden());
-                               image[0].getStyle().imageUp = group.hidden() ? Icon.eyeOffSmall : Icon.eyeSmall;
-                               if(group.hidden() && !showHidden){
-                                   groupTable[0].remove();
-                               }
-                            }).size(40f).get();
-                            image[0].addListener(new Tooltip(t -> t.background(Styles.black6).margin(4).label(() -> !group.hidden() ? "@server.shown" : "@server.hidden")));
-                        }).width(targetWidth() * columns()).padBottom(-2).row();
-
-                        groupTable[1] = groupTable[0].row().table().top().left().grow().get();
+                        addHeader(groupTable, group, hidden, true);
+                    }else if(!groupTable[0].visible){
+                        addHeader(groupTable, group, hidden, true);
                     }
 
                     addCommunityHost(res, groupTable[1]);
@@ -476,6 +467,37 @@ public class JoinDialog extends BaseDialog{
                 }, e -> {});
             }
         }
+    }
+
+    void addHeader(Table[] groupTable, ServerGroup group, boolean hidden, boolean doInit){ // outlined separately
+        if(groupTable[0] == null){
+            global.table(t -> groupTable[0] = t).fillX().left().row();
+        }
+        groupTable[0].visible(() -> doInit);
+        if(!doInit){
+            return;
+        }
+
+        groupTable[0].table(head -> {
+            Color col = group.prioritized ? Pal.accent : Color.lightGray;
+            if(!group.name.isEmpty()){
+                head.add(group.name).color(col).padRight(4);
+            }
+            head.image().height(3f).growX().color(col);
+
+            //button for showing/hiding servers
+            ImageButton[] image = {null};
+            image[0] = head.button(hidden ? Icon.eyeOffSmall : Icon.eyeSmall, Styles.grayi, () -> {
+               group.setHidden(!group.hidden());
+               image[0].getStyle().imageUp = group.hidden() ? Icon.eyeOffSmall : Icon.eyeSmall;
+               if(group.hidden() && !showHidden){
+                   groupTable[0].remove();
+               }
+            }).size(40f).get();
+            image[0].addListener(new Tooltip(t -> t.background(Styles.black6).margin(4).label(() -> !group.hidden() ? "@server.shown" : "@server.hidden")));
+        }).width(targetWidth() * columns()).padBottom(-2).row();
+
+        groupTable[1] = groupTable[0].row().table().top().left().grow().get();
     }
 
     int columns(){
@@ -620,13 +642,14 @@ public class JoinDialog extends BaseDialog{
             Seq<ServerGroup> servers = new Seq<>();
             val.asArray().each(child -> {
                 String name = child.getString("name", "");
+                boolean prioritized = child.getBool("prioritized", false);
                 String[] addresses;
                 if(child.has("addresses") || (child.has("address") && child.get("address").isArray())){
                     addresses = (child.has("addresses") ? child.get("addresses") : child.get("address")).asArray().map(Jval::asString).toArray(String.class);
                 }else{
                     addresses = new String[]{child.getString("address", "<invalid>")};
                 }
-                servers.add(new ServerGroup(name, addresses));
+                servers.add(new ServerGroup(name, addresses, prioritized));
             });
             //modify default servers on main thread
             Core.app.post(() -> {

@@ -1,32 +1,30 @@
 package mindustry.arcModule;
 
 import arc.Core;
-import arc.Events;
 import arc.graphics.Color;
 import arc.graphics.g2d.PixmapRegion;
-import arc.struct.Seq;
 import arc.util.Log;
 import arc.util.Strings;
 import mindustry.*;
 import mindustry.content.*;
-import mindustry.core.*;
-import mindustry.ctype.ContentType;
-import mindustry.ctype.UnlockableContent;
 import mindustry.game.*;
-import mindustry.gen.Call;
-import mindustry.type.ItemStack;
-import mindustry.type.Weather;
+import mindustry.gen.Groups;
 import mindustry.ui.*;
+import mindustry.ui.fragments.ChatFragment;
 import mindustry.world.Block;
+import mindustry.world.blocks.logic.LogicBlock;
 
 import static arc.graphics.Color.RGBtoHSV;
 import static mindustry.Vars.*;
-import static mindustry.arcModule.ui.auxilliary.AuxilliaryTable.teamMark;
 
 public class RFuncs {
 
     static boolean colorized = false;
 
+    public interface Stringf<T> {
+        String get(T i);
+    }
+    
     public static void colorizeContent() {
         colorized = Core.settings.getBool("colorizedContent");
         content.items().each(c -> c.localizedName = colorized(c.color, c.localizedName));
@@ -39,7 +37,7 @@ public class RFuncs {
         });
     }
 
-    private static String colorized(Color color, String name) {
+    public static String colorized(Color color, String name) {
         if (colorized) return "[#" + color + "]" + name + "[]";
         else return name;
     }
@@ -116,7 +114,7 @@ public class RFuncs {
                     builder.append((char) Fonts.getUnicode(group.effect.name)).append("|");
                 }
                 if (group.getShield(waves - 1) > 0) {
-                    builder.append(UI.whiteformatAmount((int) group.getShield(waves - 1))).append("|");
+                    builder.append(NumberFormat.formatInteger((int) group.getShield(waves - 1), 2, "@@")).append("|");
                 }
                 builder.append(group.getSpawned(waves - 1)).append(")");
             }
@@ -128,7 +126,7 @@ public class RFuncs {
         return arcColorTime(timer, true);
     }
 
-    public static String arcColorTime(int timer, boolean units){
+    public static String arcColorTime(int timer, boolean units) {
         StringBuilder str = new StringBuilder();
         String color = timer > 0 ? "[orange]" : "[acid]";
         timer = Math.abs(timer);
@@ -181,10 +179,10 @@ public class RFuncs {
 
     public static StringBuilder getPrefix(String color, String type) {
         StringBuilder prefix = new StringBuilder();
-        if (teamMark) prefix.append("/t ");
+        if (ui.chatfrag.mode == ChatFragment.ChatMode.team) prefix.append("/t ");
         prefix.append(arcVersionPrefix);
-        prefix.append("[" + color + "]");
-        prefix.append("<" + type + ">");
+        prefix.append("[").append(color).append("]");
+        prefix.append("<").append(type).append(">");
         prefix.append("[white]");
         return prefix;
     }
@@ -196,4 +194,17 @@ public class RFuncs {
         return Strings.format("[lightgray]" + format.replace("~", "[#" + getThemeColor() + "]~[]"), values);
     }
 
+    public static void worldProcessor() {
+        Log.info("当前地图:@",state.map.name());
+        int[] data = new int[3];
+        Groups.build.each(b -> {
+            if (b instanceof LogicBlock.LogicBuild lb && lb.block.privileged) {
+                data[0] += 1;
+                data[1] += lb.code.split("\n").length + 1;
+                data[2] += lb.code.length();
+            }
+        });
+        Log.info("地图共有@个世处，总共@行指令，@个字符", data[0], data[1], data[2]);
+        ui.announce(Strings.format("地图共有@个世处，总共@行指令，@个字符", data[0], data[1], data[2]), 10);
+    }
 }

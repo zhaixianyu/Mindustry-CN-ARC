@@ -184,4 +184,8 @@ public class RCoreItemsDisplay extends CoreItemsDisplay {
             }
         }
     }
+
+    public boolean hadItem(Item item){
+        return usedItems.contains(item);
+    }
 }

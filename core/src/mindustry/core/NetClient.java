@@ -14,6 +14,7 @@ import arc.util.serialization.*;
 import mindustry.*;
 import mindustry.annotations.Annotations.*;
 import mindustry.arcModule.ui.dialogs.MessageDialog;
+import mindustry.arcModule.ui.dialogs.USIDDialog;
 import mindustry.core.GameState.*;
 import mindustry.entities.*;
 import mindustry.game.EventType.*;
@@ -65,6 +66,15 @@ public class NetClient implements ApplicationListener{
 
         net.handleClient(Connect.class, packet -> {
             Log.info("Connecting to server: @", packet.addressTCP);
+            String ip = packet.addressTCP;
+            if (ip.contains("/")) {
+                ip = ip.substring(ip.indexOf("/") + 1);
+            }
+            if (USIDDialog.chooseUSID && Core.settings.getString("usid-" + ip, null) == null) {
+                disconnectQuietly();
+                USIDDialog.showSet(ip);
+                return;
+            }
 
             player.admin = false;
 
@@ -190,14 +200,14 @@ public class NetClient implements ApplicationListener{
     public static void sound(Sound sound, float volume, float pitch, float pan){
         if(sound == null || headless) return;
 
-        sound.play(Mathf.clamp(volume, 0, 8f) * Core.settings.getInt("sfxvol") / 100f, pitch, pan, false, false);
+        sound.play(Mathf.clamp(volume, 0, 8f) * Core.settings.getInt("sfxvol") / 100f, Mathf.clamp(pitch, 0f, 20f), pan, false, false);
     }
 
     @Remote(variants = Variant.both, unreliable = true, called = Loc.server)
     public static void soundAt(Sound sound, float x, float y, float volume, float pitch){
         if(sound == null || headless) return;
 
-        sound.at(x, y, pitch, Mathf.clamp(volume, 0, 4f));
+        sound.at(x, y, Mathf.clamp(pitch, 0f, 20f), Mathf.clamp(volume, 0, 4f));
     }
 
     @Remote(variants = Variant.both, unreliable = true)
@@ -439,7 +449,7 @@ public class NetClient implements ApplicationListener{
 
         //entity must not be added yet, so create it
         if(entity == null){
-            entity = (Syncc)EntityMapping.map(typeID).get();
+            entity = (Syncc)EntityMapping.map(typeID & 0xFF).get();
             entity.id(id);
             if(!netClient.isEntityUsed(entity.id())){
                 add = true;

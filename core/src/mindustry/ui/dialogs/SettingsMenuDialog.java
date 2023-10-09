@@ -25,9 +25,11 @@ import arc.util.Strings;
 import arc.util.io.Streams;
 import mindustry.content.TechTree;
 import mindustry.content.TechTree.TechNode;
+import mindustry.core.GameState;
 import mindustry.core.Version;
 import mindustry.ctype.UnlockableContent;
 import mindustry.game.EventType.Trigger;
+import mindustry.game.Schematics;
 import mindustry.gen.Icon;
 import mindustry.gen.Tex;
 import mindustry.graphics.Shaders;
@@ -200,6 +202,8 @@ public class SettingsMenuDialog extends BaseDialog{
             t.button("@data.import", Icon.download, style, () -> ui.showConfirm("@confirm", "@data.import.confirm", () -> platform.showFileChooser(true, "zip", file -> {
                 try{
                     importData(file);
+                    control.saves.resetSave();
+                    state = new GameState();
                     Core.app.exit();
                 }catch(IllegalArgumentException e){
                     ui.showErrorMessage("@data.invalid");
@@ -378,7 +382,7 @@ public class SettingsMenuDialog extends BaseDialog{
                 game.checkPref("crashreport", true);
             }
 
-            game.sliderPref("maxSchematicSize", 32, 32, 500, 1, String::valueOf);
+            game.sliderPref("maxSchematicSize", 32, 32, 256, 1, v -> v == 256 ? "无限" : String.valueOf(v));
             game.checkPref("savecreate", true);
             game.checkPref("blockreplace", true);
             game.checkPref("conveyorpathfinding", true);
@@ -540,6 +544,7 @@ public class SettingsMenuDialog extends BaseDialog{
             });
             arc.sliderPref("arcCoreItemsCol", 5, 4, 15, 1, i -> i + "列");
             arc.checkPref("showFloatingSettings", false);
+            arc.checkPref("showAdvanceBuildTool", false);
             arc.sliderPref("arcDetailInfo", 1, 0, 1, 1, s -> {
                 if (s == 0) {
                     return "详细模式";
@@ -637,6 +642,7 @@ public class SettingsMenuDialog extends BaseDialog{
             arc.checkPref("ShowInfoPopup", true);
             arc.checkPref("arcShareWaveInfo", false);
             arc.checkPref("arcAlwaysTeamColor", false);
+            arc.checkPref("arcSelfName", false);
 
             arc.addCategory("arcPlayerEffect");
             arc.stringInput("playerEffectColor", "ffd37f");
@@ -692,6 +698,7 @@ public class SettingsMenuDialog extends BaseDialog{
             arc.checkPref("menuFlyersFollower", false);
             arc.checkPref("menuFloatText", true);
             arc.checkPref("showUpdateDialog", true);
+            arc.checkPref("arcInfSchem", false);
 
             //////////forcehide
             forcehide.addCategory("arcCDisplayBlock");
@@ -716,6 +723,7 @@ public class SettingsMenuDialog extends BaseDialog{
             forcehide.sliderPref("minhealth_unithealthbarshown", 0, 0, 2500, 100, i -> i + "[red]HP");
             forcehide.addCategory("arcCDisplayEffect");
             forcehide.checkPref("bulletShow", true);
+            forcehide.checkPref("drawlight", true);
             forcehide.checkPref("effects", true);
             forcehide.checkPref("bloom", true, val -> renderer.toggleBloom(val));
             forcehide.sliderPref("bloomintensity", 6, 0, 16, i -> (int) (i / 4f * 100f) + "%");
@@ -783,6 +791,7 @@ public class SettingsMenuDialog extends BaseDialog{
             });
             specmode.sliderPref("fontSize", 10, 5, 25, 1, i -> "x " + Strings.fixed(i * 0.1f, 1));
             specmode.stringInput("themeColor", "ffd37f");
+            specmode.stringInput("arcBackgroundPath", "");
             specmode.addCategory("specGameMode");
             specmode.checkPref("autoSelSchematic", false);
             specmode.checkPref("researchViewer", false);
@@ -838,7 +847,9 @@ public class SettingsMenuDialog extends BaseDialog{
                 path = path.startsWith("/") ? path.substring(1) : path;
                 zos.putNextEntry(new ZipEntry(path));
                 if(!add.isDirectory()){
-                    Streams.copy(add.read(), zos);
+                    try(var stream = add.read()){
+                        Streams.copy(stream, zos);
+                    }
                 }
                 zos.closeEntry();
             }
@@ -1153,8 +1164,8 @@ public class SettingsMenuDialog extends BaseDialog{
                 field.field(value, text -> {
                     settings.put(name, text);
                     value = text;
-                }).padLeft(30);
-                table.add(field).left().pad(10).padTop(15).padBottom(4).row();
+                }).growX().padLeft(30);
+                table.add(field).growX().pad(10).padTop(15).padBottom(4).row();
             }
         }
 

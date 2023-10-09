@@ -648,6 +648,7 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
                             if(state.planet != planet){
                                 newPresets.clear();
                                 state.planet = planet;
+
                                 rebuildExpand();
                             }
                             settings.put("lastplanet", planet.name);
@@ -658,7 +659,7 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
                     }
                 }
             }
-        }),
+        }).visible(() -> mode != select),
 
         new Table(c -> {
             expandTable = c;
@@ -913,7 +914,7 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
             int total = (int)(stat.mean * viewInt * scl);
             if(total != 0){
                 t.image(item.uiIcon).padRight(3);
-                t.add(showColor? UI.colorFormatAmount(total) : UI.formatAmount(total)).color(Color.lightGray).padRight(3);
+                t.add(UI.formatAmount(total)).color(Color.lightGray).padRight(3);
                 if( ++i % rowSet == 0){
                     t.row();
                 }

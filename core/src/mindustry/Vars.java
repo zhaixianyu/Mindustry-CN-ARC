@@ -44,7 +44,7 @@ public class Vars implements Loadable{
     public static String arcVersionPrefix = "<ARC~" + arcVersion + ">";
     public static int changeLogRead = 18;
     public static Seq<District.advDistrict> districtList = new Seq<>();
-    public static String userContentURL = "https://gh.squirrel.gq/https://raw.github.com";
+    public static String userContentURL = "https://ghps.cc/https://raw.github.com";
     public static boolean replaying = false;
     public static ReplayController replayController;
     public static float gameSpeed = 1f;
@@ -414,7 +414,6 @@ public class Vars implements Loadable{
                     }
 
                     ui.consolefrag.addMessage(Log.removeColors(result));
-                    ui.ConsoleDialog.addMessage(Log.removeColors(result));
                 }
             }
         };
@@ -515,11 +514,16 @@ public class Vars implements Loadable{
         }
     }
     public static int getMaxSchematicSize(){
-        return  Core.settings.getInt("maxSchematicSize");
+        int s = Core.settings.getInt("maxSchematicSize");
+        return s == 501 ? Integer.MAX_VALUE : s;
     }
 
     public static int getMinimapSize(){
         return settings.getInt("minimapSize",minimapSize);
+    }
+
+    public static String getThemeColorCode(){
+        return "[#" + getThemeColor() + "]";
     }
 
     public static Color getThemeColor(){

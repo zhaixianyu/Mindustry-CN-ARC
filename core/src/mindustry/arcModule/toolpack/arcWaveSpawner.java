@@ -10,6 +10,7 @@ import arc.math.Mathf;
 import arc.scene.ui.layout.Table;
 import arc.struct.Seq;
 import arc.util.Time;
+import mindustry.arcModule.NumberFormat;
 import mindustry.content.StatusEffects;
 import mindustry.content.UnitTypes;
 import mindustry.core.UI;
@@ -18,6 +19,7 @@ import mindustry.game.SpawnGroup;
 import mindustry.world.Tile;
 
 import static mindustry.Vars.*;
+import static mindustry.arcModule.DrawUtilities.arcDashCircling;
 
 public class arcWaveSpawner {
 
@@ -50,7 +52,7 @@ public class arcWaveSpawner {
             if (Core.settings.getBool("alwaysshowdropzone")) {
                 Draw.alpha(0.8f);
                 for (Tile tile : spawner.getSpawns()) {
-                    Lines.dashCircle(tile.worldx(), tile.worldy(), state.rules.dropZoneRadius);
+                    arcDashCircling(tile.worldx(), tile.worldy(), state.rules.dropZoneRadius, - flyerSpawnerRadius / state.rules.dropZoneRadius * 0.1f);
                 }
             } else {
                 for (Tile tile : spawner.getSpawns()) {
@@ -72,7 +74,7 @@ public class arcWaveSpawner {
                     }
                     Draw.color(Color.gray, Color.lightGray, Mathf.absin(Time.time, 8f, 1f));
                     Draw.alpha(0.8f);
-                    Lines.dashCircle(spawnX, spawnY, flyerSpawnerRadius);
+                    arcDashCircling(spawnX, spawnY, flyerSpawnerRadius, 0.1f);
 
                     Draw.color();
                     Draw.alpha(0.5f);
@@ -167,15 +169,15 @@ public class arcWaveSpawner {
                 t.add("[accent]" + amountL).growX().padRight(50f);
                 if (doesRow) t.row();
                 t.add("\uE813").width(50f);
-                t.add("[accent]" + UI.formatAmount(healthL, 2)).growX().padRight(50f);
+                t.add("[accent]" + NumberFormat.formatInteger(healthL)).growX().padRight(50f);
                 if (doesRow) t.row();
                 if (effHealthL != healthL) {
                     t.add("\uE810").width(50f);
-                    t.add("[accent]" + UI.formatAmount(effHealthL, 2)).growX().padRight(50f);
+                    t.add("[accent]" + NumberFormat.formatInteger(effHealthL)).growX().padRight(50f);
                     if (doesRow) t.row();
                 }
                 t.add("\uE86E").width(50f);
-                t.add("[accent]" + UI.formatAmount(dpsL, 2)).growX();
+                t.add("[accent]" + NumberFormat.formatInteger(dpsL)).growX();
             });
         }
 

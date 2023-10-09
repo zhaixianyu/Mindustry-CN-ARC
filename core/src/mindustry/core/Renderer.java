@@ -18,6 +18,7 @@ import mindustry.game.EventType.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.graphics.g3d.*;
+import mindustry.maps.*;
 import mindustry.type.*;
 import mindustry.world.blocks.storage.*;
 import mindustry.world.blocks.storage.CoreBlock.*;
@@ -26,6 +27,7 @@ import static arc.Core.*;
 import static mindustry.Vars.*;
 
 public class Renderer implements ApplicationListener{
+    public boolean fogEnabled = true;
     /** These are global variables, for headless access. Cached. */
     public static float laserOpacity = 0.5f, bridgeOpacity = 0.75f;
 
@@ -45,8 +47,8 @@ public class Renderer implements ApplicationListener{
     public @Nullable Bloom bloom;
     public @Nullable FrameBuffer backgroundBuffer;
     public FrameBuffer effectBuffer = new FrameBuffer();
-    public boolean animateShields, drawWeather = true, drawStatus, enableEffects, drawDisplays = true;
     public boolean drawBars = true;
+    public boolean animateShields, drawWeather = true, drawStatus, enableEffects, drawDisplays = true, drawLight = true;
     public float weatherAlpha;
     /** minZoom = zooming out, maxZoom = zooming in */
     public float minZoom = 0.25f, maxZoom = 20f;
@@ -181,6 +183,7 @@ public class Renderer implements ApplicationListener{
         enableEffects = settings.getBool("effects");
         drawDisplays = !settings.getBool("hidedisplays");
         drawBars = Core.settings.getBool("blockBars");
+        drawLight = settings.getBool("drawlight", true);
 
         if(landTime > 0){
             if(!state.isPaused()){
@@ -290,6 +293,7 @@ public class Renderer implements ApplicationListener{
 
     public void draw(){
         Events.fire(Trigger.preDraw);
+        MapPreviewLoader.checkPreviews();
 
         camera.update();
 
@@ -313,6 +317,7 @@ public class Renderer implements ApplicationListener{
         Draw.sort(true);
 
         Events.fire(Trigger.draw);
+        MapPreviewLoader.checkPreviews();
 
         if(pixelator.enabled()){
             pixelator.register();
@@ -336,7 +341,7 @@ public class Renderer implements ApplicationListener{
             }
         }
 
-        if(state.rules.lighting){
+        if(state.rules.lighting && drawLight){
             Draw.draw(Layer.light, lights::draw);
         }
 
@@ -373,7 +378,7 @@ public class Renderer implements ApplicationListener{
         }
 
         Draw.draw(Layer.overlayUI, overlays::drawTop);
-        if(state.rules.fog) Draw.draw(Layer.fogOfWar, fog::drawFog);
+        if(state.rules.fog && (fogEnabled || state.rules.pvp && player.team().id != 255)) Draw.draw(Layer.fogOfWar, fog::drawFog);
         Draw.draw(Layer.space, this::drawLanding);
 
         Events.fire(Trigger.drawOver);

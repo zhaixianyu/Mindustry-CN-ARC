@@ -17,6 +17,7 @@ import mindustry.ai.*;
 import mindustry.ai.Pathfinder.*;
 import mindustry.ai.types.*;
 import mindustry.annotations.Annotations.*;
+import mindustry.arcModule.NumberFormat;
 import mindustry.content.*;
 import mindustry.core.*;
 import mindustry.ctype.*;
@@ -28,6 +29,7 @@ import mindustry.game.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.graphics.MultiPacker.*;
+import mindustry.logic.*;
 import mindustry.type.ammo.*;
 import mindustry.ui.*;
 import mindustry.world.*;
@@ -41,7 +43,7 @@ import static arc.graphics.g2d.Draw.*;
 import static mindustry.Vars.*;
 import static mindustry.arcModule.toolpack.arcPlayerEffect.drawPlayerEffect;
 
-public class UnitType extends UnlockableContent{
+public class UnitType extends UnlockableContent implements Senseable{
     public static final float shadowTX = -12, shadowTY = -13;
     private static final Vec2 legOffset = new Vec2();
 
@@ -512,25 +514,15 @@ public class UnitType extends UnlockableContent{
     public void landed(Unit unit){}
 
     private void displayStatusEffect(Unit unit,Table table){
-        for(StatusEffect e : content.statusEffects()){
-            if(unit.hasEffect(e)){
-                table.row();
-                table.table(t->{
-                    int i = 0;
-                    for(StatusEffect eff : content.statusEffects()){
-                        if(unit.hasEffect(eff)){
-                            i+=1;
-                            if((i-1) % 5 != 0) t.add().width(20f);
-                            t.add(new ItemImage(eff.uiIcon,(unit.getEffectTime(eff) >= 1000000f || unit.getEffectTime(eff) == -1f)?"inf" : UI.formatTime(unit.getEffectTime(eff))));
-                            if(i % 5==0)
-                                t.row();
-                        }
-                    }
-                }).growX().left();
-                break;
+        if (unit.statuses().isEmpty()) return;
+        table.row().table(t -> {
+            for(StatusEntry entry : unit.statuses().copy()) {
+                if (t.getChildren().size % 5 == 0) t.row();
+                t.add(new ItemImage(entry.effect.uiIcon,
+                        entry.effect.permanent || entry.time > Time.toHours * 10f ? "Inf" : UI.formatTime(entry.time)
+                )).padLeft(8f);
             }
-        }
-
+        });
     }
 
     private void updateStatusTable(Unit unit){
@@ -586,13 +578,16 @@ public class UnitType extends UnlockableContent{
 
             bars.add(new Bar(() -> {
                 updateStatusTable(unit);
+                StringBuilder str = new StringBuilder();
                 if(unit.shield() > 0){
-                    return UI.formatAmount((long)unit.health) + "[gray]+[white]" + UI.formatAmount((long)unit.shield);
-                }else if(unit.maxHealth == unit.health){
-                    return UI.formatAmount((long)unit.health);
+                    str.append(NumberFormat.autoFixed(unit.health)).append("[gray]+[white]").append(NumberFormat.autoFixed(unit.shield));
                 }else{
-                    return UI.formatAmount((long)unit.health) + "/" + UI.formatAmount((long)unit.maxHealth) + " (" + (int)(100 * unit.health / unit.maxHealth) + "%)";
+                    str.append(NumberFormat.formatPercent("\uE813", unit.health, unit.maxHealth, 4));
                 }
+                if (!Mathf.equal(unit.healthBalance.rawMean(), 0f, 0.1f)) {
+                    str.append(NumberFormat.autoFixed(unit.healthBalance.rawMean() * Time.toSeconds, 2, unit.healthBalance.rawMean() < 0 ? "[scarlet]@@/s[]" : "[acid]+@@/s[]"));
+                }
+                return str.toString();
             }, () -> Pal.health, unit::healthf).blink(Color.white));
             bars.row();
 
@@ -600,8 +595,18 @@ public class UnitType extends UnlockableContent{
                 bars.add(new Bar(() -> ammoType.icon() + " " + Core.bundle.format("stat.ammoDetail", unit.ammo, ammoCapacity), () -> ammoType.barColor(), () -> unit.ammo / ammoCapacity));
                 bars.row();
             }
-            if(unit instanceof Payloadc payload && payload.payloadUsed() > 0){
-                bars.add(new Bar("装载：" + String.format("%.2f", payload.payloadUsed() / 9) + "/" + String.format("%.2f", unit.type().payloadCapacity / 9), Pal.items, () -> payload.payloadUsed() / unit.type().payloadCapacity));
+
+            for(Ability ability : unit.abilities){
+                ability.displayBars(unit, bars);
+            }
+
+            if(unit instanceof Payloadc payload){
+                bars.add(new Bar(NumberFormat.formatPercent("装载：",
+                        payload.payloadUsed() / tilesize / tilesize, true,
+                        unit.type().payloadCapacity / tilesize / tilesize, true,
+                        StatUnit.blocksSquared.localized(),
+                        4
+                ), Pal.items, () -> payload.payloadUsed() / unit.type().payloadCapacity));
                 bars.row();
 
                 var count = new float[]{-1};
@@ -688,7 +693,7 @@ public class UnitType extends UnlockableContent{
         stats.add(Stat.aiController,aiController.get().getClass().getSimpleName());
 
         if(abilities.any()){
-            stats.add(Stat.abilities, StatValues.abilities(this, abilities));
+            stats.add(Stat.abilities, StatValues.abilities(abilities));
         }
 
         stats.add(Stat.unitrange, (int)(maxRange / tilesize), StatUnit.blocks);
@@ -786,10 +791,10 @@ public class UnitType extends UnlockableContent{
 
         if(pathCost == null){
             pathCost =
-                    example instanceof WaterMovec ? ControlPathfinder.costNaval :
-                            allowLegStep ? ControlPathfinder.costLegs :
-                                    hovering ? ControlPathfinder.costHover :
-                                            ControlPathfinder.costGround;
+                naval ? ControlPathfinder.costNaval :
+                allowLegStep || example instanceof Crawlc ? ControlPathfinder.costLegs :
+                hovering ? ControlPathfinder.costHover :
+                ControlPathfinder.costGround;
         }
 
         if(flying){
@@ -1038,6 +1043,8 @@ public class UnitType extends UnlockableContent{
     public void createIcons(MultiPacker packer){
         super.createIcons(packer);
 
+        if(constructor == null) throw new IllegalArgumentException("No constructor set up for unit '" + name + "'. Make sure you assign a valid value to `constructor`, e.g. `constructor = UnitEntity::new`");
+
         sample = constructor.get();
 
         var toOutline = new Seq<TextureRegion>();
@@ -1222,6 +1229,24 @@ public class UnitType extends UnlockableContent{
         }
 
         return super.researchRequirements();
+    }
+
+    @Override
+    public double sense(LAccess sensor){
+        return switch(sensor){
+            case health, maxHealth -> health;
+            case size -> hitSize / tilesize;
+            case itemCapacity -> itemCapacity;
+            case speed -> speed * 60f / tilesize;
+            case id -> getLogicId();
+            default -> Double.NaN;
+        };
+    }
+
+    @Override
+    public Object senseObject(LAccess sensor){
+        if(sensor == LAccess.name) return name;
+        return noSensed;
     }
 
     @Override
@@ -1456,15 +1481,15 @@ public class UnitType extends UnlockableContent{
             }
 
             float index = 0f;
-            float iconSize = Mathf.ceil(unit.hitSize() / 4f);
-            for(StatusEffect eff : Vars.content.statusEffects()){
-                if(unit.hasEffect(eff)){
-                    Draw.rect(eff.uiIcon,
-                            unit.x - unit.hitSize() * 0.6f + 0.5f * iconSize * Mathf.mod(index, 4f),
-                            unit.y + (unit.hitSize() / 2f) + 3f + 4f * Mathf.floor(index / 4f),
-                            4f, 4f);
-                    index++;
-                }
+            float iconSize = 4f;
+            int iconColumns = Math.max((int) (unit.hitSize() / (iconSize + 1f)), 4);
+            float iconWidth = Math.min(unit.hitSize() / iconColumns, iconSize + 1f);
+            for(var entry : unit.statuses()){
+                Draw.rect(entry.effect.uiIcon,
+                        unit.x - unit.hitSize() * 0.6f + iconWidth * (index % iconColumns),
+                        unit.y + (unit.hitSize() / 2f) + 3f + iconSize * Mathf.floor(index / iconColumns),
+                        iconSize, iconSize);
+                index++;
             }
 
             index = 0f;
