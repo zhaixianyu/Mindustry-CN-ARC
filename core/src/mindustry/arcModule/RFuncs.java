@@ -8,6 +8,7 @@ import arc.util.Strings;
 import mindustry.*;
 import mindustry.content.*;
 import mindustry.game.*;
+import mindustry.gen.Call;
 import mindustry.gen.Groups;
 import mindustry.input.DesktopInput;
 import mindustry.ui.*;
@@ -24,15 +25,17 @@ public class RFuncs {
 
     static boolean colorized = false;
 
+    static int msgSeperator = 145;
+
     public interface Stringf<T> {
         String get(T i);
     }
 
-    public static void arcSetCamera(Tile tile){
+    public static void arcSetCamera(Tile tile) {
         arcSetCamera(tile.worldx(), tile.worldy());
     }
 
-    public static void arcSetCamera(float x, float y){
+    public static void arcSetCamera(float x, float y) {
         if (control.input instanceof DesktopInput input) {
             input.panning = true;
         }
@@ -40,6 +43,11 @@ public class RFuncs {
         Fx.arcIndexer.at(x, y);
     }
 
+    public static void sendChatMsg(String msg) {
+        for (int i = 0; i < msg.length() / (float) msgSeperator; i++) {
+            Call.sendChatMessage(msg.substring(i * msgSeperator, Math.min(msg.length(), (i + 1) * msgSeperator)));
+        }
+    }
 
     public static void colorizeContent() {
         colorized = Core.settings.getBool("colorizedContent");
@@ -211,7 +219,7 @@ public class RFuncs {
     }
 
     public static void worldProcessor() {
-        Log.info("当前地图:@",state.map.name());
+        Log.info("当前地图:@", state.map.name());
         int[] data = new int[3];
         Groups.build.each(b -> {
             if (b instanceof LogicBlock.LogicBuild lb && lb.block.privileged) {
