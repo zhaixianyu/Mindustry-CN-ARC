@@ -9,11 +9,14 @@ import mindustry.*;
 import mindustry.content.*;
 import mindustry.game.*;
 import mindustry.gen.Groups;
+import mindustry.input.DesktopInput;
 import mindustry.ui.*;
 import mindustry.ui.fragments.ChatFragment;
 import mindustry.world.Block;
+import mindustry.world.Tile;
 import mindustry.world.blocks.logic.LogicBlock;
 
+import static arc.Core.camera;
 import static arc.graphics.Color.RGBtoHSV;
 import static mindustry.Vars.*;
 
@@ -24,7 +27,20 @@ public class RFuncs {
     public interface Stringf<T> {
         String get(T i);
     }
-    
+
+    public static void arcSetCamera(Tile tile){
+        arcSetCamera(tile.worldx(), tile.worldy());
+    }
+
+    public static void arcSetCamera(float x, float y){
+        if (control.input instanceof DesktopInput input) {
+            input.panning = true;
+        }
+        camera.position.set(x, y);
+        Fx.arcIndexer.at(x, y);
+    }
+
+
     public static void colorizeContent() {
         colorized = Core.settings.getBool("colorizedContent");
         content.items().each(c -> c.localizedName = colorized(c.color, c.localizedName));
