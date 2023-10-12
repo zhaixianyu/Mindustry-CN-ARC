@@ -396,7 +396,7 @@ public class SchematicsDialog extends BaseDialog{
                             if (clipbroad) arcSendClipBroadMsg(s, code);
                             else RFuncs.sendChatMsg(getPrefix("blue", "Schem") + " " + code.substring(code.lastIndexOf('/') + 1));
                         });
-                        req.error(e -> Core.app.post(() -> ui.showException("分享失败", e)));
+                        req.error(e -> Core.app.post(() -> {ui.showException("分享失败", e);if (clipbroad) arcSendClipBroadMsg(s, "x");}));
                     } catch (Exception e) {
                         ui.showException("分享失败", e);
                     }
