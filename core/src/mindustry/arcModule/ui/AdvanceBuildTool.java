@@ -37,6 +37,7 @@ import mindustry.world.blocks.storage.CoreBlock;
 
 import static mindustry.Vars.*;
 import static mindustry.arcModule.DrawUtilities.arcDrawText;
+import static mindustry.arcModule.RFuncs.arcSetCamera;
 import static mindustry.gen.Tex.*;
 import static mindustry.ui.Styles.flatDown;
 import static mindustry.ui.Styles.flatOver;
@@ -263,12 +264,8 @@ public class AdvanceBuildTool extends Table {
         }
         searchBuild = buildingSeq.get(searchBlockIndex);
 
-        if (control.input instanceof DesktopInput input) {
-            input.panning = true;
-        }
-        Core.camera.position.set(searchBuild.tile.x * tilesize, searchBuild.tile.y * tilesize);
+        arcSetCamera(searchBuild.tile);
         ui.arcInfo("[violet]方块搜索\n[acid]找到方块[cyan]" + searchBlockIndex + "[acid]/[cyan]" + buildingSeq.size + "[white]" + searchBlock.emoji());
-        searchBuild.block.placeEffect.at(searchBuild.x, searchBuild.y, searchBuild.block.size);
         searchBlockIndex = (searchBlockIndex + 1) % buildingSeq.size;
     }
 
