@@ -19,6 +19,7 @@ import mindustry.content.Liquids;
 import mindustry.content.UnitTypes;
 import mindustry.entities.units.BuildPlan;
 import mindustry.game.EventType;
+import mindustry.game.Team;
 import mindustry.game.Teams;
 import mindustry.gen.Building;
 import mindustry.graphics.Layer;
@@ -138,6 +139,12 @@ public class AdvanceBuildTool extends Table {
                 t.table(tt -> {
                     tt.button("S", NCtextStyle, this::searchBlock).tooltip("[cyan]搜索方块").growX().height(30f).update(button -> {
                         buildingSeq = player.team().data().buildings.select(building1 -> building1.block == searchBlock);
+                        if (searchBlock == Blocks.worldProcessor){
+                            for(Team team : Team.all) {
+                                if (team == player.team()) continue;
+                                buildingSeq.add(team.data().buildings.select(building1 -> building1.block == searchBlock));
+                            }
+                        }
                         if (buildingSeq.size == 0) button.setText("[lightgray]\uE88A");
                         else button.setText("\uE88A " + searchBlockIndex + "/" + buildingSeq.size);
                     });
@@ -150,7 +157,11 @@ public class AdvanceBuildTool extends Table {
                     tt.button(Blocks.worldMessage.emoji(), textStyle, () -> {
                         Core.settings.put("displayallmessage", !Core.settings.getBool("displayallmessage", false));
                     }).checked(a -> Core.settings.getBool("displayallmessage")).size(30, 30).tooltip("开关信息板全显示");
-                    tt.button(Blocks.worldProcessor.emoji(), NCtextStyle, RFuncs::worldProcessor).size(30).tooltip("地图世处信息");
+                    tt.button(Blocks.worldProcessor.emoji(), NCtextStyle, () -> {
+                        RFuncs.worldProcessor();
+                        searchBlock = Blocks.worldProcessor;
+                        rebuild();
+                    }).size(30).tooltip("地图世处信息");
                 }).fillX().row();
             });
         }
