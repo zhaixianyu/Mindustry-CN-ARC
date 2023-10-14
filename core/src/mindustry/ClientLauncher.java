@@ -34,6 +34,7 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
     private long beginTime;
     private boolean finished = false;
     private LoadRenderer loader;
+    public static boolean YuanShenLoader;
 
     @Override
     public void setup(){
@@ -45,7 +46,9 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
         checkLaunch();
         loadLogger();
 
-        loader = new LoadRenderer();
+        settings.setAppName(appName);
+        YuanShenLoader = settings.getDataDirectory().child("yuanshen").exists();
+        loader = YuanShenLoader ? new YuanShenLoadRenderer() : new LoadRenderer();
         Events.fire(new ClientCreateEvent());
 
         loadFileLogger();
@@ -175,6 +178,8 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
 
         assets.loadRun("contentinit", ContentLoader.class, () -> content.init(), () -> content.load());
         assets.loadRun("baseparts", BaseRegistry.class, () -> {}, () -> bases.load());
+
+        if (YuanShenLoader) assets.load(new YuanShenLoadRenderer.LoadLock());
     }
 
     @Override
