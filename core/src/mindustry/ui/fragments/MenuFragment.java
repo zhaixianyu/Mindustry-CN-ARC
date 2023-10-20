@@ -62,6 +62,7 @@ public class MenuFragment{
 
     Fi arcBackground;
     String arcBackgroundPath = Core.settings.getString("arcBackgroundPath");
+    Seq<Fi> arcBGList;
 
     Image img = new Image();
 
@@ -129,7 +130,7 @@ public class MenuFragment{
         parent.fill(c -> c.bottom().left().table(t -> {
             t.background(Tex.buttonEdge3);
             t.button("\uE83D", cleart, this::nextBackGroundImg).width(50f);
-        }).left().width(100));
+        }).visible(() -> Core.settings.has("arcBackgroundPath")).left().width(100));
 
         String versionText = ((Version.build == -1) ? "[#fc8140aa]" : "[cyan]") + Version.combined();
         String arcversionText = "\n[cyan]ARC version:" + Version.arcBuild;
@@ -190,14 +191,18 @@ public class MenuFragment{
     }
 
     private void nextBackGroundImg(){
+        arcBGList = Core.files.absolute(arcBackgroundPath).findAll(f -> !f.isDirectory() && (f.extEquals("png") || f.extEquals("jpg") || f.extEquals("jpeg")));
         arcBackgroundPath = Core.settings.getString("arcBackgroundPath");
         arcBackgroundIndex += 1;
-        arcBackgroundIndex = arcBackgroundIndex % Core.files.absolute(arcBackgroundPath).findAll().size;
-        try{
-            arcBackground = Core.files.absolute(arcBackgroundPath).findAll().get(arcBackgroundIndex);
-            img.setDrawable(new TextureRegion(new Texture(arcBackground)));
-        } catch (Exception ignored) {
-        }
+        arcBackgroundIndex = arcBackgroundIndex % arcBGList.size;
+        new Thread(() -> {
+            try{
+                arcBackground = arcBGList.get(arcBackgroundIndex);
+                Core.app.post(() -> img.setDrawable(new TextureRegion(new Texture(arcBackground))));
+            } catch (Exception e) {
+                Core.app.post(() -> ui.showException("背景图片无效:" + arcBGList.get(arcBackgroundIndex).path(), e));
+            }
+        }).start();
     }
 
     public static void fetchArcNews() {

@@ -20,6 +20,7 @@ import arc.scene.ui.Tooltip.*;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
+import mindustry.ClientLauncher;
 import mindustry.arcModule.NumberFormat;
 import mindustry.arcModule.ui.*;
 import mindustry.arcModule.ui.dialogs.*;
@@ -271,7 +272,12 @@ public class UI implements ApplicationListener, Loadable{
         listfrag.build(hudGroup);
         consolefrag.build(hudGroup);
         loadfrag.build(group);
-        new FadeInFragment().build(group);
+        if (ClientLauncher.YuanShenLoader) {
+            new YuanShenFragment().build();
+        } else {
+            new FadeInFragment().build(group);
+        }
+        Core.settings.put("yuanshen", ClientLauncher.YuanShenLoader);
 
         initArcWave();
         Test.test();

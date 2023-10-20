@@ -10,6 +10,7 @@ import arc.graphics.g2d.*;
 import arc.math.*;
 import arc.util.*;
 import mindustry.ai.*;
+import mindustry.arcModule.TimeControl;
 import mindustry.core.*;
 import mindustry.ctype.*;
 import mindustry.game.EventType.*;
@@ -33,6 +34,7 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
     private long beginTime;
     private boolean finished = false;
     private LoadRenderer loader;
+    public static boolean YuanShenLoader;
 
     @Override
     public void setup(){
@@ -44,7 +46,9 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
         checkLaunch();
         loadLogger();
 
-        loader = new LoadRenderer();
+        settings.setAppName(appName);
+        YuanShenLoader = settings.getDataDirectory().child("yuanshen").exists();
+        loader = YuanShenLoader ? new YuanShenLoadRenderer() : new LoadRenderer();
         Events.fire(new ClientCreateEvent());
 
         loadFileLogger();
@@ -65,10 +69,7 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
         boolean gb = ram >= 1024 * 1024 * 1024;
         Log.info("[RAM] Available: @ @", Strings.fixed(gb ? ram / 1024f / 1024 / 1024f : ram / 1024f / 1024f, 1), gb ? "GB" : "MB");
 
-        Time.setDeltaProvider(() -> {
-            float result = Core.graphics.getDeltaTime() * 60f;
-            return ((Float.isNaN(result) || Float.isInfinite(result)) ? 1f : Mathf.clamp(result, 0.0001f, 60f / 10f)) * gameSpeed;
-        });
+        Time.setDeltaProvider(TimeControl.deltaProvider);
 
         batch = new SortedSpriteBatch();
         assets = new AssetManager();
@@ -177,6 +178,8 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
 
         assets.loadRun("contentinit", ContentLoader.class, () -> content.init(), () -> content.load());
         assets.loadRun("baseparts", BaseRegistry.class, () -> {}, () -> bases.load());
+
+        if (YuanShenLoader) assets.load(new YuanShenLoadRenderer.LoadLock());
     }
 
     @Override
