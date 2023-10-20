@@ -807,9 +807,11 @@ public class PlacementFragment{
                         int f = 0;
                         if (maxRow > 5){
                             categories.button(Icon.zoom, Styles.clearTogglei, () -> {
-                                new BlockSelectDialog(block -> block.replaceable, block -> control.input.block = block, block -> control.input.block == block).show();
-                                currentCategory = control.input.block.category;
-                                rebuildCategory.run();
+                                new BlockSelectDialog(block -> block.replaceable, block -> {
+                                    control.input.block = block;
+                                    currentCategory = block.category;
+                                    rebuildCategory.run();
+                                    }, block -> control.input.block == block).show();
                             }).group(group);
                             categories.image(Styles.black6);
                             categories.row();
