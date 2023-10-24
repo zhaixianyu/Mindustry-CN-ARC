@@ -22,6 +22,7 @@ import mindustry.game.EventType;
 import mindustry.game.Team;
 import mindustry.game.Teams;
 import mindustry.gen.Building;
+import mindustry.gen.Call;
 import mindustry.graphics.Layer;
 import mindustry.graphics.Pal;
 import mindustry.ui.Fonts;
@@ -59,6 +60,8 @@ public class AdvanceBuildTool extends Table {
 
     public BuildTiles buildTiles = new BuildTiles();
 
+    private boolean shadowBuild = false;
+
     public AdvanceBuildTool() {
         textStyle = new TextButton.TextButtonStyle() {{
             down = flatOver;
@@ -83,6 +86,14 @@ public class AdvanceBuildTool extends Table {
         Events.on(EventType.WorldLoadEvent.class, e -> {
             rebuild();
         });
+        Events.run(EventType.Trigger.update,()->{
+            if (shadowBuild && player.unit() != null && player.unit().plans!=null && player.unit().activelyBuilding()) {
+                if (player.unit().buildPlan().progress == 0) return;
+                player.unit().plans.remove(player.unit().buildPlan());
+                Call.deletePlans(player, new int[]{player.unit().plans.indexOf(player.unit().buildPlan(), true)});
+            }
+        });
+
     }
 
     void rebuild() {
@@ -162,6 +173,11 @@ public class AdvanceBuildTool extends Table {
                         searchBlock = Blocks.worldProcessor;
                         rebuild();
                     }).size(30).tooltip("地图世处信息");
+                }).fillX().row();
+                t.table(tt -> {
+                    tt.button("\uE817", textStyle, () -> {
+                        shadowBuild = !shadowBuild;
+                    }).checked(a -> shadowBuild).size(30, 30).tooltip("虚影建造模式\n[red]有些服限制发包数较低，建筑较多时会被踢出。请酌情使用");
                 }).fillX().row();
             });
         }
