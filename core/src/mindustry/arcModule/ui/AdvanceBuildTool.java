@@ -24,7 +24,6 @@ import mindustry.game.Teams;
 import mindustry.gen.Building;
 import mindustry.graphics.Layer;
 import mindustry.graphics.Pal;
-import mindustry.input.DesktopInput;
 import mindustry.ui.Fonts;
 import mindustry.ui.Styles;
 import mindustry.ui.dialogs.BaseDialog;
@@ -47,7 +46,7 @@ public class AdvanceBuildTool extends Table {
 
     private TextButton.TextButtonStyle textStyle, NCtextStyle;
 
-    BuildRange placement = BuildRange.global;
+    BuildRange placement = BuildRange.player;
     Rect selection = new Rect();
 
     private Block original = Blocks.conveyor, newBlock = Blocks.titaniumConveyor;
