@@ -6,7 +6,7 @@ import arc.files.*;
 import arc.struct.*;
 import arc.util.*;
 import arc.util.io.*;
-import mindustry.Vars;
+import mindustry.arcModule.ARCVars;
 
 public class Version{
     /** Build type. 'official' for official releases; 'custom' or 'bleeding edge' are also used. */
@@ -49,8 +49,8 @@ public class Version{
         }else{
             arcBuild = Strings.canParseInt(map.get("build")) ? Integer.parseInt(map.get("build")) : -1;
         }
-        Vars.arcVersion = Version.arcBuild + "";
-        Vars.arcVersionPrefix = "<ARC~" + Version.arcBuild + ">";
+        ARCVars.arcVersion = Version.arcBuild + "";
+        ARCVars.arcVersionPrefix = "<ARC~" + Version.arcBuild + ">";
     }
 
     /** @return whether the current game version is greater than the specified version string, e.g. "120.1"*/
