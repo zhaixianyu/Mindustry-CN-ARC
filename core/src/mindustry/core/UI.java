@@ -34,7 +34,6 @@ import mindustry.ui.fragments.*;
 
 import static arc.scene.actions.Actions.*;
 import static mindustry.Vars.*;
-import static mindustry.arcModule.toolpack.arcWaveSpawner.initArcWave;
 
 public class UI implements ApplicationListener, Loadable{
     public static String billions, millions, thousands;
@@ -226,6 +225,8 @@ public class UI implements ApplicationListener, Loadable{
 
         Group group = Core.scene.root;
 
+        ARCVars.arcui.init(group);
+
         menuGroup.setFillParent(true);
         menuGroup.touchable = Touchable.childrenOnly;
         menuGroup.visible(() -> state.isMenu());
@@ -243,8 +244,6 @@ public class UI implements ApplicationListener, Loadable{
         listfrag.build(hudGroup);
         consolefrag.build(hudGroup);
         loadfrag.build(group);
-
-        ARCVars.arcui.init(group);
     }
 
     @Override
