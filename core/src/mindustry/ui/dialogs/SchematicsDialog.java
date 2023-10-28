@@ -18,6 +18,7 @@ import arc.util.*;
 import mindustry.arcModule.ARCVars;
 import mindustry.arcModule.RFuncs;
 import mindustry.arcModule.toolpack.picToMindustry;
+import mindustry.arcModule.ui.ARCUI;
 import mindustry.arcModule.ui.dialogs.MessageDialog;
 import mindustry.content.Blocks;
 import mindustry.content.Planets;
@@ -36,6 +37,7 @@ import mindustry.world.meta.StatUnit;
 import java.util.regex.*;
 
 import static mindustry.Vars.*;
+import static mindustry.arcModule.ARCVars.arcui;
 import static mindustry.arcModule.RFuncs.getPrefix;
 import static mindustry.content.Items.*;
 
@@ -299,7 +301,7 @@ public class SchematicsDialog extends BaseDialog{
         }).grow().scrollX(false);
 
         if(Core.settings.getBool("autoSelSchematic") && control.input.block!=null){
-            ui.arcInfo("[orange]蓝图筛选模式[white]:蓝图必须包含 "+control.input.block.emoji(),5f);
+            arcui.arcInfo("[orange]蓝图筛选模式[white]:蓝图必须包含 "+control.input.block.emoji(),5f);
         }
     }
 
@@ -419,7 +421,7 @@ public class SchematicsDialog extends BaseDialog{
     private void arcSendBlueprintMsg(String msg) {
         if (clipbroad) Core.app.setClipboardText(msg);
         else RFuncs.sendChatMsg(msg);
-        ui.arcInfo(clipbroad ? "已保存至剪贴板" : "已发送到聊天框");
+        arcui.arcInfo(clipbroad ? "已保存至剪贴板" : "已发送到聊天框");
     }
 
     private void arcSendClipBroadMsg(Schematic schem, String msg){
@@ -447,7 +449,7 @@ public class SchematicsDialog extends BaseDialog{
         if (schematics.writeBase64(schem).length() > 3500) s.append("\n").append("蓝图代码过长，请点击链接查看");
         else s.append("\n").append("蓝图代码：\n").append(schematics.writeBase64(schem));
         Core.app.setClipboardText(Strings.stripColors(s.toString()));
-        ui.arcInfo("已保存至剪贴板");
+        arcui.arcInfo("已保存至剪贴板");
     }
 
     public boolean resolveSchematic(String msg, @Nullable Player sender) {
@@ -887,7 +889,7 @@ public class SchematicsDialog extends BaseDialog{
     }
 
     void syncPlanetTags(){
-        ui.arcInfo("标签自动分类中...请稍后");
+        arcui.arcInfo("标签自动分类中...请稍后");
         for(Schematic s : schematics.all()){
             Boolean surpulo = true;
             Boolean erekir = true;
@@ -907,7 +909,7 @@ public class SchematicsDialog extends BaseDialog{
             if(surpulo && !s.labels.contains(surpuloTags)) addTag(s,surpuloTags);
             if(erekir && !s.labels.contains(erekirTags)) addTag(s,erekirTags);
         }
-        ui.arcInfo("标签分类完成");
+        arcui.arcInfo("标签分类完成");
     }
 
     boolean arcSchematicCanBuild(Schematic s){
