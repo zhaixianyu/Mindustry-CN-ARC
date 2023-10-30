@@ -97,7 +97,7 @@ public class Marker {
             }
         }
 
-        if (Indexer > 10) {
+        if (Indexer > 0) {
             /* Parse position */
             String posStr = text.substring(text.indexOf('(', Indexer + 1), text.indexOf(')', Indexer + 1) + 1);
 
