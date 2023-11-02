@@ -30,7 +30,7 @@ import static mindustry.Vars.*;
 import static mindustry.arcModule.ARCVars.*;
 
 public abstract class ClientLauncher extends ApplicationCore implements Platform{
-    private static final int loadingFPS = 20;
+    private static final int loadingFPS = 30;
 
     private long nextFrame;
     private long beginTime;
@@ -267,11 +267,13 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
         if(settings.getBool("bossKeyPressing", false)) {
             return "计算器";
         }
-        int enabled = mods.mods.count(t->t.enabled());
-        long time = (Time.millis() - startPlayTime) / 1000;
-        return "Mindustry-CN-ARC | 版本号 " + (Version.arcBuild <= 0 ? "dev" : Version.arcBuild) + " | mod启用" + enabled + "/" + (mods == null ? 0 : mods.mods.size) + " | " +
-                (Core.graphics != null ? Core.graphics.getWidth() + "x" + Core.graphics.getHeight() : "")
-                ;
+        int enabled = mods.mods.count(Mods.LoadedMod::enabled);
+        return "Mindustry-CN-ARC | 版本号 " +
+                (Version.arcBuild <= 0 ? "dev" : Version.arcBuild) +
+                " | mod启用" + enabled + "/" +
+                (mods == null ? 0 : mods.mods.size) +
+                " | " +
+                (Core.graphics != null ? Core.graphics.getWidth() + "x" + Core.graphics.getHeight() : "");
     }
 
     @Override
