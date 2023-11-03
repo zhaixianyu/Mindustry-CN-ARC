@@ -38,29 +38,7 @@ public class ReplayController {
     private long startTime, allTime;
     private long lastTime, nextTime;
     private long length, skip = 0;
-    private final Thread thread = new Thread(() -> {
-        while (true) {
-            if (reads == null) {
-                try {
-                    synchronized (this) {
-                        this.wait();
-                    }
-                } catch (InterruptedException ignored) {
-                }
-            }
-            synchronized (this) {
-                try {
-                    readNextPacket();
-                } catch (Exception e) {
-                    closeReads();
-                    reads = null;
-                    net.disconnect();
-                    ARCVars.replaying = false;
-                    Core.app.post(() -> logic.reset());
-                }
-            }
-        }
-    }, "Replay Controller");
+    private Thread thread;
     private final Fi dir = Vars.dataDirectory.child("replays");
     private final ByteBuffer tmpBuf = ByteBuffer.allocate(32768);
     private final Writes tmpWr = new Writes(new ByteBufferOutput(tmpBuf));
@@ -73,6 +51,28 @@ public class ReplayController {
 
     public ReplayController() {
         dir.mkdirs();
+        thread = new Thread(() -> {
+            while (true) {
+                if (reads == null) {
+                    try {
+                        Log.info("waited ");
+                        synchronized (thread) {
+                            thread.wait();
+                        }
+                    } catch (InterruptedException ignored) {
+                    }
+                }
+                try {
+                    readNextPacket();
+                } catch (Exception e) {
+                    closeReads();
+                    reads = null;
+                    net.disconnect();
+                    ARCVars.replaying = false;
+                    Core.app.post(() -> logic.reset());
+                }
+            }
+        }, "Replay Controller");
         thread.setPriority(3);
         thread.start();
         WidgetGroup g = new WidgetGroup();
@@ -157,11 +157,11 @@ public class ReplayController {
             Log.err("创建回放出错!", e);
             return;
         }
-        boolean anonymous = Core.settings.getBoolOnce("anonymous");
+        boolean anonymous = Core.settings.getBool("anonymous", false);
         writes.i(version);
         writes.l(new Date().getTime());
-        writes.str(ip);
-        writes.str(Vars.player.name.trim());
+        writes.str(anonymous ? "anonymous" : ip);
+        writes.str(anonymous ? "anonymous" : Vars.player.name.trim());
         recording = true;
         startTime = Time.nanos();
     }
