@@ -55,7 +55,6 @@ public class ReplayController {
             while (true) {
                 if (reads == null) {
                     try {
-                        Log.info("waited ");
                         synchronized (thread) {
                             thread.wait();
                         }
@@ -149,7 +148,7 @@ public class ReplayController {
     }
 
     public void createReplay(String ip) {
-        if (!recordEnabled) return;
+        if (!recordEnabled || ARCVars.replaying) return;
         stop();
         try {
             writes = new Writes(new DataOutputStream(new BufferedOutputStream(new DeflaterOutputStream(new FileOutputStream(dir.child(new Date().getTime() + ".mrep").file())))));
