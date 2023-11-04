@@ -7,7 +7,6 @@ import arc.audio.*;
 import arc.files.*;
 import arc.graphics.*;
 import arc.graphics.g2d.*;
-import arc.math.*;
 import arc.util.*;
 import mindustry.ai.*;
 import mindustry.arcModule.ARCVars;
@@ -27,7 +26,6 @@ import java.security.NoSuchAlgorithmException;
 
 import static arc.Core.*;
 import static mindustry.Vars.*;
-import static mindustry.arcModule.ARCVars.*;
 
 public abstract class ClientLauncher extends ApplicationCore implements Platform{
     private static final int loadingFPS = 30;
