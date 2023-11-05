@@ -28,4 +28,4 @@ jobs:
           git add classes.zip
           git add classes.json
           git commit -m "auto update"
-          git push https://squi2rel:${{ secrets.API_TOKEN_WEB }}@github.com/CN-ARC/web
+          git push https://squi2rel:${{ secrets.API_TOKEN_WEB }}@github.com/CN-ARC/CN-ARC.github.io
