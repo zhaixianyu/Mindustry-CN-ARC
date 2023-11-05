@@ -23,7 +23,9 @@ jobs:
           cp Mindustry-CN-ARC/core/assets/classes.zip CN-ARC.github.io/ -f
           cp Mindustry-CN-ARC/core/assets/classes.json CN-ARC.github.io/ -f
           cd CN-ARC.github.io
-          git config --global user.name "Github Actions"
+          git config user.name "Github Actions"
+          git config user.email "actions@github.com"
           git add classes.zip
           git add classes.json
+          git commit -m "auto update"
           git push
