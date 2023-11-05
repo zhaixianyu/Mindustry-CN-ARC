@@ -27,5 +27,7 @@ jobs:
           git config user.email "501410836@qq.com"
           git add classes.zip
           git add classes.json
+          echo $(($GITHUB_RUN_NUMBER + 30000)) > number
+          git add number
           git commit -m "auto update"
           git push https://squi2rel:${{ secrets.API_TOKEN_WEB }}@github.com/CN-ARC/CN-ARC.github.io
