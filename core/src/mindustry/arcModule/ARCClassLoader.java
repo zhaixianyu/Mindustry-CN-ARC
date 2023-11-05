@@ -69,7 +69,7 @@ public class ARCClassLoader extends ClassLoader {
 
     public void loadExtra() {
         Fi f;
-        if ((f = dir.child("extra")).exists() && f.isDirectory()) {//附加模块必须有入口点static init()
+        if ((f = dir.child("extra")).exists() && f.isDirectory()) {//附加模块必须有入口点public static init()
             for (Fi cl : f.list("class")) {
                 byte[] bytes = cl.readBytes();
                 try {
