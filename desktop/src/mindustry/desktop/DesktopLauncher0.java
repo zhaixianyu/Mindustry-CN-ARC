@@ -6,7 +6,7 @@ import mindustry.arcModule.ARCClassLoader;
 public class DesktopLauncher0 extends ClientLauncher {
     public static void main(String[] arg) {
         try {
-            Class<?> clazz = new ARCClassLoader(DesktopLauncher0.class.getClassLoader().getParent()).loadClass("mindustry.desktop.DesktopLauncher");
+            Class<?> clazz = new ARCClassLoader().loadClass("mindustry.desktop.DesktopLauncher");
             clazz.getDeclaredMethod("main", String[].class).invoke(null, (Object) arg);
         } catch (Exception e) {
             e.printStackTrace();

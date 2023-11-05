@@ -6,14 +6,16 @@ import arc.util.OS;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Objects;
 
 public class ARCClassLoader extends ClassLoader {
     ClassLoader loader, sys;
-    Fi dir, cur;
+    static Fi dir;
+    Fi cur;
     String className;
-    public ARCClassLoader(ClassLoader ext) {
+    public ARCClassLoader() {
         loader = getClass().getClassLoader();
-        sys = ext;
+        sys = loader.getParent();
         dir = new Fi(OS.getAppDataDirectoryString("Mindustry")).child("arcfix");
     }
     @Override
@@ -63,5 +65,30 @@ public class ARCClassLoader extends ClassLoader {
         }
 
         return clazz;
+    }
+
+    public void loadExtra() {
+        Fi f;
+        if ((f = dir.child("extra")).exists() && f.isDirectory()) {//附加模块必须有入口点static init()
+            for (Fi cl : f.list("class")) {
+                byte[] bytes = cl.readBytes();
+                try {
+                    Class<?> clazz = defineClass(cl.nameWithoutExtension(), bytes, 0, bytes.length);
+                    clazz.getDeclaredMethod("init").invoke(null);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public void fallbackLoad() {
+        for (Fi cl : dir.findAll(f -> Objects.equals(f.extension(), "class"))) {
+            byte[] bytes = cl.readBytes();
+            try {
+                defineClass(cl.path().replace(dir.path(), "").replace("/", ".").substring(1).replace(".class", ""), bytes, 0, bytes.length);
+            } catch (Exception ignored) {
+            }
+        }
     }
 }

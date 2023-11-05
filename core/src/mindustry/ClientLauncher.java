@@ -9,6 +9,7 @@ import arc.graphics.*;
 import arc.graphics.g2d.*;
 import arc.util.*;
 import mindustry.ai.*;
+import mindustry.arcModule.ARCClassLoader;
 import mindustry.arcModule.ARCVars;
 import mindustry.arcModule.TimeControl;
 import mindustry.core.*;
@@ -38,6 +39,9 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
 
     @Override
     public void setup(){
+        if (OS.isAndroid) {
+            new ARCClassLoader().fallbackLoad();
+        }
         String dataDir = OS.env("MINDUSTRY_DATA_DIR");
         if(dataDir != null){
             Core.settings.setDataDirectory(files.absolute(dataDir));
@@ -50,6 +54,11 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
         YuanShenLoader = settings.getDataDirectory().child("yuanshen").exists();
         loader = YuanShenLoader ? new YuanShenLoadRenderer() : new LoadRenderer();
         Events.fire(new ClientCreateEvent());
+        if (getClass().getClassLoader() instanceof ARCClassLoader arc) {
+            arc.loadExtra();
+        } else {
+            new ARCClassLoader().loadExtra();
+        }
 
         loadFileLogger();
         platform = this;
