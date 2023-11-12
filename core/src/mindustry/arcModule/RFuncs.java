@@ -1,9 +1,14 @@
 package mindustry.arcModule;
 
 import arc.Core;
+import arc.Graphics;
+import arc.files.Fi;
 import arc.graphics.Color;
+import arc.graphics.Pixmap;
+import arc.graphics.Pixmaps;
 import arc.graphics.g2d.PixmapRegion;
 import arc.util.Log;
+import arc.util.OS;
 import arc.util.Strings;
 import mindustry.*;
 import mindustry.content.*;
@@ -242,5 +247,21 @@ public class RFuncs {
             if (cur == val) return true;
         }
         return false;
+    }
+
+    public static Graphics.Cursor customCursor(String name, int scale) {
+        String path;
+        Fi file;
+        if ((path = Core.settings.getString("arcCursorPath", null)) != null && (file = new Fi(path)).exists() && file.isDirectory() && file.child(name + ".png").exists()) {
+            Pixmap base = new Pixmap(file);
+            if (scale == 1 || OS.isAndroid || OS.isIos) {
+                return Core.graphics.newCursor(base, base.width / 2, base.height / 2);
+            }
+            Pixmap result = Pixmaps.scale(base, base.width * scale, base.height * scale);
+            base.dispose();
+            return Core.graphics.newCursor(result, result.width / 2, result.height / 2);
+        } else {
+            return Core.graphics.newCursor(name, scale);
+        }
     }
 }

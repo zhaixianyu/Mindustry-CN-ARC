@@ -16,6 +16,7 @@ import arc.scene.style.TextureRegionDrawable;
 import arc.scene.ui.*;
 import arc.scene.ui.TextButton.TextButtonStyle;
 import arc.scene.ui.layout.Table;
+import arc.scene.utils.Elem;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.util.Nullable;
@@ -347,6 +348,8 @@ public class SettingsMenuDialog extends BaseDialog{
             sound.sliderPref("sfxvol", 100, 0, 100, 1, i -> i + "%");
             sound.sliderPref("ambientvol", 100, 0, 100, 1, i -> i + "%");
 
+            game.addCategory("arcCNet");
+            game.stringInput("arcNetProxy", "");
             game.addCategory("arcCSave");
             game.checkPref("savecreate", true);
             game.checkPref("save_more_map", false);
@@ -809,6 +812,24 @@ public class SettingsMenuDialog extends BaseDialog{
             specmode.sliderPref("fontSize", 10, 5, 25, 1, i -> "x " + Strings.fixed(i * 0.1f, 1));
             specmode.stringInput("themeColor", "ffd37f");
             specmode.stringInput("arcBackgroundPath", "");
+            if (!OS.isAndroid && !OS.isIos) {
+                specmode.stringInput("arcCursorPath", "");
+                specmode.buttonInput("[cyan]查看当前指针样式", () -> new BaseDialog("指针样式") {{
+                    shown(() -> {
+                        addCloseButton();
+                        cont.add("将鼠标悬停在这些框框上面，预览指针样式 (这些名字就是自定义指针文件名)").row();
+                        cont.table(root -> {
+                            root.table(t -> t.add("drill").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(ui.drillCursor));
+                            root.table(t -> t.add("unload").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(ui.unloadCursor));
+                            root.table(t -> t.add("target").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(ui.targetCursor));
+                            root.table(t -> t.add("resizeHorizontal").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(ARCVars.arcui.resizeHorizontalCursor));
+                            root.table(t -> t.add("resizeVertical").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(ARCVars.arcui.resizeVerticalCursor));
+                            root.table(t -> t.add("resizeLeft").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(ARCVars.arcui.resizeLeftCursor));
+                            root.table(t -> t.add("resizeRight").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(ARCVars.arcui.resizeRightCursor));
+                        });
+                    });
+                }}.show());
+            }
             specmode.checkPref("yuanshen", false, b -> {
                 if (b) {
                     dataDirectory.child("yuanshen").writeString("原神，启动！");
@@ -1023,6 +1044,11 @@ public class SettingsMenuDialog extends BaseDialog{
 
         public void addCategoryS(String name){
             list.add(new Divider(name, name));
+            rebuild();
+        }
+
+        public void buttonInput(String text, Runnable callback) {
+            list.add(new ButtonFakeSetting(text, callback));
             rebuild();
         }
 
@@ -1250,6 +1276,19 @@ public class SettingsMenuDialog extends BaseDialog{
                 addDesc(table.label(() -> title).left().padTop(3f).get());
                 table.row().add(area).left();
                 table.row();
+            }
+        }
+
+        public static class ButtonFakeSetting extends Setting {
+            Button button;
+            public ButtonFakeSetting(String text, Runnable callback) {
+                super("fake");
+                button = Elem.newButton(text, callback);
+            }
+
+            @Override
+            public void add(SettingsTable table) {
+                table.row().add(button).growX().height(48).row();
             }
         }
     }

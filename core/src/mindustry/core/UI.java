@@ -22,6 +22,7 @@ import arc.struct.*;
 import arc.util.*;
 import mindustry.arcModule.ARCVars;
 import mindustry.arcModule.NumberFormat;
+import mindustry.arcModule.RFuncs;
 import mindustry.arcModule.ui.*;
 import mindustry.editor.*;
 import mindustry.game.EventType.*;
@@ -146,9 +147,9 @@ public class UI implements ApplicationListener, Loadable{
         Colors.put("stat", Pal.stat);
         Colors.put("negstat", Pal.negativeStat);
 
-        drillCursor = Core.graphics.newCursor("drill", Fonts.cursorScale());
-        unloadCursor = Core.graphics.newCursor("unload", Fonts.cursorScale());
-        targetCursor = Core.graphics.newCursor("target", Fonts.cursorScale());
+        drillCursor = RFuncs.customCursor("drill", Fonts.cursorScale());
+        unloadCursor = RFuncs.customCursor("unload", Fonts.cursorScale());
+        targetCursor = RFuncs.customCursor("target", Fonts.cursorScale());
         ARCVars.arcui.load();
     }
 
