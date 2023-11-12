@@ -2,6 +2,7 @@ package mindustry.ui.dialogs;
 
 import arc.Core;
 import arc.Events;
+import arc.Graphics;
 import arc.files.Fi;
 import arc.files.ZipFi;
 import arc.func.Boolc;
@@ -819,14 +820,21 @@ public class SettingsMenuDialog extends BaseDialog{
                         addCloseButton();
                         cont.add("将鼠标悬停在这些框框上面，预览指针样式 (这些名字就是自定义指针文件名)").row();
                         cont.table(root -> {
+                            root.table(t -> t.add("cursor").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(Graphics.Cursor.SystemCursor.arrow));
+                            root.table(t -> t.add("hand").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(Graphics.Cursor.SystemCursor.hand));
+                            root.table(t -> t.add("ibeam").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(Graphics.Cursor.SystemCursor.ibeam));
+                        }).growX().row();
+                        cont.table(root -> {
                             root.table(t -> t.add("drill").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(ui.drillCursor));
                             root.table(t -> t.add("unload").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(ui.unloadCursor));
                             root.table(t -> t.add("target").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(ui.targetCursor));
+                        }).growX().row();
+                        cont.table(root -> {
                             root.table(t -> t.add("resizeHorizontal").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(ARCVars.arcui.resizeHorizontalCursor));
                             root.table(t -> t.add("resizeVertical").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(ARCVars.arcui.resizeVerticalCursor));
                             root.table(t -> t.add("resizeLeft").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(ARCVars.arcui.resizeLeftCursor));
                             root.table(t -> t.add("resizeRight").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(ARCVars.arcui.resizeRightCursor));
-                        });
+                        }).growX();
                     });
                 }}.show());
             }

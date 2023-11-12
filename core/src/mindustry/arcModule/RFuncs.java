@@ -32,6 +32,8 @@ public class RFuncs {
     static boolean colorized = false;
 
     static int msgSeperator = 145;
+    static boolean cursorChecked = false;
+    static Fi cachedCursor = null;
 
     public interface Stringf<T> {
         String get(T i);
@@ -250,10 +252,9 @@ public class RFuncs {
     }
 
     public static Graphics.Cursor customCursor(String name, int scale) {
-        String path;
-        Fi file;
-        if ((path = Core.settings.getString("arcCursorPath", null)) != null && (file = new Fi(path)).exists() && file.isDirectory() && file.child(name + ".png").exists()) {
-            Pixmap base = new Pixmap(file);
+        Fi path = getCursorDir(), child;
+        if (path != null && (child = path.child(name + ".png")).exists()) {
+            Pixmap base = new Pixmap(child);
             if (scale == 1 || OS.isAndroid || OS.isIos) {
                 return Core.graphics.newCursor(base, base.width / 2, base.height / 2);
             }
@@ -263,5 +264,14 @@ public class RFuncs {
         } else {
             return Core.graphics.newCursor(name, scale);
         }
+    }
+
+    private static Fi getCursorDir() {
+        if (cursorChecked) return cachedCursor;
+        cursorChecked = true;
+        String path;
+        Fi tmp;
+        if ((path = Core.settings.getString("arcCursorPath", null)) != null && !path.isEmpty() && (tmp = new Fi(path)).isDirectory()) cachedCursor = tmp;
+        return cachedCursor;
     }
 }
