@@ -33,7 +33,7 @@ public class RFuncs {
 
     static int msgSeperator = 145;
     public static boolean cursorChecked = false;
-    static Fi cachedCursor = null;
+    public static Fi cachedCursor = null;
 
     public interface Stringf<T> {
         String get(T i);

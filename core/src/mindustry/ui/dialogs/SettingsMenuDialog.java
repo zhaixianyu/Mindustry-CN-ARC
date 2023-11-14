@@ -820,9 +820,10 @@ public class SettingsMenuDialog extends BaseDialog{
                 specmode.buttonInput("[cyan]查看当前指针样式", () -> new BaseDialog("指针样式") {{
                     shown(() -> {
                         addCloseButton();
-                        cont.add("[orange]将鼠标悬停在这些框框上面，预览指针样式 (这些名字就是自定义指针文件名)").row();
-                        cont.button("[cyan]重载指针", () -> {
+                        cont.add("[cyan]将鼠标悬停在这些框框上面，预览指针样式 (这些名字就是自定义指针文件名)").row();
+                        cont.button("[orange]重载指针", () -> {
                             RFuncs.cursorChecked = false;
+                            RFuncs.cachedCursor = null;
                             ui.drillCursor = RFuncs.customCursor("drill", Fonts.cursorScale());
                             ui.unloadCursor = RFuncs.customCursor("unload", Fonts.cursorScale());
                             ui.targetCursor = RFuncs.customCursor("target", Fonts.cursorScale());
