@@ -821,6 +821,7 @@ public class SettingsMenuDialog extends BaseDialog{
                     shown(() -> {
                         addCloseButton();
                         cont.add("[cyan]将鼠标悬停在这些框框上面，预览指针样式 (这些名字就是自定义指针文件名)").row();
+                        cont.add("[cyan]图片中心是指针中心").row();
                         cont.button("[orange]重载指针", () -> {
                             RFuncs.cursorChecked = false;
                             RFuncs.cachedCursor = null;
