@@ -32,7 +32,7 @@ public class RFuncs {
     static boolean colorized = false;
 
     static int msgSeperator = 145;
-    static boolean cursorChecked = false;
+    public static boolean cursorChecked = false;
     static Fi cachedCursor = null;
 
     public interface Stringf<T> {

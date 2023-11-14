@@ -26,6 +26,7 @@ import arc.util.Scaling;
 import arc.util.Strings;
 import arc.util.io.Streams;
 import mindustry.arcModule.ARCVars;
+import mindustry.arcModule.RFuncs;
 import mindustry.content.TechTree;
 import mindustry.content.TechTree.TechNode;
 import mindustry.core.GameState;
@@ -37,6 +38,7 @@ import mindustry.gen.Tex;
 import mindustry.graphics.Shaders;
 import mindustry.input.DesktopInput;
 import mindustry.input.MobileInput;
+import mindustry.ui.Fonts;
 import mindustry.ui.Styles;
 
 import java.io.IOException;
@@ -818,7 +820,18 @@ public class SettingsMenuDialog extends BaseDialog{
                 specmode.buttonInput("[cyan]查看当前指针样式", () -> new BaseDialog("指针样式") {{
                     shown(() -> {
                         addCloseButton();
-                        cont.add("将鼠标悬停在这些框框上面，预览指针样式 (这些名字就是自定义指针文件名)").row();
+                        cont.add("[orange]将鼠标悬停在这些框框上面，预览指针样式 (这些名字就是自定义指针文件名)").row();
+                        cont.button("[cyan]重载指针", () -> {
+                            RFuncs.cursorChecked = false;
+                            ui.drillCursor = RFuncs.customCursor("drill", Fonts.cursorScale());
+                            ui.unloadCursor = RFuncs.customCursor("unload", Fonts.cursorScale());
+                            ui.targetCursor = RFuncs.customCursor("target", Fonts.cursorScale());
+                            ARCVars.arcui.resizeHorizontalCursor = RFuncs.customCursor("resizeHorizontal", Fonts.cursorScale());
+                            ARCVars.arcui.resizeVerticalCursor = RFuncs.customCursor("resizeVertical", Fonts.cursorScale());
+                            ARCVars.arcui.resizeLeftCursor = RFuncs.customCursor("resizeLeft", Fonts.cursorScale());
+                            ARCVars.arcui.resizeRightCursor = RFuncs.customCursor("resizeRight", Fonts.cursorScale());
+                            Fonts.loadSystemCursors();
+                        }).growX().row();
                         cont.table(root -> {
                             root.table(t -> t.add("cursor").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(Graphics.Cursor.SystemCursor.arrow));
                             root.table(t -> t.add("hand").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(Graphics.Cursor.SystemCursor.hand));

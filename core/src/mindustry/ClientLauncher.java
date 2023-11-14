@@ -151,11 +151,11 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
         mods = new Mods();
         schematics = new Schematics();
 
-        Fonts.loadSystemCursors();
-
         assets.load(new Vars());
         assets.load(new ARCVars());
         loadSettings();
+
+        Fonts.loadSystemCursors();
 
         String proxy = settings.getString("arcNetProxy", "");
         if (!proxy.isEmpty()) {
