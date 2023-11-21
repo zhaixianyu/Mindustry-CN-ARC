@@ -586,7 +586,7 @@ public class AdvanceToolTable extends Table {
                             if (effects == StatusEffects.none) continue;
                             if (i++ % 8 == 0) list.row();
                             list.button(effects.emoji(), squareTogglet, () -> {
-                                unitStatus.add(new StatusEntry().set(effects, 600f));
+                                unitStatus.add(new StatusEntry().set(effects, unitStatus.isEmpty() ? 600f : unitStatus.orderedItems().peek().time));
                                 rebuildTable[0].run();
                             }).size(50f).color(unitStatus.select(e -> e.effect == effects).isEmpty() ? Color.gray : Color.white).tooltip(effects.localizedName);
                         }
