@@ -594,6 +594,17 @@ public class AdvanceToolTable extends Table {
 
                     t.row();
 
+                    float[] status = {1f, 1f, 1f, 1f};
+                    unitStatus.each(s -> {
+                        status[0] *= s.effect.healthMultiplier;
+                        status[1] *= s.effect.damageMultiplier;
+                        status[2] *= s.effect.reloadMultiplier;
+                        status[3] *= s.effect.speedMultiplier;
+                    });
+                    Table statusText = UnitType.getStatustext(status[0], status[1], status[2], status[3]);
+                    if (statusText != null) {
+                        t.add(statusText).row();
+                    }
                     t.table(list -> {
                         for (var entry : unitStatus) {
                             list.add(entry.effect.emoji() + entry.effect.localizedName + " ");
