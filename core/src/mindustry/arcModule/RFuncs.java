@@ -3,10 +3,14 @@ package mindustry.arcModule;
 import arc.Core;
 import arc.Graphics;
 import arc.files.Fi;
+import arc.func.Cons;
 import arc.graphics.Color;
 import arc.graphics.Pixmap;
 import arc.graphics.Pixmaps;
 import arc.graphics.g2d.PixmapRegion;
+import arc.scene.style.Drawable;
+import arc.scene.style.TextureRegionDrawable;
+import arc.util.Http;
 import arc.util.Log;
 import arc.util.OS;
 import arc.util.Strings;
@@ -23,10 +27,15 @@ import mindustry.world.Block;
 import mindustry.world.Tile;
 import mindustry.world.blocks.logic.LogicBlock;
 
+import java.lang.reflect.Field;
+
 import static arc.Core.camera;
 import static arc.graphics.Color.RGBtoHSV;
 import static mindustry.Vars.*;
+import static mindustry.arcModule.ARCVars.arcui;
+import static mindustry.gen.Tex.whiteui;
 
+@SuppressWarnings("unused")
 public class RFuncs {
 
     static boolean colorized = false;
@@ -273,5 +282,42 @@ public class RFuncs {
         Fi tmp;
         if ((path = Core.settings.getString("arcCursorPath", null)) != null && !path.isEmpty() && (tmp = new Fi(path)).isDirectory()) cachedCursor = tmp;
         return cachedCursor;
+    }
+
+    public static Drawable tint(int color) {
+        return ((TextureRegionDrawable) whiteui).tint(new Color(color));
+    }
+
+    public static Drawable tint(int r, int g, int b, int a) {
+        return ((TextureRegionDrawable) whiteui).tint(new Color(Color.packRgba(r, g, b, a)));
+    }
+
+    public static void uploadToWeb(Fi f, Cons<String> result) {
+        uploadToWebID(f, l -> result.get("http://124.220.46.174/api/get?id=" + l));
+    }
+
+    public static void uploadToWebID(Fi f, Cons<String> result) {
+        arcui.arcInfo("上传中，请等待...");
+        Http.HttpRequest post = Http.post("http://124.220.46.174/api/upload");
+        post.contentStream = f.read();
+        post.header("filename", f.name());
+        post.header("size", String.valueOf(f.length()));
+        post.header("token", "3ab6950d5970c57f938673911f42fd32");
+        post.timeout = 10000;
+        post.error(e -> Core.app.post(() -> arcui.arcInfo("发生了一个错误:" + e.toString())));
+        post.submit(r -> result.get(r.getResultAsString()));
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T get(Class<?> t, Object o, String n) throws NoSuchFieldException {
+        try {
+            Field f = t.getDeclaredField(n);
+            f.setAccessible(true);
+            return (T) f.get(o);
+        } catch (Exception e) {
+            Class<?> s = t.getSuperclass();
+            if (s == null) throw new NoSuchFieldException();
+            return get(s, o, n);
+        }
     }
 }
