@@ -350,6 +350,7 @@ public class SettingsMenuDialog extends BaseDialog{
             sound.sliderPref("musicvol", 100, 0, 100, 1, i -> i + "%");
             sound.sliderPref("sfxvol", 100, 0, 100, 1, i -> i + "%");
             sound.sliderPref("ambientvol", 100, 0, 100, 1, i -> i + "%");
+            sound.sliderPref("arcvol", settings.getInt("musicvol"), 0, 100, 1, i -> i + "%");
 
             game.addCategory("arcCNet");
             game.stringInput("arcNetProxy", "");
