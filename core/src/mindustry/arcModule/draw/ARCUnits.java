@@ -5,9 +5,7 @@ import arc.Events;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Lines;
 import mindustry.game.EventType;
-import mindustry.gen.Flyingc;
 import mindustry.gen.Unit;
-import mindustry.type.UnitType;
 
 import static mindustry.Vars.*;
 
@@ -19,7 +17,7 @@ public class ARCUnits {
 
     public static boolean selectedUnitsFlyer = false, selectedUnitsLand = false;
 
-    private static boolean drawWeaponRange = false, canHitPlayer = false, canHitCommand = false;
+    private static boolean canHitPlayer = false, canHitCommand = false, canHitPlans = false, canHitMouse = false;
 
     static {
         // 减少性能开销
@@ -31,7 +29,7 @@ public class ARCUnits {
             unitWeaponRange = Core.settings.getInt("unitWeaponRange") * tilesize;
             unitWeaponRangeAlpha = Core.settings.getInt("unitWeaponRangeAlpha") / 100f;
 
-            selectedUnitsFlyer = control.input.selectedUnits.contains(Flyingc::isFlying);
+            selectedUnitsFlyer = control.input.selectedUnits.contains(unit -> unit.isFlying());
             selectedUnitsLand = control.input.selectedUnits.contains(unit -> !unit.isFlying());
         });
     }
@@ -40,12 +38,14 @@ public class ARCUnits {
         if (unitWeaponRange == 0 || unitWeaponRangeAlpha == 0) return;
         if (unitWeaponRange == 30) {
             drawWeaponRange(unit, unitWeaponRangeAlpha);
-        } else {
-            canHitPlayer = unit.team != player.team() && !player.unit().isNull() && (player.unit().isFlying() ? unit.type.targetAir : unit.type.targetGround)
+        } else if (unit.team != player.team()) {
+            canHitPlayer = !player.unit().isNull() && player.unit().hittable() && (player.unit().isFlying() ? unit.type.targetAir : unit.type.targetGround)
                     && unit.within(player.unit().x, player.unit().y, unit.type.maxRange + unitWeaponRange);
-            canHitCommand = unit.team != player.team() && (selectedUnitsFlyer && unit.type.targetAir) || (selectedUnitsLand && unit.type.targetGround)
-                    && unit.within(Core.input.mouseWorldX(), Core.input.mouseWorldY(), unit.type.maxRange + unitWeaponRange);
-            if (canHitPlayer || canHitCommand) drawWeaponRange(unit, unitWeaponRangeAlpha);
+            canHitCommand = control.input.commandMode && ((selectedUnitsFlyer && unit.type.targetAir) || (selectedUnitsLand && unit.type.targetGround));
+            canHitPlans = (control.input.block != null || control.input.selectPlans.size > 0) && unit.type.targetGround;
+            canHitMouse = unit.within(Core.input.mouseWorldX(), Core.input.mouseWorldY(), unit.type.maxRange + unitWeaponRange);
+            if (canHitPlayer || (canHitMouse && (canHitCommand || canHitPlans)))
+                drawWeaponRange(unit, unitWeaponRangeAlpha);
         }
     }
 
