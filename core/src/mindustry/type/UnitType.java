@@ -1310,7 +1310,7 @@ public class UnitType extends UnlockableContent implements Senseable{
                 ARCUnits.drawWeaponRange(unit);
             }
 
-            if (!control.input.commandMode && Core.settings.getBool("alwaysShowUnitRTSAi") && unit.isCommandable() && unit.command().command != null && unit.command().command.name.equals("move") && ARCVars.arcInfoControl) {
+            if (!control.input.commandMode && Core.settings.getBool("alwaysShowUnitRTSAi") && unit.isCommandable() && unit.command().command != null && unit.command().command.name.equals("move")) {
                 Draw.z(Layer.effect);
                 CommandAI ai = unit.command();
                 //draw target line
