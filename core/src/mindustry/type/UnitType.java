@@ -1307,19 +1307,7 @@ public class UnitType extends UnlockableContent implements Senseable{
                 }
             }
             if (drawUnitBar) {
-                float alertRange = (float) Core.settings.getInt("unitAlertRange");
-                boolean turretAlert = alertRange > 0 && (alertRange >= 30f ||
-                        ((!player.unit().isNull() && player.unit().targetable(unit.team)) || (control.input.commandMode && control.input.selectedUnits.size > 0)));
-                boolean canHitPlayer = player.unit().isFlying() ? targetAir : targetGround;
-                boolean canHitCommand = control.input.commandMode && (control.input.selectedUnits.size > 0);
-                boolean showHitPlayer = unit.team != player.team() && canHitPlayer && (player.unit().dst(unit.x, unit.y) <= (maxRange + (float) Core.settings.getInt("unitAlertRange") * tilesize));
-                boolean showHitCommand = unit.team != player.team() && canHitCommand &&
-                        Core.input.mouseWorld().dst(unit.x, unit.y) <= (maxRange + (float) Core.settings.getInt("unitAlertRange") * tilesize);
-
-                Draw.color(unit.team.color);
-                float unitRangeAlpha = turretAlert && (showHitPlayer || showHitCommand) ? 1f : Core.settings.getInt("unitweapon_range") / 100f;
-                Draw.alpha(unitRangeAlpha);
-                Lines.dashCircle(unit.x, unit.y, maxRange);
+                ARCUnits.drawWeaponRange(unit);
             }
 
             if (!control.input.commandMode && Core.settings.getBool("alwaysShowUnitRTSAi") && unit.isCommandable() && unit.command().command != null && unit.command().command.name.equals("move") && ARCVars.arcInfoControl) {

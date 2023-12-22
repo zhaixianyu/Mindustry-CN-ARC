@@ -608,13 +608,13 @@ public class SettingsMenuDialog extends BaseDialog{
             arc.checkPref("alwaysShowPlayerUnit", false);
 
             arc.sliderPref("unitTransparency", 100, 0, 100, 5, i -> i > 0 ? i + "%" : "关闭");
-            arc.sliderPref("unitDrawMinHealth", 0, 0, 2500, 50, i -> i + "[red]HP");
+            arc.sliderPref("unitDrawMinHealth", settings.getInt("minhealth_unitshown",0), 0, 2500, 50, i -> i + "[red]HP");
 
             arc.checkPref("unitHealthBar", false);
-            arc.sliderPref("unitBarDrawMinHealth", 0, 0, 2500, 100, i -> i + "[red]HP");
+            arc.sliderPref("unitBarDrawMinHealth", settings.getInt("minhealth_unithealthbarshown",0), 0, 2500, 100, i -> i + "[red]HP");
 
-            arc.sliderPref("unitweapon_range", 0, 0, 100, 1, i -> i > 0 ? i + "%" : "关闭");
-            arc.sliderPref("unitAlertRange", 0, 0, 30, 1, s -> {
+
+            arc.sliderPref("unitWeaponRange", settings.getInt("unitAlertRange",0), 0, 30, 1, s -> {
                 if (s == 0) {
                     return "关闭";
                 } else if (s == 30) {
@@ -623,6 +623,8 @@ public class SettingsMenuDialog extends BaseDialog{
                     return s + "格";
                 }
             });
+            arc.sliderPref("unitWeaponRangeAlpha", settings.getInt("unitweapon_range",0), 0, 100, 1, i -> i > 0 ? i + "%" : "关闭");
+
             arc.checkPref("unitWeaponTargetLine", false);
             arc.checkPref("showminebeam", true);
             arc.checkPref("unitItemCarried", false);
