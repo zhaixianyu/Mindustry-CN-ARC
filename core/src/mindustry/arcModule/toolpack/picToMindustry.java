@@ -11,6 +11,7 @@ import arc.struct.Seq;
 import arc.struct.StringMap;
 import arc.util.Strings;
 import mindustry.Vars;
+import mindustry.arcModule.ARCVars;
 import mindustry.content.Blocks;
 import mindustry.game.Schematic;
 import mindustry.ui.Styles;
@@ -20,6 +21,7 @@ import mindustry.world.blocks.logic.CanvasBlock;
 import mindustry.world.blocks.logic.CanvasBlock.CanvasBuild;
 
 import static mindustry.Vars.*;
+import static mindustry.arcModule.ARCVars.arcui;
 import static mindustry.content.Blocks.canvas;
 import static mindustry.content.Blocks.sorter;
 
@@ -59,9 +61,9 @@ public class picToMindustry {
                     oriImage = new Pixmap(bytes);
                     rebuilt();
                     if (oriImage.width > 500 || oriImage.height > 500)
-                        ui.arcInfo("[orange]警告：图片可能过大，请尝试压缩图片", 5);
+                        arcui.arcInfo("[orange]警告：图片可能过大，请尝试压缩图片", 5);
                 } catch (Throwable e) {
-                    ui.arcInfo("读取图片失败，请尝试更换图片\n" + e);
+                    arcui.arcInfo("读取图片失败，请尝试更换图片\n" + e);
                 }
             })).size(240, 50).padBottom(20f).row();
             t.check("自动保存为蓝图", Core.settings.getBool("autoSavePTM"), ta -> Core.settings.put("autoSavePTM", ta));
@@ -110,15 +112,15 @@ public class picToMindustry {
         image = Pixmaps.scale(oriImage, scale);
         tTable.clear();
         tTable.table(t -> {
-            t.add("路径").color(getThemeColor()).padRight(25f).padBottom(10f);
+            t.add("路径").color(ARCVars.getThemeColor()).padRight(25f).padBottom(10f);
             t.button("\uE874", ()-> Core.app.setClipboardText(originFile.absolutePath()));
             t.add(originFile.absolutePath()).padBottom(10f).row();
 
-            t.add("名称").color(getThemeColor()).padRight(25f).padBottom(10f);
+            t.add("名称").color(ARCVars.getThemeColor()).padRight(25f).padBottom(10f);
             t.button("\uE874", ()-> Core.app.setClipboardText(originFile.name()));
             t.add(originFile.name()).padBottom(10f).row();
 
-            t.add("原始大小").color(getThemeColor()).padRight(25f);
+            t.add("原始大小").color(ARCVars.getThemeColor()).padRight(25f);
             t.add(formatNumber(oriImage.width) + "\uE815" + formatNumber(oriImage.height));
         }).padBottom(20f).row();
         tTable.table(t -> {
@@ -216,7 +218,7 @@ public class picToMindustry {
         schem.labels.add(l);
         if (Core.settings.getBool("autoSavePTM")) {
             Vars.schematics.add(schem);
-            ui.arcInfo("已保存蓝图：" + originFile.name(), 10);
+            arcui.arcInfo("已保存蓝图：" + originFile.name(), 10);
         }
         if (state.isGame()) {
             Vars.ui.schematics.hide();

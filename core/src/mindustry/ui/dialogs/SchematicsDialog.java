@@ -15,6 +15,8 @@ import arc.scene.ui.layout.*;
 import arc.scene.utils.*;
 import arc.struct.*;
 import arc.util.*;
+import mindustry.Vars;
+import mindustry.arcModule.ARCVars;
 import mindustry.arcModule.RFuncs;
 import mindustry.arcModule.toolpack.picToMindustry;
 import mindustry.arcModule.ui.dialogs.MessageDialog;
@@ -35,6 +37,7 @@ import mindustry.world.meta.StatUnit;
 import java.util.regex.*;
 
 import static mindustry.Vars.*;
+import static mindustry.arcModule.ARCVars.arcui;
 import static mindustry.arcModule.RFuncs.getPrefix;
 import static mindustry.content.Items.*;
 
@@ -59,6 +62,8 @@ public class SchematicsDialog extends BaseDialog{
 
     public SchematicsDialog(){
         super("@schematics");
+
+        Vars.netClient.addPacketHandler("arcNetSchematic", url -> Http.get(url, r -> readShare(r.getResultAsString().replace(" ", "+"), null)));
 
         Events.on(EventType.WorldLoadEvent.class, event -> {
             if(state.rules.env == Planets.serpulo.defaultEnv){
@@ -182,6 +187,13 @@ public class SchematicsDialog extends BaseDialog{
                         Core.settings.put("arcSchematicCanBuild", !Core.settings.getBool("arcSchematicCanBuild"));
                         rebuildPane.run();
                     }).size(tagh).pad(2).tooltip("可建造(核心有此类资源+地图未禁用)").checked(t->Core.settings.getBool("arcSchematicCanBuild"));
+            if (Core.settings.getBool("autoSelSchematic")) {
+                in.add("蓝图包含：").padLeft(20f).padRight(4);
+                in.button(control.input.block == null ? "[red]\uE815" : control.input.block.emoji(), Styles.togglet, () -> {
+                    control.input.block = null;
+                    rebuildPane.run();
+                }).size(tagh).pad(2).tooltip("蓝图需包含此建筑").checked(t -> control.input.block != null);
+            }
         }).height(tagh).fillX();
 
         cont.row();
@@ -291,7 +303,7 @@ public class SchematicsDialog extends BaseDialog{
         }).grow().scrollX(false);
 
         if(Core.settings.getBool("autoSelSchematic") && control.input.block!=null){
-            ui.arcInfo("[orange]蓝图筛选模式[white]:蓝图必须包含 "+control.input.block.emoji(),5f);
+            arcui.arcInfo("[orange]蓝图筛选模式[white]:蓝图必须包含 "+control.input.block.emoji(),5f);
         }
     }
 
@@ -411,14 +423,15 @@ public class SchematicsDialog extends BaseDialog{
     private void arcSendBlueprintMsg(String msg) {
         if (clipbroad) Core.app.setClipboardText(msg);
         else RFuncs.sendChatMsg(msg);
-        ui.arcInfo(clipbroad ? "已保存至剪贴板" : "已发送到聊天框");
+        arcui.arcInfo(clipbroad ? "已保存至剪贴板" : "已发送到聊天框");
     }
 
     private void arcSendClipBroadMsg(Schematic schem, String msg){
         StringBuilder s = new StringBuilder();
-        s.append("这是一条来自").append(arcVersionPrefix).append("的分享记录\n");
+        s.append("这是一条来自").append(ARCVars.arcVersionPrefix).append("的分享记录\n");
         s.append("分享者：").append(player.name).append("\n");
         s.append("蓝图代码链接：").append(msg).append("\n");
+        s.append("蓝图名：").append(schem.name()).append("\n");
         s.append("蓝图造价：");
         ItemSeq arr = schem.requirements();
         for(ItemStack stack : arr){
@@ -438,7 +451,7 @@ public class SchematicsDialog extends BaseDialog{
         if (schematics.writeBase64(schem).length() > 3500) s.append("\n").append("蓝图代码过长，请点击链接查看");
         else s.append("\n").append("蓝图代码：\n").append(schematics.writeBase64(schem));
         Core.app.setClipboardText(Strings.stripColors(s.toString()));
-        ui.arcInfo("已保存至剪贴板");
+        arcui.arcInfo("已保存至剪贴板");
     }
 
     public boolean resolveSchematic(String msg, @Nullable Player sender) {
@@ -446,25 +459,26 @@ public class SchematicsDialog extends BaseDialog{
             return false;
         }
         int start = msg.indexOf(' ', msg.indexOf(ShareType) + ShareType.length());
-        Http.get("https://pastebin.com/raw/" + msg.substring(start + 1), r -> {
-            String base64 = r.getResultAsString().replace(" ", "+");
-            Core.app.post(() -> {
-                try {
-                    Schematic s = Schematics.readBase64(base64);
-                    s.removeSteamID();
-                    if (sender != null) s.tags.put("name", "来自" + sender.plainName() + "的蓝图");
-                    fromShare = true;
-                    SchematicsDialog.this.showInfo(s);
-                } catch(Throwable e) {
-                    ui.showException(e);
-                }
-            });
-        });
+        Http.get("https://pastebin.com/raw/" + msg.substring(start + 1), r -> readShare(r.getResultAsString().replace(" ", "+"), player));
         return true;
     }
 
+    private void readShare(String base64, @Nullable Player sender) {
+        Core.app.post(() -> {
+            try {
+                Schematic s = Schematics.readBase64(base64);
+                s.removeSteamID();
+                s.tags.put("name", sender == null ? "来自服务器的蓝图" : "来自" + sender.plainName() + "的蓝图");
+                fromShare = true;
+                SchematicsDialog.this.showInfo(s);
+            } catch(Throwable e) {
+                ui.showException(e);
+            }
+        });
+    }
+
     private String arcSchematicsInfo(Schematic schem, boolean description){
-        String builder = arcVersionPrefix;
+        String builder = ARCVars.arcVersionPrefix;
         builder+="标记了蓝图["+schem.name()+"]";
         builder+="。属性："+schem.width+"x"+schem.height+"，"+schem.tiles.size+"个建筑。";
         if(description){
@@ -878,7 +892,7 @@ public class SchematicsDialog extends BaseDialog{
     }
 
     void syncPlanetTags(){
-        ui.arcInfo("标签自动分类中...请稍后");
+        arcui.arcInfo("标签自动分类中...请稍后");
         for(Schematic s : schematics.all()){
             Boolean surpulo = true;
             Boolean erekir = true;
@@ -898,7 +912,7 @@ public class SchematicsDialog extends BaseDialog{
             if(surpulo && !s.labels.contains(surpuloTags)) addTag(s,surpuloTags);
             if(erekir && !s.labels.contains(erekirTags)) addTag(s,erekirTags);
         }
-        ui.arcInfo("标签分类完成");
+        arcui.arcInfo("标签分类完成");
     }
 
     boolean arcSchematicCanBuild(Schematic s){

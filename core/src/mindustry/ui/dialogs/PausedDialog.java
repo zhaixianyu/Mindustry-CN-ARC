@@ -1,6 +1,7 @@
 package mindustry.ui.dialogs;
 
 import arc.*;
+import mindustry.arcModule.ARCVars;
 import mindustry.gen.*;
 
 import static mindustry.Vars.*;
@@ -59,6 +60,10 @@ public class PausedDialog extends BaseDialog{
 
             cont.row();
 
+            cont.button("@joingame", Icon.host, () -> {
+                this.hide();
+                ui.join.show();
+            });
             cont.button("@quit", Icon.exit, this::showQuitConfirm).colspan(2).width(dw + 10f).update(s -> s.setText(control.saves.getCurrent() != null && control.saves.getCurrent().isAutosave() ? "@save.quit" : "@quit"));
 
         }else{
@@ -121,7 +126,7 @@ public class PausedDialog extends BaseDialog{
     }
 
     public void runExitSave(){
-        replayController.stopPlay();
+        ARCVars.replayController.stopPlay();
         wasClient = net.client();
         if(net.client()) netClient.disconnectQuietly();
 

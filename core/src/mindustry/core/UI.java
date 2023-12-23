@@ -20,12 +20,11 @@ import arc.scene.ui.Tooltip.*;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
-import mindustry.ClientLauncher;
+import mindustry.arcModule.ARCVars;
 import mindustry.arcModule.NumberFormat;
+import mindustry.arcModule.RFuncs;
 import mindustry.arcModule.ui.*;
-import mindustry.arcModule.ui.dialogs.*;
 import mindustry.arcModule.ui.logic.Test;
-import mindustry.arcModule.ui.window.*;
 import mindustry.editor.*;
 import mindustry.game.EventType.*;
 import mindustry.gen.*;
@@ -37,7 +36,6 @@ import mindustry.ui.fragments.*;
 
 import static arc.scene.actions.Actions.*;
 import static mindustry.Vars.*;
-import static mindustry.arcModule.toolpack.arcWaveSpawner.initArcWave;
 
 public class UI implements ApplicationListener, Loadable{
     public static String billions, millions, thousands;
@@ -84,22 +82,8 @@ public class UI implements ApplicationListener, Loadable{
     public CampaignCompleteDialog campaignComplete;
 
     public IntMap<Dialog> followUpMenus;
-
-    public Cursor drillCursor, unloadCursor, targetCursor, resizeHorizontalCursor, resizeVerticalCursor, resizeLeftCursor, resizeRightCursor;
-
-    public AboutCN_ARCDialog aboutcn_arc;
-    public UpdateDialog updatedialog;
-    public CustomRulesDialog customrules;
-    public AchievementsDialog achievements;
-    //public MindustryWikiDialog mindustrywiki;
-    public mindustry.arcModule.ui.dialogs.MessageDialog MessageDialog;
-
-    public mindustry.arcModule.ui.dialogs.MusicDialog MusicDialog;
-    public mindustry.arcModule.ui.window.WindowManager WindowManager;
-    public LabelController LabelController;
+    public Cursor drillCursor, unloadCursor, targetCursor;
     private @Nullable Element lastAnnouncement;
-
-    private @Nullable Element lastArcAnnouncement;
 
     public UI(){
         Fonts.loadFonts();
@@ -158,19 +142,16 @@ public class UI implements ApplicationListener, Loadable{
 
         ClickListener.clicked = () -> Sounds.press.play();
 
-        Colors.put("accent", getThemeColor());
+        Colors.put("accent", ARCVars.getThemeColor());
         Colors.put("unlaunched", Color.valueOf("8982ed"));
-        Colors.put("highlight", getThemeColor().cpy().lerp(Color.white, 0.3f));
+        Colors.put("highlight", ARCVars.getThemeColor().cpy().lerp(Color.white, 0.3f));
         Colors.put("stat", Pal.stat);
         Colors.put("negstat", Pal.negativeStat);
 
-        drillCursor = Core.graphics.newCursor("drill", Fonts.cursorScale());
-        unloadCursor = Core.graphics.newCursor("unload", Fonts.cursorScale());
-        targetCursor = Core.graphics.newCursor("target", Fonts.cursorScale());
-        resizeHorizontalCursor = Core.graphics.newCursor("resizeHorizontal", Fonts.cursorScale());
-        resizeVerticalCursor = Core.graphics.newCursor("resizeVertical", Fonts.cursorScale());
-        resizeLeftCursor = Core.graphics.newCursor("resizeLeft", Fonts.cursorScale());
-        resizeRightCursor = Core.graphics.newCursor("resizeRight", Fonts.cursorScale());
+        drillCursor = RFuncs.customCursor("drill", Fonts.cursorScale());
+        unloadCursor = RFuncs.customCursor("unload", Fonts.cursorScale());
+        targetCursor = RFuncs.customCursor("target", Fonts.cursorScale());
+        ARCVars.arcui.load();
     }
 
     @Override
@@ -241,19 +222,12 @@ public class UI implements ApplicationListener, Loadable{
         schematics = new SchematicsDialog();
         logic = new LogicDialog();
         fullText = new FullTextDialog();
-        aboutcn_arc = new AboutCN_ARCDialog();
-        updatedialog = new UpdateDialog();
-        customrules = new CustomRulesDialog();
-        achievements = new AchievementsDialog();
-        //mindustrywiki = new MindustryWikiDialog();
-        MessageDialog = new MessageDialog();
         campaignComplete = new CampaignCompleteDialog();
-        MusicDialog = new MusicDialog();
         followUpMenus = new IntMap<>();
-        LabelController = new LabelController();
-        WindowManager = new WindowManager();
 
         Group group = Core.scene.root;
+
+        ARCVars.arcui.init(group);
 
         menuGroup.setFillParent(true);
         menuGroup.touchable = Touchable.childrenOnly;
@@ -272,14 +246,7 @@ public class UI implements ApplicationListener, Loadable{
         listfrag.build(hudGroup);
         consolefrag.build(hudGroup);
         loadfrag.build(group);
-        if (ClientLauncher.YuanShenLoader) {
-            new YuanShenFragment().build();
-        } else {
-            new FadeInFragment().build(group);
-        }
-        Core.settings.put("yuanshen", ClientLauncher.YuanShenLoader);
 
-        initArcWave();
         Test.test();
     }
 
@@ -540,7 +507,7 @@ public class UI implements ApplicationListener, Loadable{
     public void showText(String titleText, String text, int align){
         new Dialog(titleText){{
             cont.row();
-            cont.image().width(400f).pad(2).colspan(2).height(4f).color(getThemeColor());
+            cont.image().width(400f).pad(2).colspan(2).height(4f).color(ARCVars.getThemeColor());
             cont.row();
             cont.add(text).width(400f).wrap().get().setAlignment(align, align);
             cont.row();
@@ -561,7 +528,7 @@ public class UI implements ApplicationListener, Loadable{
         new Dialog(titleText){{
             cont.margin(10).add(text);
             titleTable.row();
-            titleTable.image().color(getThemeColor()).height(3f).growX().pad(2f);
+            titleTable.image().color(ARCVars.getThemeColor()).height(3f).growX().pad(2f);
             buttons.button("@ok", this::hide).size(110, 50).pad(4);
             closeOnBack();
         }}.show();
@@ -641,23 +608,6 @@ public class UI implements ApplicationListener, Loadable{
         lastAnnouncement = t;
     }
 
-    public void arcInfo(String text){
-        arcInfo(text, 3);
-    }
-
-    /** Display text in the upper of the screen, then fade out. */
-    public void arcInfo(String text, float duration){
-        Table t = new Table(Styles.black3);
-        t.touchable = Touchable.disabled;
-        t.margin(8f).add(text).style(Styles.outlineLabel).labelAlign(Align.center);
-        t.update(() -> t.setPosition(Core.graphics.getWidth()/2f, Core.graphics.getHeight()/4f, Align.center));
-        t.actions(Actions.fadeOut(duration, Interp.pow4In), Actions.remove());
-        t.pack();
-        t.act(0.1f);
-        Core.scene.add(t);
-        lastArcAnnouncement = t;
-    }
-
     public void showOkText(String title, String text, Runnable confirmed){
         BaseDialog dialog = new BaseDialog(title);
         dialog.cont.add(text).width(500f).wrap().pad(4f).get().setAlignment(Align.center, Align.center);
@@ -678,7 +628,7 @@ public class UI implements ApplicationListener, Loadable{
             cont.add(titleTable).width(400f);
 
             cont.row();
-            cont.image().width(400f).pad(2).colspan(2).height(4f).color(getThemeColor()).bottom();
+            cont.image().width(400f).pad(2).colspan(2).height(4f).color(ARCVars.getThemeColor()).bottom();
             cont.row();
             cont.pane(table -> {
                 table.add(message).width(400f).wrap().get().setAlignment(Align.center);

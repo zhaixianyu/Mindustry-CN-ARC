@@ -25,7 +25,10 @@ import arc.scene.ui.layout.Table;
 import arc.scene.ui.layout.WidgetGroup;
 import arc.struct.Seq;
 import arc.util.*;
+import arc.util.serialization.JsonReader;
+import arc.util.serialization.JsonValue;
 import mindustry.Vars;
+import mindustry.arcModule.ARCVars;
 import mindustry.arcModule.ui.RStyles;
 import mindustry.arcModule.ui.window.Window;
 import mindustry.core.Version;
@@ -41,8 +44,11 @@ import mindustry.ui.MobileButton;
 import mindustry.ui.Styles;
 
 import java.util.concurrent.TimeUnit;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import static mindustry.Vars.*;
+import static mindustry.arcModule.ARCVars.arcui;
 import static mindustry.gen.Tex.discordBanner;
 import static mindustry.ui.Styles.cleart;
 
@@ -72,7 +78,7 @@ public class MenuFragment{
         renderer = new MenuRenderer();
 
         if (!Core.settings.getBool("arcDisableModWarning")){
-            ui.aboutcn_arc.show();
+            arcui.aboutcn_arc.show();
         }
         Core.settings.put("locale", "zh_CN");
 
@@ -89,9 +95,13 @@ public class MenuFragment{
         if (arcBackgroundPath != null && Core.files.absolute(arcBackgroundPath).exists() && Core.files.absolute(arcBackgroundPath).list().length >=1){
             arcBackgroundIndex = (int) (Math.random() * Core.files.absolute(arcBackgroundPath).list().length);
             nextBackGroundImg();
-            group.addChild(img);
-            img.setFillParent(true);
-        }else{
+            if (arcBGList.size == 0) {
+                parent.fill((x, y, w, h) -> renderer.render());
+            } else {
+                group.addChild(img);
+                img.setFillParent(true);
+            }
+        } else {
             parent.fill((x, y, w, h) -> renderer.render());
         }
 
@@ -130,7 +140,7 @@ public class MenuFragment{
         parent.fill(c -> c.bottom().left().table(t -> {
             t.background(Tex.buttonEdge3);
             t.button("\uE83D", cleart, this::nextBackGroundImg).width(50f);
-        }).visible(() -> Core.settings.has("arcBackgroundPath")).left().width(100));
+        }).visible(() -> Core.settings.getString("arcBackgroundPath", "").length() != 0).left().width(100));
 
         String versionText = ((Version.build == -1) ? "[#fc8140aa]" : "[cyan]") + Version.combined();
         String arcversionText = "\n[cyan]ARC version:" + Version.arcBuild;
@@ -170,6 +180,7 @@ public class MenuFragment{
             textLabel.setText(text);
         });
         Events.on(EventType.ClientLoadEvent.class, event -> Core.app.post(() -> Http.get("https://cn-arc.github.io/labels?t=" + Time.millis())
+                .timeout(5000)
                 .error(e -> {
                     Log.err("获取最新主页标语失败!加载本地标语", e);
                     labels = Core.files.internal("labels").readString("UTF-8").replace("\r", "").replace("\\n", "\n").replace("/n", "\n").split("\n");
@@ -188,10 +199,45 @@ public class MenuFragment{
             t.background(Tex.buttonEdge4);
             t.button("学术日报", cleart, MenuFragment::showArcNews).left().update(b -> b.setColor(haveNewerNews ? Tmp.c1.set(Color.white).lerp(Color.cyan, Mathf.absin(5f, 1f)) : Color.white)).growX();
         }).left().width(100));
+
+        Core.app.post(() -> Http.get("https://cn-arc.github.io/classes.json?t=" + Time.millis()).timeout(10000).error(Log::err).submit(r -> {
+            try {
+                JsonValue j = new JsonReader().parse(r.getResultAsString());
+                if (j.getLong("lastUpdate", 0) > Core.settings.getLong("archotfixtime", 0)) {
+                    Http.get("https://cn-arc.github.io/classes.zip").timeout(20000).error(Log::err).submit(r2 -> {
+                        try {
+                            ZipInputStream zip = new ZipInputStream(r2.getResultAsStream());
+                            ZipEntry file;
+                            Fi root = dataDirectory.child("arcvars");
+                            root.emptyDirectory();
+                            byte[] buffer = new byte[1024];
+                            while ((file = zip.getNextEntry()) != null) {
+                                Fi f = root.child(file.getName());
+                                if (file.isDirectory()) {
+                                    f.mkdirs();
+                                } else {
+                                    f.parent().mkdirs();
+                                    int len;
+                                    while ((len = zip.read(buffer)) > 0) {
+                                        f.writeBytes(buffer, 0, len, true);
+                                    }
+                                }
+                            }
+                            Core.settings.put("archotfixtime", j.getLong("lastUpdate", 0));
+                        } catch (Exception e) {
+                            Log.err(e);
+                        }
+                    });
+                }
+            } catch (Exception e) {
+                Log.err(e);
+            }
+        }));
     }
 
     private void nextBackGroundImg(){
         arcBGList = Core.files.absolute(arcBackgroundPath).findAll(f -> !f.isDirectory() && (f.extEquals("png") || f.extEquals("jpg") || f.extEquals("jpeg")));
+        if (arcBGList.size == 0) return;
         arcBackgroundPath = Core.settings.getString("arcBackgroundPath");
         arcBackgroundIndex += 1;
         arcBackgroundIndex = arcBackgroundIndex % arcBGList.size;
@@ -206,18 +252,21 @@ public class MenuFragment{
     }
 
     public static void fetchArcNews() {
-        Http.get("https://cn-arc.github.io/news?t=" + Time.millis(), result -> {
-            try {
-                String s = result.getResultAsString();
-                long last = Long.parseLong(s.substring(0, s.indexOf('\n')));
-                if (arcNewsLastUpdate < last) {
-                    arcNewsLastUpdate = last;
-                    haveNewerNews = true;
-                    if (Core.settings.getBool("autoArcNews", false)) Core.app.post(MenuFragment::showArcNews);
-                }
-            } catch (Exception ignored) {
-            }
-        }, e -> {});
+        Http.get("https://cn-arc.github.io/news?t=" + Time.millis())
+                .timeout(5000)
+                .error(e -> {})
+                .submit(result -> {
+                    try {
+                        String s = result.getResultAsString();
+                        long last = Long.parseLong(s.substring(0, s.indexOf('\n')));
+                        if (arcNewsLastUpdate < last) {
+                            arcNewsLastUpdate = last;
+                            haveNewerNews = true;
+                            if (Core.settings.getBool("autoArcNews", false)) Core.app.post(MenuFragment::showArcNews);
+                        }
+                    } catch (Exception ignored) {
+                    }
+                });
     }
 
     public static void showArcNews() {
@@ -242,11 +291,11 @@ public class MenuFragment{
                             b.add().grow();
                             b.add(formatTimeElapsed(Time.millis() - Long.parseLong(news[id]))).padRight(5);
                         }, RStyles.flatt, () -> {
-                            Window w = new Window(idx == -1 ? news[id + 1] : news[id + 1].substring(0, idx), 600, 400, Icon.book.getRegion(), ui.WindowManager);
+                            Window w = new Window(idx == -1 ? news[id + 1] : news[id + 1].substring(0, idx), 600, 400, Icon.book, arcui.WindowManager);
                             Table content = new Table();
                             ScrollPane pane = new ScrollPane(content);
                             content.table(t2 -> {
-                                t2.image().color(Vars.getThemeColor()).height(3).growX().row();
+                                t2.image().color(ARCVars.getThemeColor()).height(3).growX().row();
                                 t2.add(formatTimeElapsed(Time.millis() - Long.parseLong(news[id]))).align(Align.left).row();
                                 t2.table(t3 -> {
                                     String n = (idx == -1 ? news[id + 1] : news[id + 1].substring(idx + 1)).replace("\\n", "\n");
@@ -337,7 +386,7 @@ public class MenuFragment{
                     if (!haveNews) {
                         t.add("这里什么都没有");
                     }
-                    Window w = new Window("学术日报", 600, 400, Icon.book.getRegion(), ui.WindowManager);
+                    Window w = new Window("学术日报", 600, 400, Icon.book.getRegion(), arcui.WindowManager);
                     w.setBody(new Table(t2 -> t2.add(p).grow()) {{
                         setBackground(Styles.black3);
                     }});
@@ -389,11 +438,11 @@ public class MenuFragment{
                 tools = new MobileButton(Icon.settings, "@settings", ui.settings::show),
                 mods = new MobileButton(Icon.book, "@mods", ui.mods::show),
                 exit = new MobileButton(Icon.exit, "@quit", () -> Core.app.exit()),
-                cn_arc = new MobileButton(Icon.info,"@aboutcn_arc.button",  ui.aboutcn_arc::show),
+                cn_arc = new MobileButton(Icon.info,"@aboutcn_arc.button",  arcui.aboutcn_arc::show),
                 //mindustrywiki = new MobileButton(Icon.book, "@mindustrywiki.button", ui.mindustrywiki::show),
-                updatedialog = new MobileButton(Icon.info,"@updatedialog.button",  ui.updatedialog::show),
+                updatedialog = new MobileButton(Icon.info,"@updatedialog.button",  arcui.updatedialog::show),
                 database = new MobileButton(Icon.book, "@database",  ui.database::show),
-                achievements = new MobileButton(Icon.star, "@achievements",  ui.achievements::show);
+                achievements = new MobileButton(Icon.star, "@achievements",  arcui.achievements::show);
 
         play.clicked(this::randomLabel);
         custom.clicked(this::randomLabel);
@@ -411,7 +460,7 @@ public class MenuFragment{
 
         if(!Core.graphics.isPortrait()){
             container.marginTop(60f);
-            if(Core.settings.getInt("changelogreaded") == changeLogRead){
+            if(Core.settings.getInt("changelogreaded") == ARCVars.changeLogRead){
                 container.add(play);
                 container.add(join);
                 container.add(custom);
@@ -439,7 +488,7 @@ public class MenuFragment{
             if(!ios) container.add(exit);
         }else{
             container.marginTop(0f);
-            if(Core.settings.getInt("changelogreaded") == changeLogRead){
+            if(Core.settings.getInt("changelogreaded") == ARCVars.changeLogRead){
                 container.add(play);
                 container.add(maps);
                 container.row();
@@ -511,16 +560,16 @@ public class MenuFragment{
             t.defaults().width(width).height(70f);
             t.name = "buttons";
 
-            if(Core.settings.getInt("changelogreaded") != changeLogRead) {
+            if(Core.settings.getInt("changelogreaded") != ARCVars.changeLogRead) {
                 buttons(t,
                         new MenuButton("@database.button", Icon.menu,
                                 new MenuButton("@schematics", Icon.paste, ui.schematics::show),
                                 new MenuButton("@database", Icon.book, ui.database::show),
                                 new MenuButton("@about.button", Icon.info, ui.about::show),
-                                new MenuButton("@updatedialog.button", Icon.distribution, ui.updatedialog::show)
+                                new MenuButton("@updatedialog.button", Icon.distribution, arcui.updatedialog::show)
                         ),
                         new MenuButton("@settings", Icon.settings, ui.settings::show),
-                        new MenuButton("@aboutcn_arc.button", Icon.info, ui.aboutcn_arc::show)
+                        new MenuButton("@aboutcn_arc.button", Icon.info, arcui.aboutcn_arc::show)
                 );
             } else {
                 buttons(t,
@@ -535,13 +584,13 @@ public class MenuFragment{
                                 new MenuButton("@schematics", Icon.paste, ui.schematics::show),
                                 new MenuButton("@database", Icon.book, ui.database::show),
                                 new MenuButton("@about.button", Icon.info, ui.about::show),
-                                new MenuButton("@updatedialog.button", Icon.distribution, ui.updatedialog::show)
+                                new MenuButton("@updatedialog.button", Icon.distribution, arcui.updatedialog::show)
                         ),
 
-                        new MenuButton("@achievements", Icon.star, ui.achievements::show),
+                        new MenuButton("@achievements", Icon.star, arcui.achievements::show),
                         new MenuButton("@mods", Icon.book, ui.mods::show),
                         new MenuButton("@settings", Icon.settings, ui.settings::show),
-                        new MenuButton("@aboutcn_arc.button", Icon.info, ui.aboutcn_arc::show)
+                        new MenuButton("@aboutcn_arc.button", Icon.info, arcui.aboutcn_arc::show)
                 );
 
             }

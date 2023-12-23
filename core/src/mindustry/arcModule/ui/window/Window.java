@@ -15,6 +15,8 @@ import arc.scene.actions.Actions;
 import arc.scene.event.InputEvent;
 import arc.scene.event.InputListener;
 import arc.scene.event.Touchable;
+import arc.scene.style.Drawable;
+import arc.scene.style.TextureRegionDrawable;
 import arc.scene.ui.Image;
 import arc.scene.ui.Label;
 import arc.scene.ui.layout.Table;
@@ -26,24 +28,25 @@ import arc.util.Tmp;
 import mindustry.gen.Icon;
 import mindustry.ui.Styles;
 
-import static mindustry.Vars.getThemeColor;
-import static mindustry.Vars.ui;
+import static mindustry.arcModule.ARCVars.arcui;
+import static mindustry.arcModule.ARCVars.getThemeColor;
 
+@SuppressWarnings("unused")
 public class Window {
     public WindowTable table;
     WindowManager manager;
     String title;
     Table cont;
-    TextureRegion icon;
+    Drawable icon;
     public Image iconImage;
-    boolean removed = false, minSized = false, resizable = true, maxSizable = true, minSizable = true, closable = true;
-    boolean cursorRestored = true;
+    public boolean removed = false, added = false, minSized = false, resizable = true, maxSizable = true, minSizable = true, closable = true;
+    boolean cursorRestored = true, closeToRemove = true;
     float minWidth = 200, minHeight = 200;
     private final ObjectMap<Enum<WindowEvents>, Seq<Cons<Window>>> events = new ObjectMap<>();
     private static Window front = null;
 
     public Window() {
-        this(ui.WindowManager);
+        this(arcui.WindowManager);
     }
 
     public Window(WindowManager manager) {
@@ -55,10 +58,16 @@ public class Window {
     }
 
     public Window(String title, float width, float height, WindowManager manager) {
-        this(title, width, height, new TextureRegion((Texture) Core.assets.get("sprites/error.png")), manager);
+        this(title, width, height, (TextureRegionDrawable) Core.atlas.getDrawable("error"), manager);
     }
 
     public Window(String title, float width, float height, TextureRegion icon, WindowManager manager) {
+        this(title, width, height, new TextureRegionDrawable(icon), manager);
+    }
+
+    public Window(String title, float width, float height, Drawable icon, WindowManager manager) {
+        iconImage = new Image(icon);
+        iconImage.setScaling(Scaling.fit);
         this.manager = manager;
         this.title = title;
         this.icon = icon;
@@ -66,6 +75,12 @@ public class Window {
     }
 
     public void add() {
+        if (added && !closeToRemove) {
+            table.visible = true;
+            return;
+        }
+        added = true;
+        fire(WindowEvents.open);
         manager.addWindow(this);
         front = this;
         fadeIn();
@@ -93,11 +108,14 @@ public class Window {
         return this;
     }
 
-    public Window setBody(Table body) {
+    public String getTitle() {
+        return title;
+    }
+
+    public void setBody(Table body) {
         cont.clear();
         cont.add(body).grow();
         fire(WindowEvents.bodyChanged);
-        return this;
     }
 
     public void posX(float x) {
@@ -125,11 +143,21 @@ public class Window {
         pos((table.parent.getWidth() - table.getWidth()) / 2, (table.parent.getHeight() - table.getHeight()) / 2);
     }
 
+    public boolean visible() {
+        return table.visible && !removed;
+    }
+
     public void remove() {
         if (removed) return;
-        removed = true;
+        if (closeToRemove) {
+            removed = true;
+            fire(WindowEvents.close);
+        }
         table.remove();
-        fire(WindowEvents.close);
+    }
+
+    public void closeToRemove(boolean toggle) {
+        closeToRemove = toggle;
     }
 
     public void setMinSize(float width, float height) {
@@ -189,6 +217,30 @@ public class Window {
         }
     }
 
+    public float getWidth() {
+        return table.getWidth();
+    }
+
+    public float getHeight() {
+        return table.getHeight();
+    }
+
+    public void setWidth(float width) {
+        table.setWidth(width);
+    }
+
+    public void setHeight(float height) {
+        table.setHeight(height);
+    }
+
+    public void setSize(float w, float h) {
+        table.setSize(w, h);
+    }
+
+    public void update(Runnable r) {
+        table.update(r);
+    }
+
     public void addListener(Enum<WindowEvents> type, Cons<Window> listener){
         events.get(type, () -> new Seq<>(Cons.class)).add(listener);
     }
@@ -218,7 +270,7 @@ public class Window {
         public static byte TOP_RIGHT = (byte) (TOP | RIGHT);
     }
 
-    private class WindowTable extends Table {
+    public class WindowTable extends Table {
         private boolean resizing = false;
         private byte resizeDirection;
         private float lastX, lastY, lastHeight, lastWidth;
@@ -232,8 +284,6 @@ public class Window {
             margin(0f);
             touchable = Touchable.childrenOnly;
             add(new Table(t -> {
-                iconImage = new Image(icon);
-                iconImage.setScaling(Scaling.fit);
                 t.add(iconImage).size(12).pad(10, 12, 10, 12);
                 t.table(tt -> {
                     tt.add("").update(l -> {
@@ -386,15 +436,15 @@ public class Window {
 
                 @Override
                 public boolean mouseMoved(InputEvent event, float x, float y) {
-                    if (fillParent || minSized) return true;
+                    if (fillParent || minSized || !resizable) return true;
                     if (x < 7 && y < 7 || x > getWidth() - 7 && y > getHeight() - 7) {
-                        Core.graphics.cursor(ui.resizeRightCursor);
+                        Core.graphics.cursor(arcui.resizeRightCursor);
                     } else if (x > getWidth() - 7 && y < 7 || x < 7 && y > getHeight() - 7) {
-                        Core.graphics.cursor(ui.resizeLeftCursor);
+                        Core.graphics.cursor(arcui.resizeLeftCursor);
                     } else if (x < 7 || x > getWidth() - 7) {
-                        Core.graphics.cursor(ui.resizeHorizontalCursor);
+                        Core.graphics.cursor(arcui.resizeHorizontalCursor);
                     } else if (y < 7 || y > getHeight() - 7) {
-                        Core.graphics.cursor(ui.resizeVerticalCursor);
+                        Core.graphics.cursor(arcui.resizeVerticalCursor);
                     } else if (!cursorRestored) {
                         Core.graphics.restoreCursor();
                         return cursorRestored = true;
@@ -427,13 +477,18 @@ public class Window {
 
         @Override
         public boolean remove() {
-            if (removed) {
-                return super.remove();
+            if (closeToRemove) {
+                if (removed) {
+                    return super.remove();
+                } else {
+                    removed = true;
+                    manager.removeWindow(Window.this);
+                    fadeOut();
+                    return true;
+                }
             } else {
-                removed = true;
-                manager.removeWindow(Window.this);
-                fadeOut();
-                return true;
+                visible = false;
+                return false;
             }
         }
 

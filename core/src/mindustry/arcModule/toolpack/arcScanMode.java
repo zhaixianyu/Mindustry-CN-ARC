@@ -39,11 +39,11 @@ import mindustry.world.blocks.storage.Unloader;
 import mindustry.world.meta.BlockGroup;
 
 
-import static arc.Core.camera;
 import static mindustry.Vars.*;
-import static mindustry.arcModule.RFuncs.arcSetCamera;
+import static mindustry.arcModule.DrawUtilities.drawNSideRegion;
+import static mindustry.arcModule.RFuncs.*;
 import static mindustry.arcModule.RFuncs.calWaveTimer;
-import static mindustry.arcModule.toolpack.arcPlayerEffect.drawNSideRegion;
+import static mindustry.arcModule.toolpack.arcPlayerEffect.drawControlTurret;
 import static mindustry.arcModule.toolpack.arcWaveSpawner.*;
 
 public class arcScanMode {
@@ -112,19 +112,8 @@ public class arcScanMode {
         detailSpawner();
         //detailTransporter();
         detailTransporter2();
-        detailBuildMode();
         findLogic();
-    }
-
-    public static void detailBuildMode(){
-        if (!Core.settings.getBool("arcBuildInfo")) return;
-        if (control.input.droppingItem) {
-            Color color = player.within(Core.input.mouseWorld(control.input.getMouseX(), control.input.getMouseY()), itemTransferRange)? Color.gold: Color.red;
-            drawNSideRegion(player.unit().x, player.unit().y, 3, player.unit().type.buildRange, player.unit().rotation, color, 0.25f, player.unit().stack.item.uiIcon, false);
-        }else if (control.input.isBuilding || control.input.selectedBlock() || !player.unit().plans().isEmpty()) {
-            drawNSideRegion(player.unit().x, player.unit().y, 3, player.unit().type.buildRange, player.unit().rotation, Pal.heal, 0.25f, Icon.wrench.getRegion(),true);
-        }
-
+        drawControlTurret();    //按理来说不应该放这，但不知道放哪了。
     }
 
     private static void detailCursor() {
@@ -228,12 +217,12 @@ public class arcScanMode {
             //if the tile has a building, display it
             if(hoverTile.build != null && hoverTile.build.displayable()  && !hoverTile.build.inFogTo(player.team())
                 && hoverTile.build.lastLogicController != null){
-                arcSetCamera(hoverTile.build.lastLogicController.tile);
+                arcSetCamera(hoverTile.build.lastLogicController);
             }
         }
         Unit u = control.input.selectedUnit();
         if (u != null && u.controller() instanceof LogicAI ai && ai.controller != null && ai.controller.isValid()) {
-            arcSetCamera(ai.controller.x, ai.controller.y);
+            arcSetCamera(ai.controller);
         }
     }
 

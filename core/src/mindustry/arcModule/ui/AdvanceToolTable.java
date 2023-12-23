@@ -40,6 +40,7 @@ import mindustry.world.blocks.payloads.UnitPayload;
 import java.util.Objects;
 
 import static mindustry.Vars.*;
+import static mindustry.arcModule.ARCVars.arcui;
 import static mindustry.arcModule.TimeControl.*;
 import static mindustry.content.UnitTypes.*;
 import static mindustry.ui.Styles.*;
@@ -325,7 +326,7 @@ public class AdvanceToolTable extends Table {
                 }).tooltip(Marker.markList.size == 0 ? "[red]未标记" : ("选择上个标记点：" + World.toTile(Marker.markList.peek().markPos.x) + "," + World.toTile(Marker.markList.peek().markPos.y))).height(50f);
             }).row();
             t.button("复制！", () -> {
-                ui.arcInfo("复制蓝图中...\n[orange]测试中功能，请等待后续完善");
+                arcui.arcInfo("复制蓝图中...\n[orange]测试中功能，请等待后续完善");
                 Vec2 left2 = new Vec2(Math.min(initA.x, initB.x), Math.min(initA.y, initB.y));
                 for (int x = 0; x <= Math.abs(initA.x - initB.x); x++) {
                     for (int y = 0; y <= Math.abs(initA.y - initB.y); y++) {
@@ -424,11 +425,11 @@ public class AdvanceToolTable extends Table {
                 table.row();
                 table.button("[orange] 生成！(/js)", Icon.modeAttack, () -> {
                     if (chatTime > 0f) {
-                        ui.arcInfo("为了防止因ddos被服务器ban，请勿太快操作", 5f);
+                        arcui.arcInfo("为了防止因ddos被服务器ban，请勿太快操作", 5f);
                         return;
                     }
                     chatTime = 1f;
-                    ui.arcInfo("已生成单个单位。\n[gray]请不要短时多次使用本功能，否则容易因ddos被服务器ban", 5f);
+                    arcui.arcInfo("已生成单个单位。\n[gray]请不要短时多次使用本功能，否则容易因ddos被服务器ban", 5f);
                     Tmp.v1.rnd(Mathf.random(unitRandDst)).add(unitLoc.x, unitLoc.y).scl(tilesize);
                     sendFormatChat("/js u = UnitTypes.@.create(Team.get(@))",
                             spawnUnit.type.name,
@@ -449,11 +450,11 @@ public class AdvanceToolTable extends Table {
                     if (elevation)
                         sendFormatChat("/js u.elevation = 1");
                     if (!unitStatus.isEmpty()) {
-                        sendFormatChat("/js statuses = (fb = (clazz = u.getClass().getSuperclass()) == Unit) ? Reflect.get(u, \"statuses\") : clazz.getDeclaredField(\"statuses\")");
-                        sendFormatChat("/js clazz = null; !fb && statuses.setAccessible(true)");
+                        sendFormatChat("/js gs=(t,o,n)=>{try{let f=t.getDeclaredField(n);f.setAccessible(true);return f.get(o)}catch(e){let s=t.getSuperclass();return s?gs(s,o,n):null}}");
+                        sendFormatChat("/js statuses = gs(u.class,u,\"statuses\")");
                         unitStatus.each(entry -> {
                             if (!entry.effect.reactive) {
-                                sendFormatChat("/js {e = new StatusEntry().set(StatusEffects.@, @);fb ? statuses.add(e) : statuses.get(u).add(e)}", entry.effect.name, entry.time * 60f);
+                                sendFormatChat("/js {e = new StatusEntry().set(StatusEffects.@, @);statuses.add(e);statuses.size}", entry.effect.name, entry.time * 60f);
                             }
                             else sendFormatChat("/js u.apply(StatusEffects.@)", entry.effect.name);
                         });
@@ -585,7 +586,7 @@ public class AdvanceToolTable extends Table {
                             if (effects == StatusEffects.none) continue;
                             if (i++ % 8 == 0) list.row();
                             list.button(effects.emoji(), squareTogglet, () -> {
-                                unitStatus.add(new StatusEntry().set(effects, 600f));
+                                unitStatus.add(new StatusEntry().set(effects, unitStatus.isEmpty() ? 600f : unitStatus.orderedItems().peek().time));
                                 rebuildTable[0].run();
                             }).size(50f).color(unitStatus.select(e -> e.effect == effects).isEmpty() ? Color.gray : Color.white).tooltip(effects.localizedName);
                         }
@@ -593,6 +594,17 @@ public class AdvanceToolTable extends Table {
 
                     t.row();
 
+                    float[] status = {1f, 1f, 1f, 1f};
+                    unitStatus.each(s -> {
+                        status[0] *= s.effect.healthMultiplier;
+                        status[1] *= s.effect.damageMultiplier;
+                        status[2] *= s.effect.reloadMultiplier;
+                        status[3] *= s.effect.speedMultiplier;
+                    });
+                    Table statusText = UnitType.getStatustext(status[0], status[1], status[2], status[3]);
+                    if (statusText != null) {
+                        t.add(statusText).row();
+                    }
                     t.table(list -> {
                         for (var entry : unitStatus) {
                             list.add(entry.effect.emoji() + entry.effect.localizedName + " ");

@@ -4,7 +4,6 @@ import arc.Core;
 import arc.Events;
 import arc.func.Cons;
 import arc.func.Floatf;
-import arc.graphics.Color;
 import arc.graphics.g2d.Draw;
 import arc.graphics.g2d.Lines;
 import arc.math.geom.Rect;
@@ -12,6 +11,8 @@ import arc.scene.ui.*;
 import arc.scene.ui.layout.Table;
 import arc.struct.Seq;
 import arc.util.Tmp;
+import mindustry.arcModule.ARCVars;
+import mindustry.arcModule.ElementUtils;
 import mindustry.arcModule.RFuncs;
 import mindustry.arcModule.ui.dialogs.BlockSelectDialog;
 import mindustry.content.Blocks;
@@ -22,10 +23,9 @@ import mindustry.game.EventType;
 import mindustry.game.Team;
 import mindustry.game.Teams;
 import mindustry.gen.Building;
+import mindustry.gen.Call;
 import mindustry.graphics.Layer;
 import mindustry.graphics.Pal;
-import mindustry.input.DesktopInput;
-import mindustry.ui.Fonts;
 import mindustry.ui.Styles;
 import mindustry.ui.dialogs.BaseDialog;
 import mindustry.world.Block;
@@ -36,155 +36,155 @@ import mindustry.world.blocks.production.Drill;
 import mindustry.world.blocks.storage.CoreBlock;
 
 import static mindustry.Vars.*;
+import static mindustry.arcModule.ARCVars.arcui;
 import static mindustry.arcModule.DrawUtilities.arcDrawText;
-import static mindustry.arcModule.RFuncs.arcSetCamera;
-import static mindustry.gen.Tex.*;
-import static mindustry.ui.Styles.flatDown;
-import static mindustry.ui.Styles.flatOver;
+import static mindustry.arcModule.RFuncs.*;
 
-public class AdvanceBuildTool extends Table {
-    private boolean expandList = false;
-
-    private TextButton.TextButtonStyle textStyle, NCtextStyle;
-
-    BuildRange placement = BuildRange.global;
+public class AdvanceBuildTool extends ElementUtils.ToolTable {
+    BuildRange placement = BuildRange.player;
     Rect selection = new Rect();
 
     private Block original = Blocks.conveyor, newBlock = Blocks.titaniumConveyor;
     private Block autoBuild = Blocks.turbineCondenser;
 
     private Block searchBlock = Blocks.itemSource;
-    private Building searchBuild;
-    private Seq<Building> buildingSeq = new Seq<>();
-    private int searchBlockIndex = 0;
+    private Building searchBuild = null;
+    public Seq<Building> buildingSeq = new Seq<>();
+    private int searchBlockIndex = -1;
 
     public BuildTiles buildTiles = new BuildTiles();
 
-    public AdvanceBuildTool() {
-        textStyle = new TextButton.TextButtonStyle() {{
-            down = flatOver;
-            up = pane;
-            over = flatDownBase;
-            font = Fonts.def;
-            fontColor = Color.white;
-            disabledFontColor = Color.gray;
-            checked = flatDown;
-        }};
+    private boolean shadowBuild = false;
 
-        NCtextStyle = new TextButton.TextButtonStyle() {{
-            down = flatOver;
-            up = pane;
-            over = flatDownBase;
-            font = Fonts.def;
-            fontColor = Color.white;
-            disabledFontColor = Color.gray;
-        }};
-        rebuild();
-        right();
+    public AdvanceBuildTool() {
+        icon = Blocks.buildTower.emoji();
         Events.on(EventType.WorldLoadEvent.class, e -> {
             rebuild();
         });
+        Events.run(EventType.Trigger.update,()->{
+            if (shadowBuild && player.unit() != null && player.unit().plans!=null && player.unit().activelyBuilding()) {
+                if (player.unit().buildPlan().progress == 0) return;
+                player.unit().plans.remove(player.unit().buildPlan());
+                Call.deletePlans(player, new int[]{player.unit().plans.indexOf(player.unit().buildPlan(), true)});
+            }
+        });
+
     }
 
-    void rebuild() {
-        clearChildren();
-        if (expandList) {
-            table(t -> {
-                t.setBackground(Styles.black6);
-                t.table(tt -> {
-                    tt.button((placement == BuildRange.global ? "[cyan]" : "[gray]") + "", NCtextStyle, () -> {
-                        placement = BuildRange.global;
+    @Override
+    protected void buildTable(){
+        table(t -> {
+            t.setBackground(Styles.black6);
+            t.table(tt -> {
+                tt.button((placement == BuildRange.global ? "[cyan]" : "[gray]") + "", NCtextStyle, () -> {
+                    placement = BuildRange.global;
+                    rebuild();
+                }).tooltip("[cyan]全局检查").size(30f);
+                tt.button((placement == BuildRange.zone ? "[cyan]" : "[gray]") + "\uE818", NCtextStyle, () -> {
+                    selection = control.input.lastSelection;
+                    if (selection.area() < 10f) return;
+                    placement = BuildRange.zone;
+                    rebuild();
+                }).tooltip("[cyan]选择范围").size(30f);
+                tt.button((placement == BuildRange.team ? "" : "[gray]") + Blocks.coreShard.emoji(), NCtextStyle, () -> {
+                    placement = BuildRange.team;
+                    rebuild();
+                }).tooltip("[cyan]队伍区域").size(30f);
+                tt.button((placement == BuildRange.player ? "" : "[gray]") + UnitTypes.gamma.emoji(), NCtextStyle, () -> {
+                    placement = BuildRange.player;
+                    rebuild();
+                }).tooltip("[cyan]玩家建造区").size(30f);
+                tt.update(() -> {
+                    if (placement != BuildRange.zone) return;
+                    arcDrawText("建造区域", 0.2f, selection.x * tilesize + selection.width * tilesize * 0.5f, selection.y * tilesize + selection.height * tilesize, 1);
+                    Draw.color(Pal.stat, 0.7f);
+                    Draw.z(Layer.effect - 1f);
+                    Lines.stroke(Math.min(Math.abs(width), Math.abs(height)) / tilesize / 10f);
+                    Lines.rect(selection.x * tilesize, selection.y * tilesize, selection.width * tilesize, selection.height * tilesize);
+                    Draw.reset();
+                });
+            }).fillX().row();
+            t.table(tt -> {
+                tt.button("R", NCtextStyle, this::replaceBlock).tooltip("[cyan]替换方块").size(30f);
+                tt.button(replaceBlockName(), NCtextStyle, this::replaceBlockSetting).tooltip("[acid]设置替换").width(100f).height(30f);
+            }).fillX().row();
+            t.table(tt -> {
+                tt.button(autoBuild.emoji(), NCtextStyle, () -> blockAutoPlacer(autoBuild)).size(30f);
+                tt.button("\uE87C", NCtextStyle, () -> {
+                    new BlockSelectDialog(Block::isPlaceable, block -> autoBuild = block, block -> autoBuild == block).show();
+                    rebuild();
+                }).size(30f);
+                tt.update(() -> {
+                    if (control.input.selectedBlock()) {
+                        autoBuild = control.input.block;
                         rebuild();
-                    }).tooltip("[cyan]全局检查").size(30f);
-                    tt.button((placement == BuildRange.zone ? "[cyan]" : "[gray]") + "\uE818", NCtextStyle, () -> {
-                        selection = control.input.lastSelection;
-                        if (selection.area() < 10f) return;
-                        placement = BuildRange.zone;
-                        rebuild();
-                    }).tooltip("[cyan]选择范围").size(30f);
-                    tt.button((placement == BuildRange.team ? "" : "[gray]") + Blocks.coreShard.emoji(), NCtextStyle, () -> {
-                        placement = BuildRange.team;
-                        rebuild();
-                    }).tooltip("[cyan]队伍区域").size(30f);
-                    tt.button((placement == BuildRange.player ? "" : "[gray]") + UnitTypes.gamma.emoji(), NCtextStyle, () -> {
-                        placement = BuildRange.player;
-                        rebuild();
-                    }).tooltip("[cyan]玩家建造区").size(30f);
-                    tt.update(() -> {
-                        if (placement != BuildRange.zone) return;
-                        arcDrawText("建造区域", 0.2f, selection.x * tilesize + selection.width * tilesize * 0.5f, selection.y * tilesize + selection.height * tilesize, 1);
-                        Draw.color(Pal.stat, 0.7f);
-                        Draw.z(Layer.effect - 1f);
-                        Lines.stroke(Math.min(Math.abs(width), Math.abs(height)) / tilesize / 10f);
-                        Lines.rect(selection.x * tilesize, selection.y * tilesize, selection.width * tilesize, selection.height * tilesize);
-                        Draw.reset();
-                    });
-                }).fillX().row();
-                t.table(tt -> {
-                    tt.button("R", NCtextStyle, this::replaceBlock).tooltip("[cyan]替换方块").size(30f);
-                    tt.button(replaceBlockName(), NCtextStyle, this::replaceBlockSetting).tooltip("[acid]设置替换").width(100f).height(30f);
-                }).fillX().row();
-                t.table(tt -> {
-                    tt.button(autoBuild.emoji(), NCtextStyle, () -> blockAutoPlacer(autoBuild)).size(30f);
-                    tt.button("\uE87C", NCtextStyle, () -> {
-                        new BlockSelectDialog(Block::isPlaceable, block -> autoBuild = block, block -> autoBuild == block).show();
-                        rebuild();
-                    }).size(30f);
-                    tt.update(() -> {
-                        if (control.input.selectedBlock()) {
-                            autoBuild = control.input.block;
-                            rebuild();
-                        }
-                    });
-                }).fillX().row();
-                t.table(tt -> {
-                    tt.button("S", NCtextStyle, this::searchBlock).tooltip("[cyan]搜索方块").growX().height(30f).update(button -> {
-                        buildingSeq = player.team().data().buildings.select(building1 -> building1.block == searchBlock);
-                        if (searchBlock == Blocks.worldProcessor){
-                            for(Team team : Team.all) {
-                                if (team == player.team()) continue;
-                                buildingSeq.add(team.data().buildings.select(building1 -> building1.block == searchBlock));
-                            }
-                        }
-                        if (buildingSeq.size == 0) button.setText("[lightgray]\uE88A");
-                        else button.setText("\uE88A " + searchBlockIndex + "/" + buildingSeq.size);
-                    });
-                    tt.button(searchBlock.emoji(), NCtextStyle, ()->{
-                        new BlockSelectDialog(Block::isPlaceable, block -> searchBlock = block, block -> searchBlock == block).show().hidden(this::rebuild);
-                        searchBlockIndex = 0;
-                    }).tooltip("[acid]搜索替换").width(30f).height(30f);
-                }).fillX().row();
-                t.table(tt -> {
-                    tt.button(Blocks.worldMessage.emoji(), textStyle, () -> {
-                        Core.settings.put("displayallmessage", !Core.settings.getBool("displayallmessage", false));
-                    }).checked(a -> Core.settings.getBool("displayallmessage")).size(30, 30).tooltip("开关信息板全显示");
-                    tt.button(Blocks.worldProcessor.emoji(), NCtextStyle, () -> {
-                        RFuncs.worldProcessor();
-                        searchBlock = Blocks.worldProcessor;
-                        rebuild();
-                    }).size(30).tooltip("地图世处信息");
-                }).fillX().row();
-            });
-        }
+                    }
+                });
+            }).fillX().row();
+            t.table(tt -> {
+                tt.button("S", NCtextStyle, this::searchBlock).update(button -> {
 
-        button(Blocks.buildTower.emoji(), textStyle, () -> {
-            expandList = !expandList;
-            rebuild();
-        }).size(40f).fillY();
+                    buildingSeq = player.team().data().buildings.select(building1 -> building1.block == searchBlock);
+                    if (searchBlock.privileged){
+                        for(Team team : Team.all) {
+                            if (team == player.team()) continue;
+                            buildingSeq.add(team.data().buildings.select(building1 -> building1.block == searchBlock));
+                        }
+                    }
+
+                    if (buildingSeq.contains(searchBuild)) {
+                        searchBlockIndex = buildingSeq.indexOf(searchBuild);
+                    } else {
+                        searchBuild = null;
+                        searchBlockIndex = -1;
+                    }
+
+                    if (buildingSeq.isEmpty() || searchBlockIndex == -1) button.setText("[lightgray]\uE88A");
+                    else button.setText("\uE88A" + (searchBlockIndex + 1) + "/" + buildingSeq.size);
+                }).tooltip("[cyan]搜索方块").growX().height(30f);
+
+                tt.button(searchBlock.emoji(), NCtextStyle, ()->{
+                    new BlockSelectDialog(Block::isPlaceable, block -> searchBlock = block, block -> searchBlock == block).show().hidden(this::rebuild);
+                    searchBlockIndex = 0;
+                }).tooltip("[acid]搜索替换").width(30f).height(30f);
+
+                tt.update(() -> {
+                    if (control.input.selectedBlock()) {
+                        searchBlock = control.input.block;
+                        rebuild();
+                    }
+                });
+            }).fillX().row();
+            t.table(tt -> {
+                tt.button(Blocks.worldMessage.emoji(), textStyle, () -> {
+                    Core.settings.put("displayallmessage", !Core.settings.getBool("displayallmessage", false));
+                }).checked(a -> Core.settings.getBool("displayallmessage")).size(30, 30).tooltip("开关信息板全显示");
+                tt.button(Blocks.worldProcessor.emoji(), NCtextStyle, () -> {
+                    RFuncs.worldProcessor();
+                    searchBlock = Blocks.worldProcessor;
+                    rebuild();
+                }).size(30).tooltip("地图世处信息");
+            }).fillX().row();
+            t.table(tt -> {
+                tt.button("\uE817", textStyle, () -> {
+                    shadowBuild = !shadowBuild;
+                }).checked(a -> shadowBuild).size(30, 30).tooltip("虚影建造模式\n[red]有些服限制发包数较低，建筑较多时会被踢出。请酌情使用");
+            }).fillX().row();
+        });
     }
 
     void replaceBlockSetting() {
         BaseDialog dialog = new BaseDialog("方块替换器");
         dialog.cont.table(t -> {
             t.table(tt -> tt.label(() -> "当前选择：" + replaceBlockName())).row();
-            t.image().color(getThemeColor()).fillX().row();
+            t.image().color(ARCVars.getThemeColor()).fillX().row();
             t.table(tt -> {
                 replaceBlockGroup(dialog, tt, Blocks.conveyor, Blocks.titaniumConveyor);
                 replaceBlockGroup(dialog, tt, Blocks.conveyor, Blocks.duct);
                 replaceBlockGroup(dialog, tt, Blocks.conduit, Blocks.pulseConduit);
                 replaceBlockGroup(dialog, tt, Blocks.conduit, Blocks.reinforcedConduit);
             }).padTop(5f).row();
-            t.image().color(getThemeColor()).padTop(5f).fillX().row();
+            t.image().color(ARCVars.getThemeColor()).padTop(5f).fillX().row();
             t.table(tt -> {
                 tt.button("源方块", () -> new BlockSelectDialog(block -> block.replaceable, block -> original = block, block -> original == block).show()).width(100f).height(30f).row();
                 tt.button("新方块", () -> new BlockSelectDialog(block -> original.canReplace(block), block -> newBlock = block, block -> newBlock == block).show()).width(100f).height(30f).row();
@@ -259,14 +259,14 @@ public class AdvanceBuildTool extends Table {
 
     void searchBlock(){
         if (buildingSeq.size == 0){
-            ui.arcInfo("[violet]方块搜索\n[acid]未找到此方块");
+            arcui.arcInfo("[violet]方块搜索\n[acid]未找到此方块");
             return;
         }
+        searchBlockIndex = (searchBlockIndex + 1) % buildingSeq.size;
         searchBuild = buildingSeq.get(searchBlockIndex);
 
-        arcSetCamera(searchBuild.tile);
-        ui.arcInfo("[violet]方块搜索\n[acid]找到方块[cyan]" + searchBlockIndex + "[acid]/[cyan]" + buildingSeq.size + "[white]" + searchBlock.emoji());
-        searchBlockIndex = (searchBlockIndex + 1) % buildingSeq.size;
+        arcSetCamera(searchBuild);
+        arcui.arcInfo("[violet]方块搜索\n[acid]找到方块[cyan]" + (searchBlockIndex + 1) + "[acid]/[cyan]" + buildingSeq.size + "[white]" + searchBlock.emoji());
     }
 
     enum BuildRange {

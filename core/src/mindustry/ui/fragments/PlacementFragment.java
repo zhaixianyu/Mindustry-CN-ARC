@@ -14,6 +14,9 @@ import arc.struct.*;
 import arc.util.*;
 import mindustry.*;
 import mindustry.ai.*;
+import mindustry.arcModule.ARCVars;
+import mindustry.arcModule.RFuncs;
+import mindustry.arcModule.ui.dialogs.BlockSelectDialog;
 import mindustry.content.*;
 import mindustry.core.*;
 import mindustry.entities.*;
@@ -30,6 +33,7 @@ import mindustry.world.blocks.ConstructBlock;
 import mindustry.world.blocks.ConstructBlock.*;
 
 import static mindustry.Vars.*;
+import static mindustry.arcModule.ARCVars.arcui;
 
 public class PlacementFragment{
     private int rowWidth = Math.max(Core.settings.getInt("itemSelectionWidth"),4);
@@ -247,6 +251,8 @@ public class PlacementFragment{
         }
 
         if(Core.input.keyTap(Binding.category_prev)){
+            //TODO 临时修复
+            if (!RFuncs.has(categoryEmpty, false)) return true;
             do{
                 currentCategory = currentCategory.prev();
             }while(categoryEmpty[currentCategory.ordinal()]);
@@ -255,6 +261,8 @@ public class PlacementFragment{
         }
 
         if(Core.input.keyTap(Binding.category_next)){
+            //TODO 临时修复
+            if (!RFuncs.has(categoryEmpty, false)) return true;
             do{
                 currentCategory = currentCategory.next();
             }while(categoryEmpty[currentCategory.ordinal()]);
@@ -392,7 +400,7 @@ public class PlacementFragment{
                                 header.labelWrap(() -> !unlocked(displayBlock) && !Core.settings.getBool("allBlocksReveal") ? Core.bundle.get("block.unknown") : displayBlock.localizedName + keyComboFinal)
                                 .left().width(190f).padLeft(5);
                                 header.add().growX();
-                                if(unlocked(displayBlock)){
+                                if(unlocked(displayBlock) || Core.settings.getBool("allBlocksReveal")){
                                     header.button("?", Styles.flatBordert, () -> {
                                         ui.content.show(displayBlock);
                                         Events.fire(new BlockInfoEvent());
@@ -438,20 +446,21 @@ public class PlacementFragment{
                             hovered.display(topTable);
                             if(hovered2 != hovered && hovered2 != null){
                                 topTable.row();
-                                topTable.row();
                                 hovered2.display(topTable);
                             }}
 
                         //只要可行便绘制地板|建筑，移除了其他重复绘制
-                        if(hoveredTile!=null){
+                        if (Core.settings.getBool("hoveredTileInfo") && hoveredTile != null) {
                             topTable.row();
                             topTable.row();
                             topTable.table(t -> {
                                 t.left();
                                 t.add(new Image(hoverTile.floor().uiIcon)).size(20f).left();
-                                t.add(" "+hoverTile.floor().localizedName).left();
-                                if(hoverTile.block()!=Blocks.air) t.add(" | " + hoverTile.block().emoji()   + (hoverTile.build!=null?"[#" + hoverTile.build.team.color + "]":"") + hoverTile.block().localizedName).left();
-                                if(hoverTile.overlay()!=Blocks.air) t.add(" | " + hoverTile.overlay().emoji() + hoverTile.overlay().localizedName).left();
+                                t.add(" " + hoverTile.floor().localizedName).left();
+                                if (hoverTile.block() != Blocks.air)
+                                    t.add(" | " + hoverTile.block().emoji() + (hoverTile.build != null ? "[#" + hoverTile.build.team.color + "]" : "") + hoverTile.block().localizedName).left();
+                                if (hoverTile.overlay() != Blocks.air)
+                                    t.add(" | " + hoverTile.overlay().emoji() + hoverTile.overlay().localizedName).left();
                             }).growX().left();
                         }
 
@@ -493,7 +502,7 @@ public class PlacementFragment{
                 if (Core.settings.getBool("arcCommandTable")){
                     commandTable.touchable = Touchable.enabled;
                     commandTable.add("[accent]指挥模式").fill().center().labelAlign(Align.center).row();
-                    commandTable.image().color(getThemeColor()).growX().pad(20f).padTop(0f).padBottom(4f).row();
+                    commandTable.image().color(ARCVars.getThemeColor()).growX().pad(20f).padTop(0f).padBottom(4f).row();
                     commandTable.table(u -> {
                         u.left();
                         int[] curCount = {0};
@@ -586,7 +595,7 @@ public class PlacementFragment{
                                             });
                                         }
 
-                                        int hasFlyer = control.input.selectedUnits.contains(Flyingc::isFlying) ? 1 : 0;
+                                        int hasFlyer = control.input.selectedUnits.contains(unit -> unit.isFlying()) ? 1 : 0;
                                         int hasLand = control.input.selectedUnits.contains(unit -> !unit.isFlying() && !unit.type.naval) ? 1 : 0;
                                         int hasNaval = control.input.selectedUnits.contains(unit -> unit.type.naval) ? 1 : 0;
                                         if (hasFlyer + hasLand + hasNaval >=2 ){
@@ -599,7 +608,7 @@ public class PlacementFragment{
                                     }).fillX().padTop(4f).left();
                                 }
                             } else {
-                                u.add("[未选择单位]").color(getThemeColor()).growX().center().labelAlign(Align.center).pad(6);
+                                u.add("[未选择单位]").color(ARCVars.getThemeColor()).growX().center().labelAlign(Align.center).pad(6);
                             }
                             if (mobile) {
                                 u.row();
@@ -729,7 +738,7 @@ public class PlacementFragment{
                                         }).fillX().padTop(4f).left();
                                     }
                                 }else{
-                                    u.add("[未选择单位]").color(getThemeColor()).growX().center().labelAlign(Align.center).pad(6);
+                                    u.add("[未选择单位]").color(ARCVars.getThemeColor()).growX().center().labelAlign(Align.center).pad(6);
                                 }
                             };
 
@@ -804,6 +813,17 @@ public class PlacementFragment{
                         boolean needsAssign = categoryEmpty[currentCategory.ordinal()];
 
                         int f = 0;
+                        if (maxRow > 5){
+                            categories.button(Icon.zoom, Styles.clearTogglei, () -> {
+                                new BlockSelectDialog(block -> block.replaceable, block -> {
+                                    control.input.block = block;
+                                    currentCategory = block.category;
+                                    rebuildCategory.run();
+                                    }, block -> control.input.block == block).show();
+                            }).group(group);
+                            categories.image(Styles.black6);
+                            categories.row();
+                        }
                         for(Category cat : getCategories()){
                             if(f++ % 2 == 0) categories.row();
 
@@ -932,13 +952,13 @@ public class PlacementFragment{
             b.clicked(KeyCode.mouseLeft, () -> {
                 control.input.selectedUnits = control.input.selectedUnits.select(cons::get);
                 Events.fire(Trigger.unitCommandChange);
-                ui.arcInfo("[cyan]arc控制器\n[acid]选择" + info + "！");
+                arcui.arcInfo("[cyan]arc控制器\n[acid]选择" + info + "！");
             });
             //right click -> remove
             b.clicked(KeyCode.mouseRight, () -> {
                 control.input.selectedUnits.removeAll(cons::get);
                 Events.fire(Trigger.unitCommandChange);
-                ui.arcInfo("[cyan]arc控制器\n[orange]移除" + info + "！");
+                arcui.arcInfo("[cyan]arc控制器\n[orange]移除" + info + "！");
             });
 
             b.addListener(listener);

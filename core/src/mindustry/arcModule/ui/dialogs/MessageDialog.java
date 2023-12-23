@@ -21,13 +21,13 @@ import mindustry.input.DesktopInput;
 
 import mindustry.ui.Styles;
 import mindustry.ui.dialogs.BaseDialog;
-import mindustry.ui.dialogs.SchematicsDialog;
 import mindustry.world.blocks.storage.CoreBlock;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import static mindustry.Vars.*;
+import static mindustry.arcModule.ARCVars.arcui;
 import static mindustry.ui.Styles.cleart;
 import static mindustry.ui.Styles.nodeArea;
 
@@ -70,7 +70,7 @@ public class MessageDialog extends BaseDialog {
 
         buttons.button("图片分享器", Icon.image, arcChatPicture::arcSharePicture);
 
-        buttons.button("松鼠音乐", () -> ui.MusicDialog.show());
+        buttons.button("松鼠音乐", () -> arcui.MusicDialog.show());
         shown(this::build);
         onResize(this::build);
 
@@ -254,7 +254,7 @@ public class MessageDialog extends BaseDialog {
             if (District.resolveMessage(message)) return true;
             if (resolveMarkMsg(message, null)) return true;
             if (resolveServerMsg(message)) return true;
-            if (ui.MusicDialog.resolveMsg(message)) return true;
+            if (arcui.MusicDialog.resolveMsg(message)) return true;
         }
 
         addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.normal, message));
@@ -268,7 +268,7 @@ public class MessageDialog extends BaseDialog {
             if (District.resolveMessage(message)) return true;
             if (resolveMarkMsg(message, playersender)) return true;
             if (arcChatPicture.resolveMessage(message, playersender)) return true;
-            if (ui.MusicDialog.resolveMsg(message, playersender)) return true;
+            if (arcui.MusicDialog.resolveMsg(message, playersender)) return true;
             if (ui.schematics.resolveSchematic(message, playersender)) return true;
 
             if (playersender != null) {
@@ -354,7 +354,7 @@ public class MessageDialog extends BaseDialog {
 
     void exportMsg() {
         StringBuilder messageHis = new StringBuilder();
-        messageHis.append("下面是[ARC").append(arcVersion).append("] 导出的游戏内聊天记录").append("\n");
+        messageHis.append("下面是[ARC").append(ARCVars.arcVersion).append("] 导出的游戏内聊天记录").append("\n");
         messageHis.append("*** 当前地图名称: ").append(state.map.name()).append("（模式：").append(state.rules.modeName).append("）\n");
         messageHis.append("*** 当前波次: ").append(state.wave).append("\n");
 

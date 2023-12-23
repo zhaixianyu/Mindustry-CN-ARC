@@ -191,24 +191,25 @@ public class arcWaveSpawner {
                 groups.each(waveGroup -> (spawn == -1 || waveGroup.group.spawn == -1 ||waveGroup.group.spawn == spawn) && pre.get(waveGroup.group),wg -> {
                     count[0] ++;
                     if (count[0] % perCol == 0) t.row();
-                    StringBuilder groupInfo = new StringBuilder();
-                    groupInfo.append(wg.group.type.emoji());
-                    if (wg.group.spawn != -1 && spawn == -1) groupInfo.append("*");
+                    t.table(tt->{
+                        tt.table(ttt->{
+                            ttt.image(wg.group.type.uiIcon).size(30);
+                            ttt.add(wg.group.type.typeColor() + wg.amount).fillX();
+                        }).row();
+                        StringBuilder groupInfo = new StringBuilder();
+                        if (wg.shield > 0f)
+                            groupInfo.append(NumberFormat.formatFloat(wg.shield));
+                        groupInfo.append("\n[]");
+                        if (wg.group.spawn != -1 && spawn == -1) groupInfo.append("*");
+                        if (wg.group.effect != null && wg.group.effect != StatusEffects.none)
+                            groupInfo.append(wg.group.effect.emoji());
+                        if (wg.group.items != null && wg.group.items.amount > 0)
+                            groupInfo.append(wg.group.items.item.emoji());
+                        if (wg.group.payloads != null && wg.group.payloads.size > 0)
+                            groupInfo.append("\uE87B");
+                        tt.add(groupInfo.toString()).fill();
+                    }).height(80f).width(70f);
 
-                    groupInfo.append(wg.group.type.typeColor());
-
-                    groupInfo.append("\n").append(wg.amount);
-                    groupInfo.append("\n");
-                    if (wg.shield > 0f)
-                        groupInfo.append(UI.formatAmount((long) wg.shield));
-                    groupInfo.append("\n[]");
-                    if (wg.group.effect != null && wg.group.effect != StatusEffects.none)
-                        groupInfo.append(wg.group.effect.emoji());
-                    if (wg.group.items != null && wg.group.items.amount > 0)
-                        groupInfo.append(wg.group.items.item.emoji());
-                    if (wg.group.payloads != null && wg.group.payloads.size > 0)
-                        groupInfo.append("\uE87B");
-                    t.add(groupInfo.toString()).height(80f).width(70f);
                 });
             });
         }
@@ -229,7 +230,7 @@ public class arcWaveSpawner {
             this.waveIndex = waveIndex;
             this.group = group;
             this.amount = group.getSpawned(waveIndex);
-            this.shield = group.getShield(waveIndex) * amount;   //盾
+            this.shield = group.getShield(waveIndex);   //盾
             this.health = (group.type.health + shield) * amount;   //盾+血
             this.dps = group.type.estimateDps() * amount;
             this.effHealth = health;

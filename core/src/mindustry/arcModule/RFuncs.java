@@ -1,13 +1,23 @@
 package mindustry.arcModule;
 
 import arc.Core;
+import arc.Graphics;
+import arc.files.Fi;
+import arc.func.Cons;
 import arc.graphics.Color;
+import arc.graphics.Pixmap;
+import arc.graphics.Pixmaps;
 import arc.graphics.g2d.PixmapRegion;
+import arc.scene.style.Drawable;
+import arc.scene.style.TextureRegionDrawable;
+import arc.util.Http;
 import arc.util.Log;
+import arc.util.OS;
 import arc.util.Strings;
 import mindustry.*;
 import mindustry.content.*;
 import mindustry.game.*;
+import mindustry.gen.Building;
 import mindustry.gen.Call;
 import mindustry.gen.Groups;
 import mindustry.input.DesktopInput;
@@ -17,15 +27,22 @@ import mindustry.world.Block;
 import mindustry.world.Tile;
 import mindustry.world.blocks.logic.LogicBlock;
 
+import java.lang.reflect.Field;
+
 import static arc.Core.camera;
 import static arc.graphics.Color.RGBtoHSV;
 import static mindustry.Vars.*;
+import static mindustry.arcModule.ARCVars.arcui;
+import static mindustry.gen.Tex.whiteui;
 
+@SuppressWarnings("unused")
 public class RFuncs {
 
     static boolean colorized = false;
 
     static int msgSeperator = 145;
+    public static boolean cursorChecked = false;
+    public static Fi cachedCursor = null;
 
     public interface Stringf<T> {
         String get(T i);
@@ -33,6 +50,10 @@ public class RFuncs {
 
     public static void arcSetCamera(Tile tile) {
         arcSetCamera(tile.worldx(), tile.worldy());
+    }
+
+    public static void arcSetCamera(Building building) {
+        arcSetCamera(building.x, building.y);
     }
 
     public static void arcSetCamera(float x, float y) {
@@ -204,7 +225,7 @@ public class RFuncs {
     public static StringBuilder getPrefix(String color, String type) {
         StringBuilder prefix = new StringBuilder();
         if (ui.chatfrag.mode == ChatFragment.ChatMode.team) prefix.append("/t ");
-        prefix.append(arcVersionPrefix);
+        prefix.append(ARCVars.arcVersionPrefix);
         prefix.append("[").append(color).append("]");
         prefix.append("<").append(type).append(">");
         prefix.append("[white]");
@@ -215,7 +236,7 @@ public class RFuncs {
         for (int i = 0; i < values.length; i++) {
             values[i] = values[i] instanceof Number n ? "[stat]" + Strings.autoFixed(n.floatValue(), 1) + "[]" : "[white]" + values[i] + "[]";
         }
-        return Strings.format("[lightgray]" + format.replace("~", "[#" + getThemeColor() + "]~[]"), values);
+        return Strings.format("[lightgray]" + format.replace("~", "[#" + ARCVars.getThemeColor() + "]~[]"), values);
     }
 
     public static void worldProcessor() {
@@ -230,5 +251,73 @@ public class RFuncs {
         });
         Log.info("地图共有@个世处，总共@行指令，@个字符", data[0], data[1], data[2]);
         ui.announce(Strings.format("地图共有@个世处，总共@行指令，@个字符", data[0], data[1], data[2]), 10);
+    }
+
+    public static boolean has(boolean[] arr, boolean val) {
+        for (boolean cur : arr) {
+            if (cur == val) return true;
+        }
+        return false;
+    }
+
+    public static Graphics.Cursor customCursor(String name, int scale) {
+        Fi path = getCursorDir(), child;
+        if (path != null && (child = path.child(name + ".png")).exists()) {
+            Pixmap base = new Pixmap(child);
+            if (scale == 1 || OS.isAndroid || OS.isIos) {
+                return Core.graphics.newCursor(base, base.width / 2, base.height / 2);
+            }
+            Pixmap result = Pixmaps.scale(base, base.width * scale, base.height * scale);
+            base.dispose();
+            return Core.graphics.newCursor(result, result.width / 2, result.height / 2);
+        } else {
+            return Core.graphics.newCursor(name, scale);
+        }
+    }
+
+    private static Fi getCursorDir() {
+        if (cursorChecked) return cachedCursor;
+        cursorChecked = true;
+        String path;
+        Fi tmp;
+        if ((path = Core.settings.getString("arcCursorPath", null)) != null && !path.isEmpty() && (tmp = new Fi(path)).isDirectory()) cachedCursor = tmp;
+        return cachedCursor;
+    }
+
+    public static Drawable tint(int color) {
+        return ((TextureRegionDrawable) whiteui).tint(new Color(color));
+    }
+
+    public static Drawable tint(int r, int g, int b, int a) {
+        return ((TextureRegionDrawable) whiteui).tint(new Color(Color.packRgba(r, g, b, a)));
+    }
+
+    public static void uploadToWeb(Fi f, Cons<String> result) {
+        uploadToWebID(f, l -> result.get("http://124.220.46.174/api/get?id=" + l));
+    }
+
+    public static void uploadToWebID(Fi f, Cons<String> result) {
+        arcui.arcInfo("上传中，请等待...");
+        Http.HttpRequest post = Http.post("http://124.220.46.174/api/upload");
+        post.contentStream = f.read();
+        post.header("filename", f.name());
+        post.header("size", String.valueOf(f.length()));
+        post.header("token", "3ab6950d5970c57f938673911f42fd32");
+        post.timeout = 10000;
+        post.error(e -> Core.app.post(() -> arcui.arcInfo("发生了一个错误:" + e.toString())));
+        post.submit(r -> result.get(r.getResultAsString()));
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T get(Class<?> t, Object o, String n) throws NoSuchFieldException {
+        try {
+            Field f = t.getDeclaredField(n);
+            f.setAccessible(true);
+            return (T) f.get(o);
+        } catch (Exception e) {
+            Class<?> s = t.getSuperclass();
+            if (s == null) throw new NoSuchFieldException();
+            return get(s, o, n);
+        }
     }
 }

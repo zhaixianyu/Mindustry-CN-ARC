@@ -2,6 +2,7 @@ package mindustry.ui.dialogs;
 
 import arc.Core;
 import arc.Events;
+import arc.Graphics;
 import arc.files.Fi;
 import arc.files.ZipFi;
 import arc.func.Boolc;
@@ -16,6 +17,7 @@ import arc.scene.style.TextureRegionDrawable;
 import arc.scene.ui.*;
 import arc.scene.ui.TextButton.TextButtonStyle;
 import arc.scene.ui.layout.Table;
+import arc.scene.utils.Elem;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.util.Nullable;
@@ -23,18 +25,20 @@ import arc.util.OS;
 import arc.util.Scaling;
 import arc.util.Strings;
 import arc.util.io.Streams;
+import mindustry.arcModule.ARCVars;
+import mindustry.arcModule.RFuncs;
 import mindustry.content.TechTree;
 import mindustry.content.TechTree.TechNode;
 import mindustry.core.GameState;
 import mindustry.core.Version;
 import mindustry.ctype.UnlockableContent;
 import mindustry.game.EventType.Trigger;
-import mindustry.game.Schematics;
 import mindustry.gen.Icon;
 import mindustry.gen.Tex;
 import mindustry.graphics.Shaders;
 import mindustry.input.DesktopInput;
 import mindustry.input.MobileInput;
+import mindustry.ui.Fonts;
 import mindustry.ui.Styles;
 
 import java.io.IOException;
@@ -296,7 +300,7 @@ public class SettingsMenuDialog extends BaseDialog{
         float marg = 8f, isize = iconMed;
 
         menu.defaults().size(300f, 60f);
-        if(Core.settings.getInt("changelogreaded") == changeLogRead){
+        if(Core.settings.getInt("changelogreaded") == ARCVars.changeLogRead){
             menu.button("@settings.game", Icon.settings, style, isize, () -> visible(0)).marginLeft(marg).row();
             menu.row();
             menu.button("@settings.graphics", Icon.image, style, isize, () -> visible(1)).marginLeft(marg).row();
@@ -318,7 +322,7 @@ public class SettingsMenuDialog extends BaseDialog{
 
         menu.button("@settings.data", Icon.save, style, isize, () -> dataDialog.show()).marginLeft(marg).row();
 
-        int i = Core.settings.getInt("changelogreaded") == changeLogRead ? 7 : 1;
+        int i = Core.settings.getInt("changelogreaded") == ARCVars.changeLogRead ? 7 : 1;
         for(var cat : categories){
             int index = i;
             if(cat.icon == null){
@@ -339,14 +343,17 @@ public class SettingsMenuDialog extends BaseDialog{
 
     void addSettings(){
 
-        if(Core.settings.getInt("changelogreaded") != changeLogRead){
+        if(Core.settings.getInt("changelogreaded") != ARCVars.changeLogRead){
             arc.sliderPref("changelogreaded", 0, 0, 150, 1, i -> i + "");
             arc.checkPref("changelogexplain", false);
         }else {
             sound.sliderPref("musicvol", 100, 0, 100, 1, i -> i + "%");
             sound.sliderPref("sfxvol", 100, 0, 100, 1, i -> i + "%");
             sound.sliderPref("ambientvol", 100, 0, 100, 1, i -> i + "%");
+            sound.sliderPref("arcvol", settings.getInt("musicvol"), 0, 100, 1, i -> i + "%");
 
+            game.addCategory("arcCNet");
+            game.stringInput("arcNetProxy", "");
             game.addCategory("arcCSave");
             game.checkPref("savecreate", true);
             game.checkPref("save_more_map", false);
@@ -543,8 +550,7 @@ public class SettingsMenuDialog extends BaseDialog{
                 }
             });
             arc.sliderPref("arcCoreItemsCol", 5, 4, 15, 1, i -> i + "列");
-            arc.checkPref("showFloatingSettings", false);
-            arc.checkPref("showAdvanceBuildTool", false);
+            arc.checkPref("showQuickToolTable", settings.getBool("showFloatingSettings"));
             arc.sliderPref("arcDetailInfo", 1, 0, 1, 1, s -> {
                 if (s == 0) {
                     return "详细模式";
@@ -554,6 +560,7 @@ public class SettingsMenuDialog extends BaseDialog{
                     return s + "";
                 }
             });
+            arc.checkPref("hoveredTileInfo", false);
 
             arc.addCategory("arcAddBlockInfo");
             arc.sliderPref("overdrive_zone", 0, 0, 100, 2, i -> i > 0 ? i + "%" : "关闭");
@@ -598,8 +605,16 @@ public class SettingsMenuDialog extends BaseDialog{
             arc.checkPref("blockWeaponTargetLineWhenIdle", false);
 
             arc.addCategory("arcAddUnitInfo");
-            arc.sliderPref("unitweapon_range", 0, 0, 100, 1, i -> i > 0 ? i + "%" : "关闭");
-            arc.sliderPref("unitAlertRange", 0, 0, 30, 1, s -> {
+            arc.checkPref("alwaysShowPlayerUnit", false);
+
+            arc.sliderPref("unitTransparency", 100, 0, 100, 5, i -> i > 0 ? i + "%" : "关闭");
+            arc.sliderPref("unitDrawMinHealth", settings.getInt("minhealth_unitshown",0), 0, 2500, 50, i -> i + "[red]HP");
+
+            arc.checkPref("unitHealthBar", false);
+            arc.sliderPref("unitBarDrawMinHealth", settings.getInt("minhealth_unithealthbarshown",0), 0, 2500, 100, i -> i + "[red]HP");
+
+
+            arc.sliderPref("unitWeaponRange", settings.getInt("unitAlertRange",0), 0, 30, 1, s -> {
                 if (s == 0) {
                     return "关闭";
                 } else if (s == 30) {
@@ -608,12 +623,12 @@ public class SettingsMenuDialog extends BaseDialog{
                     return s + "格";
                 }
             });
-            arc.checkPref("unitWeaponTargetLine", false);
+            arc.sliderPref("unitWeaponRangeAlpha", settings.getInt("unitweapon_range",0), 0, 100, 1, i -> i > 0 ? i + "%" : "关闭");
 
+            arc.checkPref("unitWeaponTargetLine", false);
+            arc.checkPref("showminebeam", true);
             arc.checkPref("unitItemCarried", false);
             arc.checkPref("unithitbox", false);
-
-
             arc.checkPref("unitLogicMoveLine", false);
             arc.checkPref("unitLogicTimerBars", false);
             arc.checkPref("arcBuildInfo",false);
@@ -714,13 +729,6 @@ public class SettingsMenuDialog extends BaseDialog{
                 }
             });
             forcehide.checkPref("displayblock", true);
-            forcehide.addCategory("arcCDisplayUnit");
-            forcehide.checkPref("unitHealthBar", false);
-            forcehide.checkPref("alwaysShowPlayerUnit", false);
-            forcehide.checkPref("showminebeam", true);
-            forcehide.sliderPref("unitTransparency", 100, 0, 100, 5, i -> i > 0 ? i + "%" : "关闭");
-            forcehide.sliderPref("minhealth_unitshown", 0, 0, 2500, 50, i -> i + "[red]HP");
-            forcehide.sliderPref("minhealth_unithealthbarshown", 0, 0, 2500, 100, i -> i + "[red]HP");
             forcehide.addCategory("arcCDisplayEffect");
             forcehide.checkPref("bulletShow", true);
             forcehide.checkPref("drawlight", true);
@@ -770,6 +778,24 @@ public class SettingsMenuDialog extends BaseDialog{
                 }
             });
 
+            ARCVars.limitUpdate = settings.getBool("limitupdate", false);
+            forcehide.checkPref("limitupdate", false, v -> {
+                settings.put("limitupdate", false);
+                if (ARCVars.limitUpdate) {
+                    ARCVars.limitUpdate = false;
+                    return;
+                }
+                ui.showConfirm("确认开启限制更新", "此功能可以大幅提升fps，但会导致视角外的一切停止更新\n在服务器里会造成不同步\n强烈不建议在单人开启\n\n[darkgray]在帧数和体验里二选一", () -> {
+                    ARCVars.limitUpdate = true;
+                    settings.put("limitupdate", true);
+                });
+            });
+            ARCVars.limitDst = settings.getInt("limitdst", 10);
+            forcehide.sliderPref("limitdst", 10, 0, 100, 1, s -> {
+                ARCVars.limitDst = s * 8;
+                return s + "格";
+            });
+
             //////////specmode
             specmode.addCategory("moreContent");
             specmode.checkPref("modMode", false);
@@ -792,6 +818,44 @@ public class SettingsMenuDialog extends BaseDialog{
             specmode.sliderPref("fontSize", 10, 5, 25, 1, i -> "x " + Strings.fixed(i * 0.1f, 1));
             specmode.stringInput("themeColor", "ffd37f");
             specmode.stringInput("arcBackgroundPath", "");
+            if (!OS.isAndroid && !OS.isIos) {
+                specmode.stringInput("arcCursorPath", "");
+                specmode.buttonInput("[cyan]查看当前指针样式", () -> new BaseDialog("指针样式") {{
+                    shown(() -> {
+                        addCloseButton();
+                        cont.add("[orange]将鼠标悬停在这些框框上面，预览指针样式 (这些名字就是自定义指针文件名)").row();
+                        cont.add("[cyan]图片中心是指针中心").row();
+                        cont.button("[orange]重载指针", () -> {
+                            RFuncs.cursorChecked = false;
+                            RFuncs.cachedCursor = null;
+                            ui.drillCursor = RFuncs.customCursor("drill", Fonts.cursorScale());
+                            ui.unloadCursor = RFuncs.customCursor("unload", Fonts.cursorScale());
+                            ui.targetCursor = RFuncs.customCursor("target", Fonts.cursorScale());
+                            ARCVars.arcui.resizeHorizontalCursor = RFuncs.customCursor("resizeHorizontal", Fonts.cursorScale());
+                            ARCVars.arcui.resizeVerticalCursor = RFuncs.customCursor("resizeVertical", Fonts.cursorScale());
+                            ARCVars.arcui.resizeLeftCursor = RFuncs.customCursor("resizeLeft", Fonts.cursorScale());
+                            ARCVars.arcui.resizeRightCursor = RFuncs.customCursor("resizeRight", Fonts.cursorScale());
+                            Fonts.loadSystemCursors();
+                        }).growX().row();
+                        cont.table(root -> {
+                            root.table(t -> t.add("cursor").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(Graphics.Cursor.SystemCursor.arrow));
+                            root.table(t -> t.add("hand").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(Graphics.Cursor.SystemCursor.hand));
+                            root.table(t -> t.add("ibeam").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(Graphics.Cursor.SystemCursor.ibeam));
+                        }).growX().row();
+                        cont.table(root -> {
+                            root.table(t -> t.add("drill").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(ui.drillCursor));
+                            root.table(t -> t.add("unload").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(ui.unloadCursor));
+                            root.table(t -> t.add("target").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(ui.targetCursor));
+                        }).growX().row();
+                        cont.table(root -> {
+                            root.table(t -> t.add("resizeHorizontal").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(ARCVars.arcui.resizeHorizontalCursor));
+                            root.table(t -> t.add("resizeVertical").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(ARCVars.arcui.resizeVerticalCursor));
+                            root.table(t -> t.add("resizeLeft").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(ARCVars.arcui.resizeLeftCursor));
+                            root.table(t -> t.add("resizeRight").pad(10)).height(80).growX().pad(10).touchable(Touchable.enabled).get().background(Styles.grayPanel).hovered(() -> Core.graphics.cursor(ARCVars.arcui.resizeRightCursor));
+                        }).growX();
+                    });
+                }}.show());
+            }
             specmode.checkPref("yuanshen", false, b -> {
                 if (b) {
                     dataDirectory.child("yuanshen").writeString("原神，启动！");
@@ -799,11 +863,13 @@ public class SettingsMenuDialog extends BaseDialog{
                     dataDirectory.child("yuanshen").delete();
                 }
             });
+            specmode.checkPref("xibaoOnKick", false);
             specmode.addCategory("specGameMode");
             specmode.checkPref("autoSelSchematic", false);
             specmode.checkPref("researchViewer", false);
             specmode.checkPref("bossKeyValid",false);
             specmode.checkPref("arcShareMedia",true);
+            specmode.checkPref("rotateCanvas",false);
             specmode.checkPref("developMode", false);
             //////////cheating
             cheating.addCategory("arcWeakCheat");
@@ -900,7 +966,7 @@ public class SettingsMenuDialog extends BaseDialog{
 
         Seq<Table> tables = new Seq<>();
 
-        if(Core.settings.getInt("changelogreaded") == changeLogRead){
+        if(Core.settings.getInt("changelogreaded") == ARCVars.changeLogRead){
             tables.addAll(game, graphics, sound, arc,forcehide,specmode, cheating);
         }
         else{
@@ -1005,6 +1071,11 @@ public class SettingsMenuDialog extends BaseDialog{
 
         public void addCategoryS(String name){
             list.add(new Divider(name, name));
+            rebuild();
+        }
+
+        public void buttonInput(String text, Runnable callback) {
+            list.add(new ButtonFakeSetting(text, callback));
             rebuild();
         }
 
@@ -1149,8 +1220,8 @@ public class SettingsMenuDialog extends BaseDialog{
 
             @Override
             public void add(SettingsTable table) {
-                table.add(title).color(getThemeColor()).colspan(4).pad(10).padTop(15).padBottom(4).row();
-                table.image().color(getThemeColor()).fillX().height(3).colspan(4).padTop(0).padBottom(10).row();
+                table.add(title).color(ARCVars.getThemeColor()).colspan(4).pad(10).padTop(15).padBottom(4).row();
+                table.image().color(ARCVars.getThemeColor()).fillX().height(3).colspan(4).padTop(0).padBottom(10).row();
             }
         }
 
@@ -1232,6 +1303,19 @@ public class SettingsMenuDialog extends BaseDialog{
                 addDesc(table.label(() -> title).left().padTop(3f).get());
                 table.row().add(area).left();
                 table.row();
+            }
+        }
+
+        public static class ButtonFakeSetting extends Setting {
+            Button button;
+            public ButtonFakeSetting(String text, Runnable callback) {
+                super("fake");
+                button = Elem.newButton(text, callback);
+            }
+
+            @Override
+            public void add(SettingsTable table) {
+                table.row().add(button).growX().height(48).row();
             }
         }
     }

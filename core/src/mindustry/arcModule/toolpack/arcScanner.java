@@ -11,13 +11,11 @@ import arc.scene.ui.layout.Scl;
 import arc.scene.ui.layout.Table;
 import arc.util.Align;
 import arc.util.Time;
+import mindustry.arcModule.ARCVars;
 import mindustry.arcModule.Marker;
 import mindustry.game.EventType;
 import mindustry.game.Team;
-import mindustry.gen.Groups;
-import mindustry.gen.Icon;
-import mindustry.gen.Player;
-import mindustry.gen.Unit;
+import mindustry.gen.*;
 import mindustry.input.Binding;
 import mindustry.ui.Styles;
 import mindustry.world.Tile;
@@ -62,7 +60,7 @@ public class arcScanner {
 
     static {
         t.touchable = Touchable.disabled;
-        t.margin(8f).add(">> 雷达扫描中 <<").color(getThemeColor()).style(Styles.outlineLabel).labelAlign(Align.center);
+        t.margin(8f).add(">> 雷达扫描中 <<").color(ARCVars.getThemeColor()).style(Styles.outlineLabel).labelAlign(Align.center);
         t.visible = false;
         t.update(() -> t.setPosition(Core.graphics.getWidth() / 2f, Core.graphics.getHeight() * 0.1f, Align.center));
         t.pack();
@@ -137,9 +135,9 @@ public class arcScanner {
             Lines.stroke(expandRate * 0.75f);
             Lines.circle(player.x, player.y, (radarCir * i * tilesize) / rRatio);
             float cirRatio = (radarCir * i * tilesize) / rRatio + 2f;
-            arcDrawText(i * (int) radarCir + "", 0.2f / Scl.scl(1f) * expandRate, player.x, player.y + cirRatio, getThemeColor(), 1);
-            arcDrawText(i * (int) radarCir + "", 0.2f / Scl.scl(1f) * expandRate, player.x + cirRatio * Mathf.cos(Mathf.PI * 7 / 6), player.y + cirRatio * Mathf.sin(Mathf.PI * 7 / 6), getThemeColor(), 1);
-            arcDrawText(i * (int) radarCir + "", 0.2f / Scl.scl(1f) * expandRate, player.x + cirRatio * Mathf.cos(Mathf.PI * 11 / 6), player.y + cirRatio * Mathf.sin(Mathf.PI * 11 / 6), getThemeColor(), 1);
+            arcDrawText(i * (int) radarCir + "", 0.2f / Scl.scl(1f) * expandRate, player.x, player.y + cirRatio, ARCVars.getThemeColor(), 1);
+            arcDrawText(i * (int) radarCir + "", 0.2f / Scl.scl(1f) * expandRate, player.x + cirRatio * Mathf.cos(Mathf.PI * 7 / 6), player.y + cirRatio * Mathf.sin(Mathf.PI * 7 / 6), ARCVars.getThemeColor(), 1);
+            arcDrawText(i * (int) radarCir + "", 0.2f / Scl.scl(1f) * expandRate, player.x + cirRatio * Mathf.cos(Mathf.PI * 11 / 6), player.y + cirRatio * Mathf.sin(Mathf.PI * 11 / 6), ARCVars.getThemeColor(), 1);
         }
 
         if (scanRate < 1f) {
@@ -199,6 +197,12 @@ public class arcScanner {
                 Draw.rect(core.block.fullIcon, transX(core.tile.worldx()), transY(core.tile.worldy()), 4 * expandRate, 4 * expandRate);
 
             }
+        }
+        //绘制搜索的方块
+        for (Building build : ui.hudfrag.quickToolTable.advanceBuildTool.buildingSeq) {
+            if (scanRate < 1f && Mathf.dst(build.x - player.x, build.y - player.y) > curScanRange) continue;
+            Draw.color(build.team.color, 1f);
+            Draw.rect(build.block.fullIcon, transX(build.tile.worldx()), transY(build.tile.worldy()), 4 * expandRate, 4 * expandRate);
         }
         //绘制单位
         for (Unit unit : Groups.unit) {

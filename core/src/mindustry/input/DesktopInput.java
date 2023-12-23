@@ -11,8 +11,9 @@ import arc.math.geom.*;
 import arc.scene.*;
 import arc.scene.ui.layout.*;
 import arc.util.*;
-import mindustry.*;
+import mindustry.arcModule.ARCVars;
 import mindustry.arcModule.Marker;
+import mindustry.content.Items;
 import mindustry.content.UnitTypes;
 import mindustry.core.*;
 import mindustry.entities.Predict;
@@ -121,12 +122,12 @@ public class DesktopInput extends InputHandler{
 
         //draw break selection
         if(mode == breaking){
-            drawBreakSelection(selectX, selectY, cursorX, cursorY, !Core.input.keyDown(Binding.schematic_select) ? maxLength : Vars.getMaxSchematicSize());
+            drawBreakSelection(selectX, selectY, cursorX, cursorY, !Core.input.keyDown(Binding.schematic_select) ? maxLength : ARCVars.getMaxSchematicSize());
         }
 
         if(!Core.scene.hasKeyboard() && mode != breaking){
             if(Core.input.keyDown(Binding.schematic_select)){
-                drawSelection(schemX, schemY, cursorX, cursorY, Vars.getMaxSchematicSize());
+                drawSelection(schemX, schemY, cursorX, cursorY, ARCVars.getMaxSchematicSize());
             }else if(Core.input.keyDown(Binding.rebuild_select)){
                 drawRebuildSelection(schemX, schemY, cursorX, cursorY);
             }
@@ -301,7 +302,7 @@ public class DesktopInput extends InputHandler{
             if(Core.input.keyDown(Binding.control) && Core.input.keyTap(Binding.select)){
                 Unit on = selectedUnit();
                 var build = selectedControlBuild();
-                if(!ui.hudfrag.hudSettingsTable.unitHide && on != null){
+                if(!ARCVars.unitHide && on != null){
                     Call.unitControl(player, on);
                     shouldShoot = false;
                     recentRespawnTimer = 1f;
@@ -412,7 +413,7 @@ public class DesktopInput extends InputHandler{
                 cursorType = SystemCursor.hand;
             }
 
-            if(canTapPlayer(Core.input.mouseWorld().x, Core.input.mouseWorld().y)){
+            if(canTapPlayer(Core.input.mouseWorld().x, Core.input.mouseWorld().y) && !settings.getBool("blockDrop", false)){
                 cursorType = ui.unloadCursor;
             }
 
@@ -673,7 +674,7 @@ public class DesktopInput extends InputHandler{
                 linePlans.clear();
                 Events.fire(new LineConfirmEvent());
             }else if(mode == breaking){ //touch up while breaking, break everything in selection
-                removeSelection(selectX, selectY, cursorX, cursorY, !Core.input.keyDown(Binding.schematic_select) ? maxLength : Vars.getMaxSchematicSize());
+                removeSelection(selectX, selectY, cursorX, cursorY, !Core.input.keyDown(Binding.schematic_select) ? maxLength : ARCVars.getMaxSchematicSize());
                 if(lastSchematic != null){
                     useSchematic(lastSchematic);
                     lastSchematic = null;
@@ -711,7 +712,7 @@ public class DesktopInput extends InputHandler{
         }
 
         if (input.keyTap(Binding.toggle_unit)) {
-            ui.hudfrag.hudSettingsTable.forceHideUnit();
+            ui.hudfrag.quickToolTable.hudSettingsTable.forceHideUnit();
         }
 
         if (input.keyTap(Binding.superUnitEffect)) {
@@ -719,6 +720,14 @@ public class DesktopInput extends InputHandler{
             settings.put("superUnitEffect", (level + 1) % 3);
         }
 
+        if (input.keyDown(Binding.oreAdsorption) && player.unit().tileOn() != null) {
+            player.unit().tileOn().circle(Mathf.ceil(player.unit().type.mineRange / 8f), tile -> {
+                Tile ptile = player.unit().mineTile;
+                if ((ptile == null || player.dst(ptile) > player.dst(tile) || ptile.drop() == Items.sand) && canMine(tile) && tile.drop() != Items.sand) {
+                    player.unit().mineTile = tile;
+                }
+            });
+        }
     }
 
     @Override

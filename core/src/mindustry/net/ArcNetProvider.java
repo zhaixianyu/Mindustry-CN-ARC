@@ -11,6 +11,7 @@ import arc.util.*;
 import arc.util.Log.*;
 import arc.util.io.*;
 import mindustry.*;
+import mindustry.arcModule.ARCVars;
 import mindustry.game.EventType.*;
 import mindustry.net.Administration.*;
 import mindustry.net.Net.*;
@@ -51,7 +52,7 @@ public class ArcNetProvider implements NetProvider{
             packetSpamLimit = Config.packetSpamLimit.num();
         });
 
-        client = new Client(8192, 16384, new PacketSerializer());
+        client = new Client(16384, 16384, new PacketSerializer());
         client.setDiscoveryPacket(packetSupplier);
         client.addListener(new NetListener(){
             @Override
@@ -203,7 +204,7 @@ public class ArcNetProvider implements NetProvider{
 
     @Override
     public void sendClient(Object object, boolean reliable){
-        if (replaying) return;
+        if (ARCVars.replaying) return;
         try{
             if(reliable){
                 client.sendTCP(object);

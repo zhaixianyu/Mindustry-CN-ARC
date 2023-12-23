@@ -21,6 +21,7 @@ import mindustry.graphics.Pal;
 import mindustry.input.DesktopInput;
 
 import static mindustry.Vars.*;
+import static mindustry.arcModule.ARCVars.arcui;
 import static mindustry.arcModule.DrawUtilities.arcDrawText;
 import static mindustry.arcModule.RFuncs.getPrefix;
 
@@ -96,22 +97,22 @@ public class Marker {
             }
         }
 
-        if (Indexer > 10) {
+        if (Indexer > 0) {
+            /* Parse position */
+            String posStr = text.substring(text.indexOf('(', Indexer + 1), text.indexOf(')', Indexer + 1) + 1);
+
+            Vec2 pos = Tmp.v1;
+
             try {
-                /* Parse position */
-                String posStr = text.substring(text.indexOf('(', Indexer + 1));
-
-                Vec2 pos = Tmp.v1;
-
                 pos.fromString(posStr);
-
-                mark(markType, pos.scl(tilesize), false);
-                ui.MessageDialog.addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.markLoc, text, pos));
-                return true;
             } catch (Throwable e) {
-                Log.err("Cannot resolve position");
+                Log.err("Cannot resolve position from " + posStr);
                 return false;
             }
+
+            mark(markType, pos.scl(tilesize), false);
+            MessageDialog.addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.markLoc, text, pos));
+            return true;
         }
 
         if (text.contains("[YELLOW][集合]") && text.contains("[WHITE]\"[WHITE]\",输入\"[gold]go[WHITE]\"前往")) {
@@ -135,7 +136,7 @@ public class Marker {
             }
 
             mark(findLocalizedName("集合"), pos.scl(tilesize), false);
-            ui.MessageDialog.addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.markLoc, text, pos));
+            MessageDialog.addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.markLoc, text, pos));
             return true;
         }
         return false;
@@ -206,7 +207,7 @@ public class Marker {
             String text = getPrefix(color, name) +
                     "(" + World.toTile(pos.x) + "," + World.toTile(pos.y) + ")";
             Call.sendChatMessage(text);
-            ui.MessageDialog.addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.markLoc, text, pos));
+            MessageDialog.addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.markLoc, text, pos));
         }
 
         public void showArrow(Vec2 pos) {

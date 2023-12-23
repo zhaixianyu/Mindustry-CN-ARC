@@ -17,7 +17,7 @@ import mindustry.*;
 import mindustry.ai.*;
 import mindustry.ai.types.*;
 import mindustry.annotations.Annotations.*;
-import mindustry.arcModule.District;
+import mindustry.arcModule.ARCVars;
 import mindustry.arcModule.DrawUtilities;
 import mindustry.content.*;
 import mindustry.core.*;
@@ -42,8 +42,6 @@ import mindustry.world.blocks.payloads.*;
 import mindustry.world.blocks.storage.*;
 import mindustry.world.blocks.storage.CoreBlock.*;
 import mindustry.world.meta.*;
-import mindustry.ui.*;
-import arc.util.pooling.*;
 
 import java.util.*;
 
@@ -272,6 +270,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
 
     @Remote(called = Loc.server, targets = Loc.both, forward = true)
     public static void setUnitCommand(Player player, int[] unitIds, UnitCommand command){
+        ARCVars.arcClient.handle(player, unitIds);
         if(player == null || unitIds == null || command == null) return;
 
         if(net.server() && !netServer.admins.allowAction(player, ActionType.commandUnits, event -> {
@@ -513,7 +512,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
                 player.con.send(packet, true);
             }
 
-            throw new ValidateException(player, "Player cannot configure a tile.");
+            if (headless) throw new ValidateException(player, "Player cannot configure a tile.");
         }
         build.configured(player == null || player.dead() ? null : player.unit(), value);
         Events.fire(new ConfigEvent(build, player, value));
@@ -879,6 +878,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
                     attack = selectedEnemyUnit(target.x, target.y);
                 }
 
+                if (input.keyDown(KeyCode.altLeft)) attack = null;
+
                 int[] ids = new int[selectedUnits.size];
                 for(int i = 0; i < ids.length; i++){
                     ids[i] = selectedUnits.get(i).id;
@@ -1090,7 +1091,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
             plan.y = World.toTile(wy - plan.block.offset) + oy;
             plan.rotation = plan.block.planRotation(Mathf.mod(plan.rotation + direction, 4));
 
-            if (plan.block instanceof CanvasBlock cb) {
+            if (Core.settings.getBool("rotateCanvas") && plan.block instanceof CanvasBlock cb) {
                 CanvasBlock.CanvasBuild temp = cb.new CanvasBuild();
                 Pixmap pix = cb.makePixmap((byte[]) plan.config), pix2 = new Pixmap(cb.canvasSize, cb.canvasSize);
                 pix.each((px,py) -> pix2.setRaw(
@@ -1134,7 +1135,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
             //flip rotation
             plan.block.flipRotation(plan, x);
 
-            if (plan.block instanceof CanvasBlock cb) {
+            if (Core.settings.getBool("rotateCanvas") && plan.block instanceof CanvasBlock cb) {
                 CanvasBlock.CanvasBuild temp = cb.new CanvasBuild();
                 Pixmap pix = cb.makePixmap((byte[]) plan.config);
                 plan.config = temp.packPixmap(x ? pix.flipX() : pix.flipY());
@@ -1456,7 +1457,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
         if(build.block.commandable && commandMode){
             //TODO handled in tap.
             consumed = true;
-        }else if(build.block.configurable && arcInfoControl(build.team)) { //check if tapped block is configurable
+        }else if(build.block.configurable && ARCVars.arcInfoControl(build.team)) { //check if tapped block is configurable
             consumed = true;
             if((!config.isShown() && build.shouldShowConfigure(player)) //if the config fragment is hidden, show
             //alternatively, the current selected block can 'agree' to switch config tiles
@@ -1502,7 +1503,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
 
     /** Tries to select the player to drop off items, returns true if successful. */
     boolean tryTapPlayer(float x, float y){
-        if(canTapPlayer(x, y)){
+        if(canTapPlayer(x, y) && !settings.getBool("blockDrop", false)){
             droppingItem = true;
             return true;
         }
@@ -1730,7 +1731,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
     }
 
     public void tryDropItems(@Nullable Building build, float x, float y){
-        if(!droppingItem || player.unit().stack.amount <= 0 || canTapPlayer(x, y) || state.isPaused() ){
+        if(!droppingItem || player.unit().stack.amount <= 0 || canTapPlayer(x, y) || state.isPaused() || settings.getBool("blockDrop", false)){
             droppingItem = false;
             return;
         }

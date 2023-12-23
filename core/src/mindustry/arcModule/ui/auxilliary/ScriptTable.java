@@ -12,8 +12,10 @@ import mindustry.arcModule.*;
 import mindustry.content.*;
 import mindustry.gen.*;
 import mindustry.input.DesktopInput;
+import mindustry.ui.dialogs.EffectsDialog;
 
 import static mindustry.Vars.*;
+import static mindustry.arcModule.ARCVars.arcui;
 import static mindustry.arcModule.ui.RStyles.*;
 import static mindustry.content.UnitTypes.vela;
 
@@ -34,26 +36,30 @@ public class ScriptTable extends BaseToolsTable{
         scriptButton(Icon.modeAttack, "自动攻击", () -> {
             boolean at = Core.settings.getBool("autotarget");
             Core.settings.put("autotarget", !at);
-            ui.arcInfo("已" + (at?"关闭":"开启") + "自动攻击");
+            arcui.arcInfo("已" + (at?"关闭":"开启") + "自动攻击");
         }, b -> Core.settings.getBool("autotarget"));
 
         scriptButton(vela.uiIcon, "强制助推", () -> {
             boolean ab = Core.settings.getBool("forceBoost");
             Core.settings.put("forceBoost", !ab);
-            ui.arcInfo("已" + (ab?"关闭":"开启") + "强制助推");
+            arcui.arcInfo("已" + (ab?"关闭":"开启") + "强制助推");
         }, b -> Core.settings.getBool("forceBoost"));
 
-        if(!mobile)
-        scriptButton(Icon.eyeSmall, "取消追踪", () -> {
-            boolean ab = Core.settings.getBool("removePan");
-            if(control.input instanceof DesktopInput){
-                ((DesktopInput) control.input).panning = true;
-            }
-            Core.settings.put("removePan", !ab);
-            ui.arcInfo("已" + (ab?"取消":"开启") + "强制追踪控制单位");
-        }, b -> Core.settings.getBool("removePan"));
+        if(!mobile) {
+            scriptButton(Icon.eyeSmall, "取消追踪", () -> {
+                boolean ab = Core.settings.getBool("removePan");
+                if (control.input instanceof DesktopInput) {
+                    ((DesktopInput) control.input).panning = true;
+                }
+                Core.settings.put("removePan", !ab);
+                arcui.arcInfo("已" + (ab ? "取消" : "开启") + "强制追踪控制单位");
+            }, b -> Core.settings.getBool("removePan"));
+        }
         scriptButton(Items.copper.uiIcon, "一键放置", () -> {
             player.dropItems();
+        });
+        scriptButton(Icon.pencilSmall.getRegion(), "特效显示",()->{
+            EffectsDialog.withAllEffects().show();
         });
     }
 

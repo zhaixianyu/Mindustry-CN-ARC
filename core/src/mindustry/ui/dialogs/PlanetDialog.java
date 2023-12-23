@@ -18,6 +18,7 @@ import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.*;
+import mindustry.arcModule.ARCVars;
 import mindustry.content.*;
 import mindustry.content.TechTree.*;
 import mindustry.core.*;
@@ -38,6 +39,7 @@ import mindustry.world.blocks.storage.*;
 
 import static arc.Core.*;
 import static mindustry.Vars.*;
+import static mindustry.arcModule.ARCVars.arcui;
 import static mindustry.arcModule.DrawUtilities.arcDrawText;
 import static mindustry.graphics.g3d.PlanetRenderer.*;
 import static mindustry.ui.dialogs.PlanetDialog.Mode.*;
@@ -299,7 +301,7 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
                 if(viewInt==1) viewInt = 60;
                 else if (viewInt==60) viewInt = 120;
                 else viewInt = 1;
-                ui.arcInfo("调整资源输入|输出显示周期为 [orange]" + viewInterval(viewInt));
+                arcui.arcInfo("调整资源输入|输出显示周期为 [orange]" + viewInterval(viewInt));
             }).size(100f, 54f).pad(2).bottom();
             buttons.button("区块名称", Icon.bookOpen, () -> alwaysShowName = !alwaysShowName).size(100f, 54f).pad(2).bottom();
             addTech();
@@ -923,8 +925,8 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
 
         if(t.getChildren().any()){
             c.defaults().left();
-            c.add(name + "  ("+ viewInterval(viewInt) + ")").color(getThemeColor()).center().row();
-            c.image().color(getThemeColor()).fillX().row();
+            c.add(name + "  ("+ viewInterval(viewInt) + ")").color(ARCVars.getThemeColor()).center().row();
+            c.image().color(ARCVars.getThemeColor()).fillX().row();
             builder.get(c);
             c.add(t).padLeft(10f).row();
         }
@@ -951,8 +953,8 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
             }
 
             if(sector.save != null && sector.info.resources.any()){
-                c.add("资源").color(getThemeColor()).center().row();
-                c.image().color(getThemeColor()).fillX().row();
+                c.add("资源").color(ARCVars.getThemeColor()).center().row();
+                c.image().color(ARCVars.getThemeColor()).fillX().row();
                 c.table(t -> {
                     for(UnlockableContent uc : sector.info.resources){
                         if(uc == null) continue;
@@ -987,8 +989,8 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
             //stored resources
             if(sector.hasBase() && items.total > 0){
 
-                c.add("存储").color(getThemeColor()).center().row();
-                c.image().color(getThemeColor()).fillX().row();
+                c.add("存储").color(ARCVars.getThemeColor()).center().row();
+                c.image().color(ARCVars.getThemeColor()).fillX().row();
                 c.table(t -> {
                     t.left();
 
@@ -1140,10 +1142,11 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
                             int cols = (int)Math.min(20, Core.graphics.getWidth() / Scl.scl(52f));
 
                             int i = 1;
-                            for(var key : defaultIcons){
-                                var value = Icon.icons.get(key);
+                            for(var entry : Icon.icons.entries()){
+                                if(entry.key.endsWith("Small") || entry.key.contains("none")) continue;
+                                String key = entry.key;
 
-                                t.button(value, Styles.squareTogglei, () -> {
+                                t.button(entry.value, Styles.squareTogglei, () -> {
                                     sector.info.icon = key;
                                     sector.info.contentIcon = null;
                                     refresh.run();

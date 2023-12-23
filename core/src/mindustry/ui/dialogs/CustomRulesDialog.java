@@ -11,6 +11,7 @@ import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.*;
+import mindustry.arcModule.ARCVars;
 import mindustry.arcModule.ui.dialogs.TeamSelectDialog;
 import mindustry.content.*;
 import mindustry.ctype.*;
@@ -282,7 +283,7 @@ public class CustomRulesDialog extends BaseDialog{
 
             t.defaults().size(140f, 50f);
 
-            for(Planet planet : content.planets().select(p -> p.accessible && p.visible && p.isLandable())){
+            for(Planet planet : content.planets()){
                 t.button(planet.localizedName, style, () -> {
                     planet.applyRules(rules);
                 }).group(group).checked(b -> rules.planet == planet);
@@ -471,9 +472,9 @@ public class CustomRulesDialog extends BaseDialog{
     }
 
     void title(String text){
-        main.add(text).color(getThemeColor()).padTop(20).center().padBottom(-3);
+        main.add(text).color(ARCVars.getThemeColor()).padTop(20).center().padBottom(-3);
         main.row();
-        main.image().color(getThemeColor()).height(3f).padRight(100f).padBottom(20);
+        main.image().color(ARCVars.getThemeColor()).height(3f).padRight(100f).padBottom(20);
         main.row();
     }
 

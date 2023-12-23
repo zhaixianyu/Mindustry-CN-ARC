@@ -7,9 +7,10 @@ import arc.audio.*;
 import arc.files.*;
 import arc.graphics.*;
 import arc.graphics.g2d.*;
-import arc.math.*;
 import arc.util.*;
 import mindustry.ai.*;
+import mindustry.arcModule.ARCClassLoader;
+import mindustry.arcModule.ARCVars;
 import mindustry.arcModule.TimeControl;
 import mindustry.core.*;
 import mindustry.ctype.*;
@@ -28,7 +29,7 @@ import static arc.Core.*;
 import static mindustry.Vars.*;
 
 public abstract class ClientLauncher extends ApplicationCore implements Platform{
-    private static final int loadingFPS = 20;
+    private static final int loadingFPS = 30;
 
     private long nextFrame;
     private long beginTime;
@@ -38,6 +39,9 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
 
     @Override
     public void setup(){
+        if (OS.isAndroid) {
+            new ARCClassLoader().fallbackLoad();
+        }
         String dataDir = OS.env("MINDUSTRY_DATA_DIR");
         if(dataDir != null){
             Core.settings.setDataDirectory(files.absolute(dataDir));
@@ -50,6 +54,11 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
         YuanShenLoader = settings.getDataDirectory().child("yuanshen").exists();
         loader = YuanShenLoader ? new YuanShenLoadRenderer() : new LoadRenderer();
         Events.fire(new ClientCreateEvent());
+        if (getClass().getClassLoader() instanceof ARCClassLoader arc) {
+            arc.loadExtra();
+        } else {
+            new ARCClassLoader().loadExtra();
+        }
 
         loadFileLogger();
         platform = this;
@@ -142,10 +151,27 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
         mods = new Mods();
         schematics = new Schematics();
 
+        assets.load(new Vars());
+        assets.load(new ARCVars());
+        loadSettings();
+
         Fonts.loadSystemCursors();
 
-        assets.load(new Vars());
-        loadSettings();
+        String proxy = settings.getString("arcNetProxy", "");
+        if (!proxy.isEmpty()) {
+            try {
+                String[] parts = proxy.split(":");
+                if (parts.length != 2) throw new IllegalArgumentException("无效格式！格式应为ip:port，当前代理: " + proxy);
+                System.setProperty("http.proxyHost", parts[0]);
+                System.setProperty("http.proxyPort", parts[1]);
+                System.setProperty("https.proxyHost", parts[0]);
+                System.setProperty("https.proxyPort", parts[1]);
+            } catch (Exception err) {
+                Log.err("无效代理设置: " + proxy);
+                Events.on(ClientLoadEvent.class, e -> ui.showException("无效代理设置", err));
+            }
+        }
+
         Fonts.loadDefaultFont();
 
         //load fallback atlas if max texture size is below 4096
@@ -264,11 +290,13 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
         if(settings.getBool("bossKeyPressing", false)) {
             return "计算器";
         }
-        int enabled = mods.mods.count(t->t.enabled());
-        long time = (Time.millis() - startPlayTime) / 1000;
-        return "Mindustry-CN-ARC | 版本号 " + (Version.arcBuild <= 0 ? "dev" : Version.arcBuild) + " | mod启用" + enabled + "/" + (mods == null ? 0 : mods.mods.size) + " | " +
-                (Core.graphics != null ? Core.graphics.getWidth() + "x" + Core.graphics.getHeight() : "")
-                ;
+        int enabled = mods.mods.count(Mods.LoadedMod::enabled);
+        return "Mindustry-CN-ARC | 版本号 " +
+                (Version.arcBuild <= 0 ? "dev" : Version.arcBuild) +
+                " | mod启用" + enabled + "/" +
+                (mods == null ? 0 : mods.mods.size) +
+                " | " +
+                (Core.graphics != null ? Core.graphics.getWidth() + "x" + Core.graphics.getHeight() : "");
     }
 
     @Override

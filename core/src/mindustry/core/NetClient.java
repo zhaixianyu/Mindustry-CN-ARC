@@ -5,7 +5,6 @@ import arc.audio.*;
 import arc.func.*;
 import arc.graphics.*;
 import arc.math.*;
-import arc.math.geom.Vec2;
 import arc.struct.*;
 import arc.util.*;
 import arc.util.CommandHandler.*;
@@ -13,7 +12,9 @@ import arc.util.io.*;
 import arc.util.serialization.*;
 import mindustry.*;
 import mindustry.annotations.Annotations.*;
-import mindustry.arcModule.ui.dialogs.MessageDialog;
+import mindustry.arcModule.ARCEvents;
+import mindustry.arcModule.ARCVars;
+import mindustry.arcModule.ui.XiBao;
 import mindustry.arcModule.ui.dialogs.USIDDialog;
 import mindustry.core.GameState.*;
 import mindustry.entities.*;
@@ -65,12 +66,15 @@ public class NetClient implements ApplicationListener{
     public NetClient(){
 
         net.handleClient(Connect.class, packet -> {
+            player.name = Core.settings.getString("name");
+            player.color.set(Core.settings.getInt("color-0"));
+
             Log.info("Connecting to server: @", packet.addressTCP);
             String ip = packet.addressTCP;
             if (ip.contains("/")) {
                 ip = ip.substring(ip.indexOf("/") + 1);
             }
-            if (USIDDialog.chooseUSID && Core.settings.getString("usid-" + ip, null) == null) {
+            if (USIDDialog.chooseUSID && Core.settings.getString("usid-" + ip, null) == null && !ARCVars.replaying) {
                 disconnectQuietly();
                 USIDDialog.showSet(ip);
                 return;
@@ -117,7 +121,7 @@ public class NetClient implements ApplicationListener{
                 return;
             }
 
-            replayController.createReplay(packet.addressTCP);
+            ARCVars.replayController.createReplay(packet.addressTCP);
             net.send(c, true);
 
             if(!Core.settings.getBool("arcAnonymity")){
@@ -125,17 +129,19 @@ public class NetClient implements ApplicationListener{
                 Timer timer=new Timer();
                 timer.schedule(new TimerTask(){
                     public void run(){
-                        Call.serverPacketReliable("ARC",arcVersion);
+                        Call.serverPacketReliable("ARC", ARCVars.arcVersion);
                         Call.serverPacketReliable("ARC-build",Version.arcBuild + "");
-                        Call.serverPacketReliable("CheatOverride",arcCheatServer + "");
+                        Call.serverPacketReliable("CheatOverride", ARCVars.arcCheatServer + "");
                     }},5000);
             }
         });
 
         net.handleClient(Disconnect.class, packet -> {
+            Events.fire(new ARCEvents.Disconnected(packet.reason));
+
             if(quietReset) return;
 
-            replayController.stop();
+            ARCVars.replayController.stop();
             connecting = false;
             logic.reset();
             platform.updateRPC();
@@ -159,6 +165,7 @@ public class NetClient implements ApplicationListener{
 
         net.handleClient(WorldStream.class, data -> {
             Log.info("Received world data: @ bytes.", data.stream.available());
+            if (ARCVars.replaying) worldDataBegin();
             NetworkIO.loadWorld(new InflaterInputStream(data.stream));
 
             finishConnecting();
@@ -249,7 +256,7 @@ public class NetClient implements ApplicationListener{
     @Remote(called = Loc.server, targets = Loc.server)
     public static void sendMessage(String message){
         if(Vars.ui != null){
-            Vars.ui.chatfrag.addMessage(message);
+            Vars.ui.chatfrag.addMessage(message, true);
             Sounds.chatMessage.play();
         }
     }
@@ -344,6 +351,18 @@ public class NetClient implements ApplicationListener{
 
     @Remote(variants = Variant.one, priority = PacketPriority.high)
     public static void kick(KickReason reason){
+        if (Core.settings.getBool("xibaoOnKick")) {
+            ui.loadfrag.hide();
+            if (!reason.quiet) {
+                if (reason.extraText() != null) {
+                    new XiBao().show(reason.toString(), reason.extraText());
+                } else{
+                    new XiBao().show("@disconnect", reason.toString());
+                }
+            }
+            return;
+        }
+
         netClient.disconnectQuietly();
         logic.reset();
 
@@ -364,6 +383,12 @@ public class NetClient implements ApplicationListener{
 
     @Remote(variants = Variant.one, priority = PacketPriority.high)
     public static void kick(String reason){
+        if (Core.settings.getBool("xibaoOnKick")) {
+            ui.loadfrag.hide();
+            new XiBao().show("@disconnect", reason);
+            return;
+        }
+
         netClient.disconnectQuietly();
         logic.reset();
         ui.showText("@disconnect", reason, Align.left);
