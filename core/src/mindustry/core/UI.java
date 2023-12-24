@@ -24,7 +24,7 @@ import mindustry.arcModule.ARCVars;
 import mindustry.arcModule.NumberFormat;
 import mindustry.arcModule.RFuncs;
 import mindustry.arcModule.ui.*;
-import mindustry.arcModule.ui.logic.Test;
+import mindustry.arcModule.ui.scratch.Test;
 import mindustry.editor.*;
 import mindustry.game.EventType.*;
 import mindustry.gen.*;
