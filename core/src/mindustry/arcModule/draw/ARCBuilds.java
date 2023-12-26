@@ -49,8 +49,8 @@ public class ARCBuilds {
 
     private static void drawRange(BaseTurret.BaseTurretBuild build) {
         Draw.z(Layer.turret - 0.8f);
-        Draw.color(build.team.color, 0.05f);
-        Fill.circle(build.x, build.y, build.range());
+        //Draw.color(build.team.color, 0.05f);
+        //Fill.circle(build.x, build.y, build.range());
         Draw.color(build.team.color, 0.3f);
         Lines.circle(build.x, build.y, build.range());
         Draw.reset();
