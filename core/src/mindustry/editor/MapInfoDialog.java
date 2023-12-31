@@ -53,9 +53,9 @@ public class MapInfoDialog extends BaseDialog{
             t.row();
             t.add("[acid]地图模式标签").padRight(8).left();
 
-            TextArea modeName = t.area(state.isPlaying() ? state.rules.modeName : tags.get("modeName", ""), Styles.areaField, text -> {
+            TextField modeName = t.field(state.isPlaying() ? state.rules.modeName : tags.get("modeName", ""), Styles.areaField, text -> {
                 tags.put("modeName", text);
-            }).size(400f, 140f).maxTextLength(1000).get();
+            }).size(400f, 55f).maxTextLength(1000).get();
 
             if (Core.settings.getBool("arcPlayerList")) {
                 t.row();
