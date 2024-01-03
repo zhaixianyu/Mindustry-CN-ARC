@@ -38,6 +38,8 @@ import mindustry.world.blocks.storage.CoreBlock;
 import static mindustry.Vars.*;
 import static mindustry.arcModule.ARCVars.arcui;
 import static mindustry.arcModule.DrawUtilities.arcDrawText;
+import static mindustry.arcModule.ElementUtils.NCtextStyle;
+import static mindustry.arcModule.ElementUtils.textStyle;
 import static mindustry.arcModule.RFuncs.*;
 
 public class AdvanceBuildTool extends ElementUtils.ToolTable {

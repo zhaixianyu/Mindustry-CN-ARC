@@ -6,6 +6,8 @@ import mindustry.arcModule.ui.AdvanceBuildTool;
 import mindustry.arcModule.ui.HudSettingsTable;
 import mindustry.gen.Iconc;
 
+import static mindustry.arcModule.ElementUtils.textStyle;
+
 public class QuickToolTable extends ElementUtils.ToolTable {
 
     public HudSettingsTable hudSettingsTable = new HudSettingsTable();
