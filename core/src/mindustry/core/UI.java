@@ -24,7 +24,7 @@ import mindustry.arcModule.ARCVars;
 import mindustry.arcModule.NumberFormat;
 import mindustry.arcModule.RFuncs;
 import mindustry.arcModule.ui.*;
-import mindustry.arcModule.ui.scratch.Test;
+import mindustry.arcModule.ui.scratch.ScratchTest;
 import mindustry.editor.*;
 import mindustry.game.EventType.*;
 import mindustry.gen.*;
@@ -247,7 +247,7 @@ public class UI implements ApplicationListener, Loadable{
         consolefrag.build(hudGroup);
         loadfrag.build(group);
 
-        Test.test();
+        ScratchTest.test();
     }
 
     @Override
