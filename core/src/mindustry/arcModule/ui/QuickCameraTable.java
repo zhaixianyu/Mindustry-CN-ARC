@@ -51,6 +51,7 @@ public class QuickCameraTable extends Table {
     }
 
     private void init() {
+        if (quickHudSize == 0) return;
         hudList = new SingleHud[quickHudSize];
         for (int i = 0; i < quickHudSize; i++) {
             hudList[i] = new SingleHud();
