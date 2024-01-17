@@ -51,7 +51,6 @@ public class QuickCameraTable extends Table {
                 if (Core.input.keyTap(cameraSelect[i])) hudList[i].getHud();
             }
         });
-
     }
 
     private void init() {

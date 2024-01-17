@@ -43,6 +43,7 @@ import mindustry.world.meta.*;
 
 import static arc.graphics.g2d.Draw.*;
 import static mindustry.Vars.*;
+import static mindustry.arcModule.ARCVars.maxBuildPlans;
 import static mindustry.arcModule.toolpack.arcPlayerEffect.drawPlayerEffect;
 
 public class UnitType extends UnlockableContent implements Senseable{
@@ -1525,11 +1526,15 @@ public class UnitType extends UnlockableContent implements Senseable{
 
         if(Core.settings.getBool("unitbuildplan") && !unit.plans().isEmpty()) {
 
+            int counter = 0;
             if (unit != player.unit()) {
                 for (BuildPlan b : unit.plans()) {
                     unit.drawPlan(b, 0.5f);
+                    counter += 1;
+                    if (counter >= maxBuildPlans) break;
                 }
             }
+            counter = 0;
             Draw.color(Pal.gray);
             Lines.stroke(2f);
             float x = unit.x, y = unit.y, s = unit.hitSize / 2f;
@@ -1541,8 +1546,11 @@ public class UnitType extends UnlockableContent implements Senseable{
                 x = b.drawx();
                 y = b.drawy();
                 s = b.block.size * 2f;
+                counter += 1;
+                if (counter >= maxBuildPlans) break;
             }
 
+            counter = 0;
             Draw.color(unit.team.color);
             Lines.stroke(0.75f);
             x = unit.x; y = unit.y; s = unit.hitSize / 2f;
@@ -1554,6 +1562,8 @@ public class UnitType extends UnlockableContent implements Senseable{
                 x = b.drawx();
                 y = b.drawy();
                 s = b.block.size * 2f;
+                counter += 1;
+                if (counter >= maxBuildPlans) break;
             }
         }
     }
