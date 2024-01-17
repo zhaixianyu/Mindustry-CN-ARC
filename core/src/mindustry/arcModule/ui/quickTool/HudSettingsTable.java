@@ -1,4 +1,4 @@
-package mindustry.arcModule.ui;
+package mindustry.arcModule.ui.quickTool;
 
 import arc.Events;
 import arc.struct.Seq;

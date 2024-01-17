@@ -4,7 +4,6 @@ import arc.Core;
 import arc.Events;
 import arc.input.KeyCode;
 import arc.scene.ui.Label;
-import arc.scene.ui.layout.Cell;
 import arc.scene.ui.layout.Table;
 import arc.util.Nullable;
 import mindustry.content.Blocks;
@@ -99,7 +98,7 @@ public class QuickCameraTable extends Table {
         } else hudList[index] = new SingleHud((int) (Core.camera.position.x / tilesize), (int) (Core.camera.position.y / tilesize));
     }
 
-    class SingleHud {
+    static class SingleHud {
         int x = -1;
         int y = -1;
 

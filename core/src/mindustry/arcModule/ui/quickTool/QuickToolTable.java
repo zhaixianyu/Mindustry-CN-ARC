@@ -1,9 +1,6 @@
 package mindustry.arcModule.ui.quickTool;
 
-import arc.scene.ui.layout.Table;
 import mindustry.arcModule.ElementUtils;
-import mindustry.arcModule.ui.AdvanceBuildTool;
-import mindustry.arcModule.ui.HudSettingsTable;
 import mindustry.gen.Iconc;
 
 import static mindustry.arcModule.ElementUtils.textStyle;
