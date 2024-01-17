@@ -35,29 +35,31 @@ public class QuickCameraTable extends Table {
     };
 
     {
-        for (int i = 0; i < quickHudSize; i++) {
-            hudList[i] = new SingleHud();
-        }
-
-        Events.on(EventType.WorldLoadEvent.class, event -> {
-            quickHudSize = Core.settings.getInt("quickHudSize", 0);
-            hudList = new SingleHud[quickHudSize];
-            for (int i = 0; i < quickHudSize; i++) {
-                hudList[i] = new SingleHud();
-            }
-            rebuild();
-        });
+        init();
+        Events.on(EventType.WorldLoadEvent.class, event -> init());
         Events.run(EventType.Trigger.update, () -> {
-            if (quickHudSize == 0) return;
-            if (!hudList[0].isValid() && player.unit() != null) {
-                hudList[0] = new SingleHud(player.unit());
-                hudList[0].showScale = false;
+            if (quickHudSize != Core.settings.getInt("quickHudSize", 0)) {
+                quickHudSize = Core.settings.getInt("quickHudSize", 0);
+                init();
             }
+            if (quickHudSize == 0) return;
             for (int i = 0; i < quickHudSize; i++) {
                 if (Core.input.keyTap(cameraSelect[i])) hudList[i].getHud();
             }
         });
 
+    }
+
+    private void init() {
+        hudList = new SingleHud[quickHudSize];
+        for (int i = 0; i < quickHudSize; i++) {
+            hudList[i] = new SingleHud();
+        }
+        if (player.unit() != null) {
+            hudList[0] = new SingleHud(player.unit());
+            hudList[0].showScale = false;
+        }
+        rebuild();
     }
 
     public QuickCameraTable() {
@@ -78,7 +80,6 @@ public class QuickCameraTable extends Table {
 
     private void hudButton(Table table, int index) {
         table.table(t -> {
-            //t.setBackground(Styles.black6);
             Label field = t.add("").get();
             Events.run(EventType.Trigger.update,
                     () -> field.setText((Core.keybinds.get(cameraSelect[index]).key == KeyCode.unknown ? "" : "[cyan]" + Core.keybinds.get(cameraSelect[index]).key.toString()) + hudList[index].getName()));
@@ -95,7 +96,8 @@ public class QuickCameraTable extends Table {
             hudList[index] = new SingleHud(unitc.tileX(), unitc.tileY());
         } else if (control.input.commandMode && control.input.selectedUnits.size > 0) {
             hudList[index] = new SingleHud(control.input.selectedUnits.first());
-        } else hudList[index] = new SingleHud((int) (Core.camera.position.x / tilesize), (int) (Core.camera.position.y / tilesize));
+        } else
+            hudList[index] = new SingleHud((int) (Core.camera.position.x / tilesize), (int) (Core.camera.position.y / tilesize));
     }
 
     static class SingleHud {
