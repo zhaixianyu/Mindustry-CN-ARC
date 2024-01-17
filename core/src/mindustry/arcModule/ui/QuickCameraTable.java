@@ -43,6 +43,10 @@ public class QuickCameraTable extends Table {
                 init();
             }
             if (quickHudSize == 0) return;
+            if (!hudList[0].isValid() && player.unit() != null) {
+                hudList[0] = new SingleHud(player.unit());
+                hudList[0].showScale = false;
+            }
             for (int i = 0; i < quickHudSize; i++) {
                 if (Core.input.keyTap(cameraSelect[i])) hudList[i].getHud();
             }
@@ -55,10 +59,6 @@ public class QuickCameraTable extends Table {
         hudList = new SingleHud[quickHudSize];
         for (int i = 0; i < quickHudSize; i++) {
             hudList[i] = new SingleHud();
-        }
-        if (player.unit() != null) {
-            hudList[0] = new SingleHud(player.unit());
-            hudList[0].showScale = false;
         }
         rebuild();
     }
