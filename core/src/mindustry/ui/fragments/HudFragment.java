@@ -51,6 +51,8 @@ public class HudFragment{
     private Slider minimapSlider;
     public RCoreItemsDisplay coreItems = new RCoreItemsDisplay();
     public OtherCoreItemDisplay otherCoreItemDisplay = new OtherCoreItemDisplay();
+
+    public QuickCameraTable quickCameraTable = new QuickCameraTable();
     private AuxilliaryTable auxilliaryTable;
     private AdvanceToolTable advanceToolTable = new AdvanceToolTable();
     public QuickToolTable quickToolTable = new QuickToolTable();
@@ -511,6 +513,11 @@ public class HudFragment{
             t.name = "otherCore";
             t.left().add(otherCoreItemDisplay);
             t.visible(() -> Core.settings.getBool("showOtherTeamResource") && shown);
+        });
+
+        parent.fill(t -> {
+            t.bottom().add(quickCameraTable);
+            t.visible(() -> Core.settings.getInt("quickHudSize") > 0 && shown);
         });
 
         parent.fill(t -> {
