@@ -33,7 +33,6 @@ public class ARCTeam {
 
         Events.run(EventType.Trigger.update, () -> {
             if (!state.isGame()) return;
-            update();
             if (Time.time - lastUpd > 120f) {
                 lastUpd = Time.time;
                 updateTeamList();
@@ -42,6 +41,7 @@ public class ARCTeam {
                 resUpd = Time.time;
                 updateTeam.each(team -> team.arcTeamData.updateDiffItems());
             }
+            update();
         });
     }
 
