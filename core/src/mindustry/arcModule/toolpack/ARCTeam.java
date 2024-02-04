@@ -24,6 +24,8 @@ public class ARCTeam {
     public float lastUpd = 0;
     public float resUpd = 0;
 
+    private static final int updateTimer = 5;
+
     public ARCTeam() {
         Events.on(EventType.WorldLoadEvent.class, e -> {
             forceUpdateTeam.clear();
@@ -37,7 +39,7 @@ public class ARCTeam {
                 lastUpd = Time.time;
                 updateTeamList();
             }
-            if (Time.time - resUpd > 300f) {
+            if (Time.time - resUpd > updateTimer * 60f) {
                 resUpd = Time.time;
                 updateTeam.each(team -> team.arcTeamData.updateDiffItems());
             }
@@ -106,7 +108,7 @@ public class ARCTeam {
 
         public void updateDiffItems() {
             for (Item item : Vars.content.items()) {
-                updateItems[item.id] = currentItems[item.id] - lastItems[item.id];
+                updateItems[item.id] = (updateItems[item.id] * (updateTimer - 1) + currentItems[item.id] - lastItems[item.id])/updateTimer;
                 lastItems[item.id] = currentItems[item.id];
             }
         }
