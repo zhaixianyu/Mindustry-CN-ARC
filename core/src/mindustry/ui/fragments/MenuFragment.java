@@ -127,15 +127,24 @@ public class MenuFragment{
             up = discordBanner;
         }}, ui.discord::show).marginTop(9f).marginLeft(10f).tooltip("@discord").size(84, 45).name("discord"));
 
-        parent.fill(c -> c.bottom().right().button("检查更新", Icon.refresh, () -> {
-            ui.loadfrag.show();
-            becontrol.checkUpdate(result -> {
-                ui.loadfrag.hide();
-                becontrol.BeControlTable();
+        parent.fill(c -> {
+            c.bottom().right().button("提交反馈", Icon.github, () -> {
+                String link = "https://docs.qq.com/form/page/DTllxbXlCc0lJb1ps";
+                if (!Core.app.openURI(link)) {
+                    ui.showErrorMessage("@linkfail");
+                    Core.app.setClipboardText(link);
+                }
+            }).size(200, 60).tooltip("发现了bug/提交功能建议?\n点击这里提交反馈").row();
+            c.bottom().right().button("检查更新", Icon.refresh, () -> {
+                ui.loadfrag.show();
+                becontrol.checkUpdate(result -> {
+                    ui.loadfrag.hide();
+                    becontrol.BeControlTable();
+                });
+            }).size(200, 60).name("检查更新").update(t -> {
+                t.getLabel().setColor(becontrol.isUpdateAvailable() ? Tmp.c1.set(Color.white).lerp(Pal.accent, Mathf.absin(5f, 1f)) : Color.white);
             });
-        }).size(200, 60).name("检查更新").update(t -> {
-            t.getLabel().setColor(becontrol.isUpdateAvailable() ? Tmp.c1.set(Color.white).lerp(Pal.accent, Mathf.absin(5f, 1f)) : Color.white);
-        }));
+        });
 
         parent.fill(c -> c.bottom().left().table(t -> {
             t.background(Tex.buttonEdge3);
