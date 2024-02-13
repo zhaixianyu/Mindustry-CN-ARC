@@ -15,11 +15,8 @@ import arc.scene.Group;
 import arc.scene.actions.Actions;
 import arc.scene.event.Touchable;
 import arc.scene.style.Drawable;
-import arc.scene.ui.Button;
-import arc.scene.ui.Image;
+import arc.scene.ui.*;
 import arc.scene.ui.ImageButton.ImageButtonStyle;
-import arc.scene.ui.Label;
-import arc.scene.ui.ScrollPane;
 import arc.scene.ui.layout.Scl;
 import arc.scene.ui.layout.Table;
 import arc.scene.ui.layout.WidgetGroup;
@@ -134,7 +131,11 @@ public class MenuFragment{
                     ui.showErrorMessage("@linkfail");
                     Core.app.setClipboardText(link);
                 }
-            }).size(200, 60).tooltip("发现了bug/提交功能建议?\n点击这里提交反馈").row();
+            }).size(200, 60).tooltip("发现了bug/提交功能建议?\n点击这里提交反馈").with(b -> {
+                TextButton.TextButtonStyle s = new TextButton.TextButtonStyle(b.getStyle());
+                s.fontColor = b.color;
+                b.setStyle(s);
+            }).update(b -> b.color.fromHsv(Time.time % 360,1,1)).row();
             c.bottom().right().button("检查更新", Icon.refresh, () -> {
                 ui.loadfrag.show();
                 becontrol.checkUpdate(result -> {
