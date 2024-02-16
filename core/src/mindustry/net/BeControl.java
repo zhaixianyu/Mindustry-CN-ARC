@@ -42,7 +42,7 @@ public class BeControl{
     private String steamUrl;
     private String mobileUrl;
     private int updateBuild;
-    public static String gitDownloadURL = "https://gh.tinylake.tk//";
+    public static String gitDownloadURL = "https://gh.tinylake.tech/";
 
     private String patronURL = "https://afdian.net/a/Mindustry-CN-ARC";
     private String directDesktopURL,directMobileURL,directSteamURL;
@@ -163,12 +163,12 @@ public class BeControl{
                     steamUrl = gitDownloadURL + directSteamURL;
                     mobileUrl = gitDownloadURL + directMobileURL;
                 }).width(250f).get();
-                tt.button(Icon.refreshSmall,()->buildTable());
+                tt.button(Icon.refreshSmall, this::buildTable);
             });
             t.row();
             t.table(tt->{
                 tt.button("wz镜像",()->{
-                    gitDownloadURL = "https://gh.tinylake.tk//";
+                    gitDownloadURL = "https://gh.tinylake.tech/";
                     updateUrl = gitDownloadURL + directDesktopURL;
                     steamUrl = gitDownloadURL + directSteamURL;
                     mobileUrl = gitDownloadURL + directMobileURL;
