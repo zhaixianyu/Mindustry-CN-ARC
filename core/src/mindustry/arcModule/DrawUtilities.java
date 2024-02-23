@@ -143,19 +143,18 @@ public class DrawUtilities {
         arcDrawTextMain(text, (int) x, (int) y);
     }
 
-    public static Effect arcBuildEffect(Building build) {
-        if (build == null || !Core.settings.getBool("arcPlacementEffect")) return new Effect();
+    public static void arcBuildEffect(Building build, float x, float y) {
+        if (build == null || !Core.settings.getBool("arcPlacementEffect")) return;
         if (build.block instanceof BaseTurret baseTurret && build.health > Core.settings.getInt("blockbarminhealth"))
-            return createBuildEffect(120f, baseTurret.range, build.team.color);
+            createBuildEffect(120f, baseTurret.range, build.team.color).at(x,y);
         else if (build.block instanceof MendProjector mendProjector)
-            return createBuildEffect(120f, mendProjector.range, Pal.heal);
+            createBuildEffect(120f, mendProjector.range, Pal.heal).at(x,y);
         else if (build.block instanceof OverdriveProjector overdriveProjector)
-            return createBuildEffect(120f, overdriveProjector.range, overdriveProjector.baseColor);
+            createBuildEffect(120f, overdriveProjector.range, overdriveProjector.baseColor).at(x,y);
         else if (build.block instanceof CoreBlock block)
-            return createBuildEffect(180f, block.fogRadius * tilesize, build.team.color);
+            createBuildEffect(180f, block.fogRadius * tilesize, build.team.color).at(x,y);
         else if (build.block instanceof Radar radar)
-            return createBuildEffect(180f, radar.fogRadius * tilesize, build.team.color);
-        else return new Effect();
+            createBuildEffect(180f, radar.fogRadius * tilesize, build.team.color).at(x,y);
     }
 
     public static Effect createBuildEffect(float lifeTime, float range, Color color) {
