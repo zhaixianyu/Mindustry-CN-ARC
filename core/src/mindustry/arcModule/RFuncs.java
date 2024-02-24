@@ -16,6 +16,7 @@ import arc.util.OS;
 import arc.util.Strings;
 import mindustry.*;
 import mindustry.content.*;
+import mindustry.core.NetClient;
 import mindustry.game.*;
 import mindustry.gen.Building;
 import mindustry.gen.Call;
@@ -73,9 +74,17 @@ public class RFuncs {
         if (effect) Fx.arcIndexer.at(x, y);
     }
 
+    public static void shareString(String s) {
+        if (Core.settings.getBool("arcNewShare", false)) {
+            NetClient.sendARCMessage(s);
+        } else {
+            Call.sendMessage(s);
+        }
+    }
+
     public static void sendChatMsg(String msg) {
         for (int i = 0; i < msg.length() / (float) msgSeperator; i++) {
-            Call.sendChatMessage(msg.substring(i * msgSeperator, Math.min(msg.length(), (i + 1) * msgSeperator)));
+            RFuncs.shareString(msg.substring(i * msgSeperator, Math.min(msg.length(), (i + 1) * msgSeperator)));
         }
     }
 
