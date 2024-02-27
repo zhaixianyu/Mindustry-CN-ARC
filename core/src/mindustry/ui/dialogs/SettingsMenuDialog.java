@@ -578,9 +578,10 @@ public class SettingsMenuDialog extends BaseDialog{
             arc.checkPref("arcPlacementEffect", false);
 
             arc.addCategory("arcMassDriverInfo");
-            arc.sliderPref("mass_driver_line_alpha", 100, 0, 100, 1, i -> i > 0 ? i + "%" : "关闭");
-            arc.sliderPref("mass_driver_line_interval", 40, 8, 400, 4, i -> i / 8f + "格");
-            arc.stringInput("mass_driver_line_color", "ff8c66");
+            arc.sliderPref("msLineAlpha", settings.getInt("mass_driver_line_alpha", 0), 0, 100, 1, i -> i > 0 ? i + "%" : "关闭");
+            arc.checkPref("msShootingDraw", false);
+            arc.sliderPref("msLineInterval", settings.getInt("mass_driver_line_interval", 40), 8, 400, 8, i -> i / 8f + "格");
+            arc.stringInput("msLineColor", settings.getString("mass_driver_line_color", "ff8c66"));
 
             arc.addCategory("arcAddTurretInfo");
             arc.checkPref("showTurretAmmo", false);
