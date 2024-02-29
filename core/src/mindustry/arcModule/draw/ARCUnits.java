@@ -27,7 +27,7 @@ import static mindustry.arcModule.ARCVars.maxBuildPlans;
 import static mindustry.arcModule.DrawUtilities.drawNSideRegion;
 
 public class ARCUnits {
-    public static float unitTrans = 1f;
+    public static float defaultUnitTrans, unitTrans = 1f;
     private static boolean drawUnit = true, drawUnitBar = false;
     private static float unitDrawMinHealth = 1f, unitBarDrawMinHealth = 1f;
 
@@ -54,7 +54,7 @@ public class ARCUnits {
             unithitbox = Core.settings.getBool("unithitbox");
             unitBuildPlan = Core.settings.getBool("unitbuildplan");
 
-            unitTrans = Core.settings.getInt("unitTransparency") / 100f;
+            defaultUnitTrans = Core.settings.getInt("unitTransparency") / 100f;
             unitDrawMinHealth = Core.settings.getInt("unitDrawMinHealth");
             unitBarDrawMinHealth = Core.settings.getInt("unitBarDrawMinHealth");
 
@@ -72,8 +72,9 @@ public class ARCUnits {
     }
 
     public static void drawARCUnits(Unit unit) {
-        drawUnit = (unit.maxHealth + unit.shield) > ARCUnits.unitDrawMinHealth;
-        drawUnitBar = (unit.maxHealth + unit.shield) > ARCUnits.unitBarDrawMinHealth;
+        unitTrans = defaultUnitTrans;
+        drawUnit = (unit.maxHealth + unit.shield) > unitDrawMinHealth;
+        drawUnitBar = (unit.maxHealth + unit.shield) > unitBarDrawMinHealth;
 
         if (!drawUnit) {
             unitTrans = 0f;

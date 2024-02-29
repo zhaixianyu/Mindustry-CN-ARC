@@ -1280,12 +1280,12 @@ public class UnitType extends UnlockableContent implements Senseable{
         boolean isPayload = !unit.isAdded();
 
         //透明度
-        unitTrans = ARCUnits.unitTrans;
 
         Mechc mech = unit instanceof Mechc ? (Mechc) unit : null;
         float z = unit.elevation > 0.5f ? (lowAltitude ? Layer.flyingUnitLow : Layer.flyingUnit) : groundLayer + Mathf.clamp(hitSize / 4000f, 0, 0.01f);
 
         drawARCUnits(unit);
+        unitTrans = ARCUnits.unitTrans;
         if(unitTrans == 0) return;
 
         if(unit.controller().isBeingControlled(player.unit())){
