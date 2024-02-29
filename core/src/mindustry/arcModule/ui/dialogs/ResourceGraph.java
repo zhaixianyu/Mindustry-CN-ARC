@@ -103,7 +103,7 @@ public class ResourceGraph extends Table {
             for (int i = 0; i < statisticsCounter; i++) {
                 float cy = y + fh, cx = graphX + graphW / (statisticsCounter - 1) * i;
                 Lines.line(cx, cy, cx, cy + len);
-                if (i == statisticsCounter / 2) {
+                if (i % (statisticsCounter / 4) == 0) {
                     font.draw("" + (i + from + 1) * statisticsInterval, cx, cy - Scl.scl(2f), Align.center);
                 }
             }
@@ -126,7 +126,10 @@ public class ResourceGraph extends Table {
             boolean showItem = false;
             for (int i = 0; i <= statisticsCounter; i++) {
                 for (Team team : showTeams) {
-                    if (team.arcTeamData.resStatistics[i][item.id] > 0) showItem = true;
+                    if (team.arcTeamData.resStatistics[i][item.id] > 0) {
+                        showItem = true;
+                        break;
+                    }
                 }
             }
             if (!showItem) removeRes.add(item);
