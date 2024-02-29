@@ -549,6 +549,13 @@ public class SettingsMenuDialog extends BaseDialog{
                     return "显示资源和兵种";
                 }
             });
+            arc.sliderPref("statisticsInterval", 0, 0, 120, 10, s -> {
+                if (s == 0) {
+                    return "不统计";
+                } else {
+                    return "每 " + s + " s";
+                }
+            });
             arc.sliderPref("arcCoreItemsCol", 5, 4, 15, 1, i -> i + "列");
             arc.checkPref("showQuickToolTable", settings.getBool("showFloatingSettings"));
             arc.sliderPref("quickHudSize", 0, 0, 10, 1, i -> i + "");
