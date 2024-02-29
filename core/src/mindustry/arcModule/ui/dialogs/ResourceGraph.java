@@ -16,6 +16,7 @@ import mindustry.gen.*;
 import mindustry.type.*;
 import mindustry.ui.*;
 
+import static mindustry.arcModule.toolpack.ARCTeam.statisticsCounter;
 import static mindustry.arcModule.toolpack.ARCTeam.statisticsInterval;
 
 public class ResourceGraph extends Table {
@@ -31,6 +32,7 @@ public class ResourceGraph extends Table {
         background(Tex.pane);
 
         rect((x, y, width, height) -> {
+            if (statisticsCounter == 0) return;
             Lines.stroke(Scl.scl(3f));
 
             GlyphLayout lay = Pools.obtain(GlyphLayout.class, GlyphLayout::new);
@@ -45,7 +47,7 @@ public class ResourceGraph extends Table {
             float offsetX = Scl.scl(lay.width * (maxY + "").length() * 2), offsetY = Scl.scl(22f) + fh + Scl.scl(5f);
 
             float graphX = x + offsetX, graphY = y + offsetY, graphW = width - offsetX - 30f, graphH = height - offsetY;
-            float spacing = graphW / (ARCTeam.statisticsCounter - 1);
+            float spacing = graphW / (statisticsCounter - 1);
             for (Team team : showTeams) {
                 for (Item item : showRes) {
                     if (showTeams.size == 1) {
@@ -57,7 +59,7 @@ public class ResourceGraph extends Table {
 
                     Lines.beginLine();
 
-                    for (int i = 0; i < ARCTeam.statisticsCounter; i++) {
+                    for (int i = 0; i < statisticsCounter; i++) {
                         int val = team.arcTeamData.resStatistics[i][item.id];
                         float cx = graphX + i * spacing, cy = graphY + val * graphH / maxY;
                         Lines.linePoint(cx, cy);
@@ -72,7 +74,7 @@ public class ResourceGraph extends Table {
                     if (showTeams.size == 1) name = item.emoji();
                     else if (showRes.size == 1) name = item.emoji();
                     else name = team.coloredName() + "|" + item.emoji();
-                    font.draw(name, graphX + (ARCTeam.statisticsCounter - 1) * spacing + 15f, graphY + team.arcTeamData.resStatistics[ARCTeam.statisticsCounter - 1][item.id] * graphH / maxY, Align.center);
+                    font.draw(name, graphX + (statisticsCounter - 1) * spacing + 15f, graphY + team.arcTeamData.resStatistics[statisticsCounter - 1][item.id] * graphH / maxY, Align.center);
                 }
             }
 
@@ -98,10 +100,10 @@ public class ResourceGraph extends Table {
             float len = Scl.scl(4f);
             font.setColor(Color.lightGray);
 
-            for (int i = 0; i < ARCTeam.statisticsCounter; i++) {
-                float cy = y + fh, cx = graphX + graphW / (ARCTeam.statisticsCounter - 1) * i;
+            for (int i = 0; i < statisticsCounter; i++) {
+                float cy = y + fh, cx = graphX + graphW / (statisticsCounter - 1) * i;
                 Lines.line(cx, cy, cx, cy + len);
-                if (i == ARCTeam.statisticsCounter / 2) {
+                if (i == statisticsCounter / 2) {
                     font.draw("" + (i + from + 1) * statisticsInterval, cx, cy - Scl.scl(2f), Align.center);
                 }
             }
@@ -122,7 +124,7 @@ public class ResourceGraph extends Table {
         removeRes.clear();
         for (Item item : showRes) {
             boolean showItem = false;
-            for (int i = 0; i <= ARCTeam.statisticsCounter; i++) {
+            for (int i = 0; i <= statisticsCounter; i++) {
                 for (Team team : showTeams) {
                     if (team.arcTeamData.resStatistics[i][item.id] > 0) showItem = true;
                 }
@@ -131,7 +133,7 @@ public class ResourceGraph extends Table {
         }
         removeRes.each(item -> showRes.remove(item));
         for (Item item : showRes) {
-            for (int i = 0; i <= ARCTeam.statisticsCounter; i++) {
+            for (int i = 0; i <= statisticsCounter; i++) {
                 for (Team team : showTeams) {
                     max = Math.max(max, team.arcTeamData.resStatistics[i][item.id]);
                 }
