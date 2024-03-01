@@ -60,6 +60,7 @@ public class ARCTeam {
             }
             update();
 
+            size = defaultTime / statisticsInterval;
             if (statisticsInterval != setStatisticsInterval){
                 statisticsInterval = setStatisticsInterval;
                 updateTeam.each(team -> team.arcTeamData.init());
@@ -67,7 +68,6 @@ public class ARCTeam {
             }
 
             if (statisticsInterval != 0){
-                size = defaultTime / statisticsInterval;
                 if (Time.time - statisUpd > statisticsInterval * 60 && statisticsCounter < size) {
                     statisUpd = Time.time;
                     updateTeam.each(team -> team.arcTeamData.updateRes());
