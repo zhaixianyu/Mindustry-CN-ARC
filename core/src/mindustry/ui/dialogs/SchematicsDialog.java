@@ -59,7 +59,7 @@ public class SchematicsDialog extends BaseDialog{
     private  Seq<String> planetTags = new Seq<String>().add(surpuloTags,erekirTags);
     public static final String ShareType = "[blue]<Schem>";
 
-    private boolean clipbroad = false;
+    private boolean clipbroad = true;
     private boolean fromShare = false;
 
     public SchematicsDialog(){
@@ -461,7 +461,7 @@ public class SchematicsDialog extends BaseDialog{
             return false;
         }
         int start = msg.indexOf(' ', msg.indexOf(ShareType) + ShareType.length());
-        Http.get("https://pastebin.com/raw/" + msg.substring(start + 1), r -> readShare(r.getResultAsString().replace(" ", "+"), player));
+        Http.get("https://pastebin.com/raw/" + msg.substring(start + 1), r -> readShare(r.getResultAsString().replace(" ", "+"), sender));
         return true;
     }
 
