@@ -10,17 +10,12 @@ jobs:
       - uses: actions/checkout@v2
       - name: Trigger BE build
         run: |
-          commit_message="${{ github.event.head_commit.message }}"
-          if [[ $commit_message == *S ]]; then
-            echo "The commit message ends with 'S', skipping build."
-          else
-            git clone --depth=1 --branch=master https://github.com/Jackson11500/Mindustry-CN-ARC-Builds
-            cd Mindustry-CN-ARC-Builds
-            BNUM=$(($GITHUB_RUN_NUMBER + 30000))
-            git tag ${BNUM}
-            git config --global user.name "Github Actions"
-            git push https://Jackson11500:${{ secrets.API_TOKEN_GITHUB_2 }}@github.com/Jackson11500/Mindustry-CN-ARC-Builds ${BNUM}
-          fi
+          git clone --depth=1 --branch=master https://github.com/Jackson11500/Mindustry-CN-ARC-Builds
+          cd Mindustry-CN-ARC-Builds
+          BNUM=$(($GITHUB_RUN_NUMBER + 30000))
+          git tag ${BNUM}
+          git config --global user.name "Github Actions"
+          git push https://Jackson11500:${{ secrets.API_TOKEN_GITHUB_2 }}@github.com/Jackson11500/Mindustry-CN-ARC-Builds ${BNUM}
       - name: Update web
         run: |
           git clone --depth=1 https://github.com/CN-ARC/CN-ARC.github.io
