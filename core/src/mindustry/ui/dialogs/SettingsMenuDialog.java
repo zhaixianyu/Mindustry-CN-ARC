@@ -669,7 +669,8 @@ public class SettingsMenuDialog extends BaseDialog{
             arc.checkPref("arcSelfName", false);
             arc.checkPref("arcNewShare", false);
             arc.checkPref("arcChatEnabled", false);
-            arc.checkPref("arcCustomPacket", false);
+            arc.checkPref("arcCustomPacket", true);
+            arc.stringInput("arcDisablePacket", "^(?:\\w+\\.)*mindustry\\.top$");
 
             arc.addCategory("arcPlayerEffect");
             arc.stringInput("playerEffectColor", "ffd37f");
