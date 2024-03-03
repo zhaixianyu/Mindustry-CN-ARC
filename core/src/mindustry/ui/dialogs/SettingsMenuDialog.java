@@ -27,6 +27,7 @@ import arc.util.Strings;
 import arc.util.io.Streams;
 import mindustry.arcModule.ARCVars;
 import mindustry.arcModule.RFuncs;
+import mindustry.arcModule.ui.AdvanceToolTable;
 import mindustry.content.TechTree;
 import mindustry.content.TechTree.TechNode;
 import mindustry.core.GameState;
@@ -887,8 +888,8 @@ public class SettingsMenuDialog extends BaseDialog{
             //////////cheating
             cheating.addCategory("arcWeakCheat");
             cheating.checkPref("forceIgnoreAttack", false);
-            cheating.checkPref("allBlocksReveal", false);
-            cheating.checkPref("worldCreator", false);
+            cheating.checkPref("allBlocksReveal", false, b -> AdvanceToolTable.allBlocksReveal = b);
+            cheating.checkPref("worldCreator", false, b -> AdvanceToolTable.worldCreator = b);
             cheating.checkPref("overrideSkipWave", false);
             cheating.checkPref("forceConfigInventory", false);
             cheating.addCategory("arcStrongCheat");

@@ -6,6 +6,7 @@ import arc.audio.*;
 import arc.graphics.g2d.*;
 import arc.input.*;
 import arc.math.*;
+import arc.scene.actions.Actions;
 import arc.scene.style.*;
 import arc.scene.ui.*;
 import arc.struct.*;
@@ -59,6 +60,8 @@ public class Control implements ApplicationListener, Loadable{
     private boolean hiscore = false;
     private boolean wasPaused = false, backgroundPaused = false;
     private Seq<Building> toBePlaced = new Seq<>(false);
+
+    public static boolean bossKeyPressing, bossKeyValid;
 
     public Control(){
         saves = new Saves();
@@ -608,7 +611,7 @@ public class Control implements ApplicationListener, Loadable{
             }));
         }
 
-        settings.put("bossKeyPressing", false);
+        bossKeyPressing = false;
         Events.on(EventType.ClientLoadEvent.class, e -> initCalc());
     }
 
@@ -622,6 +625,7 @@ public class Control implements ApplicationListener, Loadable{
         calcDialog.shown(this::buildCalc);
         calcDialog.resized(this::buildCalc);
         calcDialog.update(() -> calcDialog.toFront());
+        calcDialog.show(scene, Actions.alpha(1));
     }
 
     private void buildCalc() {
@@ -721,15 +725,15 @@ public class Control implements ApplicationListener, Loadable{
         if(Float.isNaN(camera.position.x)) camera.position.x = world.unitWidth()/2f;
         if(Float.isNaN(camera.position.y)) camera.position.y = world.unitHeight()/2f;
 
-        if (Core.settings.getBool("bossKeyValid") && Vars.clientLoaded && Core.input.keyTap(Binding.bossKey)) {
+        if (bossKeyValid && Vars.clientLoaded && Core.input.keyTap(Binding.bossKey)) {
             if (Core.input.keyDown(KeyCode.controlLeft)) {
-                if (!settings.getBool("bossKeyPressing", false)) return;
+                if (!bossKeyPressing) return;
                 calcDialog.hide();
                 loadIcon("icons/icon_64.png");
-                settings.put("bossKeyPressing", false);
+                bossKeyPressing = false;
             } else {
-                if (settings.getBool("bossKeyPressing", false)) return;
-                settings.put("bossKeyPressing", true);
+                if (bossKeyPressing) return;
+                bossKeyPressing = true;
                 loadIcon("icons/calc.png");
                 settings.put("musicvol", 0);
                 settings.put("sfxvol", 0);
@@ -742,7 +746,7 @@ public class Control implements ApplicationListener, Loadable{
                         """
                             Packages.arc.backend.sdl.jni.SDL.SDL_SetWindowFullscreen(Core.app.window,0);
                             Packages.arc.backend.sdl.jni.SDL.SDL_SetWindowSize(Core.app.window,220,430);
-                            Timer.schedule(()=>Packages.arc.backend.sdl.jni.SDL.SDL_MinimizeWindow(Core.app.window),0.1)
+                            Timer.schedule(()=>Packages.arc.backend.sdl.jni.SDL.SDL_MinimizeWindow(Core.app.window),0.15)
                             """
                 );//几把java
             }

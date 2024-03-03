@@ -173,7 +173,7 @@ public class NetClient implements ApplicationListener{
 
         ARCVars.arcClient.addHandlerString("ARCCHAT", (p, s) -> {
             if (s.length() > maxTextLength) return;
-            NetClient.sendMessage("[violet]<ARC>[] " + netServer.chatFormatter.format(p, s), s, p);
+            Core.app.post(() -> NetClient.sendMessage("[violet]<ARC>[] " + netServer.chatFormatter.format(p, s), s, p));
         });
     }
 
