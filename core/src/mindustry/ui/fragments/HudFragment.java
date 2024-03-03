@@ -54,10 +54,10 @@ public class HudFragment{
 
     public QuickCameraTable quickCameraTable = new QuickCameraTable();
     private AuxilliaryTable auxilliaryTable;
-    private AdvanceToolTable advanceToolTable = new AdvanceToolTable();
+    private final AdvanceToolTable advanceToolTable = new AdvanceToolTable();
     public QuickToolTable quickToolTable = new QuickToolTable();
 
-    private Boolean arcShowObjectives = false, hideObjectives = true;
+    private boolean hideObjectives = true;
 
     private boolean editorMainShow = true;
 
@@ -68,7 +68,7 @@ public class HudFragment{
     private Table lastUnlockLayout;
     private long lastToast;
 
-    private Table arcStatus = new Table();
+    private final Table arcStatus = new Table();
 
     public void build(Group parent){
         auxilliaryTable = new AuxilliaryTable();
@@ -284,12 +284,8 @@ public class HudFragment{
             }};
 
             if(Core.settings.getBool("arcSpecificTable")){
-                wavesMain.table(s -> {
-                    //wave info button with text
-                    s.add(makeStatusTableArc()).grow().name("status");
-                }).width(dsize * 5 + 4f).name("statustable").left();
-            }
-            else{
+                wavesMain.table(s -> s.add(makeStatusTableArc()).grow().name("status")).width(dsize * 5 + 4f).name("statustable").left();
+            }else{
                 wavesMain.table(s -> {
                     //wave info button with text
                     s.add(makeStatusTable()).grow().name("status");
@@ -1088,7 +1084,7 @@ public class HudFragment{
                     })).height(18).growX();
             t.row();
 
-        }).size(120f, 80).padRight(4);
+        }).size(110, 80).padRight(4);
 
         rebuildArcStatus();
         table.add(arcStatus).growX().pad(4f);
@@ -1119,7 +1115,7 @@ public class HudFragment{
                     if (!getStatusText().isEmpty()) rebuildArcStatus();
                 });
                 tt.add(new Bar(
-                        () -> calWaveShower(),
+                        this::calWaveShower,
                         () -> Color.valueOf("ccffcc"),
                         () -> {
                             if (CalWinWave() >= 1 && CalWinWave() >= state.wave)
