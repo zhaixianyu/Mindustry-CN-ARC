@@ -11,6 +11,7 @@ import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.arcModule.ARCVars;
+import mindustry.arcModule.RFuncs;
 import mindustry.arcModule.ui.dialogs.TeamSelectDialog;
 import mindustry.game.Team;
 import mindustry.input.*;
@@ -180,7 +181,7 @@ public class PlayerListFragment{
 
                 button.button("[#" + ARCVars.getThemeColor() + "]♐", Styles.cleart, () -> {
                     String message = arcAtPlayer(user.name);
-                    Call.sendChatMessage(message);
+                    RFuncs.shareString(message);
                 }).size(buttonSize);
 
                 button.button(String.valueOf(Iconc.lock), Styles.cleart, () -> {

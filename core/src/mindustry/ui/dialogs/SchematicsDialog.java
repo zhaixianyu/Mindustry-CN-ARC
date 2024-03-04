@@ -31,6 +31,7 @@ import mindustry.input.*;
 import mindustry.type.*;
 import mindustry.ui.*;
 import mindustry.world.Block;
+import mindustry.world.blocks.logic.LogicBlock;
 import mindustry.world.blocks.production.GenericCrafter;
 import mindustry.world.meta.StatUnit;
 
@@ -38,6 +39,7 @@ import java.util.regex.*;
 
 import static mindustry.Vars.*;
 import static mindustry.arcModule.ARCVars.arcui;
+import static mindustry.arcModule.RFuncs.getLogicCode;
 import static mindustry.arcModule.RFuncs.getPrefix;
 import static mindustry.content.Items.*;
 
@@ -57,7 +59,7 @@ public class SchematicsDialog extends BaseDialog{
     private  Seq<String> planetTags = new Seq<String>().add(surpuloTags,erekirTags);
     public static final String ShareType = "[blue]<Schem>";
 
-    private boolean clipbroad = false;
+    private boolean clipbroad = true;
     private boolean fromShare = false;
 
     public SchematicsDialog(){
@@ -459,7 +461,7 @@ public class SchematicsDialog extends BaseDialog{
             return false;
         }
         int start = msg.indexOf(' ', msg.indexOf(ShareType) + ShareType.length());
-        Http.get("https://pastebin.com/raw/" + msg.substring(start + 1), r -> readShare(r.getResultAsString().replace(" ", "+"), player));
+        Http.get("https://pastebin.com/raw/" + msg.substring(start + 1), r -> readShare(r.getResultAsString().replace(" ", "+"), sender));
         return true;
     }
 
@@ -1085,6 +1087,7 @@ public class SchematicsDialog extends BaseDialog{
     }
 
     public class SchematicInfoDialog extends BaseDialog{
+        String codeString = "";
 
         SchematicInfoDialog(){
             super("");
@@ -1117,6 +1120,24 @@ public class SchematicsDialog extends BaseDialog{
                 }
             });
             cont.row();
+            if (schem.tiles.contains(stile -> stile.block instanceof LogicBlock)){
+                cont.table(t -> {
+                    schem.tiles.each(stile -> {
+                        if (stile.block instanceof LogicBlock logicBlock){
+                            codeString = getLogicCode((byte[]) stile.config);
+                            if (codeString.isEmpty()) return;
+                            String tooltips = codeString;
+                            if (codeString.length() > 500) tooltips = codeString.substring(0,500) + "...";
+                            t.button(logicBlock.emoji(), Styles.cleart, () -> {
+                                Core.app.setClipboardText(codeString);
+                                arcui.arcInfo("已复制逻辑代码");
+                            }).tooltip(tooltips).size(40f);
+                            if (t.getChildren().size % 15 == 0) t.row();
+                        }
+                    });
+                });
+                cont.row();
+            }
             float cons = schem.powerConsumption() * 60, prod = schem.powerProduction() * 60;
             if(!Mathf.zero(cons) || !Mathf.zero(prod)){
                 cont.table(t -> {

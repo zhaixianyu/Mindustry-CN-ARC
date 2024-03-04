@@ -15,30 +15,28 @@ import arc.scene.event.InputEvent;
 import arc.scene.event.InputListener;
 import arc.scene.event.Touchable;
 import arc.scene.style.Drawable;
-import arc.scene.style.TextureRegionDrawable;
 import arc.scene.ui.*;
 import arc.scene.ui.layout.Cell;
 import arc.scene.ui.layout.Table;
 import arc.struct.IntMap;
 import arc.util.*;
 import mindustry.Vars;
-import mindustry.arcModule.ARCClient;
 import mindustry.arcModule.ARCEvents;
-import mindustry.arcModule.ARCVars;
 import mindustry.arcModule.RFuncs;
 import mindustry.arcModule.ui.window.Window;
 import mindustry.arcModule.ui.window.WindowEvents;
-import mindustry.game.EventType;
 import mindustry.gen.Icon;
 import mindustry.gen.Player;
 import mindustry.gen.Tex;
 import mindustry.net.ValidateException;
 import mindustry.ui.Fonts;
+import mindustry.ui.Styles;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
-import static mindustry.arcModule.ARCClient.*;
+import static mindustry.arcModule.ARCClient.decrypt;
+import static mindustry.arcModule.ARCVars.arcClient;
 import static mindustry.arcModule.ARCVars.arcui;
 import static mindustry.arcModule.ui.RStyles.clearAccentNonei;
 
@@ -60,35 +58,37 @@ public class ARCChat {
     private static TextField.TextFieldStyle myStyle, otherStyle, inputStyle;
 
     public static void init() throws Exception {
-        ARCVars.arcClient.addHandlerStream("ARCChat", (p, s) -> {
+        arcClient.addHandlerStream("ARCChat", (p, s) -> {
             try {
                 boolean isPrivate = s.readBoolean();
                 if (isPrivate && Vars.player.id != s.readInt()) return;
                 byte[] bytes = new byte[s.readShort()];
                 int read = s.read(bytes);
                 if (read != bytes.length) return;
-                try {
-                    addMessage(p, isPrivate ? new String(decrypt(bytes, myPrivate), StandardCharsets.UTF_8) : new String(bytes, StandardCharsets.UTF_8), isPrivate, null);
-                } catch (Exception e) {
-                    Log.err(e);
-                }
+                Core.app.post(() -> {
+                    try {
+                        addMessage(p, isPrivate ? new String(decrypt(bytes, arcClient.myPrivate), StandardCharsets.UTF_8) : new String(bytes, StandardCharsets.UTF_8), isPrivate, null);
+                    } catch (Exception e) {
+                        Log.err(e);
+                    }
+                });
             } catch (Exception ignored) {
             }
         });
-        ARCVars.arcClient.addHandlerStream("ARCChatAvatar", (p, d) -> {
+        arcClient.addHandlerStream("ARCChatAvatar", (p, d) -> Core.app.post(() -> {
             try {
                 setAvatar(p, d.readLong());
             } catch (Exception ignored) {
             }
-        });
-        Events.on(ARCEvents.PlayerKeySend.class, e -> ARCClient.send("ARCChatAvatar", s -> {
+        }));
+        Events.on(ARCEvents.PlayerKeySend.class, e -> arcClient.send("ARCChatAvatar", s -> {
             try {
                 s.writeLong(Core.settings.getLong("avatar", -1));
             } catch (Exception ignored) {
             }
         }));
         Events.on(ARCEvents.PlayerKeyReceived.class, e -> {
-            if (!messages.containsKey(e.player.id)) buildButton(e.player);
+            if (!messages.containsKey(e.player.id)) Core.app.post(() -> buildButton(e.player));
         });
         Events.on(ARCEvents.PlayerLeave.class, e -> {
             ChatTable ct = messages.get(e.player.id);
@@ -105,6 +105,10 @@ public class ARCChat {
         Events.on(ARCEvents.Disconnected.class, e -> reset());
         chat = new Window("学术聊天", 800, 600, Icon.chat.getRegion(), arcui.WindowManager);
         chat.closeToRemove(false);
+        chat.addListener(WindowEvents.open, w -> {
+            msgUnread -= cur.curMsgUnread;
+            cur.curMsgUnread = 0;
+        });
         bs = new TextButton.TextButtonStyle() {{
             over = RFuncs.tint(1204353279);
             disabled = over;
@@ -136,7 +140,7 @@ public class ARCChat {
                 chatList = t2;
                 t2.align(Align.topLeft);
                 t2.defaults().height(60).width(1000).padLeft(3);
-                ScrollPane p = new ScrollPane(t2) {
+                ScrollPane p = new ScrollPane(t2, new ScrollPane.ScrollPaneStyle(Styles.smallPane)) {
                     @Override
                     public void draw() {
                         super.draw();
@@ -323,7 +327,7 @@ public class ARCChat {
                 if (chatTable.curMsgUnread != 0) {
                     Fonts.outline.setColor(Color.red);
                     Fonts.outline.draw(String.valueOf(chatTable.curMsgUnread), x, y + height);
-                }
+                }//TODO better
                 super.draw();
             }
         };
@@ -351,7 +355,7 @@ public class ARCChat {
             i.setDrawable(Icon.host);
             l = t2.add("服务器聊天").fillX().get();
             t2.update(() -> {
-                if (timer.get(300)) {
+                if (timer.get(600)) {
                     Vars.net.pingHost(Reflect.get(Vars.ui.join, "lastIp"), Reflect.get(Vars.ui.join, "lastPort"), c -> l.setText(c.name), e -> {
                     });
                 }
@@ -403,14 +407,14 @@ public class ARCChat {
         if (player == null) {
             send0(false, message.getBytes(StandardCharsets.UTF_8), null);
         } else {
-            send0(true, encrypt(message.getBytes(StandardCharsets.UTF_8), player), player);
+            send0(true, arcClient.encrypt(message.getBytes(StandardCharsets.UTF_8), player), player);
             addMessage(Vars.player, message, true, cur);
         }
     }
 
     private static void send0(boolean isPrivate, byte[] data, @Nullable Player target) {
         if (data == null) return;
-        ARCClient.send("ARCChat", s -> {
+        arcClient.send("ARCChat", s -> {
             try {
                 s.writeBoolean(isPrivate);
                 if (isPrivate) s.writeInt(target.id);
@@ -455,12 +459,21 @@ public class ARCChat {
             return prefH;
         }
 
+        @Override
+        protected void sizeChanged(){
+            lastText = null;
+            Font font = style.font;
+            Drawable background = style.background;
+            float availableHeight = getHeight() - (background == null ? 0 : background.getBottomHeight() + background.getTopHeight());
+            linesShowing = (int) Math.ceil(availableHeight / font.getLineHeight());
+        }
+
         private void computePrefSize() {
             if (pane == null) return;
             prefSizeInvalid = false;
             glyphLayout.setText(style.font, text, Color.white, Math.max(pane.getWidth() - style.background.getLeftWidth() - style.background.getRightWidth() - 60 - 10, 100), Align.topLeft, true);
             prefW = glyphLayout.width + style.background.getLeftWidth() + style.background.getRightWidth();
-            prefH = glyphLayout.height + style.background.getTopHeight() + style.background.getBottomHeight() + style.font.getLineHeight() + 1;
+            prefH = glyphLayout.height + style.background.getTopHeight() + style.background.getBottomHeight();
         }
 
         @Override

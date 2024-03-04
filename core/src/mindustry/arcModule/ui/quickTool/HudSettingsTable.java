@@ -9,6 +9,7 @@ import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
 import arc.scene.event.*;
 
+import mindustry.Vars;
 import mindustry.arcModule.ARCVars;
 import mindustry.arcModule.ElementUtils;
 import mindustry.content.StatusEffects;
@@ -27,6 +28,7 @@ import static mindustry.arcModule.ElementUtils.textStyle;
 public class HudSettingsTable extends ElementUtils.ToolTable {
     protected Seq<Setting> list = new Seq<>();
     private int unitTransparency = Core.settings.getInt("unitTransparency");
+
     public HudSettingsTable() {
         icon = String.valueOf(Iconc.settings);
         rebuild();
@@ -36,7 +38,7 @@ public class HudSettingsTable extends ElementUtils.ToolTable {
     }
 
     @Override
-    protected void buildTable(){
+    protected void buildTable() {
         list.clear();
         Table sets = new Table();
         sliderPref("turretShowRange", 0, 0, 3, 1, s -> {
@@ -105,8 +107,9 @@ public class HudSettingsTable extends ElementUtils.ToolTable {
                     for (int i = 0; i < settings.getInt("arcQuickMsg"); i++) {
                         if (i % settings.getInt("arcQuickMsgKey", 8) == 0) t.row();
                         int finalI = i;
-                        t.button(settings.getString(getArcQuickMsgShortName(i)), NCtextStyle, () ->{
-                                    if (settings.getBool(getArcQuickMsgJs(finalI))) mods.getScripts().runConsole(settings.getString(getArcQuickMsgName(finalI)));
+                        t.button(settings.getString(getArcQuickMsgShortName(i)), NCtextStyle, () -> {
+                                    if (settings.getBool(getArcQuickMsgJs(finalI)))
+                                        mods.getScripts().runConsole(settings.getString(getArcQuickMsgName(finalI)));
                                     else Call.sendChatMessage(settings.getString(getArcQuickMsgName(finalI)));
                                 }
                         ).size(30);
@@ -151,6 +154,7 @@ public class HudSettingsTable extends ElementUtils.ToolTable {
                 }).checked(a -> Core.settings.getBool("effects")).size(30, 30).tooltip("特效显示");
                 t.button("[acid]光", textStyle, () -> {
                     Core.settings.put("bloom", !Core.settings.getBool("bloom"));
+                    renderer.toggleBloom(settings.getBool("bloom"));
                 }).checked(a -> Core.settings.getBool("bloom")).size(30, 30).tooltip("光效显示");
                 t.button("[acid]墙", textStyle, () -> {
                     Core.settings.put("forceEnableDarkness", !Core.settings.getBool("forceEnableDarkness"));
@@ -206,16 +210,14 @@ public class HudSettingsTable extends ElementUtils.ToolTable {
             }).row();
             t.pane(tt -> {
                 tt.add("第i个").width(50f);
-                if (settings.getBool("easyJS")) tt.add("JS").width(50f);
+                tt.add("JS").width(50f);
                 tt.add("按钮显示\n(建议单个字符)").width(100f);
                 tt.add("              输入信息").width(400f).center().row();
 
                 for (int i = 0; i < settings.getInt("arcQuickMsg", 0); i++) {
                     tt.add(i + "  ");
                     int finalI = i;
-                    if (settings.getBool("easyJS")) {
-                        tt.check("", settings.getBool(getArcQuickMsgJs(finalI)) ,js-> settings.put(getArcQuickMsgJs(finalI), js));
-                    }
+                    tt.check("", settings.getBool(getArcQuickMsgJs(finalI)), js -> settings.put(getArcQuickMsgJs(finalI), js));
                     tt.field(settings.getString(getArcQuickMsgShortName(finalI), "?"), text -> settings.put(getArcQuickMsgShortName(finalI), text)).maxTextLength(10);
                     tt.field(settings.getString(getArcQuickMsgName(finalI), "未输入指令"), text -> settings.put(getArcQuickMsgName(finalI), text)).maxTextLength(300).width(350f);
                     tt.row();

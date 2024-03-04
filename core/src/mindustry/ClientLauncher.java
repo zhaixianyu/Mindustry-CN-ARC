@@ -287,9 +287,7 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
     }
 
     private String getWindowTitle() throws NoSuchAlgorithmException {
-        if(settings.getBool("bossKeyPressing", false)) {
-            return "计算器";
-        }
+        if (Control.bossKeyPressing) return "计算器";
         int enabled = mods.mods.count(Mods.LoadedMod::enabled);
         return "Mindustry-CN-ARC | 版本号 " +
                 (Version.arcBuild <= 0 ? "dev" : Version.arcBuild) +
