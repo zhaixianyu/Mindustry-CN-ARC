@@ -60,7 +60,7 @@ public class DesktopLauncher extends ClientLauncher{
                         }
                     }
                 }
-                setWindowIcon(FileType.internal, "icons/icon_64.png");
+                setWindowIcon(FileType.internal, "icons/arc.png");
             }});
         }catch(Throwable e){
             handleCrash(e);
