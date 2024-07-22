@@ -58,7 +58,7 @@ allprojects{
             }else{
                 //skip to last submodule
                 if(name.contains(':')) name = name.split(':').last()
-                return "com.github.Anuken.Arc:$name:${getArcHash()}"
+                return "com.github.anuken.Arc:$name:${getArcHash()}"
             }
         }
 
