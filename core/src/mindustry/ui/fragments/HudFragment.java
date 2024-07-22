@@ -18,6 +18,7 @@ import mindustry.Vars;
 import mindustry.annotations.Annotations.*;
 import mindustry.arcModule.ARCVars;
 import mindustry.arcModule.Marker;
+import mindustry.arcModule.NumberFormat;
 import mindustry.arcModule.ui.*;
 import mindustry.arcModule.ui.auxilliary.*;
 import mindustry.arcModule.ui.quickTool.QuickToolTable;
@@ -34,6 +35,7 @@ import mindustry.net.Packets.*;
 import mindustry.type.*;
 import mindustry.ui.*;
 import mindustry.ui.dialogs.BaseDialog;
+import mindustry.world.blocks.defense.turrets.ItemTurret;
 
 import static mindustry.Vars.*;
 import static mindustry.arcModule.RFuncs.arcColorTime;
@@ -1073,13 +1075,14 @@ public class HudFragment{
             t.row();
             t.add(new Bar(
                     () -> {
+                        if (player.unit() instanceof BlockUnitUnit u && u.tile().buildOn() instanceof ItemTurret.ItemTurretBuild it) return ((float) it.totalAmmo > 0 ? ((ItemTurret.ItemEntry) it.ammo.peek()).item.emoji() + it.totalAmmo + "/" + ((ItemTurret) it.block).maxAmmo : "");
                         if (state.rules.unitAmmo)
                             return player.unit().type.ammoType.icon() + (int) player.unit().ammo + "/" + player.unit().type.ammoCapacity;
                         else return player.unit().type.ammoType.icon();
                     },
                     () -> player.unit().type.ammoType.barColor(),
                     () -> {
-                        if (state.rules.unitAmmo) return player.unit().ammo / player.unit().type.ammoCapacity;
+                        if (state.rules.unitAmmo || player.unit() instanceof BlockUnitUnit) return player.unit().ammof();
                         else return 1;
                     })).height(18).growX();
             t.row();
