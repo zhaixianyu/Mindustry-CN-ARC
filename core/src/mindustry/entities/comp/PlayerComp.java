@@ -12,6 +12,7 @@ import mindustry.ai.*;
 import mindustry.ai.types.*;
 import mindustry.annotations.Annotations.*;
 import mindustry.arcModule.ARCEvents;
+import mindustry.arcModule.ARCVars;
 import mindustry.content.*;
 import mindustry.entities.units.*;
 import mindustry.game.EventType.*;
@@ -283,7 +284,7 @@ abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Dra
 
     @Override
     public void draw(){
-        if(unit != null && unit.inFogTo(Vars.player.team())) return;
+        if(ARCVars.arcHideName || unit != null && unit.inFogTo(Vars.player.team())) return;
 
         //??????
         if(name == null) return;
@@ -301,7 +302,7 @@ abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Dra
         font.getData().setScale(0.25f / Scl.scl(1f));
         layout.setText(font, name);
 
-        if(Core.settings.getBool("arcSelfName") || !isLocal()){
+        if(ARCVars.arcSelfName || !isLocal()){
             Draw.color(0f, 0f, 0f, 0.3f);
             Fill.rect(unit.x, unit.y + nameHeight - layout.height / 2, layout.width + 2, layout.height + 3);
             Draw.color();
