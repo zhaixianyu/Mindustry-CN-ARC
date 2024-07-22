@@ -40,6 +40,7 @@ public class ARCVars implements Loadable {
     /** UI */
     public static boolean arcSelfName;
     public static boolean arcHideName;
+    public static boolean payloadPreview;
 
     public static final int maxBuildPlans = 100;
 
@@ -52,6 +53,7 @@ public class ARCVars implements Loadable {
                     Vars.player.team().id == 255 || Vars.state.rules.mode() != Gamemode.pvp);
             arcSelfName = settings.getBool("arcSelfName");
             arcHideName = settings.getBool("arcHideName");
+            payloadPreview = settings.getBool("payloadpreview");
         });
     }
 

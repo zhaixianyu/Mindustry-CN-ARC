@@ -14,6 +14,8 @@ import mindustry.annotations.Annotations.*;
 import mindustry.arcModule.ARCEvents;
 import mindustry.arcModule.ARCVars;
 import mindustry.content.*;
+import mindustry.core.World;
+import mindustry.entities.Units;
 import mindustry.entities.units.*;
 import mindustry.game.EventType.*;
 import mindustry.game.*;
@@ -23,6 +25,7 @@ import mindustry.net.Administration.*;
 import mindustry.net.*;
 import mindustry.net.Packets.*;
 import mindustry.ui.*;
+import mindustry.world.Tile;
 import mindustry.world.blocks.defense.turrets.BaseTurret;
 import mindustry.world.blocks.production.GenericCrafter;
 import mindustry.world.blocks.storage.*;
@@ -284,10 +287,29 @@ abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Dra
 
     @Override
     public void draw(){
-        if(ARCVars.arcHideName || unit != null && unit.inFogTo(Vars.player.team())) return;
+        if(unit != null && unit.inFogTo(Vars.player.team())) return;
+
+        if (ARCVars.payloadPreview && isLocal() && unit instanceof Payloadc pay) {
+            Draw.z(Layer.playerName);
+            Lines.stroke(1);
+            Unit res = Units.closest(team, x, y, unit.type.hitSize * 2f, u -> u.isAI() && u.isGrounded() && pay.canPickup(u) && u.within(unit, u.hitSize + unit.hitSize));
+            if (res != null) {
+                Draw.color(Tmp.c1.set(Color.acid).a(0.5f));
+                Lines.square(res.x, res.y, res.type.hitSize, 20);
+            } else {
+                Tile tileOn = tileOn();
+                if (tileOn.block() != Blocks.air) {
+                    Draw.color(Tmp.c1.set(Color.green).a(0.5f));
+                    Lines.square(tileOn.build.x, tileOn.build.y, tileOn.block().size * tilesize * 0.9f, 20);
+                } else {
+                    Draw.color(Tmp.c1.set(Color.lime).a(0.5f));
+                    Lines.square(tileOn.worldx(), tileOn.worldy(), 5, 20);
+                }
+            }
+        }
 
         //??????
-        if(name == null) return;
+        if(ARCVars.arcHideName || name == null) return;
 
         Draw.z(Layer.playerName);
         float z = Drawf.text();

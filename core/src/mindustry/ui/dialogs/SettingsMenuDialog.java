@@ -643,6 +643,7 @@ public class SettingsMenuDialog extends BaseDialog{
             arc.checkPref("unitLogicTimerBars", false);
             arc.checkPref("arcBuildInfo",false);
             arc.checkPref("unitbuildplan", false);
+            arc.checkPref("payloadpreview", false);
 
             arc.addCategory("arcRTSSupporter");
             arc.checkPref("arcCommandTable", true);
