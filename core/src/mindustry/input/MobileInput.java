@@ -55,8 +55,8 @@ public class MobileInput extends InputHandler implements GestureListener{
     public Seq<BuildPlan> removals = new Seq<>();
     /** Whether the player is currently shifting all placed tiles. */
     public boolean selecting;
-    /** Whether the player is currently in line-place mode. */
-    public boolean lineMode, schematicMode, rebuildMode;
+    /** Various modes that aren't enums for some reason. This should be cleaned up. */
+    public boolean lineMode, schematicMode, rebuildMode, queueCommandMode;
     /** Current place mode. */
     public PlaceMode mode = none;
     /** Whether no recipe was available when switching to break mode. */
@@ -91,7 +91,7 @@ public class MobileInput extends InputHandler implements GestureListener{
     void checkTargets(float x, float y){
         Unit unit = Units.closestEnemy(player.team(), x, y, 20f, u -> !u.dead);
 
-        if(unit != null && player.unit().type.canAttack){
+        if(unit != null && !player.dead() && player.unit().type.canAttack){
             player.unit().mineTile = null;
             target = unit;
         }else{
@@ -127,18 +127,21 @@ public class MobileInput extends InputHandler implements GestureListener{
             }
         }
 
-        for(var plan : player.unit().plans()){
-            Tile other = world.tile(plan.x, plan.y);
+        if(!player.dead()){
+            for(var plan : player.unit().plans()){
+                Tile other = world.tile(plan.x, plan.y);
 
-            if(other == null || plan.breaking) continue;
+                if(other == null || plan.breaking) continue;
 
-            r1.setSize(plan.block.size * tilesize);
-            r1.setCenter(other.worldx() + plan.block.offset, other.worldy() + plan.block.offset);
+                r1.setSize(plan.block.size * tilesize);
+                r1.setCenter(other.worldx() + plan.block.offset, other.worldy() + plan.block.offset);
 
-            if(r2.overlaps(r1)){
-                return true;
+                if(r2.overlaps(r1)){
+                    return true;
+                }
             }
         }
+
         return false;
     }
 
@@ -264,7 +267,7 @@ public class MobileInput extends InputHandler implements GestureListener{
     }
 
     boolean showCancel(){
-        return (player.unit().isBuilding() || block != null || mode == breaking || !selectPlans.isEmpty()) && !hasSchem();
+        return !player.dead() && (player.unit().isBuilding() || block != null || mode == breaking || !selectPlans.isEmpty()) && !hasSchem();
     }
 
     boolean hasSchem(){
@@ -278,7 +281,9 @@ public class MobileInput extends InputHandler implements GestureListener{
             t.visible(() ->showCancel() && !settings.getBool("showAdvanceToolTable"));
             t.bottom().left();
             t.button("@cancel", Icon.cancel, () -> {
-                player.unit().clearBuilding();
+                if(!player.dead()){
+                    player.unit().clearBuilding();
+                }
                 selectPlans.clear();
                 mode = none;
                 block = null;
@@ -288,9 +293,14 @@ public class MobileInput extends InputHandler implements GestureListener{
         group.fill(t -> {
             t.visible(() -> !showCancel() && block == null && !hasSchem() && !settings.getBool("showAdvanceToolTable"));
             t.bottom().left();
-            t.button("@command", Icon.units, Styles.squareTogglet, () -> {
+
+            t.button("@command.queue", Icon.rightOpen, Styles.clearTogglet, () -> {
+                queueCommandMode = !queueCommandMode;
+            }).width(155f).height(48f).margin(12f).checked(b -> queueCommandMode).visible(() -> commandMode).row();
+
+            t.button("@command", Icon.units, Styles.clearTogglet, () -> {
                 commandMode = !commandMode;
-            }).width(155f).height(50f).margin(12f).checked(b -> commandMode).row();
+            }).width(155f).height(48f).margin(12f).checked(b -> commandMode);
 
             //for better looking insets
             t.rect((x, y, w, h) -> {
@@ -693,7 +703,7 @@ public class MobileInput extends InputHandler implements GestureListener{
             selectPlans.add(new BuildPlan(linked.x, linked.y));
         }else if((commandMode && selectedUnits.size > 0) || commandBuildings.size > 0){
             //handle selecting units with command mode
-            commandTap(x, y);
+            commandTap(x, y, queueCommandMode);
         }else if(commandMode){
             tapCommandUnit();
         }else{
@@ -719,7 +729,7 @@ public class MobileInput extends InputHandler implements GestureListener{
             buildingTapped = selectedControlBuild();
 
             //prevent mining if placing/breaking blocks
-            if(!tryStopMine() && !canTapPlayer(worldx, worldy) && !checkConfigTap() && !tileTapped(linked.build) && mode == none && !Core.settings.getBool("doubletapmine")){
+            if(!tryRepairDerelict(cursor) && !tryStopMine() && !canTapPlayer(worldx, worldy) && !checkConfigTap() && !tileTapped(linked.build) && mode == none && !Core.settings.getBool("doubletapmine")){
                 tryBeginMine(cursor);
             }
         }
@@ -746,6 +756,15 @@ public class MobileInput extends InputHandler implements GestureListener{
 
         boolean locked = locked();
 
+        if(!commandMode){
+            queueCommandMode = false;
+        }
+
+        //cannot rebuild and place at the same time
+        if(block != null){
+            rebuildMode = false;
+        }
+
         if(player.dead()){
             mode = none;
             manualShooting = false;
@@ -769,7 +788,7 @@ public class MobileInput extends InputHandler implements GestureListener{
             renderer.scaleCamera(Core.input.axisTap(Binding.zoom));
         }
 
-        if(!Core.settings.getBool("keyboard") && !locked){
+        if(!Core.settings.getBool("keyboard") && !locked && !scene.hasKeyboard()){
             //move camera around
             float camSpeed = 6f;
             Core.camera.position.add(Tmp.v1.setZero().add(Core.input.axis(Binding.move_x), Core.input.axis(Binding.move_y)).nor().scl(Time.delta * camSpeed));
@@ -862,7 +881,7 @@ public class MobileInput extends InputHandler implements GestureListener{
             }
         }
 
-        if(player.shooting && (player.unit().activelyBuilding() || player.unit().mining())){
+        if(player.shooting && !player.dead() && (player.unit().activelyBuilding() || player.unit().mining())){
             player.shooting = false;
         }
     }
@@ -935,6 +954,8 @@ public class MobileInput extends InputHandler implements GestureListener{
             Core.camera.position.y -= deltaY;
         }
 
+        camera.position.clamp(-camera.width/4f, -camera.height/4f, world.unitWidth() + camera.width/4f, world.unitHeight() + camera.height/4f);
+
         return false;
     }
 
@@ -968,7 +989,6 @@ public class MobileInput extends InputHandler implements GestureListener{
         boolean allowHealing = type.canHeal;
         boolean validHealTarget = allowHealing && target instanceof Building b && b.isValid() && target.team() == unit.team && b.damaged() && target.within(unit, type.range);
         boolean boosted = (unit instanceof Mechc && unit.isFlying());
-
         //reset target if:
         // - in the editor, or...
         // - it's both an invalid standard target and an invalid heal target
@@ -1039,7 +1059,7 @@ public class MobileInput extends InputHandler implements GestureListener{
         unit.movePref(movement);
 
         //update shooting if not building + not mining
-        if(!player.unit().activelyBuilding() && player.unit().mineTile == null){
+        if(!unit.activelyBuilding() && unit.mineTile == null){
 
             //autofire targeting
             if(manualShooting){
@@ -1048,7 +1068,7 @@ public class MobileInput extends InputHandler implements GestureListener{
             }else if(target == null){
                 player.shooting = false;
                 if(Core.settings.getBool("autotarget") && !(player.unit() instanceof BlockUnitUnit u && u.tile() instanceof ControlBlock c && !c.shouldAutoTarget())){
-                    if(player.unit().type.canAttack){
+                    if(unit.type.canAttack){
                         target = Units.closestTarget(unit.team, unit.x, unit.y, range, u -> u.checkTarget(type.targetAir, type.targetGround), u -> type.targetGround);
                     }
 
