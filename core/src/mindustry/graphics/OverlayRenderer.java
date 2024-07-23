@@ -119,7 +119,7 @@ public class OverlayRenderer{
 
         //draw objective markers
         state.rules.objectives.eachRunning(obj -> {
-            for(var marker : obj.markers) marker.draw();
+            for(var marker : obj.markers) marker.draw(1);
         });
 
         //if(player.dead()) return; //dead players don't draw

@@ -27,7 +27,6 @@ import mindustry.ui.dialogs.*;
 import mindustry.world.blocks.logic.*;
 import mindustry.graphics.Pal;
 import mindustry.logic.LExecutor.PrintI;
-import mindustry.logic.LExecutor.Var;
 import mindustry.logic.LStatements.InvalidStatement;
 import mindustry.ui.Fonts;
 import mindustry.ui.Styles;
@@ -211,17 +210,16 @@ public class LogicDialog extends BaseDialog{
             }).width(400f).padLeft(20f);
     }
 
-    public static String arcVarsText(Var s){
+    public static String arcVarsText(LVar s){
         return s.isobj ? PrintI.toString(s.objval) : Math.abs(s.numval - (long)s.numval) < 0.00001 ? (long)s.numval + "" : s.numval + "";
     }
 
-    public static Color arcVarsColor(Var s){
+    public static Color arcVarsColor(LVar s){
         if(s.constant && s.name.startsWith("@")) return Color.goldenrod;
         else if (s.constant) return Color.valueOf("00cc7e");
         else return typeColor(s,new Color());
     }
 
-    private static Color typeColor(Var s, Color color){
     public static Color typeColor(LVar s, Color color){
         return color.set(
             !s.isobj ? Pal.place :

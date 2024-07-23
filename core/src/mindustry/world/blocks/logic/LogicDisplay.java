@@ -97,7 +97,7 @@ public class LogicDisplay extends Block{
 
                         while(!commands.isEmpty()){
                             long c = commands.removeFirst();
-                            byte type = DisplayCmd.type(c);
+                            int type = DisplayCmd.type(c);
                             int x = unpackSign(DisplayCmd.x(c)), y = unpackSign(DisplayCmd.y(c)),
                                     p1 = unpackSign(DisplayCmd.p1(c)), p2 = unpackSign(DisplayCmd.p2(c)), p3 = unpackSign(DisplayCmd.p3(c)), p4 = unpackSign(DisplayCmd.p4(c));
 

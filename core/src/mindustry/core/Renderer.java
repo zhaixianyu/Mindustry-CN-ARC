@@ -43,7 +43,6 @@ public class Renderer implements ApplicationListener{
     public @Nullable FrameBuffer backgroundBuffer;
     public FrameBuffer effectBuffer = new FrameBuffer();
     public boolean drawBars = true;
-    public boolean animateShields, drawWeather = true, drawStatus, enableEffects, drawDisplays = true, drawLight = true;
     public boolean animateShields, drawWeather = true, drawStatus, enableEffects, drawDisplays = true, drawLight = true, pixelate = false;
     public float weatherAlpha;
     /** minZoom = zooming out, maxZoom = zooming in */
@@ -389,7 +388,6 @@ public class Renderer implements ApplicationListener{
             landCore.drawLanding(launching && launchCoreType != null ? launchCoreType : (CoreBlock)landCore.block);
         });
         if(state.rules.fog && (fogEnabled || state.rules.pvp && player.team().id != 255)) Draw.draw(Layer.fogOfWar, fog::drawFog);
-        Draw.draw(Layer.space, this::drawLanding);
 
         Events.fire(Trigger.drawOver);
         blocks.drawBlocks();

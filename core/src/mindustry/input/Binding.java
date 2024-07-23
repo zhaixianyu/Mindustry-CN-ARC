@@ -107,6 +107,7 @@ public enum Binding implements KeyBind{
     arcDetail(KeyCode.unknown),
     arcScanMode(KeyCode.unknown),
     oreAdsorption(KeyCode.unknown),
+    bossKey(KeyCode.unknown),
 
     camera_select_01(KeyCode.unknown),
     camera_select_02(KeyCode.unknown),

@@ -19,10 +19,6 @@ public class MapInfoDialog extends BaseDialog{
     private final MapGenerateDialog generate;
     private final CustomRulesDialog ruleInfo = new CustomRulesDialog();
     private final MapObjectivesDialog objectives = new MapObjectivesDialog();
-    private WaveInfoDialog waveInfo  = new WaveInfoDialog();
-    private MapGenerateDialog generate = new MapGenerateDialog(false);
-    private CustomRulesDialog ruleInfo = new CustomRulesDialog();
-    private MapObjectivesDialog objectives = new MapObjectivesDialog();
     private MapLocalesDialog locales = new MapLocalesDialog();
     private MapProcessorsDialog processors = new MapProcessorsDialog();
 
