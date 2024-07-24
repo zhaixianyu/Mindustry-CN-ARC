@@ -710,22 +710,17 @@ public class LogicBlock extends Block{
         public void buildConfiguration(Table table){
             if (Core.settings.getBool("logicSupport")){
                 table.table(t -> {
-                    t.button(Icon.pencil, Styles.cleari, () -> {
-                        ui.logic.show(code, executor, privileged, code -> configure(compress(code, relativeConnections())));
-                    }).size(40);
+                    t.button(Icon.pencil, Styles.cleari, this::showEditDialog).size(40);
                     t.button(Icon.settings, Styles.cleari, () -> {
                         showSettingTable = !showSettingTable;
                         rebuildSettingTable();
                     }).size(40);
                 });
             }else{
-                table.button(Icon.pencil, Styles.cleari, () -> {
-                    ui.logic.show(code, executor, privileged, code -> configure(compress(code, relativeConnections())));
-                }).size(40);
+                table.button(Icon.pencil, Styles.cleari, this::showEditDialog).size(40);
             }
             table.row();
             table.add(settingTable);
-            table.button(Icon.pencil, Styles.cleari, this::showEditDialog).size(40);
         }
 
         public void showEditDialog(){
