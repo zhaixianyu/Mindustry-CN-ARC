@@ -1632,10 +1632,10 @@ public class LExecutor{
                     MessageDialog.addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.logicNotify,text).sendMessage());
                 }
                 case announce -> {
-                    ui.announce(text, exec.numf(duration));
+                    ui.announce(text, duration.numf());
                     MessageDialog.addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.logicAnnounce,text).sendMessage());
                 }
-                case toast -> ui.showInfoToast(text, exec.numf(duration));
+                case toast -> ui.showInfoToast(text, duration.numf());
                 //TODO desync?
                 case mission -> state.rules.mission = text;
             }
