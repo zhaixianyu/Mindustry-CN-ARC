@@ -531,7 +531,7 @@ public class MobileInput extends InputHandler implements GestureListener{
             }
         }
 
-        if (block instanceof Conveyor) {
+        if (ARCVars.quickBelt && block instanceof Conveyor) {
             lineStartX = cursor.x;
             lineStartY = cursor.y;
             lastLineX = cursor.x;
