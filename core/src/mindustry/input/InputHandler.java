@@ -1323,6 +1323,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
 
     /** Returns the selection plan that overlaps this position, or null. */
     protected @Nullable BuildPlan getPlan(int x, int y, int size, BuildPlan skip){
+        if (player.unit() == null) return null;
         float offset = ((size + 1) % 2) * tilesize / 2f;
         r2.setSize(tilesize * size);
         r2.setCenter(x * tilesize + offset, y * tilesize + offset);
@@ -1719,7 +1720,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
     }
 
     boolean canMine(Tile tile){
-        return !Core.scene.hasMouse()
+        return player.unit() != null && !Core.scene.hasMouse()
         && player.unit().validMine(tile)
         && player.unit().acceptsItem(player.unit().getMineResult(tile))
         && !((!Core.settings.getBool("doubletapmine") && tile.floor().playerUnmineable) && tile.overlay().itemDrop == null);
