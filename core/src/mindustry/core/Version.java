@@ -49,6 +49,7 @@ public class Version{
         }else{
             arcBuild = Strings.canParseInt(map.get("build")) ? Integer.parseInt(map.get("build")) : -1;
         }
+        build = arcBuild;
         ARCVars.arcVersion = Version.arcBuild + "";
         ARCVars.arcVersionPrefix = "<ARC~" + Version.arcBuild + ">";
     }
