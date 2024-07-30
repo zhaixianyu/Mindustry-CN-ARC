@@ -314,7 +314,11 @@ public class AdvanceToolTable extends Table {
         rebuild[0] = () -> {
             table.clear();
             /* Unit */
-            table.label(() -> "目标单位：" + spawnUnit.type.emoji() + spawnUnit.type.localizedName);
+            table.table(t -> {
+                t.add("目标单位：");
+                t.image(() -> spawnUnit.type.uiIcon);
+                t.label(() -> spawnUnit.type.localizedName);
+            });
 
             table.row();
 

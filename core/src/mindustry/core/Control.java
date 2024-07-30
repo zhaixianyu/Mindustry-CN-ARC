@@ -726,7 +726,7 @@ public class Control implements ApplicationListener, Loadable{
             if (Core.input.keyDown(KeyCode.controlLeft)) {
                 if (!bossKeyPressing) return;
                 calcDialog.hide();
-                loadIcon("icons/icon_64.png");
+                loadIcon("icons/arc.png");
                 bossKeyPressing = false;
             } else {
                 if (bossKeyPressing) return;

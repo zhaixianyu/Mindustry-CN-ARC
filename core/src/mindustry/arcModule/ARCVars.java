@@ -4,7 +4,6 @@ import arc.Core;
 import arc.Events;
 import arc.assets.Loadable;
 import arc.graphics.Color;
-import arc.math.Mathf;
 import arc.struct.Seq;
 import mindustry.Vars;
 import mindustry.arcModule.toolpack.ARCTeam;
@@ -15,7 +14,6 @@ import mindustry.game.Gamemode;
 import mindustry.game.Team;
 
 import static arc.Core.settings;
-import static mindustry.Vars.world;
 
 public class ARCVars implements Loadable {
     public static ARCUI arcui = new ARCUI();
@@ -30,12 +28,20 @@ public class ARCVars implements Loadable {
     public static int changeLogRead = 18;
     public static Seq<District.advDistrict> districtList = new Seq<>();
     /** 服务器远程控制允许或移除作弊功能 */
-    public static Boolean arcCheatServer = false;
+    public static boolean arcCheatServer = false;
     public static boolean replaying = false;
     public static ReplayController replayController;
     public static ARCClient arcClient = new ARCClient();
 
-    public static Boolean arcInfoControl = false;
+    public static boolean arcInfoControl = false;
+
+    /** Control */
+    public static boolean quickBelt;
+
+    /** UI */
+    public static boolean arcSelfName;
+    public static boolean arcHideName;
+    public static boolean payloadPreview;
 
     public static final int maxBuildPlans = 100;
 
@@ -46,6 +52,11 @@ public class ARCVars implements Loadable {
         Events.run(EventType.Trigger.update, () -> {
             arcInfoControl = !arcCheatServer && (Core.settings.getBool("showOtherTeamState") ||
                     Vars.player.team().id == 255 || Vars.state.rules.mode() != Gamemode.pvp);
+            arcSelfName = settings.getBool("arcSelfName");
+            arcHideName = settings.getBool("arcHideName");
+            payloadPreview = settings.getBool("payloadpreview");
+
+            quickBelt = settings.getBool("quickBelt");
         });
     }
 
