@@ -1033,7 +1033,7 @@ public class MusicDialog extends BaseDialog {
             String encodeName;
             try {
                 encodeName = URLEncoder.encode(name, "UTF-8");
-            } catch (UnsupportedEncodingException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 Core.app.post(() -> ui.showErrorMessage("歌曲名称编码错误"));
                 return;
