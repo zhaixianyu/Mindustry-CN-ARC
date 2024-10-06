@@ -453,7 +453,7 @@ public class StatValues{
     public static StatValue arcSeparator(Separator separator){
         return table -> {
             for(ItemStack stack : separator.results){
-                table.add(new ItemDisplay(stack.item, stack.amount, true)).padRight(5);
+                table.add(StatValues.stack(stack)).padRight(5);
                 table.add("  ");
             }
         };

@@ -34,7 +34,7 @@ public class WaveGraph extends Table{
 
     private float pan;
     private float zoom = 1f;
-    private int from = 0, to = 20;
+    public int from = 0, to = 20;
     private int lastFrom = -1, lastTo = -1;
     private float lastZoom = -1f;
 

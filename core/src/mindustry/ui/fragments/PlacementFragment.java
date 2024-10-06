@@ -789,7 +789,7 @@ public class PlacementFragment{
                                     for(int i = 0; i < counts.length; i++){
                                         if(counts[i] > 0){
                                             var type = content.unit(i);
-                                            unitlist.add(new ItemImage(type.uiIcon, counts[i])).tooltip(type.localizedName).pad(4).with(b -> {
+                                            unitlist.add(StatValues.stack(type, counts[i])).tooltip(type.localizedName).pad(4).with(b -> {
                                                 var listener = new ClickListener();
 
                                                 //left click -> select

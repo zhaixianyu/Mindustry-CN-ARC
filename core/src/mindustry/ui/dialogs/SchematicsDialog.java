@@ -68,17 +68,7 @@ public class SchematicsDialog extends BaseDialog{
         Vars.netClient.addPacketHandler("arcNetSchematic", url -> Http.get(url, r -> readShare(r.getResultAsString().replace(" ", "+"), null)));
 
         Events.on(EventType.WorldLoadEvent.class, event -> {
-            if(state.rules.env == Planets.serpulo.defaultEnv){
-                if (state.rules.hiddenBuildItems.equals(Planets.erekir.hiddenItems)){
-                    if (selectedTags.contains(erekirTags)) selectedTags.remove(erekirTags);
-                    if (!selectedTags.contains(surpuloTags)) selectedTags.add(surpuloTags);
-                }else{
-                    if (selectedTags.contains(erekirTags)) selectedTags.remove(erekirTags);
-                    if (selectedTags.contains(surpuloTags)) selectedTags.remove(surpuloTags);
-                }
-
-            }
-            else if(state.rules.env == Planets.erekir.defaultEnv){
+            if(state.rules.env == Planets.erekir.defaultEnv){
                 if (selectedTags.contains(surpuloTags)) selectedTags.remove(surpuloTags);
                 if (!selectedTags.contains(erekirTags)) selectedTags.add(erekirTags);
             }

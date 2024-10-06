@@ -532,9 +532,19 @@ public class UnitType extends UnlockableContent implements Senseable{
         table.row().table(t -> {
             for(StatusEntry entry : unit.statuses().copy()) {
                 if (t.getChildren().size % 5 == 0) t.row();
-                t.add(new ItemImage(entry.effect.uiIcon,
-                        entry.effect.permanent || entry.time > Time.toHours * 10f ? "Inf" : UI.formatTime(entry.time)
-                )).padLeft(8f);
+                String text = entry.effect.permanent || entry.time > Time.toHours * 10f ? "Inf" : UI.formatTime(entry.time);
+                t.add(new Stack() {{
+                    add(new Table(o -> {
+                        o.left();
+                        o.add(new Image(region)).size(26f).scaling(Scaling.fit);
+                    }));
+
+                    add(new Table(t -> {
+                        t.left().bottom();
+                        t.add(text).get().setFontScale(1f);
+                        t.pack();
+                    }));
+                }}).padLeft(8f);
             }
         });
     }
