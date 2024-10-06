@@ -42,7 +42,7 @@ public class AndroidLauncher extends AndroidApplication{
         UncaughtExceptionHandler handler = Thread.getDefaultUncaughtExceptionHandler();
 
         Thread.setDefaultUncaughtExceptionHandler((thread, error) -> {
-            CrashSender.log(error);
+            CrashHandler.log(error);
 
             //try to forward exception to system handler
             if(handler != null){

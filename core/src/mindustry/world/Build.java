@@ -251,21 +251,21 @@ public class Build{
 
         if(tile == null) return false;
 
+        if(!type.canPlaceOn(tile, team, rotation)){
+            return false;
+        }
+
         //floors have different checks
         if(type.isFloor()){
             return type.isOverlay() ? tile.overlay() != type : tile.floor() != type;
         }
 
         //campaign darkness check
-        if(world.getDarkness(x, y) >= 3){
+        if(!type.ignoreBuildDarkness && world.getDarkness(x, y) >= 3){
             return false;
         }
 
         if(!type.requiresWater && !contactsShallows(tile.x, tile.y, type) && !type.placeableLiquid){
-            return false;
-        }
-
-        if(!type.canPlaceOn(tile, team, rotation)){
             return false;
         }
 

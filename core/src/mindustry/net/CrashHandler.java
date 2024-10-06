@@ -18,32 +18,39 @@ import java.util.*;
 import static arc.Core.*;
 import static mindustry.Vars.*;
 
-public class CrashSender{
+public class CrashHandler{
 
-    public static String createReport(String error){
-        String report = "喜报！你的学术端崩溃了！\n";
-        report += "在确定不是你自己的问题后在这里报告: " + Vars.reportIssueURL + "\n\n";
+    public static String createReport(Throwable exception){
+        String error = writeException(exception);
+        LoadedMod cause = getModCause(exception);
+
+        String report = cause == null ? "Mindustry-CN-ARC has crashed. How unfortunate.\n" : "The mod '" +  cause.meta.displayName + "' (" + cause.name + ")" + " has caused Mindustry to crash.\n";
+        if(mods != null && mods.list().size == 0 && Version.build != -1){
+            report += "Report this at " + Vars.reportIssueURL + "\n\n";
+        }
+
         return report
         + "版本: " + Version.combined() + (Vars.headless ? " (服务器)" : "") + "\n"
         + "学术版本: " + ARCVars.arcVersion + "\n"
         + "系统: " + OS.osName + " x" + (OS.osArchBits) + " (" + OS.osArch + ")\n"
         + ((OS.isAndroid || OS.isIos) && app != null ? "Android API level: " + Core.app.getVersion() + "\n" : "")
-        + "Java版本: " + OS.javaVersion + "\n"
-        + "可用内存: " + (Runtime.getRuntime().maxMemory() / 1024 / 1024) + "mb\n"
-        + "核心数量: " + Runtime.getRuntime().availableProcessors() + "\n"
-        + (mods == null ? "<没有mod>" : "Mods: " + (!mods.list().contains(LoadedMod::shouldBeEnabled) ? "没有 (原版)" : mods.list().select(LoadedMod::shouldBeEnabled).toString(", ", mod -> mod.name + ":" + mod.meta.version)))
+        + "Java Version: " + OS.javaVersion + "\n"
+        + "Runtime Available Memory: " + (Runtime.getRuntime().maxMemory() / 1024 / 1024) + "mb\n"
+        + "Cores: " + Runtime.getRuntime().availableProcessors() + "\n"
+        + (cause == null ? "" : "Likely Cause: " + cause.meta.displayName + " (" + cause.name + " v" + cause.meta.version + ")\n")
+        + (mods == null ? "<no mod init>" : "Mods: " + (!mods.list().contains(LoadedMod::shouldBeEnabled) ? "none (vanilla)" : mods.list().select(LoadedMod::shouldBeEnabled).toString(", ", mod -> mod.name + ":" + mod.meta.version)))
         + "\n\n" + error;
     }
 
     public static void log(Throwable exception){
         try{
             Core.settings.getDataDirectory().child("crashes").child("crash_" + System.currentTimeMillis() + ".txt")
-            .writeString(createReport(Strings.neatError(exception)));
+            .writeString(createReport(exception));
         }catch(Throwable ignored){
         }
     }
 
-    public static void send(Throwable exception, Cons<File> writeListener){
+    public static void handle(Throwable exception, Cons<File> writeListener){
         try{
             try{
                 //log to file
@@ -59,14 +66,14 @@ public class CrashSender{
 
             //don't create crash logs for custom builds, as it's expected
             if(OS.username.equals("anuke") && !"steam".equals(Version.modifier)){
-                ret();
+                System.exit(1);
             }
 
             //attempt to load version regardless
             if(Version.number == 0){
                 try{
                     ObjectMap<String, String> map = new ObjectMap<>();
-                    PropertiesUtils.load(map, new InputStreamReader(CrashSender.class.getResourceAsStream("/version.properties")));
+                    PropertiesUtils.load(map, new InputStreamReader(CrashHandler.class.getResourceAsStream("/version.properties")));
 
                     Version.type = map.get("type");
                     Version.number = Integer.parseInt(map.get("number"));
@@ -87,7 +94,7 @@ public class CrashSender{
             try{
                 File file = new File(OS.getAppDataDirectoryString(Vars.appName), "crashes/crash-report-" + new SimpleDateFormat("MM_dd_yyyy_HH_mm_ss").format(new Date()) + ".txt");
                 new Fi(OS.getAppDataDirectoryString(Vars.appName)).child("crashes").mkdirs();
-                new Fi(file).writeString(createReport(writeException(exception)));
+                new Fi(file).writeString(createReport(exception));
                 writeListener.get(file);
             }catch(Throwable e){
                 Log.err("Failed to save local crash report.", e);
@@ -103,11 +110,41 @@ public class CrashSender{
             death.printStackTrace();
         }
 
-        ret();
+        System.exit(1);
     }
 
-    private static void ret(){
-        System.exit(1);
+    /** @return the mod that is likely to have caused the supplied crash */
+    public static @Nullable LoadedMod getModCause(Throwable e){
+        if(Vars.mods == null) return null;
+        try{
+            for(var element : e.getStackTrace()){
+                String name = element.getClassName();
+                if(!name.matches("(mindustry|arc|java|javax|sun|jdk)\\..*")){
+                    for(var mod : mods.list()){
+                        if(mod.meta.main != null && getMatches(mod.meta.main, name) > 0){
+                            return mod;
+                        }else if(element.getFileName() != null && element.getFileName().endsWith(".js") && element.getFileName().startsWith(mod.name + "/")){
+                            return mod;
+                        }
+                    }
+                }
+            }
+        }catch(Throwable ignored){}
+        return null;
+    }
+
+    private static int getMatches(String name1, String name2){
+        String[] arr1 = name1.split("\\."), arr2 = name2.split("\\.");
+        int matches = 0;
+        for(int i = 0; i < Math.min(arr1.length, arr2.length); i++){
+
+            if(!arr1[i].equals(arr2[i])){
+                return i;
+            }else if(!arr1[i].matches("net|org|com|io")){ //ignore common domain prefixes, as that's usually not enough to call something a "match"
+                matches ++;
+            }
+        }
+        return matches;
     }
 
     private static String writeException(Throwable e){

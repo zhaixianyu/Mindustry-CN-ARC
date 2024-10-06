@@ -77,12 +77,14 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
         }
         long ram = Runtime.getRuntime().maxMemory();
         boolean gb = ram >= 1024 * 1024 * 1024;
-        Log.info("[RAM] Available: @ @", Strings.fixed(gb ? ram / 1024f / 1024 / 1024f : ram / 1024f / 1024f, 1), gb ? "GB" : "MB");
+        if(!OS.isIos){
+            Log.info("[RAM] Available: @ @", Strings.fixed(gb ? ram / 1024f / 1024 / 1024f : ram / 1024f / 1024f, 1), gb ? "GB" : "MB");
+        }
 
         Time.setDeltaProvider(TimeControl.deltaProvider);
 
         UI.loadColors();
-        batch = new SortedSpriteBatch();
+        batch = new SpriteBatch();
         assets = new AssetManager();
         assets.setLoader(Texture.class, "." + mapExtension, new MapPreviewLoader());
 

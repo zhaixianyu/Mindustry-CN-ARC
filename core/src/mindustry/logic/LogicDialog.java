@@ -50,6 +50,7 @@ public class LogicDialog extends BaseDialog{
 
     @Nullable LExecutor executor;
     GlobalVarsDialog globalsDialog = new GlobalVarsDialog();
+    boolean wasRows, wasPortrait;
 
     private boolean dispose = false;
 
@@ -63,15 +64,24 @@ public class LogicDialog extends BaseDialog{
         addCloseListener();
 
         shown(this::setup);
+        shown(() -> {
+            wasRows = LCanvas.useRows();
+            wasPortrait = Core.graphics.isPortrait();
+        });
         hidden(() -> {
-            if(!dispose){
-                consumer.get(canvas.save());
-            } else {
+            if (dispose) {
                 dispose = false;
-            }});
+            } else {
+                consumer.get(canvas.save());
+            }
+        });
         onResize(() -> {
-            setup();
-            canvas.rebuild();
+            if(wasRows != LCanvas.useRows() || wasPortrait != Core.graphics.isPortrait()){
+                setup();
+                canvas.rebuild();
+                wasPortrait = Core.graphics.isPortrait();
+                wasRows = LCanvas.useRows();
+            }
             varsTable();
         });
 

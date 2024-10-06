@@ -167,7 +167,7 @@ public class PausedDialog extends BaseDialog{
             return;
         }
 
-        if(control.saves.getCurrent() == null || !control.saves.getCurrent().isAutosave() || wasClient || state.gameOver){
+        if(control.saves.getCurrent() == null || !control.saves.getCurrent().isAutosave() || wasClient || state.gameOver || disableSave){
             logic.reset();
             return;
         }

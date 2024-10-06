@@ -205,7 +205,7 @@ public class NetServer implements ApplicationListener{
                 info.id = packet.uuid;
                 admins.save();
                 Call.infoMessage(con, "You are not whitelisted here.");
-                info("&lcDo &lywhitelist-add @&lc to whitelist the player &lb'@'", packet.uuid, packet.name);
+                info("&lcDo &lywhitelist add @&lc to whitelist the player &lb'@'", packet.uuid, packet.name);
                 con.kick(KickReason.whitelist);
                 return;
             }
@@ -423,7 +423,7 @@ public class NetServer implements ApplicationListener{
             }
         });
 
-        clientCommands.<Player>register("vote", "<y/n/c>", "Vote to kick the current player. Admin can cancel the voting with 'c'.", (arg, player) -> {
+        clientCommands.<Player>register("vote", "<y/n/c>", "Vote to kick the current player. Admins can cancel the voting with 'c'.", (arg, player) -> {
             if(currentlyKicking == null){
                 player.sendMessage("[scarlet]Nobody is being voted on.");
             }else{
@@ -675,7 +675,7 @@ public class NetServer implements ApplicationListener{
                     //auto-skip done requests
                     if(req.breaking && tile.block() == Blocks.air){
                         continue;
-                    }else if(!req.breaking && tile.block() == req.block && (!req.block.rotate || (tile.build != null && tile.build.rotation == req.rotation))){
+                    }else if(!req.breaking && tile.block() == req.block && tile.team() != Team.derelict && (!req.block.rotate || (tile.build != null && tile.build.rotation == req.rotation))){
                         continue;
                     }else if(con.rejectedRequests.contains(r -> r.breaking == req.breaking && r.x == req.x && r.y == req.y)){ //check if request was recently rejected, and skip it if so
                         continue;

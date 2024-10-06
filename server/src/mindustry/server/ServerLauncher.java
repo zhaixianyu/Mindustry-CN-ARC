@@ -35,7 +35,7 @@ public class ServerLauncher implements ApplicationListener{
             Log.err("学术服务器，怎么回事呢");
             new HeadlessApplication(new ServerLauncher(), throwable -> CrashSender.send(throwable, f -> {}));
         }catch(Throwable t){
-            CrashSender.send(t, f -> {});
+            CrashHandler.handle(t, f -> {});
         }
     }
 
@@ -47,15 +47,15 @@ public class ServerLauncher implements ApplicationListener{
 
         Vars.loadSettings();
         Vars.init();
-        
+
         UI.loadColors();
         Fonts.loadContentIconsHeadless();
-        
+
         content.createBaseContent();
         mods.loadScripts();
         content.createModContent();
         content.init();
-        
+
         if(mods.hasContentErrors()){
             err("Error occurred loading mod content:");
             for(LoadedMod mod : mods.list()){

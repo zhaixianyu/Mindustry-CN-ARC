@@ -11,7 +11,6 @@ import arc.util.*;
 import mindustry.arcModule.ui.AdvanceToolTable;
 import mindustry.ctype.*;
 import mindustry.gen.*;
-import mindustry.type.*;
 import mindustry.ui.*;
 import mindustry.world.*;
 

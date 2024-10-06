@@ -130,13 +130,7 @@ public class Minimap extends Table{
 
         update(() -> {
 
-            if ((float) ARCVars.getMinimapSize() != size) {
-                size = (float) ARCVars.getMinimapSize();
-                clearChildren();
-                buildMap();
-            }
-
-            Element e = Core.scene.hit(Core.input.mouseX(), Core.input.mouseY(), true);
+            Element e = Core.scene.getHoverElement();
             if(e != null && e.isDescendantOf(this)){
                 requestScroll();
             }else if(hasScroll()){

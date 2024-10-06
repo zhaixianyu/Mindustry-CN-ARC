@@ -77,7 +77,7 @@ public class WaveInfoDialog extends BaseDialog{
                         groups = maps.readWaves(Core.app.getClipboardText());
                         buildGroups();
                     }catch(Exception e){
-                        e.printStackTrace();
+                        Log.err(e);
                         ui.showErrorMessage("@waves.invalid");
                     }
                     dialog.hide();
@@ -135,26 +135,11 @@ public class WaveInfoDialog extends BaseDialog{
                 buildGroups();
             }).width(200f);
         }
-    }
-
-    void view(int amount){
-        updateTimer += Time.delta;
-        if(updateTimer >= updatePeriod){
-            displayed += amount;
-            if(displayed < 5) displayed = 5;
-            updateTimer = 0f;
-            updateWaves();
-        }
-    }
-
-    void shift(int amount){
-        updateTimer += Time.delta;
-        if(updateTimer >= updatePeriod){
-            start += amount;
-            if(start < 0) start = 0;
-            updateTimer = 0f;
-            updateWaves();
-        }
+        buttons.button(Core.bundle.get("waves.random"), Icon.refresh, () -> {
+            groups.clear();
+            groups = Waves.generate(1f / 10f);
+            buildGroups();
+        }).width(200f);
     }
 
     void setup(){
@@ -167,7 +152,6 @@ public class WaveInfoDialog extends BaseDialog{
                 s.image(Icon.zoom).padRight(8);
                 s.field(search < 0 ? "" : (search + 1) + "", TextFieldFilter.digitsOnly, text -> {
                     search = groups.any() ? Strings.parseInt(text, 0) - 1 : -1;
-                    start = Math.max(search - (displayed / 2) - (displayed % 2), 0);
                     buildGroups();
                 }).growX().maxTextLength(8).get().setMessageText("@waves.search");
                 s.button(Icon.units, Styles.emptyi, () -> showUnits(type -> filterType = type, true)).size(46f).tooltip("@waves.filter")
@@ -780,8 +764,6 @@ public class WaveInfoDialog extends BaseDialog{
 
     void updateWaves(){
         graph.groups = groups;
-        graph.from = start;
-        graph.to = start + displayed;
         graph.rebuild();
     }
 }

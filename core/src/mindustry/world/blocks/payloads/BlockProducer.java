@@ -30,7 +30,7 @@ public abstract class BlockProducer extends PayloadBlock{
         hasItems = true;
         solid = true;
         hasPower = true;
-        acceptsPayloads = false;
+        acceptsUnitPayloads = false;
         rotate = true;
         regionRotated1 = 1;
 
@@ -72,7 +72,7 @@ public abstract class BlockProducer extends PayloadBlock{
                         () -> Pal.ammo, () -> entity.recipe() == null ? 0f : (entity.progress / entity.recipe().buildCost))
             );
     }
-    
+
     public abstract class BlockProducerBuild extends PayloadBlockBuild<BuildPayload>{
         public float progress, time, heat;
 
