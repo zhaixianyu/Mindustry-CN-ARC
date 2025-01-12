@@ -456,8 +456,6 @@ public class ResearchDialog extends BaseDialog{
                             spend(node.node);
                         }
                     });
-                }
-
                 button.hovered(() -> {
                     if(!mobile && hoverNode != button && (node.visible||Core.settings.getBool("researchViewer"))){
                         hoverNode = button;

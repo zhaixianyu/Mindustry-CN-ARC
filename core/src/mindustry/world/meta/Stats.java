@@ -32,6 +32,10 @@ public class Stats{
     public void addPercent(Stat stat, float value){
         add(stat, StatValues.number((int)(value * 100), StatUnit.percent));
     }
+    public void addPercent(String name, StatCat category, float value) {
+        addPercent(ArcStat.get(name, category), value);
+    }
+
 
     /** Adds a single y/n boolean value. */
     public void add(Stat stat, boolean value){
@@ -78,6 +82,13 @@ public class Stats{
     public void replace(Stat stat, StatValue value){
         remove(stat);
         add(stat, value);
+    }
+
+    public void add(String name, StatCat category, float value, StatUnit unit) {
+        add(ArcStat.get(name, category), value, unit);
+    }
+    public void add(String name, StatCat category, String format, Object... args) {
+        add(ArcStat.get(name, category), format, args);
     }
 
     /** Adds a stat value. */

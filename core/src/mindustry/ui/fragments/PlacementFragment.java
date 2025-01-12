@@ -654,10 +654,10 @@ public class PlacementFragment{
                                             });
                                         }
 
-                                        if (control.input.selectedUnits.contains(unit -> unit.type.commands.length > 1) && control.input.selectedUnits.contains(unit -> unit.type.commands.length <= 1)){
+                                        if (control.input.selectedUnits.contains(unit -> unit.type.commands.size > 1) && control.input.selectedUnits.contains(unit -> unit.type.commands.size <= 1)){
                                             sp.table(spp->{
-                                                arcSelectUnits(spp,"\uE86E","进攻性单位", unit -> unit.type.commands.length <= 1);
-                                                arcSelectUnits(spp,"\uE86B","辅助性单位", unit -> unit.type.commands.length > 1);
+                                                arcSelectUnits(spp,"\uE86E","进攻性单位", unit -> unit.type.commands.size <= 1);
+                                                arcSelectUnits(spp,"\uE86B","辅助性单位", unit -> unit.type.commands.size > 1);
                                             });
                                         }
 
@@ -812,7 +812,7 @@ public class PlacementFragment{
                                                 firstCommand = true;
                                             }else{
                                                 //remove commands that this next unit type doesn't have
-                                                commands.removeAll(com -> !Structs.contains(type.commands, com));
+                                                commands.removeAll(com -> !type.commands.contains(com));
                                             }
                                         }
                                     }
