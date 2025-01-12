@@ -80,6 +80,8 @@ public class Turret extends ReloadTurret{
     public boolean targetAir = true;
     /** If true, this block targets ground units and structures. */
     public boolean targetGround = true;
+    /** If true, this block targets blocks. */
+    public boolean targetBlocks = true;
     /** If true, this block targets friend blocks, to heal them. */
     public boolean targetHealing = false;
     /** If true, this turret can be controlled by players. */
@@ -210,7 +212,7 @@ public class Turret extends ReloadTurret{
     public void limitRange(BulletType bullet, float margin){
         float realRange = bullet.rangeChange + range;
         //doesn't handle drag
-        bullet.lifetime = (realRange + margin) / bullet.speed;
+        bullet.lifetime = (realRange + margin + bullet.extraRangeMargin) / bullet.speed;
     }
 
     public static abstract class AmmoEntry{
@@ -239,6 +241,8 @@ public class Turret extends ReloadTurret{
 
         public float heatReq;
         public float[] sideHeat = new float[4];
+
+        float lastRangeChange;
 
         @Override
         public float estimateDps(){
@@ -315,6 +319,11 @@ public class Turret extends ReloadTurret{
                 case progress -> progress();
                 default -> super.sense(sensor);
             };
+        }
+
+        @Override
+        public float fogRadius(){
+            return (range + (hasAmmo() ? peekAmmo().rangeChange : 0f)) / tilesize * fogRadiusMultiplier;
         }
 
         @Override
@@ -435,6 +444,14 @@ public class Turret extends ReloadTurret{
             //turret always reloads regardless of whether it's targeting something
             updateReload();
 
+            if(state.rules.fog){
+                float newRange = hasAmmo() ? peekAmmo().rangeChange : 0f;
+                if(newRange != lastRangeChange){
+                    lastRangeChange = newRange;
+                    fogControl.forceUpdate(team, this);
+                }
+            }
+
             if(hasAmmo()){
                 if(Float.isNaN(reloadCounter)) reloadCounter = 0;
 
@@ -508,7 +525,11 @@ public class Turret extends ReloadTurret{
             if(targetAir && !targetGround){
                 return Units.bestEnemy(team, x, y, range, e -> !e.dead() && !e.isGrounded() && unitFilter.get(e), unitSort);
             }else{
-                return Units.bestTarget(team, x, y, range, e -> !e.dead() && unitFilter.get(e) && (e.isGrounded() || targetAir) && (!e.isGrounded() || targetGround), b -> targetGround && buildingFilter.get(b), unitSort);
+                var ammo = peekAmmo();
+                boolean buildings = targetGround && targetBlocks && (ammo == null || ammo.targetBlocks), missiles = ammo == null || ammo.targetMissiles;
+                return Units.bestTarget(team, x, y, range,
+                    e -> !e.dead() && unitFilter.get(e) && (e.isGrounded() || targetAir) && (!e.isGrounded() || targetGround) && (missiles || !(e instanceof TimedKillc)),
+                    b -> buildings && buildingFilter.get(b), unitSort);
             }
         }
 
@@ -576,11 +597,15 @@ public class Turret extends ReloadTurret{
         }
 
         protected void updateReload(){
-            float multiplier = hasAmmo() ? peekAmmo() == null ? 1f : peekAmmo().reloadMultiplier : 1f;
-            reloadCounter += delta() * multiplier * baseReloadSpeed();
+            reloadCounter += delta() * ammoReloadMultiplier() * baseReloadSpeed();
 
             //cap reload for visual reasons
             reloadCounter = Math.min(reloadCounter, reload);
+        }
+
+        @Override
+        protected float ammoReloadMultiplier(){
+            return hasAmmo() ? peekAmmo().reloadMultiplier : 1f;
         }
 
         protected void updateShooting(){

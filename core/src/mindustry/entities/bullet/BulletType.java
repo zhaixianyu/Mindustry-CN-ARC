@@ -102,6 +102,10 @@ public class BulletType extends Content implements Cloneable{
     public StatusEffect status = StatusEffects.none;
     /** Intensity of applied status effect in terms of duration. */
     public float statusDuration = 60 * 8f;
+    /** Turret only. If false, blocks will not be targeted. */
+    public boolean targetBlocks = true;
+    /** Turret only. If false, missiles will not be targeted. */
+    public boolean targetMissiles = true;
     /** Whether this bullet type collides with tiles. */
     public boolean collidesTiles = true;
     /** Whether this bullet type collides with tiles that are of the same team. */
@@ -137,6 +141,8 @@ public class BulletType extends Content implements Cloneable{
     public float rangeOverride = -1f;
     /** When used in a turret with multiple ammo types, this can be set to a non-zero value to influence range. */
     public float rangeChange = 0f;
+    /** When used in turrets with limitRange() applied, this adds extra range to the bullets that extends past targeting range. Only particularly relevant in vanilla. */
+    public float extraRangeMargin = 0f;
     /** Range initialized in init(). */
     public float range = 0f;
     /** % of block health healed **/

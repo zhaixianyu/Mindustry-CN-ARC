@@ -49,7 +49,7 @@ public class DatabaseDialog extends BaseDialog{
         });
         onResize(this::rebuild);
 
-        all.margin(20).marginTop(0f);
+        all.margin(20).marginTop(0f).marginRight(30f);
 
         cont.top();
         cont.table(s -> {

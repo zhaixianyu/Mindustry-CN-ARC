@@ -144,6 +144,11 @@ public class ForceFieldAbility extends Ability{
         bars.add(new Bar(() -> NumberFormat.formatPercent((unit.shield < 0? "[red]":"") + "\uE84D", unit.shield, max), () -> Pal.accent, () -> unit.shield / max)).row();
     }
 
+    @Override
+    public void created(Unit unit){
+        unit.shield = max;
+    }
+
     public void checkRadius(Unit unit){
         //timer2 is used to store radius scale as an effect
         realRad = radiusScale * radius;

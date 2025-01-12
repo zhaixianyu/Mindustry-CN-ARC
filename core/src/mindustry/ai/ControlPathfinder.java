@@ -343,24 +343,26 @@ public class ControlPathfinder implements Runnable{
     }
 
     public void updateTile(Tile tile){
-        tile.getLinkedTiles(t -> {
-            int x = t.x, y = t.y, mx = x % clusterSize, my = y % clusterSize, cx = x / clusterSize, cy = y / clusterSize, cluster = cx + cy * cwidth;
+        tile.getLinkedTiles(this::updateSingleTile);
+    }
 
-            //is at the edge of a cluster; this means the portals may have changed.
-            if(mx == 0 || my == 0 || mx == clusterSize - 1 || my == clusterSize - 1){
+    public void updateSingleTile(Tile t){
+        int x = t.x, y = t.y, mx = x % clusterSize, my = y % clusterSize, cx = x / clusterSize, cy = y / clusterSize, cluster = cx + cy * cwidth;
 
-                if(mx == 0) queueClusterUpdate(cx - 1, cy); //left
-                if(my == 0) queueClusterUpdate(cx, cy - 1); //bottom
-                if(mx == clusterSize - 1) queueClusterUpdate(cx + 1, cy); //right
-                if(my == clusterSize - 1) queueClusterUpdate(cx, cy + 1); //top
+        //is at the edge of a cluster; this means the portals may have changed.
+        if(mx == 0 || my == 0 || mx == clusterSize - 1 || my == clusterSize - 1){
 
-                queueClusterUpdate(cx, cy);
-                //TODO: recompute edge clusters too.
-            }else{
-                //there is no need to recompute portals for block updates that are not on the edge.
-                queue.post(() -> clustersToInnerUpdate.add(cluster));
-            }
-        });
+            if(mx == 0) queueClusterUpdate(cx - 1, cy); //left
+            if(my == 0) queueClusterUpdate(cx, cy - 1); //bottom
+            if(mx == clusterSize - 1) queueClusterUpdate(cx + 1, cy); //right
+            if(my == clusterSize - 1) queueClusterUpdate(cx, cy + 1); //top
+
+            queueClusterUpdate(cx, cy);
+            //TODO: recompute edge clusters too.
+        }else{
+            //there is no need to recompute portals for block updates that are not on the edge.
+            queue.post(() -> clustersToInnerUpdate.add(cluster));
+        }
     }
 
     void queueClusterUpdate(int cx, int cy){
@@ -1100,6 +1102,10 @@ public class ControlPathfinder implements Runnable{
     }
 
     public boolean getPathPosition(Unit unit, Vec2 destination, Vec2 mainDestination, Vec2 out, @Nullable boolean[] noResultFound){
+        if(noResultFound != null){
+            noResultFound[0] = false;
+        }
+
         int costId = unit.type.pathCostId;
         PathCost cost = idToCost(costId);
 
@@ -1154,7 +1160,11 @@ public class ControlPathfinder implements Runnable{
 
             Tile tileOn = unit.tileOn(), initialTileOn = tileOn;
             //TODO: should fields be accessible from this thread?
-            FieldCache fieldCache = fields.get(fieldKey);
+            FieldCache fieldCache = null;
+            try{
+                fieldCache = fields.get(fieldKey);
+            }catch(ArrayIndexOutOfBoundsException ignored){ //TODO fix this, rare crash due to remove() elsewhere
+            }
             if(fieldCache == null) fieldCache = request.oldCache;
 
             if(fieldCache != null && tileOn != null){
@@ -1253,7 +1263,11 @@ public class ControlPathfinder implements Runnable{
                     return true;
                 }
             }
-        }else if(request == null){
+        }else{
+            //destroy the old one immediately, it's invalid now
+            if(request != null){
+                request.lastUpdateId = -1000;
+            }
 
             //queue new request.
             unitRequests.put(unit, request = new PathRequest(unit, team, costId, destPos));
@@ -1266,9 +1280,7 @@ public class ControlPathfinder implements Runnable{
                 recalculatePath(f);
             });
 
-            out.set(destination);
-
-            return true;
+            return false;
         }
 
         if(noResultFound != null){

@@ -12,6 +12,8 @@ public class SectorPresets{
     impact0078, desolateRift, nuclearComplex, planetaryTerminal,
     coastline, navalFortress, weatheredChannels, seaPort,
 
+    geothermalStronghold, cruxscape,
+
     onset, aegis, lake, intersect, basin, atlas, split, marsh, peaks, ravine, caldera,
     stronghold, crevice, siege, crossroads, karst, origin;
 
@@ -48,7 +50,7 @@ public class SectorPresets{
         }};
 
         taintedWoods = new SectorPreset("taintedWoods", serpulo, 221){{
-            captureWave = 32;
+            captureWave = 33;
             difficulty = 5;
         }};
 
@@ -97,11 +99,11 @@ public class SectorPresets{
 
         weatheredChannels = new SectorPreset("weatheredChannels", serpulo, 39){{
             captureWave = 40;
-            difficulty = 7;
+            difficulty = 9;
         }};
 
         navalFortress = new SectorPreset("navalFortress", serpulo, 216){{
-            difficulty = 9;
+            difficulty = 8;
         }};
 
         frontier = new SectorPreset("frontier", serpulo, 203){{
@@ -120,8 +122,8 @@ public class SectorPresets{
             difficulty = 7;
         }};
 
-        mycelialBastion = new SectorPreset("mycelialBastion", serpulo, 133){{
-            difficulty = 7;
+        mycelialBastion = new SectorPreset("mycelialBastion", serpulo, 260){{
+            difficulty = 8;
         }};
 
         overgrowth = new SectorPreset("overgrowth", serpulo, 134){{
@@ -151,6 +153,14 @@ public class SectorPresets{
         planetaryTerminal = new SectorPreset("planetaryTerminal", serpulo, 93){{
             difficulty = 10;
             isLastSector = true;
+        }};
+
+        geothermalStronghold = new SectorPreset("geothermalStronghold", serpulo, 264){{
+            difficulty = 10;
+        }};
+
+        cruxscape = new SectorPreset("cruxscape", serpulo, 54){{
+            difficulty = 10;
         }};
 
         //endregion

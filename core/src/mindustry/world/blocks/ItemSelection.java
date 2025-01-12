@@ -95,6 +95,11 @@ public class ItemSelection{
 
         ScrollPane pane = new ScrollPane(cont, Styles.smallPane);
         pane.setScrollingDisabled(true, false);
+        pane.exited(() -> {
+            if(pane.hasScroll()){
+                Core.scene.setScrollFocus(null);
+            }
+        });
 
         if(block != null){
             pane.setScrollYForce(block.selectScroll);

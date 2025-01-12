@@ -43,7 +43,12 @@ public class ArcNetProvider implements NetProvider{
     public ArcNetProvider(){
         ArcNet.errorHandler = e -> {
             if(Log.level == LogLevel.debug){
-                Log.debug(Strings.getStackTrace(e));
+                var finalCause = Strings.getFinalCause(e);
+
+                //"connection is closed" is a pointless annoying error that should not be logged
+                if(!"Connection is closed.".equals(finalCause.getMessage())){
+                    Log.debug(Strings.getStackTrace(e));
+                }
             }
         };
 
@@ -140,7 +145,7 @@ public class ArcNetProvider implements NetProvider{
 
             @Override
             public void received(Connection connection, Object object){
-                if(!(connection.getArbitraryData() instanceof ArcConnection k) || !(object instanceof Packet pack)) return;
+                if(!(connection.getArbitraryData() instanceof ArcConnection k)) return;
 
                 if(packetSpamLimit > 0 && !k.packetRate.allow(3000, packetSpamLimit)){
                     Log.warn("Blacklisting IP '@' as potential DOS attack - packet spam.", k.address);
@@ -148,6 +153,8 @@ public class ArcNetProvider implements NetProvider{
                     netServer.admins.blacklistDos(k.address);
                     return;
                 }
+
+                if(!(object instanceof Packet pack)) return;
 
                 Core.app.post(() -> {
                     try{
@@ -363,10 +370,12 @@ public class ArcNetProvider implements NetProvider{
         @Override
         public void send(Object object, boolean reliable){
             try{
-                if(reliable){
-                    connection.sendTCP(object);
-                }else{
-                    connection.sendUDP(object);
+                if(connection.isConnected()){
+                    if(reliable){
+                        connection.sendTCP(object);
+                    }else{
+                        connection.sendUDP(object);
+                    }
                 }
             }catch(Exception e){
                 Log.err(e);

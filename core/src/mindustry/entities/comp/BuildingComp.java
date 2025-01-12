@@ -1233,6 +1233,7 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
     }
 
     public void payloadDraw(){
+        if(block.isAir()) return;
         draw();
     }
 

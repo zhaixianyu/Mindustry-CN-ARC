@@ -74,14 +74,10 @@ public class Stats{
         add(stat, StatValues.string(format, args));
     }
 
-    public void add(String name, StatCat category, float value, StatUnit unit) {
-        add(ArcStat.get(name, category), value, unit);
-    }
-    public void add(String name, StatCat category, String format, Object... args) {
-        add(ArcStat.get(name, category), format, args);
-    }
-    public void addPercent(String name, StatCat category, float value) {
-        addPercent(ArcStat.get(name, category), value);
+    /** Replaces a stat, removing the old value if it exists. */
+    public void replace(Stat stat, StatValue value){
+        remove(stat);
+        add(stat, value);
     }
 
     /** Adds a stat value. */
