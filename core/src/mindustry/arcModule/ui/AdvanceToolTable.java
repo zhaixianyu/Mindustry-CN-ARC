@@ -720,7 +720,7 @@ public class AdvanceToolTable extends Table {
         Unit reUnit = unit.type.create(unit.team);
         reUnit.health = unit.health;
         reUnit.shield = unit.shield;
-        reUnit.stack = unit.stack;
+        reUnit.stack = unit.stack.copy();
 
         for (StatusEffect effects : content.statusEffects()) {
             if (unit.getDuration(effects) > 0f) reUnit.apply(effects, unit.getDuration(effects));
