@@ -9,10 +9,12 @@ import arc.scene.ui.ImageButton.*;
 import arc.scene.ui.layout.*;
 import mindustry.*;
 import mindustry.arcModule.*;
+import mindustry.arcModule.player.AutoFill;
 import mindustry.content.*;
 import mindustry.gen.*;
 import mindustry.input.DesktopInput;
 import mindustry.ui.dialogs.EffectsDialog;
+
 
 import static mindustry.Vars.*;
 import static mindustry.arcModule.ARCVars.arcui;
@@ -56,8 +58,11 @@ public class ScriptTable extends BaseToolsTable{
             }, b -> Core.settings.getBool("removePan"));
         }
         scriptButton(Items.copper.uiIcon, "一键放置", () -> {
-            player.dropItems();
-        });
+            boolean af = Core.settings.getBool("autoFill");
+            Core.settings.put("autoFill", !af);
+            arcui.arcInfo("已" + (af?"关闭":"开启") + "一键放置");
+            AutoFill.INSTANCE.interval = 500;
+        },b -> Core.settings.getBool("autoFill"));
         scriptButton(Icon.pencilSmall.getRegion(), "特效显示",()->{
             EffectsDialog.withAllEffects().show();
         });
