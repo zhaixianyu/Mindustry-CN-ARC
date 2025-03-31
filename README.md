@@ -5,6 +5,8 @@
 
 The automation tower defense RTS, written in Java.
 
+![IMG_20250331_114518](https://github.com/user-attachments/assets/a07fe948-9ce4-49ff-899d-fef37e9704ee)
+
 _[资料导航站](https://docs.qq.com/sheet/DVEVob2xrcVBzQk5R)_  
 _[地图档案馆](https://docs.qq.com/sheet/DVGpmQ3lIR25rdnZo)_  
 _[蓝图档案馆](https://docs.qq.com/sheet/DVHNoS3lIcm1NbFFS)_ 
