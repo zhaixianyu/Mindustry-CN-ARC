@@ -9,7 +9,7 @@ import static mindustry.Vars.player;
 public class AutoFill {
     public final static AutoFill INSTANCE = new AutoFill();
     private long lastRunTime = System.currentTimeMillis();
-    public long interval = 0;
+    public long interval = 500;
     private AutoFill(){
         Events.run(EventType.Trigger.update, () -> {
             long timeMillis = System.currentTimeMillis();
