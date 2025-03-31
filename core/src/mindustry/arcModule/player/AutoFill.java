@@ -10,10 +10,11 @@ public class AutoFill {
     public final static AutoFill INSTANCE = new AutoFill();
     private long lastRunTime = System.currentTimeMillis();
     public long interval = 500;
-    private AutoFill(){
+
+    private AutoFill() {
         Events.run(EventType.Trigger.update, () -> {
             long timeMillis = System.currentTimeMillis();
-            if(timeMillis > lastRunTime + interval && Core.settings.getBool("autoFill")){
+            if (timeMillis > lastRunTime + interval && Core.settings.getBool("autoFill")) {
                 lastRunTime = timeMillis;
                 player.dropItems();
             }
