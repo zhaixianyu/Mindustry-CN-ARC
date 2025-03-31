@@ -15,7 +15,6 @@ import mindustry.gen.*;
 import mindustry.input.DesktopInput;
 import mindustry.ui.dialogs.EffectsDialog;
 
-
 import static mindustry.Vars.*;
 import static mindustry.arcModule.ARCVars.arcui;
 import static mindustry.arcModule.ui.RStyles.*;
