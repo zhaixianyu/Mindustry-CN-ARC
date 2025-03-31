@@ -61,6 +61,7 @@ public class ScriptTable extends BaseToolsTable{
             boolean af = Core.settings.getBool("autoFill");
             Core.settings.put("autoFill", !af);
             arcui.arcInfo("已" + (af ? "关闭" : "开启") + "一键放置");
+
             AutoFill.INSTANCE.interval = 500;
         },b -> Core.settings.getBool("autoFill"));
 
