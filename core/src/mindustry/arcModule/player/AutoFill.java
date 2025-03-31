@@ -14,6 +14,7 @@ public class AutoFill {
     private AutoFill() {
         Events.run(EventType.Trigger.update, () -> {
             long timeMillis = System.currentTimeMillis();
+
             if (timeMillis > lastRunTime + interval && Core.settings.getBool("autoFill")) {
                 lastRunTime = timeMillis;
                 player.dropItems();
