@@ -261,7 +261,7 @@ public class NetClient implements ApplicationListener{
     public static void sendMessage(String message){
         if(Vars.ui != null){
             StringBuilder stringBuilder = new StringBuilder(message);
-            if (!ui.listfrag.blackList.allMatch(player1 -> !player1.name.equals(stringBuilder.substring(0,player1.name.length())))) {
+            if (ui.listfrag.blackList.find(player1 -> !player1.name.equals(stringBuilder.substring(0,player1.name.length()))) != null) {
                 return;
             }
 
