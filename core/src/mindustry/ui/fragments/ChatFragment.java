@@ -294,7 +294,6 @@ public class ChatFragment extends Table{
 
     public void addMessage(String message){
         if(message == null) return;
-        Log.info(message+"+++");
         messages.insert(0, message);
 
         fadetime += 1f;
