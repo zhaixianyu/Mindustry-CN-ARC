@@ -14,6 +14,7 @@ import mindustry.*;
 import mindustry.annotations.Annotations.*;
 import mindustry.arcModule.ARCEvents;
 import mindustry.arcModule.ARCVars;
+import mindustry.arcModule.player.AutoFill;
 import mindustry.arcModule.ui.XiBao;
 import mindustry.arcModule.ui.dialogs.USIDDialog;
 import mindustry.core.GameState.*;
@@ -233,8 +234,12 @@ public class NetClient implements ApplicationListener{
 
     @Remote(targets = Loc.server, variants = Variant.both)
     public static void sendMessage(String message, @Nullable String unformatted, @Nullable Player playersender){
-        if (message != null && playersender != null && ui.listfrag.blackList.contains(playersender)){
-            return;
+        if (message != null) {
+            if (playersender == null) {
+                if (message.contains("You are interacting with blocks too quickly.") || message.contains("You are interacting with too many blocks.")) {
+                    AutoFill.INSTANCE.interactionTooFastWarning();
+                }
+            }else if(ui.listfrag.blackList.contains(playersender)) return;
         }
 
         if(Vars.ui != null){
