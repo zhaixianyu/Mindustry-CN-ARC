@@ -23,7 +23,7 @@ public class AutoFill {
     private AutoFill() {
         Events.run(EventType.Trigger.update, () -> {
             long timeMillis = System.currentTimeMillis();
-            if (timeMillis > lastRunTime + interval && Core.settings.getBool("autoFill") && player.unit() != null && player.unit().hasItem() && state.rules.mode() == Gamemode.pvp) {
+            if (timeMillis > lastRunTime + interval && Core.settings.getBool("autoFill") && player.unit() != null && player.unit().hasItem() && state.rules.mode() != Gamemode.pvp) {
                 ItemStack stack = player.unit().stack;
                 Item item = stack.item;
                 lastRunTime = timeMillis;
