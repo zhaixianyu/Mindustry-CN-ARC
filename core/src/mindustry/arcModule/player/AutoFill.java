@@ -28,17 +28,17 @@ public class AutoFill {
                 Item item = stack.item;
                 lastRunTime = timeMillis;
 
-                AtomicReference<Boolean> tried = new AtomicReference<>(false);
+                boolean[] tried = new boolean[]{false};
                 indexer.eachBlock(
                         player.team(), player.x, player.y, itemTransferRange,
                         (build)->build.acceptStack(player.unit().item(), player.unit().stack.amount, player.unit()) > 0 &&
                                 (build.block instanceof BaseTurret || build.block instanceof GenericCrafter),
                         (build)-> {
                             Call.transferInventory(player, build);
-                            tried.set(true);
+                            tried[0] = true;
                         });
 
-                if (tried.get()){
+                if (tried[0]){
                     indexer.eachBlock(player.team(), player.x, player.y, itemTransferRange,
                             (build)-> build.block instanceof StorageBlock && build.items.get(item) > 0,
                             (build)-> Call.requestItem(player, build,item,player.unit().maxAccepted(item)));
