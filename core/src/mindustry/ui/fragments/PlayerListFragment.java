@@ -184,6 +184,21 @@ public class PlayerListFragment{
                     RFuncs.shareString(message);
                 }).size(buttonSize);
 
+                button.button(String.valueOf(Iconc.blockMessage),Styles.cleart,()->{
+                    Seq<Player> blackList = ui.chatfrag.blackList;
+                    if (blackList.contains(user)) {
+                        blackList.remove(user);
+                        arcui.arcInfo("已解除屏蔽：" + user.name);
+                    }else {
+                        blackList.add(user);
+                        arcui.arcInfo("已屏蔽：" + user.name);
+                    }
+                }).checked(b -> {
+                    boolean contains = ui.chatfrag.blackList.contains(user);
+                    b.setText(contains ? String.valueOf(Iconc.blockWorldMessage) : String.valueOf(Iconc.blockMessage));
+                    return contains;
+                }).size(buttonSize);
+
                 button.button(String.valueOf(Iconc.lock), Styles.cleart, () -> {
                     if(follow != user){
                         follow = user;
