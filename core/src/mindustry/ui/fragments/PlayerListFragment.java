@@ -33,6 +33,7 @@ public class PlayerListFragment{
     private Interval timer = new Interval();
     private TextField search;
     public Seq<Player> players = new Seq<>();
+    public Seq<Player> blackList = new Seq<>();
 
     private float buttonSize = 30f;
     private boolean teamMode = false;
@@ -185,7 +186,6 @@ public class PlayerListFragment{
                 }).size(buttonSize);
 
                 button.button(String.valueOf(Iconc.blockMessage),Styles.cleart,()->{
-                    Seq<Player> blackList = ui.chatfrag.blackList;
                     if (blackList.contains(user)) {
                         blackList.remove(user);
                         arcui.arcInfo("已解除屏蔽：" + user.name);
@@ -194,7 +194,7 @@ public class PlayerListFragment{
                         arcui.arcInfo("已屏蔽：" + user.name);
                     }
                 }).checked(b -> {
-                    boolean contains = ui.chatfrag.blackList.contains(user);
+                    boolean contains = blackList.contains(user);
                     b.setText(contains ? String.valueOf(Iconc.blockWorldMessage) : String.valueOf(Iconc.blockMessage));
                     return contains;
                 }).size(buttonSize);

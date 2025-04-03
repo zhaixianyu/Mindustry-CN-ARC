@@ -14,7 +14,7 @@ import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.*;
-import mindustry.arcModule.player.AutoFill;
+import mindustry.core.NetClient;
 import mindustry.game.EventType.*;
 import mindustry.gen.*;
 import mindustry.input.*;
@@ -40,7 +40,6 @@ public class ChatFragment extends Table{
     private Seq<String> history = new Seq<>();
     private int historyPos = 0;
     private int scrollPos = 0;
-    public Seq<Player> blackList = new Seq<>();
 
     public ChatFragment(){
         super();
@@ -313,13 +312,7 @@ public class ChatFragment extends Table{
             if (message != null) arcui.MessageDialog.resolveMsg(message, playersender);
             if (playersender != null && playersender.unit() != null)
                 message = (playersender.unit().isNull() ? Iconc.alphaaaa : playersender.unit().type.emoji()) + " " + message;
-
-            if (message != null && (message.contains("You are interacting with blocks too quickly.") || "You are interacting with too many blocks.".equals(message))) {
-                AutoFill.INSTANCE.interactionTooFastWarning();
-            }
-            if (playersender != null && !blackList.contains(playersender)) {
-                addMessage(message);
-            }
+            addMessage(message);
         } catch (Exception e) {
             Log.err(e);
         }

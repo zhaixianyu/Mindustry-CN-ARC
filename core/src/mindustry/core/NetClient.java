@@ -135,6 +135,7 @@ public class NetClient implements ApplicationListener{
             platform.updateRPC();
             player.name = Core.settings.getString("name");
             player.color.set(Core.settings.getInt("color-0"));
+            ui.listfrag.blackList.clear();
 
             if(quiet) return;
 
@@ -232,6 +233,10 @@ public class NetClient implements ApplicationListener{
 
     @Remote(targets = Loc.server, variants = Variant.both)
     public static void sendMessage(String message, @Nullable String unformatted, @Nullable Player playersender){
+        if (message != null && playersender != null && ui.listfrag.blackList.contains(playersender)){
+            return;
+        }
+
         if(Vars.ui != null){
             Vars.ui.chatfrag.addMessage(message,playersender);
             Sounds.chatMessage.play();
@@ -250,6 +255,11 @@ public class NetClient implements ApplicationListener{
     @Remote(called = Loc.server, targets = Loc.server)
     public static void sendMessage(String message){
         if(Vars.ui != null){
+            StringBuilder stringBuilder = new StringBuilder(message);
+            if (!ui.listfrag.blackList.allMatch(player1 -> !player1.name.equals(stringBuilder.substring(0,player1.name.length())))) {
+                return;
+            }
+
             Vars.ui.chatfrag.addMessage(message, true);
             Sounds.chatMessage.play();
         }
