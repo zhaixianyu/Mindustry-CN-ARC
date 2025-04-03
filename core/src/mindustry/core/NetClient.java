@@ -14,6 +14,7 @@ import mindustry.*;
 import mindustry.annotations.Annotations.*;
 import mindustry.arcModule.ARCEvents;
 import mindustry.arcModule.ARCVars;
+import mindustry.arcModule.player.AutoFill;
 import mindustry.arcModule.ui.XiBao;
 import mindustry.arcModule.ui.dialogs.USIDDialog;
 import mindustry.core.GameState.*;
@@ -135,6 +136,7 @@ public class NetClient implements ApplicationListener{
             platform.updateRPC();
             player.name = Core.settings.getString("name");
             player.color.set(Core.settings.getInt("color-0"));
+            ui.listfrag.blackList.clear();
 
             if(quiet) return;
 
@@ -232,6 +234,14 @@ public class NetClient implements ApplicationListener{
 
     @Remote(targets = Loc.server, variants = Variant.both)
     public static void sendMessage(String message, @Nullable String unformatted, @Nullable Player playersender){
+        if (message != null) {
+            if (playersender == null) {
+                if (message.contains("You are interacting with blocks too quickly.") || message.contains("You are interacting with too many blocks.")) {
+                    AutoFill.INSTANCE.interactionTooFastWarning();
+                }
+            }else if(ui.listfrag.blackList.contains(playersender)) return;
+        }
+
         if(Vars.ui != null){
             Vars.ui.chatfrag.addMessage(message,playersender);
             Sounds.chatMessage.play();
@@ -250,6 +260,11 @@ public class NetClient implements ApplicationListener{
     @Remote(called = Loc.server, targets = Loc.server)
     public static void sendMessage(String message){
         if(Vars.ui != null){
+            StringBuilder stringBuilder = new StringBuilder(message);
+            if (ui.listfrag.blackList.find(player1 -> player1.name.equals(stringBuilder.substring(0,player1.name.length()))) != null) {
+                return;
+            }
+
             Vars.ui.chatfrag.addMessage(message, true);
             Sounds.chatMessage.play();
         }

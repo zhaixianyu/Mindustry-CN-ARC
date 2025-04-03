@@ -33,6 +33,7 @@ public class PlayerListFragment{
     private Interval timer = new Interval();
     private TextField search;
     public Seq<Player> players = new Seq<>();
+    public Seq<Player> blackList = new Seq<>();
 
     private float buttonSize = 30f;
     private boolean teamMode = false;
@@ -182,6 +183,20 @@ public class PlayerListFragment{
                 button.button("[#" + ARCVars.getThemeColor() + "]♐", Styles.cleart, () -> {
                     String message = arcAtPlayer(user.name);
                     RFuncs.shareString(message);
+                }).size(buttonSize);
+
+                button.button(String.valueOf(Iconc.blockMessage),Styles.cleart,()->{
+                    if (blackList.contains(user)) {
+                        blackList.remove(user);
+                        arcui.arcInfo("已解除屏蔽：" + user.name);
+                    }else {
+                        blackList.add(user);
+                        arcui.arcInfo("已屏蔽：" + user.name);
+                    }
+                }).checked(b -> {
+                    boolean contains = blackList.contains(user);
+                    b.setText(contains ? String.valueOf(Iconc.blockWorldMessage) : String.valueOf(Iconc.blockMessage));
+                    return contains;
                 }).size(buttonSize);
 
                 button.button(String.valueOf(Iconc.lock), Styles.cleart, () -> {

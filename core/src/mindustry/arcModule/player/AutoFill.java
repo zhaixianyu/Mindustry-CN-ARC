@@ -46,4 +46,7 @@ public class AutoFill {
             }
         });
     }
+    public void interactionTooFastWarning(){
+        lastRunTime = System.currentTimeMillis() + 5000;
+    }
 }
