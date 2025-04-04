@@ -19,6 +19,7 @@ import mindustry.ai.types.*;
 import mindustry.annotations.Annotations.*;
 import mindustry.arcModule.ARCVars;
 import mindustry.arcModule.DrawUtilities;
+import mindustry.arcModule.player.AutoFill;
 import mindustry.content.*;
 import mindustry.core.*;
 import mindustry.entities.*;
@@ -1747,6 +1748,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
         }else{
             Call.dropItem(player.angleTo(x, y));
         }
+        AutoFill.INSTANCE.clearItemRecord();
     }
 
     public void rebuildArea(int x, int y, int x2, int y2){
