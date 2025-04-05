@@ -5,6 +5,7 @@ import arc.graphics.*;
 import arc.input.*;
 import arc.math.*;
 import arc.scene.event.*;
+import arc.scene.style.*;
 import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
@@ -12,6 +13,7 @@ import arc.util.*;
 import mindustry.*;
 import mindustry.arcModule.ARCVars;
 import mindustry.arcModule.ui.AdvanceToolTable;
+import mindustry.content.*;
 import mindustry.ctype.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
@@ -26,16 +28,30 @@ public class DatabaseDialog extends BaseDialog{
     private TextField search;
     private Table all = new Table();
 
+    private @Nullable Seq<UnlockableContent> allTabs;
+    //sun means "all content"
+    private UnlockableContent tab = Planets.sun;
+
     public DatabaseDialog(){
         super("@database");
 
         shouldPause = true;
         addCloseButton();
-        shown(this::rebuild);
+        shown(() -> {
+            checkTabList();
+            if(state.isCampaign() && allTabs.contains(state.getPlanet())){
+                tab = state.getPlanet();
+            }else if(state.isGame() && state.rules.planet != null && allTabs.contains(state.rules.planet)){
+                tab = state.rules.planet;
+            }
+
+            rebuild();
+        });
         onResize(this::rebuild);
 
-        all.margin(20).marginTop(0f);
+        all.margin(20).marginTop(0f).marginRight(30f);
 
+        cont.top();
         cont.table(s -> {
             s.image(Icon.zoom).padRight(8);
             search = s.field(null, text -> rebuild()).growX().get();
@@ -46,11 +62,43 @@ public class DatabaseDialog extends BaseDialog{
         colorizeContent();
     }
 
+    void checkTabList(){
+        if(allTabs == null){
+            Seq<Content>[] allContent = Vars.content.getContentMap();
+            ObjectSet<UnlockableContent> all = new ObjectSet<>();
+            for(var contents : allContent){
+                for(var content : contents){
+                    if(content instanceof UnlockableContent u){
+                        all.addAll(u.databaseTabs);
+                    }
+                }
+            }
+            allTabs = all.toSeq().sort();
+            allTabs.insert(0, Planets.sun);
+        }
+    }
+
     void rebuild(){
+        checkTabList();
+
         all.clear();
-        var text = search.getText();
+        var text = search.getText().toLowerCase();
 
         Seq<Content>[] allContent = Vars.content.getContentMap();
+
+        all.table(t -> {
+            int i = 0;
+            for(var content : allTabs){
+                t.button(content == Planets.sun ? Icon.eyeSmall : content instanceof Planet p ? Icon.icons.get(p.icon, Icon.commandRally) : new TextureRegionDrawable(content.uiIcon), Styles.clearNoneTogglei, iconMed, () -> {
+                    tab = content;
+                    rebuild();
+                }).size(50f).checked(b -> tab == content).tooltip(content == Planets.sun ? "@all" : content.localizedName).with(but -> {
+                    but.getStyle().imageUpColor = content instanceof Planet p ? p.iconColor : Color.white.cpy();
+                });
+
+                if(++i % 10 == 0) t.row();
+            }
+        }).row();;
 
         for(int j = 0; j < allContent.length; j++){
             ContentType type = ContentType.all[j];

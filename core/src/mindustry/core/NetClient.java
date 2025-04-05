@@ -10,6 +10,7 @@ import arc.util.*;
 import arc.util.CommandHandler.*;
 import arc.util.io.*;
 import arc.util.serialization.*;
+import arc.util.serialization.JsonValue.*;
 import mindustry.*;
 import mindustry.annotations.Annotations.*;
 import mindustry.arcModule.ARCEvents;
@@ -23,6 +24,7 @@ import mindustry.game.EventType.*;
 import mindustry.game.*;
 import mindustry.game.Teams.*;
 import mindustry.gen.*;
+import mindustry.io.*;
 import mindustry.logic.*;
 import mindustry.net.Administration.*;
 import mindustry.net.*;
@@ -37,10 +39,12 @@ import java.util.zip.*;
 import static mindustry.Vars.*;
 
 public class NetClient implements ApplicationListener{
+    private static final long entitySnapshotTimeout = 1000 * 20;
     private static final float dataTimeout = 60 * 30;
     /** ticks between syncs, e.g. 5 means 60/5 = 12 syncs/sec*/
     private static final float playerSyncTime = 4;
     private static final Reads dataReads = new Reads(null);
+    private static final JsonValue tmpJsonMap = new JsonValue(ValueType.object);
 
     private long ping;
     private Interval timer = new Interval(5);
@@ -52,6 +56,8 @@ public class NetClient implements ApplicationListener{
     private boolean quietReset = false;
     /** Counter for data timeout. */
     private float timeoutTime = 0f;
+    /** Timestamp for last UDP state snapshot received. */
+    private long lastSnapshotTimestamp;
     /** Last sent client snapshot ID. */
     private int lastSent;
 
@@ -62,6 +68,8 @@ public class NetClient implements ApplicationListener{
     private DataInputStream dataStream = new DataInputStream(byteStream);
     /** Packet handlers for custom types of messages. */
     private ObjectMap<String, Seq<Cons<String>>> customPacketHandlers = new ObjectMap<>();
+    /** Packet handlers for custom types of messages, in binary. */
+    private ObjectMap<String, Seq<Cons<byte[]>>> customBinaryPacketHandlers = new ObjectMap<>();
 
     public NetClient(){
 
@@ -176,13 +184,27 @@ public class NetClient implements ApplicationListener{
         return customPacketHandlers.get(type, Seq::new);
     }
 
-    public static void serverPacketReliable(String type, String contents){
-        if (Vars.net.client()){
-            ServerPacketReliableCallPacket packet = new ServerPacketReliableCallPacket();
-            packet.type = type;
-            packet.contents = contents;
-            Vars.net.send(packet, true);
+    public void addBinaryPacketHandler(String type, Cons<byte[]> handler){
+        customBinaryPacketHandlers.get(type, Seq::new).add(handler);
+    }
+
+    public Seq<Cons<byte[]>> getBinaryPacketHandlers(String type){
+        return customBinaryPacketHandlers.get(type, Seq::new);
+    }
+
+    @Remote(targets = Loc.server, variants = Variant.both)
+    public static void clientBinaryPacketReliable(String type, byte[] contents){
+        var arr = netClient.customBinaryPacketHandlers.get(type);
+        if(arr != null){
+            for(var c : arr){
+                c.get(contents);
+            }
         }
+    }
+
+    @Remote(targets = Loc.server, variants = Variant.both, unreliable = true)
+    public static void clientBinaryPacketUnreliable(String type, byte[] contents){
+        clientBinaryPacketReliable(type, contents);
     }
 
     @Remote(targets = Loc.server, variants = Variant.both)
@@ -341,7 +363,7 @@ public class NetClient implements ApplicationListener{
         ui.join.connect(ip, port);
     }
 
-    @Remote(targets = Loc.client)
+    @Remote(targets = Loc.client, priority = PacketPriority.high)
     public static void ping(Player player, long time){
         Call.pingResponse(player.con, time);
     }
@@ -410,24 +432,34 @@ public class NetClient implements ApplicationListener{
     }
 
     @Remote(variants = Variant.both)
-    public static void setObjectives(MapObjectives executor){
-        //clear old markers
-        for(var objective : state.rules.objectives){
-            for(var marker : objective.markers){
-                if(marker.wasAdded){
-                    marker.removed();
-                    marker.wasAdded = false;
-                }
-            }
+    public static void setRule(String rule, String jsonData){
+        try{
+            //readField searches for the specified value, so create a fake parent for it.
+            tmpJsonMap.child = null;
+            tmpJsonMap.addChild(rule, new JsonReader().parse(jsonData));
+            JsonIO.json.readField(state.rules, rule, tmpJsonMap);
+        }catch(Throwable error){
+            Log.err("Failed to read rule", error);
         }
+    }
 
+    //NOTE: avoid using this, runs into packet/buffer size limitations
+    @Remote(variants = Variant.both)
+    public static void setObjectives(MapObjectives executor){
         state.rules.objectives = executor;
     }
 
-    @Remote(called = Loc.server)
-    public static void objectiveCompleted(String[] flagsRemoved, String[] flagsAdded){
-        state.rules.objectiveFlags.removeAll(flagsRemoved);
-        state.rules.objectiveFlags.addAll(flagsAdded);
+    @Remote(variants = Variant.both, called = Loc.server)
+    public static void clearObjectives(){
+        state.rules.objectives.clear();
+    }
+
+    @Remote(variants = Variant.both, called = Loc.server)
+    public static void completeObjective(int index){
+        var obj = state.rules.objectives.get(index);
+        if(obj != null){
+            obj.done();
+        }
     }
 
     @Remote(variants = Variant.both)
@@ -508,6 +540,7 @@ public class NetClient implements ApplicationListener{
     @Remote(variants = Variant.one, priority = PacketPriority.low, unreliable = true)
     public static void entitySnapshot(short amount, byte[] data){
         try{
+            netClient.lastSnapshotTimestamp = Time.millis();
             netClient.byteStream.setBytes(data);
             DataInputStream input = netClient.dataStream;
 
@@ -549,7 +582,7 @@ public class NetClient implements ApplicationListener{
                     Log.warn("Block ID mismatch at @: @ != @. Skipping block snapshot.", tile, tile.build.block.id, block);
                     break;
                 }
-                tile.build.readAll(Reads.get(input), tile.build.version());
+                tile.build.readSync(Reads.get(input), tile.build.version());
             }
         }catch(Exception e){
             Log.err(e);
@@ -605,7 +638,18 @@ public class NetClient implements ApplicationListener{
         if(!net.client()) return;
 
         if(state.isGame()){
-            if(!connecting) sync();
+            if(!connecting){
+                sync();
+
+                //timeout if UDP snapshot packets are not received for a while
+                if(lastSnapshotTimestamp > 0 && Time.timeSinceMillis(lastSnapshotTimestamp) > entitySnapshotTimeout){
+                    Log.err("Timed out after not received UDP snapshots.");
+                    quiet = true;
+                    ui.showErrorMessage("@disconnect.snapshottimeout");
+                    net.disconnect();
+                    lastSnapshotTimestamp = 0;
+                }
+            }
         }else if(!connecting){
             net.disconnect();
         }else{ //...must be connecting
@@ -642,6 +686,7 @@ public class NetClient implements ApplicationListener{
         Core.app.post(Call::connectConfirm);
         Time.runTask(40f, platform::updateRPC);
         Core.app.post(ui.loadfrag::hide);
+        lastSnapshotTimestamp = Time.millis();
     }
 
     private void reset(){
@@ -652,6 +697,7 @@ public class NetClient implements ApplicationListener{
         quietReset = false;
         quiet = false;
         lastSent = 0;
+        lastSnapshotTimestamp = 0;
 
         Groups.clear();
         ui.chatfrag.clearMessages();

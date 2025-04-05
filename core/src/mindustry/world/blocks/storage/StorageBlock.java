@@ -5,6 +5,7 @@ import arc.struct.*;
 import arc.util.*;
 import mindustry.content.*;
 import mindustry.gen.*;
+import mindustry.logic.*;
 import mindustry.type.*;
 import mindustry.world.*;
 import mindustry.world.blocks.storage.CoreBlock.*;
@@ -101,11 +102,17 @@ public class StorageBlock extends Block{
         }
 
         @Override
+        public double sense(LAccess sensor){
+            if(sensor == LAccess.itemCapacity && linkedCore != null) return linkedCore.sense(sensor);
+            return super.sense(sensor);
+        }
+
+        @Override
         public void overwrote(Seq<Building> previous){
             //only add prev items when core is not linked
             if(linkedCore == null){
                 for(Building other : previous){
-                    if(other.items != null && other.items != items){
+                    if(other.items != null && other.items != items && !(other instanceof StorageBuild b && b.linkedCore != null)){
                         items.add(other.items);
                     }
                 }

@@ -19,7 +19,7 @@ public class Objectives{
 
         @Override
         public boolean complete(){
-            return content.unlocked();
+            return content.unlockedHost();
         }
 
         @Override
@@ -43,7 +43,7 @@ public class Objectives{
 
         @Override
         public boolean complete(){
-            return content.unlocked();
+            return content.unlockedHost();
         }
 
         @Override

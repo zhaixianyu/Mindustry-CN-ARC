@@ -59,7 +59,7 @@ public class NetServer implements ApplicationListener{
                         count++;
                     }
                 }
-                return count;
+                return (float)count + Mathf.random(-0.1f, 0.1f); //if several have the same playercount pick random
             });
             return re == null ? null : re.team;
         }
@@ -117,6 +117,10 @@ public class NetServer implements ApplicationListener{
     private DataOutputStream dataStream = new DataOutputStream(syncStream);
     /** Packet handlers for custom types of messages. */
     private ObjectMap<String, Seq<Cons2<Player, String>>> customPacketHandlers = new ObjectMap<>();
+    /** Packet handlers for custom types of messages - binary version. */
+    private ObjectMap<String, Seq<Cons2<Player, byte[]>>> customBinaryPacketHandlers = new ObjectMap<>();
+    /** Packet handlers for logic client data */
+    private ObjectMap<String, Seq<Cons2<Player, Object>>> logicClientDataHandlers = new ObjectMap<>();
 
     public NetServer(){
 
@@ -203,7 +207,7 @@ public class NetServer implements ApplicationListener{
                 info.id = packet.uuid;
                 admins.save();
                 Call.infoMessage(con, "You are not whitelisted here.");
-                info("&lcDo &lywhitelist-add @&lc to whitelist the player &lb'@'", packet.uuid, packet.name);
+                info("&lcDo &lywhitelist add @&lc to whitelist the player &lb'@'", packet.uuid, packet.name);
                 con.kick(KickReason.whitelist);
                 return;
             }
@@ -421,7 +425,7 @@ public class NetServer implements ApplicationListener{
             }
         });
 
-        clientCommands.<Player>register("vote", "<y/n/c>", "Vote to kick the current player. Admin can cancel the voting with 'c'.", (arg, player) -> {
+        clientCommands.<Player>register("vote", "<y/n/c>", "Vote to kick the current player. Admins can cancel the voting with 'c'.", (arg, player) -> {
             if(currentlyKicking == null){
                 player.sendMessage("[scarlet]Nobody is being voted on.");
             }else{
@@ -515,6 +519,18 @@ public class NetServer implements ApplicationListener{
         return customPacketHandlers.get(type, Seq::new);
     }
 
+    public void addBinaryPacketHandler(String type, Cons2<Player, byte[]> handler){
+        customBinaryPacketHandlers.get(type, Seq::new).add(handler);
+    }
+
+    public Seq<Cons2<Player, byte[]>> getBinaryPacketHandlers(String type){
+        return customBinaryPacketHandlers.get(type, Seq::new);
+    }
+
+    public void addLogicDataHandler(String type, Cons2<Player, Object> handler){
+        logicClientDataHandlers.get(type, Seq::new).add(handler);
+    }
+
     public static void onDisconnect(Player player, String reason){
         //singleplayer multiplayer weirdness
         if(player.con == null){
@@ -583,11 +599,40 @@ public class NetServer implements ApplicationListener{
         serverPacketReliable(player, type, contents);
     }
 
+    @Remote(targets = Loc.client)
+    public static void serverBinaryPacketReliable(Player player, String type, byte[] contents){
+        if(netServer.customPacketHandlers.containsKey(type)){
+            for(var c : netServer.customBinaryPacketHandlers.get(type)){
+                c.get(player, contents);
+            }
+        }
+    }
+
+    @Remote(targets = Loc.client, unreliable = true)
+    public static void serverBinaryPacketUnreliable(Player player, String type, byte[] contents){
+        serverBinaryPacketReliable(player, type, contents);
+    }
+
+    @Remote(targets = Loc.client)
+    public static void clientLogicDataReliable(Player player, String channel, Object value){
+        Seq<Cons2<Player, Object>> handlers = netServer.logicClientDataHandlers.get(channel);
+        if(handlers != null){
+            for(Cons2<Player, Object> handler : handlers){
+                handler.get(player, value);
+            }
+        }
+    }
+
+    @Remote(targets = Loc.client, unreliable = true)
+    public static void clientLogicDataUnreliable(Player player, String channel, Object value){
+        clientLogicDataReliable(player, channel, value);
+    }
+
     private static boolean invalid(float f){
         return Float.isInfinite(f) || Float.isNaN(f);
     }
 
-    @Remote(targets = Loc.client, unreliable = true)
+    @Remote(targets = Loc.client, unreliable = true, priority = PacketPriority.high)
     public static void clientSnapshot(
         Player player,
         int snapshotID,
@@ -654,7 +699,7 @@ public class NetServer implements ApplicationListener{
                     //auto-skip done requests
                     if(req.breaking && tile.block() == Blocks.air){
                         continue;
-                    }else if(!req.breaking && tile.block() == req.block && (!req.block.rotate || (tile.build != null && tile.build.rotation == req.rotation))){
+                    }else if(!req.breaking && tile.block() == req.block && tile.team() != Team.derelict && (!req.block.rotate || (tile.build != null && tile.build.rotation == req.rotation))){
                         continue;
                     }else if(con.rejectedRequests.contains(r -> r.breaking == req.breaking && r.x == req.x && r.y == req.y)){ //check if request was recently rejected, and skip it if so
                         continue;
@@ -696,7 +741,6 @@ public class NetServer implements ApplicationListener{
                 vector.limit(maxMove);
 
                 float prevx = unit.x, prevy = unit.y;
-                //unit.set(con.lastPosition);
                 if(!unit.isFlying()){
                     unit.move(vector.x, vector.y);
                 }else{
@@ -772,13 +816,12 @@ public class NetServer implements ApplicationListener{
             }
             case trace -> {
                 PlayerInfo stats = netServer.admins.getInfo(other.uuid());
-                TraceInfo info = new TraceInfo(other.con.address, other.uuid(), other.con.modclient, other.con.mobile, stats.timesJoined, stats.timesKicked, stats.ips.toArray(String.class), stats.names.toArray(String.class));
+                TraceInfo info = new TraceInfo(other.con.address, other.uuid(), other.locale, other.con.modclient, other.con.mobile, stats.timesJoined, stats.timesKicked, stats.ips.toArray(String.class), stats.names.toArray(String.class));
                 if(player.con != null){
                     Call.traceInfo(player.con, other, info);
                 }else{
                     NetClient.traceInfo(other, info);
                 }
-                info("&lc@ &fi&lk[&lb@&fi&lk]&fb has requested trace info of @ &fi&lk[&lb@&fi&lk]&fb.", player.plainName(), player.uuid(), other.plainName(), other.uuid());
             }
             case switchTeam -> {
                 if(params instanceof Team team){
@@ -788,7 +831,7 @@ public class NetServer implements ApplicationListener{
         }
     }
 
-    @Remote(targets = Loc.client)
+    @Remote(targets = Loc.client, priority = PacketPriority.high)
     public static void connectConfirm(Player player){
         if(player.con.kicked) return;
 
@@ -895,7 +938,7 @@ public class NetServer implements ApplicationListener{
 
             dataStream.writeInt(entity.pos());
             dataStream.writeShort(entity.block.id);
-            entity.writeAll(Writes.get(dataStream));
+            entity.writeSync(Writes.get(dataStream));
 
             if(syncStream.size() > maxSnapshotSize){
                 dataStream.close();
@@ -1040,7 +1083,7 @@ public class NetServer implements ApplicationListener{
                 try{
                     writeEntitySnapshot(player);
                 }catch(IOException e){
-                    e.printStackTrace();
+                    Log.err(e);
                 }
             });
 

@@ -11,7 +11,6 @@ import arc.util.*;
 import mindustry.arcModule.ui.AdvanceToolTable;
 import mindustry.ctype.*;
 import mindustry.gen.*;
-import mindustry.type.*;
 import mindustry.ui.*;
 import mindustry.world.*;
 
@@ -67,7 +66,7 @@ public class ItemSelection{
 
             Seq<T> list = items.select(u -> (text.isEmpty() || u.localizedName.toLowerCase().contains(text.toLowerCase())));
             for(T item : list){
-                if(!AdvanceToolTable.allBlocksReveal && (!item.unlockedNow() || (item instanceof Item checkVisible && state.rules.hiddenBuildItems.contains(checkVisible)) || item.isHidden())) continue;
+                if(!AdvanceToolTable.allBlocksReveal && (!item.unlockedNow() || item.isHidden())) continue;
 
                 ImageButton button = cont.button(Tex.whiteui, Styles.clearNoneTogglei, Mathf.clamp(item.selectionSize, 0f, 40f), () -> {
                     if(closeSelect) control.input.config.hideConfig();
@@ -96,6 +95,11 @@ public class ItemSelection{
 
         ScrollPane pane = new ScrollPane(cont, Styles.smallPane);
         pane.setScrollingDisabled(true, false);
+        pane.exited(() -> {
+            if(pane.hasScroll()){
+                Core.scene.setScrollFocus(null);
+            }
+        });
 
         if(block != null){
             pane.setScrollYForce(block.selectScroll);

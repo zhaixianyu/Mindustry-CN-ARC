@@ -54,6 +54,7 @@ abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Dra
     transient float deathTimer;
     transient String lastText = "";
     transient float textFadeTime;
+    transient Ratekeeper itemDepositRate = new Ratekeeper();
 
     transient private Unit lastReadUnit = Nulls.unit;
     transient private int wrongReadUnits;
@@ -79,7 +80,7 @@ abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Dra
 
     public TextureRegion icon(){
         //display default icon for dead players
-        if(dead()) return core() == null ? UnitTypes.alpha.fullIcon : ((CoreBlock)bestCore().block).unitType.fullIcon;
+        if(dead()) return core() == null ? UnitTypes.alpha.uiIcon : ((CoreBlock)bestCore().block).unitType.uiIcon;
 
         return unit.icon();
     }
@@ -197,6 +198,9 @@ abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Dra
             clearUnit();
         }
         Events.fire(new ARCEvents.PlayerLeave(self()));
+
+        lastReadUnit = Nulls.unit;
+        justSwitchTo = justSwitchFrom = null;
     }
 
     public void team(Team team){
@@ -287,7 +291,7 @@ abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Dra
 
     @Override
     public void draw(){
-        if(unit != null && unit.inFogTo(Vars.player.team())) return;
+        if(unit == null || name == null || unit.inFogTo(Vars.player.team())) return;
 
         if (ARCVars.payloadPreview && isLocal() && unit instanceof Payloadc pay) {
             Draw.z(Layer.playerName);
@@ -310,8 +314,7 @@ abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Dra
             }
         }
 
-        //??????
-        if(ARCVars.arcHideName || name == null) return;
+        if(ARCVars.arcHideName) return;
 
         Draw.z(Layer.playerName);
         float z = Drawf.text();

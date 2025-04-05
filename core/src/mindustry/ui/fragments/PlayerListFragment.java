@@ -140,6 +140,8 @@ public class PlayerListFragment{
                     if(control.input instanceof DesktopInput input){
                         input.panning = true;
                     }
+                    control.input.spectate(user.unit());
+                    ui.showInfoFade(Core.bundle.format("viewplayer", user.name), 1f);
                 }
             });
 
