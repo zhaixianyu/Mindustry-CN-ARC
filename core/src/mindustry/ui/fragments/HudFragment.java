@@ -464,6 +464,9 @@ public class HudFragment{
                         dialog.add(selectTeam).center();
                         dialog.row();
 
+                        teams.button(Icon.downOpen, Styles.emptyi, () -> Core.settings.put("editor-blocks-shown", !Core.settings.getBool("editor-blocks-shown")))
+                                .size(45f).update(m -> m.getStyle().imageUp = (Core.settings.getBool("editor-blocks-shown") ? Icon.upOpen : Icon.downOpen));
+
                         dialog.addCloseButton();
 
                         dialog.show();
@@ -473,9 +476,6 @@ public class HudFragment{
                 t.row();
 
                 t.table(control.input::buildPlacementUI).growX().left().with(in -> in.left()).row();
-
-                teams.button(Icon.downOpen, Styles.emptyi, () -> Core.settings.put("editor-blocks-shown", !Core.settings.getBool("editor-blocks-shown")))
-                        .size(45f).update(m -> m.getStyle().imageUp = (Core.settings.getBool("editor-blocks-shown") ? Icon.upOpen : Icon.downOpen));
 
             t.collapser(this::addBlockSelection, () -> Core.settings.getBool("editor-blocks-shown"));
 

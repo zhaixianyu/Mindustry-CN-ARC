@@ -160,7 +160,6 @@ public class LCanvas extends Table{
 
     public void clearAll(){
         if(statements==null) return;
-        jumps.clear();
         statements.clear();
         rebuild();
     }

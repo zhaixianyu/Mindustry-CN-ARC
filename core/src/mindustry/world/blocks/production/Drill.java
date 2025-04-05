@@ -18,6 +18,7 @@ import mindustry.logic.*;
 import mindustry.type.*;
 import mindustry.ui.*;
 import mindustry.world.*;
+import mindustry.world.blocks.environment.Floor;
 import mindustry.world.consumers.*;
 import mindustry.world.meta.*;
 

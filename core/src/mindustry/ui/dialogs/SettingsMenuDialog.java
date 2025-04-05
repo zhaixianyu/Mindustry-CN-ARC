@@ -12,9 +12,13 @@ import arc.scene.style.*;
 import arc.scene.ui.*;
 import arc.scene.ui.TextButton.*;
 import arc.scene.ui.layout.*;
+import arc.scene.utils.Elem;
 import arc.struct.*;
 import arc.util.*;
 import arc.util.io.*;
+import mindustry.arcModule.ARCVars;
+import mindustry.arcModule.RFuncs;
+import mindustry.arcModule.ui.AdvanceToolTable;
 import mindustry.content.*;
 import mindustry.content.TechTree.*;
 import mindustry.core.*;
@@ -674,19 +678,6 @@ public class SettingsMenuDialog extends BaseDialog{
             arc.sliderPref("rtsWoundUnit", 0, 0, 100, 2, s -> s + "%");
 
             arc.addCategory("arcShareinfo");
-            arc.sliderPref("chatValidType", 0, 0, 3, 1, s -> {
-                if (s == 0) {
-                    return "原版模式";
-                } else if (s == 1) {
-                    return "纯净聊天";
-                } else if (s == 2) {
-                    return "服务器记录";
-                } else if (s == 3) {
-                    return "全部记录";
-                } else {
-                    return s + "";
-                }
-            });
             arc.checkPref("arcPlayerList", true);
             arc.checkPref("ShowInfoPopup", true);
             arc.checkPref("arcShareWaveInfo", false);

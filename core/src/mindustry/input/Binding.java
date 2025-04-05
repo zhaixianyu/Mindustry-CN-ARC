@@ -36,6 +36,7 @@ public enum Binding implements KeyBind{
 
 
     command_mode(KeyCode.shiftLeft, "command"),
+    force_move(KeyCode.altLeft),
     command_queue(KeyCode.mouseMiddle),
     create_control_group(KeyCode.controlLeft),
 

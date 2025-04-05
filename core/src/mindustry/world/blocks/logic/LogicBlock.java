@@ -21,6 +21,7 @@ import mindustry.core.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.io.*;
+import mindustry.io.TypeIO.Boxed;
 import mindustry.logic.*;
 import mindustry.ui.*;
 import mindustry.world.*;

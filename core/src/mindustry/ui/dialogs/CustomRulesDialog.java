@@ -114,6 +114,84 @@ public class CustomRulesDialog extends BaseDialog{
         });
     }
 
+    private <T extends UnlockableContent> void showBanned(String title, ContentType type, ObjectSet<T> set, Boolf<T> pred){
+        BaseDialog bd = new BaseDialog(title);
+        bd.addCloseButton();
+
+        Runnable[] rebuild = {null};
+
+        rebuild[0] = () -> {
+            float previousScroll = bd.cont.getChildren().isEmpty() ? 0f : ((ScrollPane)bd.cont.getChildren().first()).getScrollY();
+            bd.cont.clear();
+            bd.cont.pane(t -> {
+                t.margin(10f);
+
+                if(set.isEmpty()){
+                    t.add("@empty");
+                }
+
+                Seq<T> array = set.toSeq();
+                array.sort();
+
+                int cols = mobile && Core.graphics.isPortrait() ? 1 : mobile ? 2 : 3;
+                int i = 0;
+
+                for(T con : array){
+                    t.table(Tex.underline, b -> {
+                        b.left().margin(4f);
+                        b.image(con.uiIcon).size(iconMed).padRight(3);
+                        b.add(con.localizedName).color(Color.lightGray).padLeft(3).growX().left().wrap();
+
+                        b.button(Icon.cancel, Styles.emptyi, () -> {
+                            set.remove(con);
+                            rebuild[0].run();
+                        }).size(70f).pad(-4f).padLeft(0f);
+                    }).size(300f, 70f).padRight(5);
+
+                    if(++i % cols == 0){
+                        t.row();
+                    }
+                }
+            }).get().setScrollYForce(previousScroll);
+            bd.cont.row();
+            bd.cont.button("@add", Icon.add, () -> {
+                BaseDialog dialog = new BaseDialog("@add");
+                dialog.cont.pane(t -> {
+                    t.left().margin(14f);
+                    int[] i = {0};
+                    content.<T>getBy(type).each(b -> !set.contains(b) && pred.get(b), b -> {
+                        int cols = mobile && Core.graphics.isPortrait() ? 4 : 12;
+                        t.button(new TextureRegionDrawable(b.uiIcon), Styles.flati, iconMed, () -> {
+                            set.add(b);
+                            rebuild[0].run();
+                            dialog.hide();
+                        }).size(60f).tooltip(b.localizedName);
+
+                        if(++i[0] % cols == 0){
+                            t.row();
+                        }
+                    });
+                });
+
+                dialog.addCloseButton();
+                dialog.show();
+            }).size(300f, 64f).disabled(b -> set.size == content.<T>getBy(type).count(pred));
+        };
+
+        bd.shown(rebuild[0]);
+        bd.buttons.button("@addall", Icon.add, () -> {
+            set.addAll(content.<T>getBy(type).select(pred));
+            rebuild[0].run();
+        }).size(180, 64f);
+
+        bd.buttons.button("@clear", Icon.trash, () -> {
+            set.clear();
+            rebuild[0].run();
+        }).size(180, 64f);
+
+        bd.show();
+    }
+
     void refresh(){
         setup();
         requestKeyboard();
@@ -539,6 +617,13 @@ public class CustomRulesDialog extends BaseDialog{
         cell.get().left();
         ruleInfo(cell, text);
         current.row();
+    }
+
+    void title(String text){
+        main.add(text).color(ARCVars.getThemeColor()).padTop(20).center().padBottom(-3);
+        main.row();
+        main.image().color(ARCVars.getThemeColor()).height(3f).padRight(100f).padBottom(20);
+        main.row();
     }
 
     public void ruleInfo(Cell<?> cell, String text){
