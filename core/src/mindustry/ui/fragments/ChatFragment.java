@@ -16,7 +16,7 @@ import arc.util.*;
 import mindustry.*;
 import mindustry.arcModule.ARCClient;
 import mindustry.arcModule.ARCVars;
-import mindustry.core.NetClient;
+import mindustry.core.*;
 import mindustry.game.EventType.*;
 import mindustry.gen.*;
 import mindustry.input.*;
@@ -69,14 +69,12 @@ public class ChatFragment extends Table{
 
             if(shown){
                 if(input.keyTap(Binding.chat_history_prev) && historyPos < history.size - 1){
-                    if(historyPos <= 0) history.set(0, chatfield.getText());
-                     while(!chatValidType(messages.get(historyPos)) && historyPos < history.size - 2) historyPos++;
+                    if(historyPos == 0) history.set(0, chatfield.getText());
                     historyPos++;
                     updateChat();
                 }
                 if(input.keyTap(Binding.chat_history_next) && historyPos > 0){
-                    while(!chatValidType(messages.get(historyPos)) && historyPos < history.size - 1 && historyPos > 0) historyPos--;
-                    historyPos = Math.max(historyPos - 1,0);
+                    historyPos--;
                     updateChat();
                 }
                 if(input.keyTap(Binding.chat_mode)){
@@ -131,7 +129,8 @@ public class ChatFragment extends Table{
             if(index >= 0 && index < cursor){
                 String text = chatfield.getText().substring(index + 1, cursor - 1);
                 String uni = Fonts.getUnicodeStr(text);
-                if(uni != null && uni.length() > 0){
+                if((uni == null || uni.isEmpty()) && Iconc.codes.containsKey(text)) uni = Character.toString((char)Iconc.codes.get(text));
+                if(uni != null && !uni.isEmpty()){
                     chatfield.setText(chatfield.getText().substring(0, index) + uni + chatfield.getText().substring(cursor));
                     chatfield.setCursorPosition(index + uni.length());
                 }
@@ -166,18 +165,16 @@ public class ChatFragment extends Table{
         Draw.alpha(shadowColor.a * opacity);
 
         float theight = offsety + spacing + getMarginBottom() + scene.marginBottom;
-        int messageCount = 0;
-        for (int i = scrollPos; i < messages.size && messageCount < messagesShown && (i < fadetime || shown); i++) {
-            if(!chatValidType(messages.get(i))) continue;
-            messageCount += 1;
+        for(int i = scrollPos; i < messages.size && i < messagesShown + scrollPos && (i < fadetime || shown); i++){
+            String message = messages.get(i);
 
-            layout.setText(font, messages.get(i), Color.white, textWidth, Align.bottomLeft, true);
+            layout.setText(font, message, Color.white, textWidth, Align.bottomLeft, true);
             theight += layout.height + textspacing;
             if(i - scrollPos == 0) theight -= textspacing + 1;
 
             font.getCache().clear();
             font.getCache().setColor(Color.white);
-            font.getCache().addText(messages.get(i), fontoffsetx + offsetx, offsety + theight, textWidth, Align.bottomLeft, true);
+            font.getCache().addText(message, fontoffsetx + offsetx, offsety + theight, textWidth, Align.bottomLeft, true);
 
             if(!shown && fadetime - i < 1f && fadetime - i >= 0f){
                 font.getCache().setAlphas((fadetime - i) * opacity);
@@ -207,16 +204,11 @@ public class ChatFragment extends Table{
         //avoid sending prefix-empty messages
         if(message.isEmpty() || (message.startsWith(mode.prefix) && message.substring(mode.prefix.length()).isEmpty())) return;
 
-        //if (arcMessage(message)) return;
-
         history.insert(1, message);
 
-        Events.fire(new ClientChatEvent(message));
+        message = UI.formatIcons(message);
 
-        if (settings.getBool("arcChatEnabled", false) && message.startsWith(ChatMode.arc.prefix + " ")) {
-            NetClient.sendARCMessage(message.substring(ChatMode.arc.prefix.length() + 1));
-            return;
-        }
+        Events.fire(new ClientChatEvent(message));
 
         Call.sendChatMessage(message);
     }
@@ -258,12 +250,8 @@ public class ChatFragment extends Table{
         clearChatInput();
     }
 
-    public void updateChat() {
-        if  (history.get(historyPos).contains(mode.normalizedPrefix())) {
-            chatfield.setText(history.get(historyPos));
-        } else {
-            chatfield.setText(mode.normalizedPrefix() + history.get(historyPos));
-        }
+    public void updateChat(){
+        chatfield.setText(mode.normalizedPrefix() + history.get(historyPos));
         updateCursor();
     }
 
@@ -339,8 +327,7 @@ public class ChatFragment extends Table{
     public enum ChatMode{
         normal(""),
         team("/t"),
-        admin("/a", player::admin),
-        arc("/arcchat", () -> settings.getBool("arcChatEnabled", false))
+        admin("/a", player::admin)
         ;
 
         public String prefix;

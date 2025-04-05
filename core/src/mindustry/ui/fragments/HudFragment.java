@@ -14,7 +14,6 @@ import arc.scene.ui.ImageButton.*;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
-import mindustry.Vars;
 import mindustry.*;
 import mindustry.annotations.Annotations.*;
 import mindustry.arcModule.ARCVars;
@@ -354,8 +353,19 @@ public class HudFragment{
 
             Table wavesMain, editorMain;
 
-            cont.stack(wavesMain = new Table(), editorMain = new Table()).height(wavesMain.getPrefHeight())
-            .name("waves/editor").growY().left().top();
+            cont.stack(wavesMain = new Table(), editorMain = new Table(), new Element(){
+                //this may seem insane, but adding an empty element of a specific height to this stack fixes layout issues on mobile.
+
+                {
+                    visible = false;
+                    touchable = Touchable.disabled;
+                }
+
+                @Override
+                public float getPrefHeight(){
+                    return Scl.scl(120f);
+                }
+            }).name("waves/editor");
 
             wavesMain.visible(() -> shown && !state.isEditor());
             wavesMain.top().left().name = "waves";
@@ -414,12 +424,14 @@ public class HudFragment{
 
             editorMain.table(Tex.buttonEdge4, t -> {
                 t.name = "teams";
+
+
                 t.top().table(teams -> {
                     teams.left();
                     int i = 0;
                     for(Team team : Team.baseTeams){
-                        ImageButton button = teams.button(Tex.whiteui, Styles.clearNoneTogglei, 38f, () -> Call.setPlayerTeamEditor(player, team))
-                        .size(50f).margin(6f).get();
+                        ImageButton button = teams.button(Tex.whiteui, Styles.clearNoneTogglei, 33f, () -> Call.setPlayerTeamEditor(player, team))
+                        .size(45f).margin(6f).get();
                         button.getImageCell().grow();
                         button.getStyle().imageUpColor = team.color;
                         button.update(() -> button.setChecked(player.team() == team));
@@ -461,6 +473,11 @@ public class HudFragment{
                 t.row();
 
                 t.table(control.input::buildPlacementUI).growX().left().with(in -> in.left()).row();
+
+                teams.button(Icon.downOpen, Styles.emptyi, () -> Core.settings.put("editor-blocks-shown", !Core.settings.getBool("editor-blocks-shown")))
+                        .size(45f).update(m -> m.getStyle().imageUp = (Core.settings.getBool("editor-blocks-shown") ? Icon.upOpen : Icon.downOpen));
+
+            t.collapser(this::addBlockSelection, () -> Core.settings.getBool("editor-blocks-shown"));
 
                 //hovering item display
                 t.table(h -> {
@@ -516,6 +533,8 @@ public class HudFragment{
                     return 0f;
                 });
             }
+
+            editorMain.row().add().growY();
             editorMain.visible(() -> shown && (state.isEditor() || Core.settings.getBool("selectTeam")) && !Core.settings.getBool("showAdvanceToolTable"));
 
             //map info/nextwave display
@@ -560,7 +579,6 @@ public class HudFragment{
                 info.label(() -> tps.get(state.serverTps == -1 ? 60 : state.serverTps)).visible(net::client).left().style(Styles.outlineLabel).name("tps").row();
 
             }).top().left();
-
         });
 
         //core info
@@ -579,7 +597,7 @@ public class HudFragment{
 
             t.table(c -> {
                 //core items
-                c.top().collapser(coreItems, () -> Core.settings.getInt("arccoreitems")>0  && shown).fillX().row();
+                c.top().collapser(coreItems, () -> Core.settings.getInt("arccoreitems") > 0  && shown).fillX().row();
 
                 float notifDuration = 240f;
                 float[] coreAttackTime = {0};

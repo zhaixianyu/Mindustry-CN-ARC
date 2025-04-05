@@ -1,26 +1,18 @@
 package mindustry.ui.fragments;
 
-import arc.Core;
-import arc.Events;
-import arc.files.Fi;
-import arc.graphics.Color;
-import arc.graphics.Pixmap;
-import arc.graphics.Texture;
-import arc.graphics.g2d.Draw;
-import arc.graphics.g2d.TextureRegion;
-import arc.math.Interp;
-import arc.math.Mathf;
-import arc.math.Rand;
-import arc.scene.Group;
-import arc.scene.actions.Actions;
-import arc.scene.event.Touchable;
-import arc.scene.style.Drawable;
+import arc.*;
+import arc.graphics.*;
+import arc.graphics.g2d.*;
+import arc.math.*;
+import arc.scene.*;
+import arc.scene.actions.*;
+import arc.scene.event.*;
+import arc.scene.style.*;
 import arc.scene.ui.*;
-import arc.scene.ui.ImageButton.ImageButtonStyle;
-import arc.scene.ui.layout.Scl;
-import arc.scene.ui.layout.Table;
-import arc.scene.ui.layout.WidgetGroup;
-import arc.struct.Seq;
+import arc.scene.ui.ImageButton.*;
+import arc.scene.ui.TextButton.*;
+import arc.scene.ui.layout.*;
+import arc.struct.*;
 import arc.util.*;
 import arc.util.serialization.JsonReader;
 import arc.util.serialization.JsonValue;
@@ -54,6 +46,7 @@ public class MenuFragment{
     private Button currentMenu;
     private MenuRenderer renderer;
     private Seq<MenuButton> customButtons = new Seq<>();
+    public Seq<MenuButton> desktopButtons = null;
     Label textLabel;
     float tx, ty, base;
     String[] labels = { "[yellow]学术端!" };
@@ -570,40 +563,39 @@ public class MenuFragment{
             t.defaults().width(width).height(70f);
             t.name = "buttons";
 
-            if(Core.settings.getInt("changelogreaded") != ARCVars.changeLogRead) {
-                buttons(t,
-                        new MenuButton("@database.button", Icon.menu,
-                                new MenuButton("@schematics", Icon.paste, ui.schematics::show),
-                                new MenuButton("@database", Icon.book, ui.database::show),
-                                new MenuButton("@about.button", Icon.info, ui.about::show),
-                                new MenuButton("@updatedialog.button", Icon.distribution, arcui.updatedialog::show)
-                        ),
-                        new MenuButton("@settings", Icon.settings, ui.settings::show),
-                        new MenuButton("@aboutcn_arc.button", Icon.info, arcui.aboutcn_arc::show)
-                );
-            } else {
-                buttons(t,
-                        new MenuButton("@play", Icon.play,
-                                new MenuButton("@campaign", Icon.play, () -> checkPlay(ui.planet::show)),
-                                new MenuButton("@joingame", Icon.add, () -> checkPlay(ui.join::show)),
-                                new MenuButton("@customgame", Icon.terrain, () -> checkPlay(ui.custom::show)),
-                                new MenuButton("@loadgame", Icon.download, () -> checkPlay(ui.load::show)),
-                                new MenuButton("@editor", Icon.terrain, () -> checkPlay(ui.maps::show)), steam ? new MenuButton("@workshop", Icon.steam, platform::openWorkshop) : null
-                        ),
-                        new MenuButton("@database.button", Icon.menu,
-                                new MenuButton("@schematics", Icon.paste, ui.schematics::show),
-                                new MenuButton("@database", Icon.book, ui.database::show),
-                                new MenuButton("@about.button", Icon.info, ui.about::show),
-                                new MenuButton("@updatedialog.button", Icon.distribution, arcui.updatedialog::show)
-                        ),
-
-                        new MenuButton("@achievements", Icon.star, arcui.achievements::show),
-                        new MenuButton("@mods", Icon.book, ui.mods::show),
-                        new MenuButton("@settings", Icon.settings, ui.settings::show),
-                        new MenuButton("@aboutcn_arc.button", Icon.info, arcui.aboutcn_arc::show)
-                );
-
+            if(desktopButtons == null){
+                if(Core.settings.getInt("changelogreaded") != ARCVars.changeLogRead) {
+                    desktopButtons = Seq.with(
+                            new MenuButton("@database.button", Icon.menu,
+                                    new MenuButton("@schematics", Icon.paste, ui.schematics::show),
+                                    new MenuButton("@database", Icon.book, ui.database::show),
+                                    new MenuButton("@about.button", Icon.info, ui.about::show),
+                                    new MenuButton("@updatedialog.button", Icon.distribution, arcui.updatedialog::show)
+                            ),
+                            new MenuButton("@settings", Icon.settings, ui.settings::show),
+                            new MenuButton("@aboutcn_arc.button", Icon.info, arcui.aboutcn_arc::show)
+                    );
+                } else {
+                    desktopButtons = Seq.with(
+                            new MenuButton("@play", Icon.play,
+                                    new MenuButton("@campaign", Icon.play, () -> checkPlay(ui.planet::show)),
+                                    new MenuButton("@joingame", Icon.add, () -> checkPlay(ui.join::show)),
+                                    new MenuButton("@customgame", Icon.terrain, () -> checkPlay(ui.custom::show)),
+                                    new MenuButton("@loadgame", Icon.download, () -> checkPlay(ui.load::show))
+                            ),
+                            new MenuButton("@database.button", Icon.menu,
+                                    new MenuButton("@schematics", Icon.paste, ui.schematics::show),
+                                    new MenuButton("@database", Icon.book, ui.database::show),
+                                    new MenuButton("@about.button", Icon.info, ui.about::show)
+                            ),
+                            new MenuButton("@editor", Icon.terrain, () -> checkPlay(ui.maps::show)), steam ? new MenuButton("@workshop", Icon.steam, platform::openWorkshop) : null,
+                            new MenuButton("@mods", Icon.book, ui.mods::show),
+                            new MenuButton("@settings", Icon.settings, ui.settings::show)
+                    );
+                }
             }
+
+            buttons(t, desktopButtons.toArray(MenuButton.class));
             buttons(t, customButtons.toArray(MenuButton.class));
             buttons(t, new MenuButton("@quit", Icon.exit, Core.app::exit));
         }).width(width).growY();
@@ -651,14 +643,14 @@ public class MenuFragment{
                     currentMenu = null;
                     fadeOutMenu();
                 }else{
-                    if(b.submenu != null){
+                    if(b.submenu != null && b.submenu.any()){
                         currentMenu = out[0];
                         submenu.clearChildren();
                         fadeInMenu();
                         //correctly offset the button
                         submenu.add().height((Core.graphics.getHeight() - Core.scene.marginTop - Core.scene.marginBottom - out[0].getY(Align.topLeft)) / Scl.scl(1f));
                         submenu.row();
-                        buttons(submenu, b.submenu);
+                        buttons(submenu, b.submenu.toArray());
                     }else{
                         currentMenu = null;
                         fadeOutMenu();
@@ -698,7 +690,7 @@ public class MenuFragment{
         /** Runnable ran when the button is clicked. Ignored on desktop if {@link #submenu} is not null. */
         public final Runnable runnable;
         /** Submenu shown when this button is clicked. Used instead of {@link #runnable} on desktop. */
-        public final @Nullable MenuButton[] submenu;
+        public final @Nullable Seq<MenuButton> submenu;
 
         /** Constructs a simple menu button, which behaves the same way on desktop and mobile. */
         public MenuButton(String text, Drawable icon, Runnable runnable){
@@ -713,7 +705,7 @@ public class MenuFragment{
             this.icon = icon;
             this.text = text;
             this.runnable = runnable;
-            this.submenu = submenu;
+            this.submenu = submenu != null ? Seq.with(submenu) : null;
         }
 
         /** Comstructs a desktop-only button; used internally. */
@@ -721,7 +713,7 @@ public class MenuFragment{
             this.icon = icon;
             this.text = text;
             this.runnable = () -> {};
-            this.submenu = submenu;
+            this.submenu = submenu != null ? Seq.with(submenu) : null;
         }
     }
 }

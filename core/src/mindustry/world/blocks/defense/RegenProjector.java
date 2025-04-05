@@ -97,7 +97,7 @@ public class RegenProjector extends Block{
             stats.add(Stat.booster, StatValues.itemBoosters(
                 "{0}x修复速度",
                 stats.timePeriod, optionalMultiplier, 0f,
-                cons.items, this::consumesItem)
+                cons.items)
             );
         }
     }

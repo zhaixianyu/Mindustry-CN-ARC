@@ -86,7 +86,6 @@ public class ContentInfoDialog extends BaseDialog{
                         value.display(inset);
                         inset.add().size(10f);
                     }
-
                 }).fillX().padLeft(10);
                 table.row();
             }

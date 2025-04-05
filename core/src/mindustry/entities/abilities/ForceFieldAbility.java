@@ -44,8 +44,7 @@ public class ForceFieldAbility extends Ability{
         if(trait.team != paramUnit.team && trait.type.absorbable && Intersector.isInRegularPolygon(paramField.sides, paramUnit.x, paramUnit.y, realRad, paramField.rotation, trait.x(), trait.y()) && paramUnit.shield > 0){
             trait.absorb();
             Fx.absorb.at(trait);
-
-            paramUnit.shield -= trait.damage();
+            paramUnit.shield -= trait.type().shieldDamage(trait);
             paramField.alpha = 1f;
         }
     };
@@ -115,6 +114,15 @@ public class ForceFieldAbility extends Ability{
             Groups.bullet.intersect(unit.x - realRad, unit.y - realRad, realRad * 2f, realRad * 2f, shieldConsumer);
         }else{
             radiusScale = 0f;
+        }
+    }
+
+    @Override
+    public void death(Unit unit){
+
+        //self-destructing units can have a shield on death
+        if(unit.shield > 0f && !wasBroken){
+            Fx.shieldBreak.at(unit.x, unit.y, radius, unit.type.shieldColor(unit), this);
         }
     }
 

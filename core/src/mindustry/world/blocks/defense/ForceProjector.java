@@ -57,7 +57,7 @@ public class ForceProjector extends Block{
             bullet.absorb();
             paramEffect.at(bullet);
             paramEntity.hit = 1f;
-            paramEntity.buildup += bullet.damage;
+            paramEntity.buildup += bullet.type.shieldDamage(bullet);
         }
     };
 
@@ -113,8 +113,8 @@ public class ForceProjector extends Block{
         stats.add("过热时回复速度", StatCat.function, cooldownBrokenBase * Time.toSeconds, StatUnit.perSecond);
         if(consItems && itemConsumer instanceof ConsumeItems coni){
             stats.remove(Stat.booster);
-            stats.add(Stat.booster, StatValues.itemBoosters("+{0} " + StatUnit.shieldHealth.localized(), stats.timePeriod, phaseShieldBoost, phaseRadiusBoost, coni.items, this::consumesItem));
-            stats.add(Stat.booster, StatValues.speedBoosters(Core.bundle.get("shield.regenspeed"), coolantConsumption, cooldownLiquid, true, this::consumesLiquid, true));
+            stats.add(Stat.booster, StatValues.itemBoosters("+{0} " + StatUnit.shieldHealth.localized(), stats.timePeriod, phaseShieldBoost, phaseRadiusBoost, coni.items));
+            stats.add(Stat.booster, StatValues.speedBoosters("", coolantConsumption, Float.MAX_VALUE, true, this::consumesLiquid));
         }
     }
 

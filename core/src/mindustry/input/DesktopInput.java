@@ -309,7 +309,7 @@ public class DesktopInput extends InputHandler{
         if(input.keyTap(Binding.arcScanMode)) arcScanMode = !arcScanMode;
 
         //validate commanding units
-        selectedUnits.removeAll(u -> !u.isCommandable() || !u.isValid());
+        selectedUnits.removeAll(u -> !u.isCommandable() || !u.isValid() || u.team != player.team());
 
         if(commandMode && !scene.hasField() && !scene.hasDialog()){
             if(input.keyTap(Binding.select_all_units)){

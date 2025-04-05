@@ -1113,9 +1113,15 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
 
             //draw command overlay UI
             for(Unit unit : selectedUnits){
-                if(unit.isFlying() != flying) continue;
+
                 CommandAI ai = unit.command();
                 Position lastPos = ai.attackTarget != null ? ai.attackTarget : ai.targetPos;
+
+                if(flying && ai.attackTarget != null && ai.currentCommand().drawTarget){
+                    Drawf.target(ai.attackTarget.getX(), ai.attackTarget.getY(), 6f, Pal.remove);
+                }
+
+                if(unit.isFlying() != flying) continue;
 
                 //draw target line
                 if(ai.targetPos != null && ai.currentCommand().drawTarget){
@@ -1152,9 +1158,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
                 //Lines.poly(unit.x, unit.y, sides, rad + 1.5f);
                 Draw.reset();
 
-                if(ai.attackTarget != null && ai.currentCommand().drawTarget){
-                    Drawf.target(ai.attackTarget.getX(), ai.attackTarget.getY(), 6f, Pal.remove);
-                }
+
 
                 if(lastPos == null){
                     lastPos = unit;
@@ -1483,9 +1487,9 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
         }
 
         for(BlockPlan plan : player.team().data().plans){
-            Block block = content.block(plan.block);
+            Block block = plan.block;
             if(block.bounds(plan.x, plan.y, Tmp.r2).overlaps(Tmp.r1)){
-                drawSelected(plan.x, plan.y, content.block(plan.block), Pal.remove);
+                drawSelected(plan.x, plan.y, plan.block, Pal.remove);
             }
         }
 
@@ -1505,9 +1509,9 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
         Tmp.r1.set(result.x, result.y, result.x2 - result.x, result.y2 - result.y);
 
         for(BlockPlan plan : player.team().data().plans){
-            Block block = content.block(plan.block);
+            Block block = plan.block;
             if(block.bounds(plan.x, plan.y, Tmp.r2).overlaps(Tmp.r1)){
-                drawSelected(plan.x, plan.y, content.block(plan.block), Pal.sapBullet);
+                drawSelected(plan.x, plan.y, plan.block, Pal.sapBullet);
             }
         }
 
@@ -1678,7 +1682,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
         Iterator<BlockPlan> broken = player.team().data().plans.iterator();
         while(broken.hasNext()){
             BlockPlan plan = broken.next();
-            Block block = content.block(plan.block);
+            Block block = plan.block;
             if(block.bounds(plan.x, plan.y, Tmp.r2).overlaps(Tmp.r1)){
                 removed.add(Point2.pack(plan.x, plan.y));
                 plan.removed = true;
@@ -2054,9 +2058,9 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
         Iterator<BlockPlan> broken = player.team().data().plans.iterator();
         while(broken.hasNext()){
             BlockPlan plan = broken.next();
-            Block block = content.block(plan.block);
+            Block block = plan.block;
             if(block.bounds(plan.x, plan.y, Tmp.r2).overlaps(Tmp.r1)){
-                player.unit().addBuild(new BuildPlan(plan.x, plan.y, plan.rotation, content.block(plan.block), plan.config));
+                player.unit().addBuild(new BuildPlan(plan.x, plan.y, plan.rotation, plan.block, plan.config));
             }
         }
 

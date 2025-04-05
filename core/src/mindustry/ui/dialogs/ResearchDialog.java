@@ -565,6 +565,7 @@ public class ResearchDialog extends BaseDialog{
             Core.scene.act();
             rebuild(shine);
             itemDisplay.rebuild(items, usedShine);
+            checkMargin();
         }
 
         void unlock(TechNode node){

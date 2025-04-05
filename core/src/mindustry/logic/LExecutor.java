@@ -63,6 +63,8 @@ public class LExecutor{
 
     //yes, this is a minor memory leak, but it's probably not significant enough to matter
     protected static IntFloatMap unitTimeouts = new IntFloatMap();
+    //lookup variable by name, lazy init.
+    protected @Nullable ObjectIntMap<String> nameMap;
 
     static{
         Events.on(ResetEvent.class, e -> unitTimeouts.clear());
@@ -94,6 +96,7 @@ public class LExecutor{
 
     /** Loads with a specified assembler. Resets all variables. */
     public void load(LAssembler builder){
+        nameMap = null;
         vars = builder.vars.values().toSeq().retainAll(var -> !var.constant).toArray(LVar.class);
         for(int i = 0; i < vars.length; i++){
             vars[i].id = i;
@@ -107,6 +110,17 @@ public class LExecutor{
     }
 
     //region utility
+
+
+    public @Nullable LVar optionalVar(String name){
+        if(nameMap == null){
+            nameMap = new ObjectIntMap<>();
+            for(int i = 0; i < vars.length; i++){
+                nameMap.put(vars[i].name, i);
+            }
+        }
+        return optionalVar(nameMap.get(name, -1));
+    }
 
     /** @return a Var from this processor. May be null if out of bounds. */
     public @Nullable LVar optionalVar(int index){
@@ -228,8 +242,8 @@ public class LExecutor{
                         cache.found = false;
                         outFound.setnum(0);
                     }
-                    
-                    if(res != null && res.build != null && 
+
+                    if(res != null && res.build != null &&
                         (unit.within(res.build.x, res.build.y, Math.max(unit.range(), buildingRange)) || res.build.team == exec.team)){
                         cache.build = res.build;
                         outBuild.setobj(res.build);
@@ -560,6 +574,13 @@ public class LExecutor{
 
             if(from instanceof MemoryBuild mem && (exec.privileged || (from.team == exec.team && !mem.block.privileged))){
                 output.setnum(address < 0 || address >= mem.memory.length ? 0 : mem.memory[address]);
+            }else if(from instanceof LogicBuild logic && (exec.privileged || (from.team == exec.team && !from.block.privileged)) && position.isobj && position.objval instanceof String name){
+                LVar fromVar = logic.executor.optionalVar(name);
+                if(fromVar != null && !output.constant){
+                    output.objval = fromVar.objval;
+                    output.numval = fromVar.numval;
+                    output.isobj = fromVar.isobj;
+                }
             }
         }
     }
@@ -583,6 +604,13 @@ public class LExecutor{
 
             if(from instanceof MemoryBuild mem && (exec.privileged || (from.team == exec.team && !mem.block.privileged)) && address >= 0 && address < mem.memory.length){
                 mem.memory[address] = value.num();
+            }else if(from instanceof LogicBuild logic && (exec.privileged || (from.team == exec.team && !from.block.privileged)) && position.isobj && position.objval instanceof String name){
+                LVar toVar = logic.executor.optionalVar(name);
+                if(toVar != null && !toVar.constant){
+                    toVar.objval = value.objval;
+                    toVar.numval = value.numval;
+                    toVar.isobj = value.isobj;
+                }
             }
         }
     }
@@ -988,6 +1016,29 @@ public class LExecutor{
                 obj instanceof Enum<?> e ? e.name() :
                 obj instanceof Team team ? team.name :
                 "[object]";
+        }
+    }
+
+    public static class PrintCharI implements LInstruction{
+        public LVar value;
+
+        public PrintCharI(LVar value){
+            this.value = value;
+        }
+
+        PrintCharI(){}
+
+        @Override
+        public void run(LExecutor exec){
+
+            if(exec.textBuffer.length() >= maxTextBuffer) return;
+            if(value.isobj){
+                if(!(value.objval instanceof UnlockableContent cont)) return;
+                exec.textBuffer.append((char)cont.emojiChar());
+                return;
+            }
+
+            exec.textBuffer.append((char)Math.floor(value.numval));
         }
     }
 
@@ -1492,6 +1543,7 @@ public class LExecutor{
                 case dropZoneRadius -> state.rules.dropZoneRadius = value.numf() * 8f;
                 case unitCap -> state.rules.unitCap = Math.max(value.numi(), 0);
                 case lighting -> state.rules.lighting = value.bool();
+                case canGameOver -> state.rules.canGameOver = value.bool();
                 case mapArea -> {
                     int x = p1.numi(), y = p2.numi(), w = p3.numi(), h = p4.numi();
                     if(!checkMapArea(x, y, w, h, false)){
@@ -1518,7 +1570,7 @@ public class LExecutor{
                         state.rules.bannedUnits.remove(u);
                     }
                 }
-                case unitHealth, unitBuildSpeed, unitCost, unitDamage, blockHealth, blockDamage, buildSpeed, rtsMinSquad, rtsMinWeight -> {
+                case unitHealth, unitBuildSpeed, unitMineSpeed, unitCost, unitDamage, blockHealth, blockDamage, buildSpeed, rtsMinSquad, rtsMinWeight -> {
                     Team team = p1.team();
                     if(team != null){
                         float num = value.numf();
@@ -1526,6 +1578,7 @@ public class LExecutor{
                             case buildSpeed -> team.rules().buildSpeedMultiplier = Mathf.clamp(num, 0.001f, 50f);
                             case unitHealth -> team.rules().unitHealthMultiplier = Math.max(num, 0.001f);
                             case unitBuildSpeed -> team.rules().unitBuildSpeedMultiplier = Mathf.clamp(num, 0f, 50f);
+                            case unitMineSpeed -> team.rules().unitMineSpeedMultiplier = Math.max(num, 0f);
                             case unitCost -> team.rules().unitCostMultiplier = Math.max(num, 0f);
                             case unitDamage -> team.rules().unitDamageMultiplier = Math.max(num, 0f);
                             case blockHealth -> team.rules().blockHealthMultiplier = Math.max(num, 0.001f);
