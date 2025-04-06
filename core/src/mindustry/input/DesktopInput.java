@@ -13,6 +13,7 @@ import arc.scene.ui.layout.*;
 import arc.util.*;
 import mindustry.arcModule.ARCVars;
 import mindustry.arcModule.Marker;
+import mindustry.arcModule.SimpleKeystrokes;
 import mindustry.content.Items;
 import mindustry.content.UnitTypes;
 import mindustry.core.*;
@@ -220,6 +221,7 @@ public class DesktopInput extends InputHandler{
     @Override
     public void update(){
         super.update();
+        SimpleKeystrokes.INSTANCE.update();
 
         if(net.active() && Core.input.keyTap(Binding.player_list) && (scene.getKeyboardFocus() == null || scene.getKeyboardFocus().isDescendantOf(ui.listfrag.content) || scene.getKeyboardFocus().isDescendantOf(ui.minimapfrag.elem))){
             ui.listfrag.toggle();

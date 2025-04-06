@@ -3,11 +3,17 @@ package mindustry.arcModule;
 import arc.Core;
 import arc.func.*;
 import arc.graphics.Color;
+import arc.input.KeyCode;
 import arc.scene.*;
+import arc.scene.event.ChangeListener;
+import arc.scene.event.ClickListener;
 import arc.scene.event.Touchable;
 import arc.scene.ui.*;
 import arc.scene.ui.Tooltip.*;
 import arc.scene.ui.layout.*;
+import arc.struct.Seq;
+import mindustry.Vars;
+import mindustry.input.DesktopInput;
 import mindustry.ui.Fonts;
 import mindustry.ui.Styles;
 
@@ -44,6 +50,7 @@ public class ElementUtils {
         tooltip.allowMobile = allowMobile;
 
         element.addListener(tooltip);
+        addKey(element);
         return element;
     }
 
@@ -57,6 +64,44 @@ public class ElementUtils {
 
         element.addListener(tooltip);
         return element;
+    }
+
+    public static <T extends Element> void addKey(T element) {
+        if (Vars.control.input instanceof DesktopInput && element instanceof Button button) {
+            button.getListeners().each(tooltip -> {
+                if (tooltip instanceof Tooltip tooltip1) {
+                    tooltip1.container.getCells().each(cell -> {
+                        if (cell.get() instanceof Label label) {
+
+                            String string = label.getText().toString();
+                            //初始化按钮快捷键配置
+                            button.getListeners().each(eventListener -> {
+                                Runnable run = null;
+
+                                if (eventListener instanceof ChangeListener changeListener) {
+                                    run = () -> changeListener.changed(null, null);
+                                }
+                                if (eventListener instanceof ClickListener clickListener) {
+                                    run = () -> clickListener.clicked(null, 0, 0);
+                                }
+                                if (run != null) {
+                                    String s = Core.settings.getString(string, "[]");
+                                    Seq<KeyCode> keyCodes = SimpleKeystrokes.string2KeyCode(s);
+                                    SimpleKeystrokes.INSTANCE.initKey(string, keyCodes, run);
+                                }
+
+                            });
+                            //右键打开快捷键设置
+                            ClickListener clicked = element.clicked(KeyCode.mouseRight, () -> {
+                                SimpleKeystrokes.SetKeyGui.INSTANCE.openDialog(string);
+                            });
+                            button.addListener(clicked);
+                        }
+                    });
+
+                }
+            });
+        }
     }
 
     public static Table arcSliderTable(Table table, String name, float def, float min, float max, float step, StringProFloat s, Cons<Float> cons) {

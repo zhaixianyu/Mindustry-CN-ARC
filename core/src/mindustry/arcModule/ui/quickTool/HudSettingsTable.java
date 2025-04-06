@@ -177,6 +177,14 @@ public class HudSettingsTable extends ElementUtils.ToolTable {
             }).left();
             sp.row();
             sp.add(sets);
+
+            sp.getChildren().each(t -> {
+                if (t instanceof Table table) {
+                    table.getChildren().each((b) ->
+                            ElementUtils.addKey(b));
+                }
+            });
+
         }).maxSize(800f, 300f).get();
 
         pane.update(() -> {
