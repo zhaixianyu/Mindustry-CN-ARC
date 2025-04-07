@@ -151,6 +151,7 @@ public class SimpleKeystrokes {
 
                 table.add().height(10);
                 table.row();
+                table.image().color(Color.gray).fillX().height(3).pad(6).colspan(4).padTop(0).padBottom(10).row();
 
                 String name = entry.key;
                 table.add(name, Color.white).left().padRight(20).padLeft(8);
@@ -159,7 +160,7 @@ public class SimpleKeystrokes {
                 table.row();
 
             }
-            table.button("清空全部已绑定按钮", () -> simpleKeystrokes.buttonConfigs.forEach((configEntry) -> simpleKeystrokes.reBindKey(configEntry.key, configEntry.value.keyCodeSeq))).colspan(4).padTop(4).fill();
+            table.button("清空全部已绑定按钮快捷键", () -> simpleKeystrokes.buttonConfigs.forEach((configEntry) -> simpleKeystrokes.reBindKey(configEntry.key, configEntry.value.keyCodeSeq))).colspan(4).padTop(4).fill();
             mainDialog.cont.row();
             mainDialog.cont.add(pane).growX().colspan(simpleKeystrokes.buttonConfigs.size);
             mainDialog.show();
@@ -215,7 +216,7 @@ public class SimpleKeystrokes {
 
                 @Override
                 public boolean keyDown(InputEvent event, KeyCode keycode) {
-                    downs.add(keycode);
+                    if (!downs.contains(keycode)) downs.add(keycode);
                     return false;
                 }
 
