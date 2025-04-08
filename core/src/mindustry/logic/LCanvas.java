@@ -24,7 +24,7 @@ import java.util.ArrayList;
 
 import static mindustry.arcModule.ARCVars.arcui;
 
-public class LCanvas extends Table{
+public class LCanvas extends Table {
     public static final int maxJumpsDrawn = 100;
     //ew static variables
     static LCanvas canvas;
@@ -40,14 +40,14 @@ public class LCanvas extends Table{
     boolean privileged;
     Seq<Tooltip> tooltips = new Seq<>();
 
-    public LCanvas(){
+    public LCanvas() {
         canvas = this;
 
-        Core.scene.addListener(new InputListener(){
+        Core.scene.addListener(new InputListener() {
             @Override
-            public boolean touchDown(InputEvent event, float x, float y, int pointer, KeyCode button){
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, KeyCode button) {
                 //hide tooltips on tap
-                for(var t : tooltips){
+                for (var t : tooltips) {
                     t.container.toFront();
                 }
                 Core.app.post(() -> {
@@ -61,49 +61,51 @@ public class LCanvas extends Table{
         rebuild();
     }
 
-    /** @return if statement elements should have rows. */
-    public static boolean useRows(){
+    /**
+     * @return if statement elements should have rows.
+     */
+    public static boolean useRows() {
         return Core.graphics.getWidth() - (Core.settings.getBool("logicSupport") ? 400f : 0f) < Scl.scl(900f) * 1.2f;
     }
 
-    public static void tooltip(Cell<?> cell, String key){
+    public static void tooltip(Cell<?> cell, String key) {
         String lkey = key.toLowerCase().replace(" ", "");
-        if(Core.settings.getBool("logichints", true) && Core.bundle.has(lkey)){
+        if (Core.settings.getBool("logichints", true) && Core.bundle.has(lkey)) {
             var tip = new Tooltip(t -> t.background(Styles.black8).margin(4f).add("[lightgray]" + Core.bundle.get(lkey)).style(Styles.outlineLabel));
 
             //mobile devices need long-press tooltips
-            if(Vars.mobile){
-                cell.get().addListener(new ElementGestureListener(20, 0.4f, 0.43f, 0.15f){
+            if (Vars.mobile) {
+                cell.get().addListener(new ElementGestureListener(20, 0.4f, 0.43f, 0.15f) {
                     @Override
-                    public boolean longPress(Element element, float x, float y){
+                    public boolean longPress(Element element, float x, float y) {
                         tip.show(element, x, y);
                         canvas.tooltips.add(tip);
                         //prevent touch down for other listeners
-                        for(var list : cell.get().getListeners()){
-                            if(list instanceof ClickListener cl){
+                        for (var list : cell.get().getListeners()) {
+                            if (list instanceof ClickListener cl) {
                                 cl.cancel();
                             }
                         }
                         return true;
                     }
                 });
-            }else{
+            } else {
                 cell.get().addListener(tip);
             }
 
         }
     }
 
-    public static void tooltip(Cell<?> cell, Enum<?> key){
+    public static void tooltip(Cell<?> cell, Enum<?> key) {
         String cl = key.getClass().getSimpleName().toLowerCase() + "." + key.name().toLowerCase();
-        if(Core.bundle.has(cl)){
+        if (Core.bundle.has(cl)) {
             tooltip(cell, cl);
-        }else{
+        } else {
             tooltip(cell, "lenum." + key.name());
         }
     }
 
-    public void rebuild(){
+    public void rebuild() {
         targetWidth = useRows() ? 400f : 900f;
         float s = pane != null ? pane.getVisualScrollY() : 0f;
         String toLoad = statements != null ? save() : null;
@@ -130,80 +132,80 @@ public class LCanvas extends Table{
             pane.updateVisualScroll();
         });
 
-        if(toLoad != null){
+        if (toLoad != null) {
             load(toLoad);
         }
     }
 
     @Override
-    public void draw(){
+    public void draw() {
         jumpCount = 0;
         super.draw();
     }
 
-    public void add(LStatement statement){
+    public void add(LStatement statement) {
         statements.addChild(new StatementElem(statement));
     }
 
-    public String save(){
+    public String save() {
         Seq<LStatement> st = statements.getChildren().<StatementElem>as().map(s -> s.st);
         st.each(LStatement::saveUI);
 
         return LAssembler.write(st);
     }
 
-    public void load(String asm){
+    public void load(String asm) {
         jumps.clear();
 
         Seq<LStatement> statements = LAssembler.read(asm, privileged);
         statements.truncate(LExecutor.maxInstructions);
         this.statements.clearChildren();
-        for(LStatement st : statements){
+        for (LStatement st : statements) {
             add(st);
         }
 
-        for(LStatement st : statements){
+        for (LStatement st : statements) {
             st.setupUI();
         }
 
         this.statements.layout();
     }
 
-    public void clearAll(){
-        if(statements==null) return;
+    public void clearAll() {
+        if (statements == null) return;
         jumps.clear();
         statements.clear();
         rebuild();
     }
 
-    StatementElem checkHovered(){
+    StatementElem checkHovered() {
         Element e = Core.scene.hit(Core.input.mouseX(), Core.input.mouseY(), true);
-        if(e != null){
-            while(e != null && !(e instanceof StatementElem)){
+        if (e != null) {
+            while (e != null && !(e instanceof StatementElem)) {
                 e = e.parent;
             }
         }
-        if(e == null || isDescendantOf(e)) return null;
-        return (StatementElem)e;
+        if (e == null || isDescendantOf(e)) return null;
+        return (StatementElem) e;
     }
 
     @Override
-    public void act(float delta){
+    public void act(float delta) {
         super.act(delta);
 
         hovered = checkHovered();
 
-        if(Core.input.isTouched()){
+        if (Core.input.isTouched()) {
             float y = Core.input.mouseY();
             float dst = Math.min(y - this.y, Core.graphics.getHeight() - y);
-            if(dst < Scl.scl(100f)){ //scroll margin
-                int sign = Mathf.sign(Core.graphics.getHeight()/2f - y);
+            if (dst < Scl.scl(100f)) { //scroll margin
+                int sign = Mathf.sign(Core.graphics.getHeight() / 2f - y);
                 pane.setScrollY(pane.getScrollY() + sign * Scl.scl(15f) * Time.delta);
             }
         }
     }
 
-    public class DragLayout extends WidgetGroup{
+    public class DragLayout extends WidgetGroup {
         float space = Scl.scl(10f), prefWidth, prefHeight;
         Seq<Element> seq = new Seq<>();
         int insertPosition = 0;
@@ -214,7 +216,7 @@ public class LCanvas extends Table{
         }
 
         @Override
-        public void layout(){
+        public void layout() {
             invalidated = true;
             float cy = 0;
             seq.clear();
@@ -225,31 +227,31 @@ public class LCanvas extends Table{
             width = prefWidth = Scl.scl(targetWidth);
 
             //layout everything normally
-            for(int i = 0; i < getChildren().size; i++){
+            for (int i = 0; i < getChildren().size; i++) {
                 Element e = getChildren().get(i);
 
                 //ignore the dragged element
-                if(dragging == e) continue;
+                if (dragging == e) continue;
 
                 e.setSize(width, e.getPrefHeight());
                 e.setPosition(0, height - cy, Align.topLeft);
-                ((StatementElem)e).updateAddress(i);
+                ((StatementElem) e).updateAddress(i);
 
                 cy += e.getPrefHeight() + space;
                 seq.add(e);
             }
 
             //insert the dragged element if necessary
-            if(dragging != null){
+            if (dragging != null) {
                 //find real position of dragged element top
                 float realY = dragging.getY(Align.top) + dragging.translation.y;
 
                 insertPosition = 0;
 
-                for(int i = 0; i < seq.size; i++){
+                for (int i = 0; i < seq.size; i++) {
                     Element cur = seq.get(i);
                     //find fit point
-                    if(realY < cur.y && (i == seq.size - 1 || realY > seq.get(i + 1).y)){
+                    if (realY < cur.y && (i == seq.size - 1 || realY > seq.get(i + 1).y)) {
                         insertPosition = i + 1;
                         break;
                     }
@@ -258,34 +260,34 @@ public class LCanvas extends Table{
                 float shiftAmount = dragging.getHeight() + space;
 
                 //shift elements below insertion point down
-                for(int i = insertPosition; i < seq.size; i++){
+                for (int i = insertPosition; i < seq.size; i++) {
                     seq.get(i).y -= shiftAmount;
                 }
             }
 
             invalidateHierarchy();
 
-            if(parent != null && parent instanceof Table){
+            if (parent != null && parent instanceof Table) {
                 setCullingArea(parent.getCullingArea());
             }
         }
 
         @Override
-        public float getPrefWidth(){
+        public float getPrefWidth() {
             return prefWidth;
         }
 
         @Override
-        public float getPrefHeight(){
+        public float getPrefHeight() {
             return prefHeight;
         }
 
         @Override
-        public void draw(){
+        public void draw() {
             Draw.alpha(parentAlpha);
 
             //draw selection box indicating placement position
-            if(dragging != null && insertPosition <= seq.size){
+            if (dragging != null && insertPosition <= seq.size) {
                 float shiftAmount = dragging.getHeight();
                 float lastX = x;
                 float lastY = insertPosition == 0 ? height + y : seq.get(insertPosition - 1).y + y - space;
@@ -293,34 +295,34 @@ public class LCanvas extends Table{
                 Tex.pane.draw(lastX, lastY - shiftAmount, width, dragging.getHeight());
             }
 
-            if(invalidated){
+            if (invalidated) {
                 children.each(c -> c.cullable = false);
             }
 
             super.draw();
 
-            if(invalidated){
+            if (invalidated) {
                 children.each(c -> c.cullable = true);
                 invalidated = false;
             }
         }
 
-        void finishLayout(){
-            if(dragging != null){
+        void finishLayout() {
+            if (dragging != null) {
                 //reset translation first
-                for(Element child : getChildren()){
+                for (Element child : getChildren()) {
                     child.setTranslation(0, 0);
                 }
                 clearChildren();
 
                 //reorder things
-                for(int i = 0; i <= insertPosition - 1 && i < seq.size; i++){
+                for (int i = 0; i <= insertPosition - 1 && i < seq.size; i++) {
                     addChild(seq.get(i));
                 }
 
                 addChild(dragging);
 
-                for(int i = insertPosition; i < seq.size; i++){
+                for (int i = insertPosition; i < seq.size; i++) {
                     addChild(seq.get(i));
                 }
 
@@ -331,12 +333,12 @@ public class LCanvas extends Table{
         }
     }
 
-    public class StatementElem extends Table{
+    public class StatementElem extends Table {
         public LStatement st;
         public int index;
         Label addressLabel;
 
-        public StatementElem(LStatement st){
+        public StatementElem(LStatement st) {
             this.st = st;
             st.elem = this;
 
@@ -366,21 +368,22 @@ public class LCanvas extends Table{
                 t.button(Icon.copy, Styles.logici, () -> {
                 }).size(24f).padRight(6).get().tapped(this::copy);
 
-                t.button(st instanceof PrintStatement ? Icon.fileText : Icon.pencil, Styles.logici, () -> arcTrans()).size(24f).padRight(6).get().tapped(()->{});
+                t.button(st instanceof PrintStatement ? Icon.fileText : Icon.pencil, Styles.logici, () -> arcTrans()).size(24f).padRight(6).get().tapped(() -> {
+                });
 
                 t.button(Icon.cancel, Styles.logici, () -> {
                     remove();
                     dragging = null;
                     statements.layout();
-                }).size(24f).padLeft(Vars.mobile?48:0);
+                }).size(24f).padLeft(Vars.mobile ? 48 : 0);
 
-                t.addListener(new InputListener(){
+                t.addListener(new InputListener() {
                     float lastx, lasty;
 
                     @Override
-                    public boolean touchDown(InputEvent event, float x, float y, int pointer, KeyCode button){
+                    public boolean touchDown(InputEvent event, float x, float y, int pointer, KeyCode button) {
 
-                        if(button == KeyCode.mouseMiddle){
+                        if (button == KeyCode.mouseMiddle) {
                             copy();
                             return false;
                         }
@@ -395,7 +398,7 @@ public class LCanvas extends Table{
                     }
 
                     @Override
-                    public void touchDragged(InputEvent event, float x, float y, int pointer){
+                    public void touchDragged(InputEvent event, float x, float y, int pointer) {
                         Vec2 v = localToParentCoordinates(Tmp.v1.set(x, y));
 
                         translation.add(v.x - lastx, v.y - lasty);
@@ -406,7 +409,7 @@ public class LCanvas extends Table{
                     }
 
                     @Override
-                    public void touchUp(InputEvent event, float x, float y, int pointer, KeyCode button){
+                    public void touchUp(InputEvent event, float x, float y, int pointer, KeyCode button) {
                         statements.finishLayout();
                     }
                 });
@@ -424,23 +427,23 @@ public class LCanvas extends Table{
             marginBottom(7);
         }
 
-        public void updateAddress(int index){
+        public void updateAddress(int index) {
             this.index = index;
             addressLabel.setText(index + "");
         }
 
-        public void copy(){
+        public void copy() {
             st.saveUI();
             LStatement copy = st.copy();
 
-            if(copy instanceof JumpStatement st && st.destIndex != -1){
+            if (copy instanceof JumpStatement st && st.destIndex != -1) {
                 int index = statements.getChildren().indexOf(this);
-                if(index != -1 && index < st.destIndex){
-                    st.destIndex ++;
+                if (index != -1 && index < st.destIndex) {
+                    st.destIndex++;
                 }
             }
 
-            if(copy != null){
+            if (copy != null) {
                 StatementElem s = new StatementElem(copy);
 
                 statements.addChildAfter(StatementElem.this, s);
@@ -450,20 +453,21 @@ public class LCanvas extends Table{
             }
         }
 
-        public void arcAppend(){
+        public void arcAppend() {
             BaseDialog dialog = new BaseDialog("@add");
             dialog.cont.table(table -> {
                 table.background(Tex.button);
                 table.pane(t -> {
-                    for(Prov<LStatement> prov : LogicIO.allStatements){
+                    for (Prov<LStatement> prov : LogicIO.allStatements) {
                         LStatement example = prov.get();
-                        if(example instanceof InvalidStatement || example.hidden() || (example.privileged() && !privileged) || (example.nonPrivileged() && privileged)) continue;
+                        if (example instanceof InvalidStatement || example.hidden() || (example.privileged() && !privileged) || (example.nonPrivileged() && privileged))
+                            continue;
 
                         LCategory category = example.category();
                         Table cat = t.find(category.name);
-                        if(cat == null){
+                        if (cat == null) {
                             t.table(s -> {
-                                if(category.icon != null){
+                                if (category.icon != null) {
                                     s.image(category.icon, Pal.darkishGray).left().size(15f).padRight(10f);
                                 }
                                 s.add(category.localized()).color(Pal.darkishGray).left().tooltip(category.description());
@@ -483,12 +487,12 @@ public class LCanvas extends Table{
                         style.font = Fonts.outline;
 
                         cat.button(example.name(), style, () -> {
-                            statements.addChildAt(statements.getChildren().indexOf(this) + 1,new StatementElem(prov.get()));
+                            statements.addChildAt(statements.getChildren().indexOf(this) + 1, new StatementElem(prov.get()));
                             statements.layout();
                             dialog.hide();
                         }).size(130f, 50f).self(c -> tooltip(c, "lst." + example.name())).top().left();
 
-                        if(cat.getChildren().size % 3 == 0) cat.row();
+                        if (cat.getChildren().size % 3 == 0) cat.row();
                     }
                 }).grow();
             }).fill().maxHeight(Core.graphics.getHeight() * 0.8f);
@@ -496,50 +500,51 @@ public class LCanvas extends Table{
             dialog.show();
         }
 
-        public void arcImport(){
+        public void arcImport() {
             String replace = Core.app.getClipboardText().replace("\r\n", "\n");
             Seq<LStatement> read = LAssembler.read(replace, privileged);
             int lineNum = statements.getChildren().indexOf(this) + 1;
             ArrayList<LStatement> list = read.list();
             for (int i = 0; i < list.size(); i++) {
                 StatementElem statementElem = new StatementElem(list.get(i));
-                statements.addChildAt(lineNum+i,statementElem);
+                statements.addChildAt(lineNum + i, statementElem);
             }
             statements.layout();
         }
 
-        public void arcTrans(){ //LC：md这玩意真难搞，这一小段代码研究了一整天才找到如何解决。
+        public void arcTrans() { //LC：md这玩意真难搞，这一小段代码研究了一整天才找到如何解决。
             LStatement stNew;
             int child = statements.getChildren().indexOf(this) + 1;
-            if(st instanceof PrintStatement pst){ //print->代码
-                Seq<LStatement> lsStatement = LAssembler.read(pst.value.replace("_"," "),privileged);
+            if (st instanceof PrintStatement pst) { //print->代码
+                Seq<LStatement> lsStatement = LAssembler.read(pst.value.replace("_", " "), privileged);
                 stNew = lsStatement.first();
-                if (stNew instanceof InvalidStatement) arcui.arcInfo("[orange]警告：转换失败，请输入正确格式\n[cyan]" + LogicDialog.transText);
-                else if(stNew instanceof JumpStatement jst && jst.destIndex != -1){
+                if (stNew instanceof InvalidStatement)
+                    arcui.arcInfo("[orange]警告：转换失败，请输入正确格式\n[cyan]" + LogicDialog.transText);
+                else if (stNew instanceof JumpStatement jst && jst.destIndex != -1) {
                     jst.dest = (StatementElem) statements.getChildren().get(jst.destIndex);
                 }
-            }else if (st instanceof InvalidStatement){
-                stNew = LogicIO.read(new String[]{"print",LogicDialog.transText},2);
-            }else{  //代码->print
+            } else if (st instanceof InvalidStatement) {
+                stNew = LogicIO.read(new String[]{"print", LogicDialog.transText}, 2);
+            } else {  //代码->print
                 StringBuilder thisText = new StringBuilder();
-                LogicIO.write(st,thisText);
+                LogicIO.write(st, thisText);
                 LogicDialog.transText = thisText.toString();
-                stNew = LogicIO.read(new String[]{"print",LogicDialog.transText},2);
+                stNew = LogicIO.read(new String[]{"print", LogicDialog.transText}, 2);
             }
             StatementElem stNewElem = new StatementElem(stNew);
             statements.addChildAt(child, stNewElem);
             remove();
-            for(Element ste :  statements.seq){
-                if(((StatementElem)ste).st instanceof JumpStatement jst && jst.dest == st.elem) jst.dest = stNewElem;
+            for (Element ste : statements.seq) {
+                if (((StatementElem) ste).st instanceof JumpStatement jst && jst.dest == st.elem) jst.dest = stNewElem;
             }
             statements.layout();
         }
 
 
         @Override
-        public void draw(){
+        public void draw() {
             float pad = 5f;
-            Fill.dropShadow(x + width/2f, y + height/2f, width + pad, height + pad, 10f, 0.9f * parentAlpha);
+            Fill.dropShadow(x + width / 2f, y + height / 2f, width + pad, height + pad, 10f, 0.9f * parentAlpha);
 
             Draw.color(0, 0, 0, 0.3f * parentAlpha);
             Fill.crect(x, y, width, height);
@@ -549,7 +554,7 @@ public class LCanvas extends Table{
         }
     }
 
-    public static class JumpButton extends ImageButton{
+    public static class JumpButton extends ImageButton {
         Color hoverColor = Pal.place;
         Color defaultColor = Color.white;
         Prov<StatementElem> to;
@@ -559,17 +564,17 @@ public class LCanvas extends Table{
 
         public JumpCurve curve;
 
-        public JumpButton(Prov<StatementElem> getter, Cons<StatementElem> setter){
-            super(Tex.logicNode, new ImageButtonStyle(){{
+        public JumpButton(Prov<StatementElem> getter, Cons<StatementElem> setter) {
+            super(Tex.logicNode, new ImageButtonStyle() {{
                 imageUpColor = Color.white;
             }});
 
             to = getter;
             addListener(listener = new ClickListener());
 
-            addListener(new InputListener(){
+            addListener(new InputListener() {
                 @Override
-                public boolean touchDown(InputEvent event, float x, float y, int pointer, KeyCode code){
+                public boolean touchDown(InputEvent event, float x, float y, int pointer, KeyCode code) {
                     selecting = true;
                     setter.get(null);
                     mx = x;
@@ -578,19 +583,19 @@ public class LCanvas extends Table{
                 }
 
                 @Override
-                public void touchDragged(InputEvent event, float x, float y, int pointer){
+                public void touchDragged(InputEvent event, float x, float y, int pointer) {
                     mx = x;
                     my = y;
                 }
 
                 @Override
-                public void touchUp(InputEvent event, float x, float y, int pointer, KeyCode code){
+                public void touchUp(InputEvent event, float x, float y, int pointer, KeyCode code) {
                     localToStageCoordinates(Tmp.v1.set(x, y));
                     StatementElem elem = canvas.hovered;
 
-                    if(elem != null && !isDescendantOf(elem)){
+                    if (elem != null && !isDescendantOf(elem)) {
                         setter.get(elem);
-                    }else{
+                    } else {
                         setter.get(null);
                     }
                     selecting = false;
@@ -598,7 +603,7 @@ public class LCanvas extends Table{
             });
 
             update(() -> {
-                if(to.get() != null && to.get().parent == null){
+                if (to.get() != null && to.get().parent == null) {
                     setter.get(null);
                 }
 
@@ -610,38 +615,38 @@ public class LCanvas extends Table{
         }
 
         @Override
-        protected void setScene(Scene stage){
+        protected void setScene(Scene stage) {
             super.setScene(stage);
 
-            if(stage == null){
+            if (stage == null) {
                 curve.remove();
-            }else{
+            } else {
                 canvas.jumps.addChild(curve);
             }
         }
     }
 
-    public static class JumpCurve extends Element{
+    public static class JumpCurve extends Element {
         public JumpButton button;
 
-        public JumpCurve(JumpButton button){
+        public JumpCurve(JumpButton button) {
             this.button = button;
         }
 
         @Override
-        public void act(float delta){
+        public void act(float delta) {
             super.act(delta);
 
-            if(button.listener.isOver()){
+            if (button.listener.isOver()) {
                 toFront();
             }
         }
 
         @Override
-        public void draw(){
-            canvas.jumpCount ++;
+        public void draw() {
+            canvas.jumpCount++;
 
-            if(canvas.jumpCount > maxJumpsDrawn && !button.selecting && !button.listener.isOver()){
+            if (canvas.jumpCount > maxJumpsDrawn && !button.selecting && !button.listener.isOver()) {
                 return;
             }
 
@@ -653,11 +658,11 @@ public class LCanvas extends Table{
 
             button.localToAscendantCoordinates(desc, r.set(0, 0));
 
-            if(hover != null){
-                hover.localToAscendantCoordinates(desc, t.set(hover.getWidth(), hover.getHeight()/2f));
+            if (hover != null) {
+                hover.localToAscendantCoordinates(desc, t.set(hover.getWidth(), hover.getHeight() / 2f));
 
                 draw = true;
-            }else if(button.selecting){
+            } else if (button.selecting) {
                 t.set(r).add(button.mx, button.my);
                 draw = true;
             }
@@ -667,24 +672,24 @@ public class LCanvas extends Table{
             t.y += offset;
             r.y += offset;
 
-            if(draw){
-                drawCurve(r.x + button.getWidth()/2f, r.y + button.getHeight()/2f, t.x, t.y);
+            if (draw) {
+                drawCurve(r.x + button.getWidth() / 2f, r.y + button.getHeight() / 2f, t.x, t.y);
 
                 float s = button.getWidth();
                 Draw.color(button.color);
-                Tex.logicNode.draw(t.x + s*0.75f, t.y - s/2f, -s, s);
+                Tex.logicNode.draw(t.x + s * 0.75f, t.y - s / 2f, -s, s);
                 Draw.reset();
             }
         }
 
-        public void drawCurve(float x, float y, float x2, float y2){
+        public void drawCurve(float x, float y, float x2, float y2) {
             Lines.stroke(4f, button.color);
             Draw.alpha(parentAlpha);
 
             float dist = 100f;
 
             //square jumps
-            if(Core.settings.getBool("rectJumpLine")){
+            if (Core.settings.getBool("rectJumpLine")) {
                 float len = Scl.scl(Mathf.randomSeed(hashCode(), 10, 50));
 
                 float maxX = Math.max(x, x2) + len;
@@ -699,11 +704,11 @@ public class LCanvas extends Table{
             }
 
             Lines.curve(
-            x, y,
-            x + dist, y,
-            x2 + dist, y2,
-            x2, y2,
-            Math.max(18, (int)(Mathf.dst(x, y, x2, y2) / 6)));
+                    x, y,
+                    x + dist, y,
+                    x2 + dist, y2,
+                    x2, y2,
+                    Math.max(18, (int) (Mathf.dst(x, y, x2, y2) / 6)));
         }
     }
 }
