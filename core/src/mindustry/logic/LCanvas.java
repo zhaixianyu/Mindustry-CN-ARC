@@ -20,7 +20,6 @@ import mindustry.logic.LStatements.*;
 import mindustry.ui.*;
 import mindustry.ui.dialogs.BaseDialog;
 
-import java.util.ArrayList;
 
 import static mindustry.arcModule.ARCVars.arcui;
 
@@ -500,11 +499,8 @@ public class LCanvas extends Table{
             String replace = Core.app.getClipboardText().replace("\r\n", "\n");
             Seq<LStatement> read = LAssembler.read(replace, privileged);
             int lineNum = statements.getChildren().indexOf(this) + 1;
-            int[] num = new int[]{0};
-            for (LStatement lStatement : read) {
-                num[0]++;
-                StatementElem statementElem = new StatementElem(lStatement);
-                statements.addChildAt(lineNum + num[0], statementElem);
+            for (int i = 0; i < read.size; i++) {
+                statements.addChildAt(lineNum + i, new StatementElem(read.get(i)));
             }
             statements.layout();
         }
