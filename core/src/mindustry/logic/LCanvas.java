@@ -500,10 +500,11 @@ public class LCanvas extends Table{
             String replace = Core.app.getClipboardText().replace("\r\n", "\n");
             Seq<LStatement> read = LAssembler.read(replace, privileged);
             int lineNum = statements.getChildren().indexOf(this) + 1;
-            ArrayList<LStatement> list = read.list();
-            for (int i = 0; i < list.size(); i++) {
-                StatementElem statementElem = new StatementElem(list.get(i));
-                statements.addChildAt(lineNum + i, statementElem);
+            int[] num = new int[]{0};
+            for (LStatement lStatement : read) {
+                num[0]++;
+                StatementElem statementElem = new StatementElem(lStatement);
+                statements.addChildAt(lineNum + num[0], statementElem);
             }
             statements.layout();
         }
