@@ -20,6 +20,8 @@ import mindustry.logic.LStatements.*;
 import mindustry.ui.*;
 import mindustry.ui.dialogs.BaseDialog;
 
+import java.util.ArrayList;
+
 import static mindustry.arcModule.ARCVars.arcui;
 
 public class LCanvas extends Table{
@@ -358,6 +360,9 @@ public class LCanvas extends Table{
                 t.button(Icon.add, Styles.logici, () -> {
                 }).size(24f).padRight(6).get().tapped(this::arcAppend);
 
+                t.button(Icon.download, Styles.logici, () -> {
+                }).size(24f).padRight(6).get().tapped(this::arcImport);
+
                 t.button(Icon.copy, Styles.logici, () -> {
                 }).size(24f).padRight(6).get().tapped(this::copy);
 
@@ -489,6 +494,18 @@ public class LCanvas extends Table{
             }).fill().maxHeight(Core.graphics.getHeight() * 0.8f);
             dialog.addCloseButton();
             dialog.show();
+        }
+
+        public void arcImport(){
+            String replace = Core.app.getClipboardText().replace("\r\n", "\n");
+            Seq<LStatement> read = LAssembler.read(replace, privileged);
+            int lineNum = statements.getChildren().indexOf(this) + 1;
+            ArrayList<LStatement> list = read.list();
+            for (int i = 0; i < list.size(); i++) {
+                StatementElem statementElem = new StatementElem(list.get(i));
+                statements.addChildAt(lineNum+i,statementElem);
+            }
+            statements.layout();
         }
 
         public void arcTrans(){ //LC：md这玩意真难搞，这一小段代码研究了一整天才找到如何解决。
