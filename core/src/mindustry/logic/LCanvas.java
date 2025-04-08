@@ -496,14 +496,14 @@ public class LCanvas extends Table{
             dialog.show();
         }
 
-        public void arcImport(){
+        public void arcImport() {
             String replace = Core.app.getClipboardText().replace("\r\n", "\n");
             Seq<LStatement> read = LAssembler.read(replace, privileged);
             int lineNum = statements.getChildren().indexOf(this) + 1;
             ArrayList<LStatement> list = read.list();
             for (int i = 0; i < list.size(); i++) {
                 StatementElem statementElem = new StatementElem(list.get(i));
-                statements.addChildAt(lineNum+i,statementElem);
+                statements.addChildAt(lineNum + i, statementElem);
             }
             statements.layout();
         }
