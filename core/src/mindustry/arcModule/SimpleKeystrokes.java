@@ -15,7 +15,6 @@ import mindustry.gen.Icon;
 import mindustry.graphics.Pal;
 import mindustry.ui.Styles;
 
-import java.util.ArrayList;
 
 import static arc.Core.*;
 
@@ -39,17 +38,16 @@ public class SimpleKeystrokes {
     }
 
     public static String keyCode2String(Seq<KeyCode> keyCodes) {
-        ArrayList<KeyCode> items = keyCodes.list();
         if (keyCodes.size == 0) {
             return "[]";
         } else {
             StringBuilder buffer = new StringBuilder(32);
             buffer.append('[');
-            buffer.append(items.get(0).name());
+            buffer.append(keyCodes.first().name());
 
             for (int i = 1; i < keyCodes.size; ++i) {
                 buffer.append(",");
-                buffer.append(items.get(i).name());
+                buffer.append(keyCodes.get(i).name());
             }
             buffer.append(']');
             return buffer.toString();
@@ -85,24 +83,22 @@ public class SimpleKeystrokes {
     public static class KeystrokesConfig {
         public Seq<KeyCode> keyCodeSeq;
         public boolean activated;
-        public ArrayList<KeyCode> record;
+        public Seq<KeyCode> record;
         public Runnable run;
 
         public KeystrokesConfig(Seq<KeyCode> keyCodeSeq, Runnable run) {
             this.keyCodeSeq = keyCodeSeq;
             this.run = run;
             this.activated = false;
-            this.record = new ArrayList<>(keyCodeSeq.size);
+            this.record = new Seq<>(keyCodeSeq.size);
         }
 
         public boolean tryActivated() {
             int length = keyCodeSeq.size;
             if (length == 0 || run == null) return false;
-            ArrayList<KeyCode> list = keyCodeSeq.list();
 
             //记录按下的顺序
-            for (int i = 0; i < length; i++) {
-                KeyCode k = list.get(i);
+            keyCodeSeq.each(k -> {
                 boolean b = input.keyDown(k);
                 if (b && !record.contains(k)) {
                     record.add(k);
@@ -110,10 +106,11 @@ public class SimpleKeystrokes {
                     activated = false;
                     record.remove(k);
                 }
-            }
+            });
 
-            for (int i = 0; i < length && record.size() == length; i++) {
-                KeyCode k = list.get(i);
+
+            for (int i = 0; i < keyCodeSeq.size && record.size == length; i++) {
+                KeyCode k = keyCodeSeq.get(i);
                 if (!k.equals(record.get(i))) {
                     break;
                 }

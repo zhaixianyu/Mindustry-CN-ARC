@@ -2,7 +2,6 @@ package mindustry.arcModule.player;
 
 import arc.Core;
 import arc.Events;
-import mindustry.arcModule.ARCEvents;
 import mindustry.game.EventType;
 import mindustry.game.Gamemode;
 import mindustry.gen.Call;
