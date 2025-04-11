@@ -9,6 +9,7 @@ import arc.util.Time;
 import arc.util.io.*;
 import mindustry.gen.*;
 import mindustry.ui.Styles;
+import mindustry.logic.*;
 import mindustry.world.*;
 import mindustry.world.meta.*;
 
@@ -70,6 +71,14 @@ public class MemoryBlock extends Block{
         @Override
         public boolean displayable(){
             return accessible();
+        }
+
+        @Override
+        public double sense(LAccess sensor){
+            return switch(sensor){
+                case memoryCapacity -> memoryCapacity;
+                default -> super.sense(sensor);
+            };
         }
 
         @Override

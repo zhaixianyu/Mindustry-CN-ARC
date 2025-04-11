@@ -1097,15 +1097,6 @@ public class ServerControl implements ApplicationListener{
     }
 
     /**
-     * @deprecated
-     * Use {@link Maps#setNextMapOverride(Map)} instead.
-     */
-    @Deprecated
-    public void setNextMap(Map map){
-        maps.setNextMapOverride(map);
-    }
-
-    /**
      * Cancels the world load timer task, if it is scheduled. Can be useful for stopping a server or hosting a new game.
      */
     public void cancelPlayTask(){

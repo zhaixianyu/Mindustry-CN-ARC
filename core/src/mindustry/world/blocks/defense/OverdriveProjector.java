@@ -22,9 +22,6 @@ import static mindustry.Vars.*;
 import static mindustry.arcModule.NumberFormat.buildPercent;
 
 public class OverdriveProjector extends Block{
-    @Deprecated
-    public final int timerUse = timers++;
-
     public @Load("@-top") TextureRegion topRegion;
     public float reload = 60f;
     public float range = 80f;

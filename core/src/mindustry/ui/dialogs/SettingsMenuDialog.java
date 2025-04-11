@@ -516,6 +516,15 @@ public class SettingsMenuDialog extends BaseDialog{
             graphics.checkPref("override_boss_shown", false);
 
             graphics.checkPref("displayselection", true);
+        graphics.checkPref("effects", true);
+        graphics.checkPref("atmosphere", !mobile);
+        graphics.checkPref("drawlight", true);
+        graphics.checkPref("destroyedblocks", true);
+        graphics.checkPref("blockstatus", false);
+        graphics.checkPref("playerchat", true);
+        if(!mobile){
+            graphics.checkPref("coreitems", true);
+        }
         graphics.checkPref("minimap", !mobile);
             graphics.sliderPref("minimapSize", 140, 40, 400, 10, i -> i + "");
             graphics.checkPref("minimapTools", !mobile);
