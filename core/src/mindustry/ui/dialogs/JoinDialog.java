@@ -653,11 +653,9 @@ public class JoinDialog extends BaseDialog{
     }
 
     void safeConnect(String ip, int port, int version){
-        if(version != Version.arcBuild && Version.arcBuild != -1 && version != -1){
-            ui.showInfo("[red]版本不匹配\n[orange]此服务器BE版本与学术BE版本不匹配\n如报错请尝试更换版本");
-            connect(ip, port);
-            //ui.showInfo("[scarlet]" + (version > Version.build ? KickReason.clientOutdated : KickReason.serverOutdated) + "\n[]" +
-            //    Core.bundle.format("server.versions", Version.build, version));
+        if(version != Version.build && Version.build != -1 && version != -1){
+            ui.showInfo("[scarlet]" + (version > Version.build ? KickReason.clientOutdated : KickReason.serverOutdated) + "\n[]" +
+                    Core.bundle.format("server.versions", Version.build, version));
         }
         else {
             connect(ip, port);

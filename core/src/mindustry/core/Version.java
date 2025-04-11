@@ -18,7 +18,7 @@ public class Version{
     /** Number specifying the major version, e.g. '4' */
     public static int number;
     /** Build number, e.g. '43'. set to '-1' for custom builds. */
-    public static int build = 146;
+    public static int build = 147;
     /** Revision number. Used for hotfixes. Does not affect server compatibility. */
 
     public static int revision = 0;
@@ -52,7 +52,6 @@ public class Version{
         }else{
             arcBuild = Strings.canParseInt(map.get("build")) ? Integer.parseInt(map.get("build")) : -1;
         }
-        build = arcBuild;
         ARCVars.arcVersion = Version.arcBuild + "";
         ARCVars.arcVersionPrefix = "<ARC~" + Version.arcBuild + ">";
     }
