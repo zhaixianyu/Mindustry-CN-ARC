@@ -1502,7 +1502,7 @@ public class UnitType extends UnlockableContent implements Senseable{
         unitTrans = ARCUnits.unitTrans;
         if(unitTrans == 0) return;
 
-        if(unit.controller().isBeingControlled(player.unit())){
+        if(unit.isPlayer()){
             drawControl(unit);
         }
 
@@ -1657,6 +1657,15 @@ public class UnitType extends UnlockableContent implements Senseable{
             Color.clear,
             Tmp.c2.set(unit.type.shieldColor(unit)).lerp(Color.white, Mathf.clamp(unit.hitTime() / 2f)).a(0.7f * alpha)
         );
+    }
+
+    public void drawControl(Unit unit){
+        Draw.z(unit.isFlying() ? Layer.flyingUnitLow : Layer.groundUnit - 2);
+
+        Draw.color(Pal.accent, Color.white, Mathf.absin(4f, 0.3f));
+        Lines.poly(unit.x, unit.y, 4, unit.hitSize + 1.5f);
+
+        Draw.reset();
     }
 
     public void drawShadow(Unit unit){

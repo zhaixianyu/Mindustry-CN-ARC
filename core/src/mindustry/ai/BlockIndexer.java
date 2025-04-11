@@ -50,8 +50,8 @@ public class BlockIndexer{
     private Seq<Tile>[] floorMap;
     
     // ARC
-    public int[] floorOresCount = new int[content.blocks().size +1];
-    public int[] wallOresCount = new int[content.blocks().size +1];
+    public int[] floorOresCount;
+    public int[] wallOresCount;
 
     public BlockIndexer(){
         clearFlags();
@@ -84,6 +84,8 @@ public class BlockIndexer{
             quadWidth = Mathf.ceil(world.width() / (float)quadrantSize);
             quadHeight = Mathf.ceil(world.height() / (float)quadrantSize);
             blocksPresent = new boolean[content.blocks().size];
+            floorOresCount = new int[content.blocks().size + 1];
+            wallOresCount = new int[content.blocks().size + 1];
 
             //so WorldLoadEvent gets called twice sometimes... ugh
             for(Team team : Team.all){
@@ -122,8 +124,6 @@ public class BlockIndexer{
                     }
                 }
                 if(tile.block()!=null && tile.block().itemDrop!=null){
-                    int qx = (tile.x / quadrantSize);
-                    int qy = (tile.y / quadrantSize);
                     if(wallOres[tile.block().itemDrop.id] == null){
                         wallOres[tile.block().itemDrop.id] = new IntSeq[quadWidth][quadHeight];
                     }
@@ -131,7 +131,7 @@ public class BlockIndexer{
                         wallOres[tile.block().itemDrop.id][qx][qy] = new IntSeq(false, 16);
                     }
                     wallOres[tile.block().itemDrop.id][qx][qy].add(tile.pos());
-                    allwallOres.increment(tile.block().itemDrop);
+                    allWallOres.increment(tile.block().itemDrop);
                     wallOresCount[tile.block().id] +=1;
                 }
                 if(tile.block()!=null && tile.floor().liquidDrop!=null){

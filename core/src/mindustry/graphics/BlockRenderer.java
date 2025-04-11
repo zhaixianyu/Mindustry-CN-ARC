@@ -471,7 +471,7 @@ public class BlockRenderer{
                         build.drawStatus();
                     }
 
-                    if(Core.settings.getBool("blockdisabled") && ARCVars.arcInfoControl(build.team) && !build.enabled()){
+                    if(Core.settings.getBool("blockdisabled") && ARCVars.arcInfoControl(build.team) && !build.enabled){
                         build.drawDisabled();
                     }
 

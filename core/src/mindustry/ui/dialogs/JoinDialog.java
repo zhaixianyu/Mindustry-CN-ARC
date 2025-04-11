@@ -163,7 +163,7 @@ public class JoinDialog extends BaseDialog{
 
                 if(!buttons[0].childrenPressed()){
                     if(server.lastHost != null){
-                        if (server.lastHost.version < 10000) {
+                        if (Version.build >= 10000 && server.lastHost.version < 10000) {
                             Vars.ui.showErrorMessage("BE版学术不能加入正式版服务器\n请使用正式版");
                             return;
                         }

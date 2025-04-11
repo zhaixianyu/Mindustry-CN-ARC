@@ -237,7 +237,7 @@ public class Weapon implements Cloneable{
             unitTrans = 0f;
         }
 
-        if(Core.settings.getBool("alwaysShowPlayerUnit") && (unit.controller() instanceof Player ||  unit.controller().isBeingControlled(player.unit()))){
+        if(Core.settings.getBool("alwaysShowPlayerUnit") && unit.isPlayer()){
             unitTrans = 100f;
             draw_minunithealthbar = true;
         }
