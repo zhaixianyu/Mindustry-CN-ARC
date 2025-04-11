@@ -50,7 +50,7 @@ public class LogicDialog extends BaseDialog{
     GlobalVarsDialog globalsDialog = new GlobalVarsDialog();
     boolean wasRows, wasPortrait;
 
-    private boolean dispose = false;
+    public boolean dispose = false, editing = false;
 
     public LogicDialog(){
         super("logic");
@@ -70,7 +70,9 @@ public class LogicDialog extends BaseDialog{
             if (dispose) {
                 dispose = false;
             } else {
+                editing = true;
                 consumer.get(canvas.save());
+                editing = false;
             }
         });
         onResize(() -> {
