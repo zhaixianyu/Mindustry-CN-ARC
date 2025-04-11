@@ -44,6 +44,11 @@ public class World{
 
         Events.on(WorldLoadEvent.class, e -> {
             tileChanges = -1;
+
+            //make each building check if it can update in the given map area
+            for(var build : Groups.build){
+                build.checkAllowUpdate();
+            }
         });
     }
 
@@ -123,7 +128,7 @@ public class World{
         Tile tile = tiles.get(x, y);
         if(tile == null) return null;
         if(tile.build != null){
-            return tile.build.tile();
+            return tile.build.tile;
         }
         return tile;
     }
@@ -321,8 +326,6 @@ public class World{
         state.rules.cloudColor = sector.planet.landCloudColor;
         state.rules.env = sector.planet.defaultEnv;
         state.rules.planet = sector.planet;
-        state.rules.hiddenBuildItems.clear();
-        state.rules.hiddenBuildItems.addAll(sector.planet.hiddenItems);
         sector.planet.applyRules(state.rules);
         sector.info.resources = content.toSeq();
         sector.info.resources.sort(Structs.comps(Structs.comparing(Content::getContentType), Structs.comparingInt(c -> c.id)));
@@ -460,11 +463,16 @@ public class World{
         return 0;
     }
 
-    public void checkMapArea(){
-        for(var build : Groups.build){
-            //reset map-area-based disabled blocks.
-            if(!build.enabled && build.block.autoResetEnabled){
-                build.enabled = true;
+    public void checkMapArea(int x, int y, int w, int h){
+        for(var team : state.teams.present){
+            for(var build : team.buildings){
+                //reset map-area-based disabled blocks that were not in the previous map area
+                if(!build.enabled && build.block.autoResetEnabled && !Rect.contains(x, y, w, h, build.tile.x, build.tile.y)){
+                    build.enabled = true;
+                }
+
+                //if the map area contracts, disable the block
+                build.checkAllowUpdate();
             }
         }
     }

@@ -197,6 +197,8 @@ public class UnitTypes{
             singleTarget = true;
             drownTimeMultiplier = 4f;
 
+            abilities.add(new ShieldRegenFieldAbility(25f, 250f, 60f * 1, 60f));
+
             BulletType smallBullet = new BasicBulletType(3f, 10){{
                 width = 7f;
                 height = 9f;
@@ -219,10 +221,10 @@ public class UnitTypes{
                 shoot.shots = 3;
                 shoot.shotDelay = 4f;
 
-                bullet = new BasicBulletType(7f, 50){{
+                bullet = new BasicBulletType(8f, 80){{
                     width = 11f;
                     height = 20f;
-                    lifetime = 25f;
+                    lifetime = 27f;
                     shootEffect = Fx.shootBig;
                     lightning = 2;
                     lightningLength = 6;
@@ -253,7 +255,7 @@ public class UnitTypes{
 
         reign = new UnitType("reign"){{
             speed = 0.4f;
-            hitSize = 26f;
+            hitSize = 30f;
             rotateSpeed = 1.65f;
             health = 24000;
             armor = 18f;
@@ -320,7 +322,7 @@ public class UnitTypes{
             speed = 0.55f;
             hitSize = 8f;
             health = 120f;
-            buildSpeed = 0.8f;
+            buildSpeed = 0.3f;
             armor = 1f;
 
             abilities.add(new RepairFieldAbility(10f, 60f * 4, 60f));
@@ -352,7 +354,7 @@ public class UnitTypes{
             speed = 0.7f;
             hitSize = 11f;
             health = 320f;
-            buildSpeed = 0.9f;
+            buildSpeed = 0.5f;
             armor = 4f;
             riseSpeed = 0.07f;
 
@@ -406,7 +408,7 @@ public class UnitTypes{
             mineTier = 3;
             boostMultiplier = 2f;
             health = 640f;
-            buildSpeed = 1.7f;
+            buildSpeed = 1.1f;
             canBoost = true;
             armor = 9f;
             mechLandShake = 2f;
@@ -608,13 +610,14 @@ public class UnitTypes{
 
             speed = 1f;
             hitSize = 8f;
-            health = 200;
+            health = 150;
             mechSideSway = 0.25f;
             range = 40f;
             ammoType = new ItemAmmoType(Items.coal);
 
             weapons.add(new Weapon(){{
                 shootOnDeath = true;
+                targetUnderBlocks = false;
                 reload = 24f;
                 shootCone = 180f;
                 ejectEffect = Fx.none;
@@ -626,12 +629,12 @@ public class UnitTypes{
                     collides = false;
                     hitSound = Sounds.explosion;
 
-                    rangeOverride = 30f;
+                    rangeOverride = 25f;
                     hitEffect = Fx.pulverize;
                     speed = 0f;
-                    splashDamageRadius = 55f;
+                    splashDamageRadius = 44f;
                     instantDisappear = true;
-                    splashDamage = 90f;
+                    splashDamage = 80f;
                     killShooter = true;
                     hittable = false;
                     collidesAir = true;
@@ -1009,11 +1012,12 @@ public class UnitTypes{
             accel = 0.08f;
             drag = 0.016f;
             flying = true;
-            hitSize = 10f;
+            hitSize = 11f;
             targetAir = false;
             engineOffset = 7.8f;
             range = 140f;
             faceTarget = false;
+            autoDropBombs = true;
             armor = 3f;
             itemCapacity = 0;
             targetFlags = new BlockFlag[]{BlockFlag.factory, null};
@@ -1039,6 +1043,7 @@ public class UnitTypes{
 
                     status = StatusEffects.blasted;
                     statusDuration = 60f;
+                    damage = splashDamage * 0.5f;
                 }};
             }});
         }};
@@ -1252,6 +1257,7 @@ public class UnitTypes{
             controller = u -> new MinerAI();
 
             defaultCommand = UnitCommand.mineCommand;
+            allowChangeCommands = false;
 
             flying = true;
             drag = 0.06f;
@@ -1285,7 +1291,6 @@ public class UnitTypes{
             lowAltitude = true;
 
             ammoType = new PowerAmmoType(900);
-
             mineTier = 2;
             mineSpeed = 3.5f;
 
@@ -1317,6 +1322,7 @@ public class UnitTypes{
 
                     healPercent = 5.5f;
                     collidesTeam = true;
+                    reflectable = false;
                     backColor = Pal.heal;
                     trailColor = Pal.heal;
                 }};
@@ -1385,6 +1391,7 @@ public class UnitTypes{
             drag = 0.017f;
             lowAltitude = false;
             flying = true;
+            autoDropBombs = true;
             circleTarget = true;
             engineOffset = 13f;
             engineSize = 7f;
@@ -1443,6 +1450,7 @@ public class UnitTypes{
                     healPercent = 15f;
                     splashDamage = 220f;
                     splashDamageRadius = 80f;
+                    damage = splashDamage * 0.7f;
                 }};
             }});
         }};
@@ -1829,7 +1837,6 @@ public class UnitTypes{
         //region naval support
         retusa = new UnitType("retusa"){{
             speed = 0.9f;
-            targetAir = false;
             drag = 0.14f;
             hitSize = 11f;
             health = 270;
@@ -1844,6 +1851,7 @@ public class UnitTypes{
             armor = 3f;
 
             buildSpeed = 1.5f;
+            rotateToBuilding = false;
 
             weapons.add(new RepairBeamWeapon("repair-beam-weapon-center"){{
                 x = 0f;
@@ -1855,6 +1863,23 @@ public class UnitTypes{
 
                 bullet = new BulletType(){{
                     maxRange = 120f;
+                }};
+            }});
+
+            weapons.add(new Weapon("retusa-weapon"){{
+                shootSound = Sounds.lasershoot;
+                reload = 22f;
+                x = 4.5f;
+                y = -3.5f;
+                rotateSpeed = 5f;
+                mirror = true;
+                rotate = true;
+                bullet = new LaserBoltBulletType(5.2f, 12){{
+                    lifetime = 30f;
+                    healPercent = 5.5f;
+                    collidesTeam = true;
+                    backColor = Pal.heal;
+                    frontColor = Color.white;
                 }};
             }});
 
@@ -1885,6 +1910,7 @@ public class UnitTypes{
                     mixColorTo = Color.white;
 
                     hitSound = Sounds.plasmaboom;
+                    underwater = true;
 
                     ejectEffect = Fx.none;
                     hitSize = 22f;
@@ -1909,7 +1935,7 @@ public class UnitTypes{
                     trailWidth = 3f;
                     trailLength = 8;
 
-                    splashDamage = 33f;
+                    splashDamage = 40f;
                     splashDamageRadius = 32f;
                 }};
             }});
@@ -1934,6 +1960,7 @@ public class UnitTypes{
             abilities.add(new StatusFieldAbility(StatusEffects.overclock, 60f * 6, 60f * 6f, 60f));
 
             buildSpeed = 2f;
+            rotateToBuilding = false;
 
             weapons.add(new Weapon("plasma-mount-weapon"){{
 
@@ -2008,6 +2035,7 @@ public class UnitTypes{
             trailScl = 2f;
 
             buildSpeed = 2f;
+            rotateToBuilding = false;
 
             weapons.add(new RepairBeamWeapon("repair-beam-weapon-center"){{
                 x = 11f;
@@ -2149,6 +2177,7 @@ public class UnitTypes{
             trailScl = 3.2f;
 
             buildSpeed = 3f;
+            rotateToBuilding = false;
 
             abilities.add(new EnergyFieldAbility(40f, 65f, 180f){{
                 statusDuration = 60f * 6f;
@@ -2192,6 +2221,7 @@ public class UnitTypes{
             trailScl = 3.5f;
 
             buildSpeed = 3.5f;
+            rotateToBuilding = false;
 
             for(float mountY : new float[]{-117/4f, 50/4f}){
                 for(float sign : Mathf.signs){
@@ -2243,7 +2273,13 @@ public class UnitTypes{
                     }});
                 }
             }
-
+            abilities.add(new SuppressionFieldAbility(){{
+                orbRadius = 5;
+                particleSize = 3;
+                y = -10f;
+                particles = 10;
+                color = particleColor = effectColor = Pal.heal;
+            }});
             weapons.add(new Weapon("emp-cannon-mount"){{
                 rotate = true;
 
@@ -2333,7 +2369,8 @@ public class UnitTypes{
         //region core
 
         alpha = new UnitType("alpha"){{
-            aiController = BuilderAI::new;
+            aiController = () -> new BuilderAI(true, 400f);
+            controller = u -> u.team.isAI() ? aiController.get() : new CommandAI();
             isEnemy = false;
 
             lowAltitude = true;
@@ -2371,7 +2408,8 @@ public class UnitTypes{
         }};
 
         beta = new UnitType("beta"){{
-            aiController = BuilderAI::new;
+            aiController = () -> new BuilderAI(true, 400f);
+            controller = u -> u.team.isAI() ? aiController.get() : new CommandAI();
             isEnemy = false;
 
             flying = true;
@@ -2412,7 +2450,8 @@ public class UnitTypes{
         }};
 
         gamma = new UnitType("gamma"){{
-            aiController = BuilderAI::new;
+            aiController = () -> new BuilderAI(true, 400f);
+            controller = u -> u.team.isAI() ? aiController.get() : new CommandAI();
             isEnemy = false;
 
             lowAltitude = true;
@@ -2633,7 +2672,7 @@ public class UnitTypes{
                         width = 5f;
                         height = 7f;
                         lifetime = 15f;
-                        hitSize = 4f;    
+                        hitSize = 4f;
                         pierceCap = 3;
                         pierce = true;
                         pierceBuilding = true;
@@ -3244,6 +3283,7 @@ public class UnitTypes{
                         }});
 
                         weapons.add(new Weapon(){{
+                            shootSound = Sounds.none;
                             shootCone = 360f;
                             mirror = false;
                             reload = 1f;
@@ -3265,7 +3305,7 @@ public class UnitTypes{
         tecta = new ErekirUnitType("tecta"){{
             drag = 0.1f;
             speed = 0.6f;
-            hitSize = 23f;
+            hitSize = 30f;
             health = 7300;
             armor = 5f;
 
@@ -3511,7 +3551,7 @@ public class UnitTypes{
                         trailWidth = 2.2f;
                         trailLength = 7;
                         trailChance = -1f;
-                        
+
                         collidesAir = false;
 
                         despawnEffect = Fx.none;
@@ -3540,6 +3580,7 @@ public class UnitTypes{
 
         elude = new ErekirUnitType("elude"){{
             hovering = true;
+            canDrown = false;
             shadowElevation = 0.1f;
 
             drag = 0.07f;
@@ -3826,6 +3867,7 @@ public class UnitTypes{
                         loopSoundVolume = 0.1f;
 
                         weapons.add(new Weapon(){{
+                            shootSound = Sounds.none;
                             shootCone = 360f;
                             mirror = false;
                             reload = 1f;
@@ -3882,7 +3924,7 @@ public class UnitTypes{
                     x = 43f * i / 4f;
                     particles = parts;
                     //visual only, the middle one does the actual suppressing
-                    display = active = false;
+                    active = false;
                 }});
             }
 
@@ -4051,6 +4093,8 @@ public class UnitTypes{
             isEnemy = false;
             envDisabled = 0;
 
+            range = 60f;
+            faceTarget = true;
             targetPriority = -2;
             lowAltitude = false;
             mineWalls = true;
@@ -4115,8 +4159,10 @@ public class UnitTypes{
             isEnemy = false;
             envDisabled = 0;
 
+            range = 60f;
             targetPriority = -2;
             lowAltitude = false;
+            faceTarget = true;
             mineWalls = true;
             mineFloor = false;
             mineHardnessScaling = false;
@@ -4192,6 +4238,8 @@ public class UnitTypes{
             isEnemy = false;
             envDisabled = 0;
 
+            range = 65f;
+            faceTarget = true;
             targetPriority = -2;
             lowAltitude = false;
             mineWalls = true;

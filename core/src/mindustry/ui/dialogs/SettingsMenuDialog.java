@@ -1,51 +1,36 @@
 package mindustry.ui.dialogs;
 
-import arc.Core;
-import arc.Events;
-import arc.Graphics;
-import arc.files.Fi;
-import arc.files.ZipFi;
-import arc.func.Boolc;
-import arc.func.Cons;
-import arc.graphics.Texture;
-import arc.graphics.Texture.TextureFilter;
-import arc.input.KeyCode;
-import arc.scene.Element;
-import arc.scene.event.Touchable;
-import arc.scene.style.Drawable;
-import arc.scene.style.TextureRegionDrawable;
+import arc.*;
+import arc.files.*;
+import arc.func.*;
+import arc.graphics.*;
+import arc.graphics.Texture.*;
+import arc.input.*;
+import arc.scene.*;
+import arc.scene.event.*;
+import arc.scene.style.*;
 import arc.scene.ui.*;
-import arc.scene.ui.TextButton.TextButtonStyle;
-import arc.scene.ui.layout.Table;
+import arc.scene.ui.TextButton.*;
+import arc.scene.ui.layout.*;
 import arc.scene.utils.Elem;
-import arc.struct.ObjectMap;
-import arc.struct.Seq;
-import arc.util.Nullable;
-import arc.util.OS;
-import arc.util.Scaling;
-import arc.util.Strings;
-import arc.util.io.Streams;
+import arc.struct.*;
+import arc.util.*;
+import arc.util.io.*;
 import mindustry.arcModule.ARCVars;
 import mindustry.arcModule.RFuncs;
 import mindustry.arcModule.ui.AdvanceToolTable;
-import mindustry.content.TechTree;
-import mindustry.content.TechTree.TechNode;
-import mindustry.core.GameState;
-import mindustry.core.Version;
-import mindustry.ctype.UnlockableContent;
-import mindustry.game.EventType.Trigger;
-import mindustry.gen.Icon;
-import mindustry.gen.Tex;
-import mindustry.graphics.Shaders;
-import mindustry.input.DesktopInput;
-import mindustry.input.MobileInput;
-import mindustry.ui.Fonts;
-import mindustry.ui.Styles;
+import mindustry.content.*;
+import mindustry.content.TechTree.*;
+import mindustry.core.*;
+import mindustry.ctype.*;
+import mindustry.game.EventType.*;
+import mindustry.gen.*;
+import mindustry.graphics.*;
+import mindustry.input.*;
+import mindustry.ui.*;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+import java.io.*;
+import java.util.zip.*;
 
 import static arc.Core.*;
 import static mindustry.Vars.*;
@@ -348,6 +333,7 @@ public class SettingsMenuDialog extends BaseDialog{
             arc.sliderPref("changelogreaded", 0, 0, 150, 1, i -> i + "");
             arc.checkPref("changelogexplain", false);
         }else {
+            sound.checkPref("alwaysmusic", false);
             sound.sliderPref("musicvol", 100, 0, 100, 1, i -> i + "%");
             sound.sliderPref("sfxvol", 100, 0, 100, 1, i -> i + "%");
             sound.sliderPref("ambientvol", 100, 0, 100, 1, i -> i + "%");
@@ -386,18 +372,28 @@ public class SettingsMenuDialog extends BaseDialog{
             }
         }*/
 
-            if (!mobile) {
+            if(!mobile){
                 game.checkPref("crashreport", true);
             }
+
+            game.checkPref("communityservers", true, val -> {
+                defaultServers.clear();
+                if(val){
+                    JoinDialog.fetchServers();
+                }
+            });
 
             game.sliderPref("maxSchematicSize", 32, 32, 256, 1, v -> v == 256 ? "无限" : String.valueOf(v));
             game.checkPref("savecreate", true);
             game.checkPref("blockreplace", true);
             game.checkPref("conveyorpathfinding", true);
             game.checkPref("shiftCopyIcon", true);
+            game.checkPref("hints", true);
+            game.checkPref("logichints", true);
 
             game.checkPref("backgroundpause", true);
             game.checkPref("buildautopause", false);
+            game.checkPref("distinctcontrolgroups", true);
 
             game.checkPref("doubletapmine", false);
             game.checkPref("commandmodehold", true);
@@ -436,60 +432,100 @@ public class SettingsMenuDialog extends BaseDialog{
             });
 
             graphics.sliderPref("chatopacity", 100, 0, 100, 5, s -> s + "%");
+        graphics.sliderPref("screenshake", 4, 0, 8, i -> (i / 4f) + "x");
 
-            if (!mobile) {
-                graphics.checkPref("vsync", true, b -> Core.graphics.setVSync(b));
-                graphics.checkPref("fullscreen", false, b -> {
-                    if (b && settings.getBool("borderlesswindow")) {
-                        Core.graphics.setWindowedMode(Core.graphics.getWidth(), Core.graphics.getHeight());
-                        settings.put("borderlesswindow", false);
-                        graphics.rebuild();
-                    }
+        graphics.sliderPref("bloomintensity", 6, 0, 16, i -> (int)(i/4f * 100f) + "%");
+        graphics.sliderPref("bloomblur", 2, 1, 16, i -> i + "x");
 
-                    if (b) {
-                        Core.graphics.setFullscreen();
-                    } else {
-                        Core.graphics.setWindowedMode(Core.graphics.getWidth(), Core.graphics.getHeight());
-                    }
-                });
-
-                graphics.checkPref("borderlesswindow", false, b -> {
-                    if (b && settings.getBool("fullscreen")) {
-                        Core.graphics.setWindowedMode(Core.graphics.getWidth(), Core.graphics.getHeight());
-                        settings.put("fullscreen", false);
-                        graphics.rebuild();
-                    }
-                    Core.graphics.setBorderless(b);
-                });
-
-                Core.graphics.setVSync(Core.settings.getBool("vsync"));
-
-                if (Core.settings.getBool("fullscreen")) {
-                    Core.app.post(() -> Core.graphics.setFullscreen());
-                }
-
-                if (Core.settings.getBool("borderlesswindow")) {
-                    Core.app.post(() -> Core.graphics.setBorderless(true));
-                }
-            } else if (!ios) {
-                graphics.checkPref("landscape", false, b -> {
-                    if (b) {
-                        platform.beginForceLandscape();
-                    } else {
-                        platform.endForceLandscape();
-                    }
-                });
-
-                if (Core.settings.getBool("landscape")) {
-                    platform.beginForceLandscape();
-                }
+        graphics.sliderPref("fpscap", 240, 10, 245, 5, s -> (s > 240 ? Core.bundle.get("setting.fpscap.none") : Core.bundle.format("setting.fpscap.text", s)));
+        graphics.sliderPref("chatopacity", 100, 0, 100, 5, s -> s + "%");
+        graphics.sliderPref("lasersopacity", 100, 0, 100, 5, s -> {
+            if(ui.settings != null){
+                Core.settings.put("preferredlaseropacity", s);
             }
+            return s + "%";
+        });
+
+        graphics.sliderPref("unitlaseropacity", 100, 0, 100, 5, s -> s + "%");
+        graphics.sliderPref("bridgeopacity", 100, 0, 100, 5, s -> s + "%");
+
+        graphics.sliderPref("maxmagnificationmultiplierpercent", 100, 100, 200, 25, s -> {
+            if(ui.settings != null){
+                Core.settings.put("maxzoomingamemultiplier", (float)s / 100.0f);
+            }
+            return s + "%";
+        });
+
+        graphics.sliderPref("minmagnificationmultiplierpercent", 100, 100, 300, 25, s -> {
+            if(ui.settings != null){
+                Core.settings.put("minzoomingamemultiplier", (float)s / 100.0f);
+            }
+            return s + "%";
+        });
+
+        if(!mobile){
+            graphics.checkPref("vsync", true, b -> Core.graphics.setVSync(b));
+            graphics.checkPref("fullscreen", false, b -> {
+                if(b && settings.getBool("borderlesswindow")){
+                    Core.graphics.setWindowedMode(Core.graphics.getWidth(), Core.graphics.getHeight());
+                    settings.put("borderlesswindow", false);
+                    graphics.rebuild();
+                }
+
+                if(b){
+                    Core.graphics.setFullscreen();
+                }else{
+                    Core.graphics.setWindowedMode(Core.graphics.getWidth(), Core.graphics.getHeight());
+                }
+            });
+
+            graphics.checkPref("borderlesswindow", false, b -> {
+                if(b && settings.getBool("fullscreen")){
+                    Core.graphics.setWindowedMode(Core.graphics.getWidth(), Core.graphics.getHeight());
+                    settings.put("fullscreen", false);
+                    graphics.rebuild();
+                }
+                Core.graphics.setBorderless(b);
+            });
+
+            Core.graphics.setVSync(Core.settings.getBool("vsync"));
+
+            if(Core.settings.getBool("fullscreen")){
+                Core.app.post(() -> Core.graphics.setFullscreen());
+            }
+
+            if(Core.settings.getBool("borderlesswindow")){
+                Core.app.post(() -> Core.graphics.setBorderless(true));
+            }
+        }else if(!ios){
+            graphics.checkPref("landscape", false, b -> {
+                if(b){
+                    platform.beginForceLandscape();
+                }else{
+                    platform.endForceLandscape();
+                }
+            });
+
+            if(Core.settings.getBool("landscape")){
+                platform.beginForceLandscape();
+            }
+        }
 
             graphics.addCategory("arcCgamewindow");
             graphics.checkPref("fps", false);
             graphics.checkPref("override_boss_shown", false);
 
-            graphics.checkPref("minimap", !mobile);
+            graphics.checkPref("displayselection", true);
+        graphics.checkPref("effects", true);
+        graphics.checkPref("atmosphere", !mobile);
+        graphics.checkPref("drawlight", true);
+        graphics.checkPref("destroyedblocks", true);
+        graphics.checkPref("blockstatus", false);
+        graphics.checkPref("playerchat", true);
+        if(!mobile){
+            graphics.checkPref("coreitems", true);
+        }
+        graphics.checkPref("minimap", !mobile);
             graphics.sliderPref("minimapSize", 140, 40, 400, 10, i -> i + "");
             graphics.checkPref("minimapTools", !mobile);
             graphics.checkPref("position", false);
@@ -651,19 +687,6 @@ public class SettingsMenuDialog extends BaseDialog{
             arc.sliderPref("rtsWoundUnit", 0, 0, 100, 2, s -> s + "%");
 
             arc.addCategory("arcShareinfo");
-            arc.sliderPref("chatValidType", 0, 0, 3, 1, s -> {
-                if (s == 0) {
-                    return "原版模式";
-                } else if (s == 1) {
-                    return "纯净聊天";
-                } else if (s == 2) {
-                    return "服务器记录";
-                } else if (s == 3) {
-                    return "全部记录";
-                } else {
-                    return s + "";
-                }
-            });
             arc.checkPref("arcPlayerList", true);
             arc.checkPref("ShowInfoPopup", true);
             arc.checkPref("arcShareWaveInfo", false);
@@ -760,29 +783,30 @@ public class SettingsMenuDialog extends BaseDialog{
 
             forcehide.checkPref("atmosphere", !mobile);
 
-            if (!mobile) {
-                forcehide.checkPref("vsync", true, b -> Core.graphics.setVSync(b));
+        graphics.checkPref("pixelate", false, val -> {
+            if(val){
+                Events.fire(Trigger.enablePixelation);
             }
-            Core.graphics.setVSync(Core.settings.getBool("vsync"));
+        });
 
-            //iOS (and possibly Android) devices do not support linear filtering well, so disable it
-            if (!ios) {
-                graphics.checkPref("linear", !mobile, b -> {
-                    for (Texture tex : Core.atlas.getTextures()) {
-                        TextureFilter filter = b ? TextureFilter.linear : TextureFilter.nearest;
-                        tex.setFilter(filter, filter);
-                    }
-                });
-            } else {
-                settings.put("linear", false);
-            }
-
-            if (Core.settings.getBool("linear")) {
-                for (Texture tex : Core.atlas.getTextures()) {
-                    TextureFilter filter = TextureFilter.linear;
+        //iOS (and possibly Android) devices do not support linear filtering well, so disable it
+        if(!ios){
+            graphics.checkPref("linear", !mobile, b -> {
+                for(Texture tex : Core.atlas.getTextures()){
+                    TextureFilter filter = b ? TextureFilter.linear : TextureFilter.nearest;
                     tex.setFilter(filter, filter);
                 }
+            });
+        }else{
+            settings.put("linear", false);
+        }
+
+        if(Core.settings.getBool("linear")){
+            for(Texture tex : Core.atlas.getTextures()){
+                TextureFilter filter = TextureFilter.linear;
+                tex.setFilter(filter, filter);
             }
+        }
 
             forcehide.checkPref("pixelate", false, val -> {
                 if (val) {
@@ -975,7 +999,6 @@ public class SettingsMenuDialog extends BaseDialog{
     private void visible(int index){
         prefs.clearChildren();
 
-
         Seq<Table> tables = new Seq<>();
 
         if(Core.settings.getInt("changelogreaded") == ARCVars.changeLogRead){
@@ -989,10 +1012,6 @@ public class SettingsMenuDialog extends BaseDialog{
         }
 
         prefs.add(tables.get(index));
-
-
-
-
     }
 
     @Override

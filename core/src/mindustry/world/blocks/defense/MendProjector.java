@@ -4,6 +4,7 @@ import arc.*;
 import arc.graphics.*;
 import arc.graphics.g2d.*;
 import arc.math.*;
+import arc.struct.*;
 import arc.util.*;
 import arc.util.io.*;
 import mindustry.annotations.Annotations.*;
@@ -41,6 +42,7 @@ public class MendProjector extends Block{
         lightRadius = 50f;
         suppressable = true;
         envEnabled |= Env.space;
+        flags = EnumSet.of(BlockFlag.blockRepair);
     }
 
     @Override
@@ -62,7 +64,7 @@ public class MendProjector extends Block{
             stats.add(Stat.booster, StatValues.itemBoosters(
                 "{0}x修复量",
                 stats.timePeriod, (phaseBoost + healPercent) / healPercent, phaseRangeBoost,
-                cons.items, this::consumesItem)
+                cons.items)
             );
         }
     }

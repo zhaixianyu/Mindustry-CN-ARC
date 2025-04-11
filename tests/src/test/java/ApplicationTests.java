@@ -16,7 +16,6 @@ import mindustry.entities.units.*;
 import mindustry.game.*;
 import mindustry.gen.*;
 import mindustry.io.*;
-import mindustry.io.SaveIO.*;
 import mindustry.maps.*;
 import mindustry.mod.*;
 import mindustry.mod.Mods.*;
@@ -26,6 +25,7 @@ import mindustry.type.*;
 import mindustry.world.*;
 import mindustry.world.blocks.payloads.*;
 import mindustry.world.blocks.storage.*;
+import org.json.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.*;
 import org.junit.jupiter.params.provider.*;
@@ -225,13 +225,16 @@ public class ApplicationTests{
 
     @Test
     void serverListJson(){
-        String[] files = {"servers_v6.json", "servers_v7.json", "servers_be.json"};
+        String[] files = {"servers_v6.json", "servers_v7.json"};
+
 
         for(String file : files){
             try{
                 String str = Core.files.absolute("./../../" + file).readString();
                 assertEquals(ValueType.array, new JsonReader().parse(str).type());
                 assertTrue(Jval.read(str).isArray());
+                JSONArray array = new JSONArray(str);
+                assertTrue(array.length() > 0);
             }catch(Exception e){
                 fail("Failed to parse " + file, e);
             }
@@ -880,13 +883,7 @@ public class ApplicationTests{
 
                 logic.reset();
                 state.rules.sector = zone.sector;
-                try{
-                    world.loadGenerator(zone.generator.map.width, zone.generator.map.height, zone.generator::generate);
-                }catch(SaveException e){
-                    //fails randomly and I don't care about fixing it
-                    e.printStackTrace();
-                    return;
-                }
+                world.loadGenerator(zone.generator.map.width, zone.generator.map.height, zone.generator::generate);
                 zone.rules.get(state.rules);
                 ObjectSet<Item> resources = new ObjectSet<>();
                 boolean hasSpawnPoint = false;
@@ -926,7 +923,6 @@ public class ApplicationTests{
 
                     if(state.rules.winWave > 0) bossWave = state.rules.winWave - 1;
 
-                    //TODO check for difficulty?
                     for(int i = 1; i <= bossWave; i++){
                         int total = 0;
                         for(SpawnGroup spawn : spawns){
@@ -934,8 +930,6 @@ public class ApplicationTests{
                         }
 
                         assertNotEquals(0, total, "Sector " + zone + " has no spawned enemies at wave " + i);
-                        //TODO this is flawed and needs to be changed later
-                        //assertTrue(total < 75, "Sector spawns too many enemies at wave " + i + " (" + total + ")");
                     }
                 }
 

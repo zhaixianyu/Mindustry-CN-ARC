@@ -201,8 +201,7 @@ public class Schematics implements Loadable{
             Seq<Schematic> keys = previews.orderedKeys().copy();
             for(int i = 0; i < previews.size - maxPreviewsMobile; i++){
                 //dispose and remove unneeded previews
-                previews.get(keys.get(i)).dispose();
-                previews.remove(keys.get(i));
+                previews.remove(keys.get(i)).dispose();
             }
             //update last clear time
             lastClearTime = Time.millis();
@@ -560,7 +559,7 @@ public class Schematics implements Loadable{
             }
 
             IntMap<Block> blocks = new IntMap<>();
-            byte length = stream.readByte();
+            int length = stream.readUnsignedByte();
             for(int i = 0; i < length; i++){
                 String name = stream.readUTF();
                 Block block = Vars.content.getByName(ContentType.block, SaveFileReader.fallback.get(name, name));
@@ -655,7 +654,7 @@ public class Schematics implements Loadable{
 
     private static Schematic rotated(Schematic input, boolean counter){
         int direction = Mathf.sign(counter);
-        Schematic schem = input == tmpSchem ? tmpSchem2 : tmpSchem2;
+        Schematic schem = input == tmpSchem ? tmpSchem2 : tmpSchem;
         schem.width = input.width;
         schem.height = input.height;
         Pools.freeAll(schem.tiles);

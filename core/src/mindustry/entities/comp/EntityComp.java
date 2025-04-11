@@ -63,7 +63,16 @@ abstract class EntityComp{
 
     }
 
+    void beforeWrite(){
+
+    }
+
     void afterRead(){
+
+    }
+
+    //called after all entities have been read (useful for ID resolution)
+    void afterReadAll(){
 
     }
 }

@@ -206,7 +206,7 @@ public class ARCUnits {
         if (!unitHealthBar || !drawUnitBar) return;
         Draw.z(Layer.shields + 6f);
         float y_corr = 0f;
-        if (unit.hitSize < 30f && unit.hitSize > 20f && unit.controller().isBeingControlled(player.unit())) y_corr = 2f;
+        if (unit.hitSize < 30f && unit.hitSize > 20f && unit.isPlayer()) y_corr = 2f;
         if (unit.health < unit.maxHealth) {
             Draw.reset();
             Lines.stroke(4f);

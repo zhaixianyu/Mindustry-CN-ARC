@@ -11,13 +11,16 @@ import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.*;
+import mindustry.ai.types.*;
 import mindustry.content.*;
+import mindustry.core.*;
 import mindustry.game.EventType.*;
 import mindustry.game.*;
 import mindustry.gen.*;
 import mindustry.input.*;
 import mindustry.ui.*;
 import mindustry.world.*;
+import mindustry.world.blocks.ConstructBlock.*;
 import mindustry.world.blocks.payloads.PayloadBlock.*;
 import mindustry.world.meta.*;
 
@@ -86,6 +89,12 @@ public class HintsFragment{
         Events.on(BuildingCommandEvent.class, e -> {
             if(e.building instanceof PayloadBlockBuild<?>){
                 events.add("factorycontrol");
+            }
+        });
+
+        Events.on(BlockBuildBeginEvent.class, e -> {
+            if(e.unit == player.unit() && e.tile.build instanceof ConstructBuild c && c.prevBuild != null && c.prevBuild.contains(b -> b.team == Team.derelict)){
+                events.add("derelictbreak");
             }
         });
     }
@@ -162,14 +171,15 @@ public class HintsFragment{
         depositItems(() -> player.unit().hasItem(), () -> !player.unit().hasItem()),
         desktopPause(visibleDesktop, () -> isTutorial.get() && !Vars.net.active() && state.wave >= 2, () -> Core.input.keyTap(Binding.pause)),
         unitControl(() -> isSerpulo() && state.rules.defaultTeam.data().units.size > 2 && !net.active() && !player.dead(), () -> !player.dead() && !player.unit().spawnedByCore),
-        unitSelectControl(() -> isSerpulo() && state.rules.defaultTeam.data().units.size > 3 && !net.active() && !player.dead(), () -> control.input.commandMode && control.input.selectedUnits.size > 0),
+        unitSelectControl(() -> isSerpulo() && state.rules.defaultTeam.data().units.size > 3 && !net.active() && !player.dead(),
+            () -> control.input.commandMode && control.input.selectedUnits.size > 0 && control.input.selectedUnits.first().controller() instanceof CommandAI ai && ai.targetPos != null),
         respawn(visibleMobile, () -> !player.dead() && !player.unit().spawnedByCore, () -> !player.dead() && player.unit().spawnedByCore),
-        launch(() -> isTutorial.get() && state.rules.sector.isCaptured(), () -> ui.planet.isShown()),
+        launch(() -> (isTutorial.get() || Vars.state.rules.sector == SectorPresets.onset.sector) && state.rules.sector.isCaptured(), () -> ui.planet.isShown()),
         schematicSelect(visibleDesktop, () -> ui.hints.placedBlocks.contains(Blocks.router) || ui.hints.placedBlocks.contains(Blocks.ductRouter), () -> Core.input.keyRelease(Binding.schematic_select) || Core.input.keyTap(Binding.pick)),
         conveyorPathfind(() -> control.input.block == Blocks.titaniumConveyor, () -> Core.input.keyRelease(Binding.diagonal_placement) || (mobile && Core.settings.getBool("swapdiagonal"))),
         boost(visibleDesktop, () -> !player.dead() && player.unit().type.canBoost, () -> Core.input.keyDown(Binding.boost)),
-        blockInfo(() -> !(state.isCampaign() && state.rules.sector == SectorPresets.groundZero.sector && state.wave < 3), () -> ui.content.isShown()),
-        derelict(() -> ui.hints.events.contains("derelictmouse") && !isTutorial.get(), () -> false),
+        blockInfo(() -> control.input.block == Blocks.graphitePress, () -> ui.content.isShown()),
+        derelict(() -> ui.hints.events.contains("derelictmouse") && !isTutorial.get(), () -> ui.hints.events.contains("derelictbreak")),
         payloadPickup(() -> isSerpulo() && !player.unit().dead && player.unit() instanceof Payloadc p && p.payloads().isEmpty(), () -> player.unit() instanceof Payloadc p && p.payloads().any()),
         payloadDrop(() -> !player.unit().dead && player.unit() instanceof Payloadc p && p.payloads().any(), () -> player.unit() instanceof Payloadc p && p.payloads().isEmpty()),
         waveFire(() -> Groups.fire.size() > 0 && Blocks.wave.unlockedNow(), () -> indexer.getFlagged(state.rules.defaultTeam, BlockFlag.extinguisher).size > 0),
@@ -241,7 +251,7 @@ public class HintsFragment{
                 text = Vars.mobile && Core.bundle.has("hint." + name() + ".mobile") ? Core.bundle.get("hint." + name() + ".mobile") : Core.bundle.get("hint." + name());
                 if(!Vars.mobile) text = text.replace("tap", "click").replace("Tap", "Click");
             }
-            return text;
+            return UI.formatIcons(text);
         }
 
         @Override

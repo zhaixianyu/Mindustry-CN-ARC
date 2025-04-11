@@ -1,6 +1,7 @@
 package mindustry.entities.abilities;
 
 import arc.math.*;
+import arc.scene.ui.layout.*;
 import arc.util.*;
 import mindustry.content.*;
 import mindustry.entities.*;
@@ -13,8 +14,8 @@ import static mindustry.arcModule.RFuncs.abilitysFormat;
 
 public class LiquidRegenAbility extends Ability{
     public Liquid liquid;
-    public float slurpSpeed = 9f;
-    public float regenPerSlurp = 2.9f;
+    public float slurpSpeed = 5f;
+    public float regenPerSlurp = 6f;
     public float slurpEffectChance = 0.4f;
     public Effect slurpEffect = Fx.heal;
 
@@ -29,11 +30,19 @@ public class LiquidRegenAbility extends Ability{
         );
     }
     @Override
+    public void addStats(Table t){
+        super.addStats(t);
+        t.add((liquid.hasEmoji() ? liquid.emoji() : "") + "[stat]" + liquid.localizedName);
+        t.row();
+        t.add(abilityStat("slurpheal", Strings.autoFixed(regenPerSlurp, 2)));
+    }
+
+    @Override
     public void update(Unit unit){
         //TODO timer?
 
         //TODO effects?
-        if(unit.damaged()){
+        if(unit.damaged() && !unit.isFlying()){
             boolean healed = false;
             int tx = unit.tileX(), ty = unit.tileY();
             int rad = Math.max((int)(unit.hitSize / tilesize * 0.6f), 1);

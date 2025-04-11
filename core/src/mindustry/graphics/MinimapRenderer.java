@@ -170,33 +170,42 @@ public class MinimapRenderer{
             });
         }
 
+        Tmp.m2.set(Draw.trans());
+
+        float scaleFactor;
+        var trans = Tmp.m1.idt();
+        trans.translate(lastX, lastY);
+        if(!worldSpace){
+            trans.scl(Tmp.v1.set(scaleFactor = lastW / rect.width, lastH / rect.height));
+            trans.translate(-rect.x, -rect.y);
+        }else{
+            trans.scl(Tmp.v1.set(scaleFactor = lastW / world.unitWidth(), lastH / world.unitHeight()));
+        }
+        trans.translate(tilesize / 2f, tilesize / 2f);
+        Draw.trans(trans);
+
+        scaleFactor = 1f / scaleFactor;
+
         if(unitDetailsIcon){
             for(Unit unit : units){
                 if(unit.inFogTo(player.team()) || !unit.type.drawMinimap) continue;
 
-                float rx = !fullView ? (unit.x - rect.x) / rect.width * w : unit.x / (world.width() * tilesize) * w;
-                float ry = !fullView ? (unit.y - rect.y) / rect.width * h : unit.y / (world.height() * tilesize) * h;
-
-                float scale = Scl.scl(1f) / 2f * scaling * 32f * unit.hitSize / tilesize / 2;
+                float scale = Scl.scl(1f) * tilesize * 3;
                 var region = unit.icon();
-                Draw.rect(region, x + rx, y + ry, scale, scale * (float)region.height / region.width, unit.rotation() - 90);
+                Draw.rect(region, unit.x, unit.y, scale, scale * (float) region.height / region.width, unit.rotation() - 90);
                 Draw.reset();
                 Draw.mixcol(unit.team.color, 0.3f);
-                Draw.rect(region, x + rx, y + ry, scale, scale * (float)region.height / region.width, unit.rotation() - 90);
+                Draw.rect(region, unit.x, unit.y, scale, scale * (float) region.height / region.width, unit.rotation() - 90);
                 Draw.reset();
             }
-        }
-        else{
-            for(Unit unit : units){
-                if(unit.inFogTo(player.team()) || !unit.type.drawMinimap) continue;
-
-                float rx = !fullView ? (unit.x - rect.x) / rect.width * w : unit.x / (world.width() * tilesize) * w;
-                float ry = !fullView ? (unit.y - rect.y) / rect.width * h : unit.y / (world.height() * tilesize) * h;
+        } else {
+            for (Unit unit : units) {
+                if (unit.inFogTo(player.team()) || !unit.type.drawMinimap) continue;
 
                 Draw.mixcol(unit.team.color, 1f);
-                float scale = Scl.scl(1f) / 2f * scaling * 32f;
+                float scale = Scl.scl(1f) * tilesize * 3;
                 var region = unit.icon();
-                Draw.rect(region, x + rx, y + ry, scale, scale * (float)region.height / region.width, unit.rotation() - 90);
+                Draw.rect(region, unit.x, unit.y, scale, scale * (float)region.height / region.width, unit.rotation() - 90);
                 Draw.reset();
             }
         }
@@ -204,6 +213,7 @@ public class MinimapRenderer{
         if(net.active() && (fullView || forceShowPlayer)){
             for(Player player : Groups.player){
                 if(!player.dead()){
+                    drawLabel(player.x, player.y, player.name, player.color);
                     float rx = !fullView ? (player.x - rect.x) / rect.width * w : player.x / (world.width() * tilesize) * w;
                     float ry = !fullView ? (player.y - rect.y) / rect.width * h : player.y / (world.height() * tilesize) * h;
 
@@ -228,23 +238,22 @@ public class MinimapRenderer{
             //crisp pixels
             dynamicTex.setFilter(TextureFilter.nearest);
 
-            if(worldSpace){
-                region.set(0f, 0f, 1f, 1f);
-            }
-
             Tmp.tr1.set(dynamicTex);
-            Tmp.tr1.set(region.u, 1f - region.v, region.u2, 1f - region.v2);
+            Tmp.tr1.set(0f, 1f, 1f, 0f);
 
-            Draw.color(state.rules.dynamicColor);
-            Draw.rect(Tmp.tr1, x + w/2f, y + h/2f, w, h);
+            float wf = world.width() * tilesize;
+            float hf = world.height() * tilesize;
+
+            Draw.color(state.rules.dynamicColor, 0.5f);
+            Draw.rect(Tmp.tr1, wf / 2, hf / 2, wf, hf);
 
             if(state.rules.staticFog){
                 staticTex.setFilter(TextureFilter.nearest);
 
                 Tmp.tr1.texture = staticTex;
                 //must be black to fit with borders
-                Draw.color(0f, 0f, 0f, state.rules.staticColor.a);
-                Draw.rect(Tmp.tr1, x + w/2f, y + h/2f, w, h);
+                Draw.color(0f, 0f, 0f, 1f);
+                Draw.rect(Tmp.tr1, wf / 2, hf / 2, wf, hf);
             }
 
             Draw.color();
@@ -258,18 +267,16 @@ public class MinimapRenderer{
             if(!mobile){
                 //draw bounds for camera - not drawn on mobile because you can't shift it by tapping anyway
                 Rect r = Core.camera.bounds(Tmp.r1);
-                Vec2 bot = transform(Tmp.v1.set(r.x, r.y));
-                Vec2 top = transform(Tmp.v2.set(r.x + r.width, r.y + r.height));
-                Lines.stroke(Scl.scl(3f));
+                Lines.stroke(Scl.scl(3f) * scaleFactor);
                 Draw.color(Pal.accent);
-                Lines.rect(bot.x,bot.y, top.x - bot.x, top.y - bot.y);
+                Lines.rect(r.x, r.y, r.width, r.height);
                 Draw.reset();
             }
         }
 
         LongSeq indicators = control.indicators.list();
         float fin = ((Time.globalTime / 30f) % 1f);
-        float rad = scale(fin * 5f + tilesize - 2f);
+        float rad = fin * 5f + tilesize - 2f;
         Lines.stroke(Scl.scl((1f - fin) * 4f + 0.5f));
 
         for(int i = 0; i < indicators.size; i++){
@@ -286,23 +293,33 @@ public class MinimapRenderer{
                 offset = build.block.offset / tilesize;
             }
 
-            Vec2 v = transform(Tmp.v1.set((ix + 0.5f + offset) * tilesize, (iy + 0.5f + offset) * tilesize));
-
             Draw.color(Color.orange, Color.scarlet, Mathf.clamp(time / 70f));
 
-            Lines.square(v.x, v.y, rad);
+            Lines.square((ix + 0.5f + offset) * tilesize, (iy + 0.5f + offset) * tilesize, rad);
         }
 
         Draw.reset();
 
+        //TODO autoscale markers
         state.rules.objectives.eachRunning(obj -> {
             for(var marker : obj.markers){
-                marker.drawMinimap(this);
+                if(marker.minimap){
+                    marker.draw(1);
+                }
             }
         });
+
+        for(var marker : state.markers){
+            if(marker.minimap){
+                marker.draw(1);
+            }
+        }
+
+        Draw.trans(Tmp.m2);
     }
 
-    private float transfromX(boolean withLabels,float w,float x){
+
+        private float transfromX(boolean withLabels,float w,float x){
         return !withLabels ? (x - rect.x) / rect.width * w : x / (world.width() * tilesize) * w;
     }
     private float transfromY(boolean withLabels,float h,float y){
@@ -331,17 +348,6 @@ public class MinimapRenderer{
         }
 
         Draw.reset();
-    }
-
-    //TODO horrible code, everywhere.
-    public Vec2 transform(Vec2 position){
-        if(!worldSpace){
-            position.sub(rect.x, rect.y).scl(lastW / rect.width, lastH / rect.height);
-        }else{
-            position.scl(lastW / world.unitWidth(), lastH / world.unitHeight());
-        }
-
-        return position.add(lastX, lastY);
     }
 
     public float scale(float radius){
@@ -432,10 +438,10 @@ public class MinimapRenderer{
         Font font = Fonts.outline;
         GlyphLayout l = Pools.obtain(GlyphLayout.class, GlyphLayout::new);
         boolean ints = font.usesIntegerPositions();
-        font.getData().setScale(1 / 1.5f / Scl.scl(1f));
+        font.getData().setScale(1 / 1.5f * lastScl / Scl.scl(1f));
         font.setUseIntegerPositions(false);
 
-        l.setText(font, text, color, 90f, Align.left, true);
+        l.setText(font, text, color, 90f * lastScl, Align.left, true);
         float yOffset = 20f;
         float margin = 3f;
 
@@ -443,7 +449,7 @@ public class MinimapRenderer{
         Fill.rect(x, y + yOffset - l.height/2f, l.width + margin, l.height + margin);
         Draw.color();
         font.setColor(color);
-        font.draw(text, x - l.width/2f, y + yOffset, 90f, Align.left, true);
+        font.draw(text, x - l.width/2f, y + yOffset, 90f * lastScl, Align.left, true);
         font.setUseIntegerPositions(ints);
 
         font.getData().setScale(1f);
