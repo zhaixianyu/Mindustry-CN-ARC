@@ -32,6 +32,20 @@ public class Stats{
     public void addPercent(Stat stat, float value){
         add(stat, StatValues.number((int)(value * 100), StatUnit.percent));
     }
+    public void addPercent(String name, StatCat category, float value) {
+        addPercent(ArcStat.get(name, category), value);
+    }
+
+
+    /** Adds a multiplicative modifier stat value. Value is assumed to be in the 0-1 range. */
+    public void addMultModifier(Stat stat, float value){
+        add(stat, StatValues.multiplierModifier(value));
+    }
+
+    /** Adds an percent modifier stat value. Value is assumed to be in the 0-1 range. */
+    public void addPercentModifier(Stat stat, float value){
+        add(stat, StatValues.percentModifier(value));
+    }
 
     /** Adds a single y/n boolean value. */
     public void add(Stat stat, boolean value){
@@ -74,14 +88,17 @@ public class Stats{
         add(stat, StatValues.string(format, args));
     }
 
+    /** Replaces a stat, removing the old value if it exists. */
+    public void replace(Stat stat, StatValue value){
+        remove(stat);
+        add(stat, value);
+    }
+
     public void add(String name, StatCat category, float value, StatUnit unit) {
         add(ArcStat.get(name, category), value, unit);
     }
     public void add(String name, StatCat category, String format, Object... args) {
         add(ArcStat.get(name, category), format, args);
-    }
-    public void addPercent(String name, StatCat category, float value) {
-        addPercent(ArcStat.get(name, category), value);
     }
 
     /** Adds a stat value. */

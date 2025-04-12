@@ -1,5 +1,6 @@
 package mindustry.logic;
 
+import arc.input.*;
 import arc.Core;
 import arc.func.Cons;
 import arc.func.Prov;
@@ -19,13 +20,15 @@ import mindustry.core.GameState.State;
 import mindustry.ctype.Content;
 import mindustry.game.Team;
 import mindustry.gen.*;
+import mindustry.world.blocks.logic.*;
 import mindustry.graphics.Pal;
 import mindustry.logic.LExecutor.PrintI;
-import mindustry.logic.LExecutor.Var;
 import mindustry.logic.LStatements.InvalidStatement;
 import mindustry.ui.Fonts;
 import mindustry.ui.Styles;
 import mindustry.ui.dialogs.BaseDialog;
+
+import java.util.*;
 
 import static mindustry.Vars.*;
 import static mindustry.arcModule.ARCVars.arcui;
@@ -44,8 +47,10 @@ public class LogicDialog extends BaseDialog{
     public static String transText = "";
 
     @Nullable LExecutor executor;
+    GlobalVarsDialog globalsDialog = new GlobalVarsDialog();
+    boolean wasRows, wasPortrait;
 
-    private boolean dispose = false;
+    public boolean dispose = false, editing = false;
 
     public LogicDialog(){
         super("logic");
@@ -57,21 +62,40 @@ public class LogicDialog extends BaseDialog{
         addCloseListener();
 
         shown(this::setup);
+        shown(() -> {
+            wasRows = LCanvas.useRows();
+            wasPortrait = Core.graphics.isPortrait();
+        });
         hidden(() -> {
-            if(!dispose){
-                consumer.get(canvas.save());
-            } else {
+            if (dispose) {
                 dispose = false;
-            }});
+            } else {
+                editing = true;
+                consumer.get(canvas.save());
+                editing = false;
+            }
+        });
         onResize(() -> {
-            setup();
-            canvas.rebuild();
+            if(wasRows != LCanvas.useRows() || wasPortrait != Core.graphics.isPortrait()){
+                setup();
+                canvas.rebuild();
+                wasPortrait = Core.graphics.isPortrait();
+                wasRows = LCanvas.useRows();
+            }
             varsTable();
         });
 
 
         add(mainTable).grow().name("canvas");
         rebuildMain();
+        //show add instruction on shift+enter
+        keyDown(KeyCode.enter, () -> {
+            if(Core.input.shift()){
+                showAddDialog();
+            }
+        });
+
+        add(canvas).grow().name("canvas");
 
         row();
 
@@ -204,17 +228,17 @@ public class LogicDialog extends BaseDialog{
             }).width(400f).padLeft(20f);
     }
 
-    public static String arcVarsText(Var s){
+    public static String arcVarsText(LVar s){
         return s.isobj ? PrintI.toString(s.objval) : Math.abs(s.numval - (long)s.numval) < 0.00001 ? (long)s.numval + "" : s.numval + "";
     }
 
-    public static Color arcVarsColor(Var s){
+    public static Color arcVarsColor(LVar s){
         if(s.constant && s.name.startsWith("@")) return Color.goldenrod;
         else if (s.constant) return Color.valueOf("00cc7e");
         else return typeColor(s,new Color());
     }
 
-    private static Color typeColor(Var s, Color color){
+    public static Color typeColor(LVar s, Color color){
         return color.set(
             !s.isobj ? Pal.place :
             s.objval == null ? Color.darkGray :
@@ -228,7 +252,7 @@ public class LogicDialog extends BaseDialog{
         );
     }
 
-    private String typeName(Var s){
+    public static String typeName(LVar s){
         return
             !s.isobj ? "number" :
             s.objval == null ? "null" :
@@ -254,11 +278,29 @@ public class LogicDialog extends BaseDialog{
                     TextButtonStyle style = Styles.flatt;
                     t.defaults().size(280f, 60f).left();
 
+                    if(privileged && executor != null && executor.build != null && !ui.editor.isShown()){
+                        t.button("@editor.worldprocessors.editname", Icon.edit, style, () -> {
+                            ui.showTextInput("", "@editor.name", LogicBlock.maxNameLength, executor.build.tag == null ? "" : executor.build.tag, tag -> {
+                                if(privileged && executor != null && executor.build != null){
+                                    executor.build.configure(tag);
+                                    //just in case of privilege shenanigans...
+                                    executor.build.tag = tag;
+                                }
+                            });
+                            dialog.hide();
+                        }).marginLeft(12f).row();
+                    }
+
+                    t.button("@clear", Icon.cancel, style, () -> {
+                        ui.showConfirm("@logic.clear.confirm", () -> canvas.clearStatements());
+                        dialog.hide();
+                    }).marginLeft(12f).row();
+
                     t.button("@schematic.copy", Icon.copy, style, () -> {
                         dialog.hide();
                         Core.app.setClipboardText(canvas.save());
-                    }).marginLeft(12f);
-                    t.row();
+                    }).marginLeft(12f).row();
+
                     t.button("@schematic.copy.import", Icon.download, style, () -> {
                         dialog.hide();
                         try{
@@ -290,20 +332,27 @@ public class LogicDialog extends BaseDialog{
         if(Core.graphics.isPortrait()) buttons.row();
 
         buttons.button("@variables", Icon.menu, () -> {
+            //in the editor, it should display the global variables only (the button text is different)
+            if(!shouldShowVariables()){
+                globalsDialog.show();
+                return;
+            }
+
             BaseDialog dialog = new BaseDialog("@variables");
             dialog.hidden(() -> {
-                if(!wasPaused && !net.active()){
+                if(!wasPaused && !net.active() && !state.isMenu()){
                     state.set(State.paused);
                 }
             });
 
             dialog.shown(() -> {
-                if(!wasPaused && !net.active()){
+                if(!wasPaused && !net.active() && !state.isMenu()){
                     state.set(State.playing);
                 }
             });
 
             dialog.cont.pane(p -> {
+
                 p.margin(10f).marginRight(16f);
                 p.table(Tex.button, t -> {
                     t.defaults().fillX().height(45f);
@@ -324,7 +373,7 @@ public class LogicDialog extends BaseDialog{
                             Label label = out.add("").style(Styles.outlineLabel).padLeft(4).padRight(4).width(140f).wrap().get();
                             label.update(() -> {
                                 if(counter[0] < 0 || (counter[0] += Time.delta) >= period){
-                                    String text = s.isobj ? PrintI.toString(s.objval) : Math.abs(s.numval - (long)s.numval) < 0.00001 ? (long)s.numval + "" : s.numval + "";
+                                    String text = s.isobj ? PrintI.toString(s.objval) : Math.abs(s.numval - Math.round(s.numval)) < 0.00001 ? Math.round(s.numval) + "" : s.numval + "";
                                     if(!label.textEquals(text)){
                                         label.setText(text);
                                         if(counter[0] >= 0f){
@@ -353,17 +402,75 @@ public class LogicDialog extends BaseDialog{
             });
 
             dialog.addCloseButton();
+            dialog.buttons.button("@logic.globals", Icon.list, () -> globalsDialog.show()).size(210f, 64f);
+
             dialog.show();
-        }).name("variables").disabled(b -> executor == null || executor.vars.length == 0);
+        }).name("variables").update(b -> {
+            if(shouldShowVariables()){
+                b.setText("@variables");
+            }else{
+                b.setText("@logic.globals");
+            }
+        });
 
         buttons.button("@add", Icon.add, () -> {
-            BaseDialog dialog = new BaseDialog("@add");
-            dialog.cont.table(table -> {
-                table.background(Tex.button);
-                table.pane(t -> {
+            showAddDialog();
+        }).disabled(t -> canvas.statements.getChildren().size >= LExecutor.maxInstructions);
+
+        Core.app.post(canvas::rebuild);
+    }
+
+    public boolean shouldShowVariables(){
+        return executor != null && executor.vars.length > 0 && !state.isMenu();
+    }
+
+    public void showAddDialog(){
+        BaseDialog dialog = new BaseDialog("@add");
+        dialog.cont.table(table -> {
+            String[] searchText = {""};
+            Prov[] matched = {null};
+            Runnable[] rebuild = {() -> {}};
+
+            table.background(Tex.button);
+
+            table.table(s -> {
+                s.image(Icon.zoom).padRight(8);
+                var search = s.field(null, text -> {
+                    searchText[0] = text;
+                    rebuild[0].run();
+                }).growX().get();
+                search.setMessageText("@players.search");
+
+                //auto add first match on enter key
+                if(!mobile){
+
+                    //don't focus on mobile (it may cause issues with a popup keyboard)
+                    Core.app.post(search::requestKeyboard);
+
+                    search.keyDown(KeyCode.enter, () -> {
+                        if(!searchText[0].isEmpty() && matched[0] != null){
+                            canvas.add((LStatement)matched[0].get());
+                            dialog.hide();
+                        }
+                    });
+                }
+            }).growX().padBottom(4).row();
+
+            table.pane(t -> {
+                rebuild[0] = () -> {
+                    t.clear();
+
+                    var text = searchText[0].toLowerCase();
+
+                    matched[0] = null;
+
                     for(Prov<LStatement> prov : LogicIO.allStatements){
                         LStatement example = prov.get();
-                        if(example instanceof InvalidStatement || example.hidden() || (example.privileged() && !privileged) || (example.nonPrivileged() && privileged)) continue;
+                        if(example instanceof InvalidStatement || example.hidden() || (example.privileged() && !privileged) || (example.nonPrivileged() && privileged) || (!text.isEmpty() && !example.name().toLowerCase(Locale.ROOT).contains(text))) continue;
+
+                        if(matched[0] == null){
+                            matched[0] = prov;
+                        }
 
                         LCategory category = example.category();
                         Table cat = t.find(category.name);
@@ -395,11 +502,13 @@ public class LogicDialog extends BaseDialog{
 
                         if(cat.getChildren().size % 3 == 0) cat.row();
                     }
-                }).grow();
-            }).fill().maxHeight(Core.graphics.getHeight() * 0.8f);
-            dialog.addCloseButton();
-            dialog.show();
-        }).disabled(t -> canvas.statements.getChildren().size >= LExecutor.maxInstructions);
+                };
+
+                rebuild[0].run();
+            }).grow();
+        }).fill().maxHeight(Core.graphics.getHeight() * 0.8f);
+        dialog.addCloseButton();
+        dialog.show();
     }
 
     public void show(String code, LExecutor executor, boolean privileged, Cons<String> modified){

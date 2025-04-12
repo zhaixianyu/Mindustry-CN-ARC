@@ -61,6 +61,11 @@ public class StackRouter extends DuctRouter{
             if((current == null || items.get(current) == 0) && items.total() > 0){
                 current = items.first();
             }
+
+            if(items.empty()){
+                unloading = false;
+                current = null;
+            }
         }
 
         @Override
@@ -80,7 +85,7 @@ public class StackRouter extends DuctRouter{
         @Override
         public boolean acceptItem(Building source, Item item){
             return !unloading && (current == null || item == current) && items.total() < itemCapacity &&
-                (Edges.getFacingEdge(source.tile(), tile).relativeTo(tile) == rotation);
+                (Edges.getFacingEdge(source.tile, tile).relativeTo(tile) == rotation);
         }
     }
 }

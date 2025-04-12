@@ -16,6 +16,7 @@ import mindustry.graphics.*;
 import mindustry.logic.*;
 import mindustry.type.Item;
 import mindustry.world.*;
+import mindustry.world.blocks.*;
 import mindustry.world.consumers.*;
 import mindustry.world.meta.*;
 
@@ -26,6 +27,7 @@ public class BaseTurret extends Block{
     public float placeOverlapMargin = 8 * 7f;
     public float rotateSpeed = 5;
     public float fogRadiusMultiplier = 1f;
+    public boolean disableOverlapCheck = false;
 
     /** Effect displayed when coolant is used. */
     public Effect coolEffect = Fx.fuelburn;
@@ -63,7 +65,9 @@ public class BaseTurret extends Block{
             if(!hasConsumer(coolant)) consume(coolant);
         }
 
-        placeOverlapRange = Math.max(placeOverlapRange, range + placeOverlapMargin);
+        if(!disableOverlapCheck){
+            placeOverlapRange = Math.max(placeOverlapRange, range + placeOverlapMargin);
+        }
         fogRadius = Math.max(Mathf.round(range / tilesize * fogRadiusMultiplier), fogRadius);
         super.init();
     }
@@ -90,12 +94,17 @@ public class BaseTurret extends Block{
         stats.add(Stat.shootRange, range / tilesize, StatUnit.blocks);
     }
 
-    public class BaseTurretBuild extends Building implements Ranged{
+    public class BaseTurretBuild extends Building implements Ranged, RotBlock{
         public float rotation = 90;
 
         @Override
         public float range(){
             return range;
+        }
+
+        @Override
+        public float buildRotation(){
+            return rotation;
         }
 
         @Override

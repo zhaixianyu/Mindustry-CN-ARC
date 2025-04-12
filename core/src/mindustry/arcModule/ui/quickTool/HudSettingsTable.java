@@ -53,19 +53,6 @@ public class HudSettingsTable extends ElementUtils.ToolTable {
                 return s + "";
             }
         });
-        sliderPref("chatValidType", 0, 0, 3, 1, s -> {
-            if (s == 0) {
-                return "原版模式";
-            } else if (s == 1) {
-                return "纯净聊天";
-            } else if (s == 2) {
-                return "服务器记录";
-            } else if (s == 3) {
-                return "全部记录";
-            } else {
-                return s + "";
-            }
-        });
         checkPref("unitHealthBar", false);
         sliderPref("unitTransparency", 100, 0, 100, 5, i -> i > 0 ? i + "%" : "关闭");
         sliderPref("unitDrawMinHealth", 0, 0, 2500, 50, i -> i + "[red]HP");

@@ -27,20 +27,20 @@ import java.security.NoSuchAlgorithmException;
 
 import static arc.Core.*;
 import static mindustry.Vars.*;
-import static mindustry.arcModule.ARCVars.*;
 
 public abstract class ClientLauncher extends ApplicationCore implements Platform{
     private static final int loadingFPS = 30;
 
     private long nextFrame;
     private long beginTime;
+    private long lastTargetFps = -1;
     private boolean finished = false;
     private LoadRenderer loader;
     public static boolean YuanShenLoader;
 
     @Override
     public void setup(){
-        String dataDir = OS.env("MINDUSTRY_DATA_DIR");
+        String dataDir = System.getProperty("mindustry.data.dir", OS.env("MINDUSTRY_DATA_DIR"));
         if(dataDir != null){
             Core.settings.setDataDirectory(files.absolute(dataDir));
         }
@@ -62,6 +62,10 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
         Log.info("[GL] Version: @", graphics.getGLVersion());
         Log.info("[GL] Max texture size: @", maxTextureSize);
         Log.info("[GL] Using @ context.", gl30 != null ? "OpenGL 3" : "OpenGL 2");
+        if(gl30 == null) Log.warn("[GL] Your device or video drivers do not support OpenGL 3. This will cause performance issues.");
+        if(NvGpuInfo.hasMemoryInfo()){
+            Log.info("[GL] Total available VRAM: @mb", NvGpuInfo.getMaxMemoryKB()/1024);
+        }
         if(maxTextureSize < 4096) Log.warn("[GL] Your maximum texture size is below the recommended minimum of 4096. This will cause severe performance issues.");
         Log.info("[JAVA] Version: @", OS.javaVersion);
         if(Core.app.isAndroid()){
@@ -69,11 +73,14 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
         }
         long ram = Runtime.getRuntime().maxMemory();
         boolean gb = ram >= 1024 * 1024 * 1024;
-        Log.info("[RAM] Available: @ @", Strings.fixed(gb ? ram / 1024f / 1024 / 1024f : ram / 1024f / 1024f, 1), gb ? "GB" : "MB");
+        if(!OS.isIos){
+            Log.info("[RAM] Available: @ @", Strings.fixed(gb ? ram / 1024f / 1024 / 1024f : ram / 1024f / 1024f, 1), gb ? "GB" : "MB");
+        }
 
         Time.setDeltaProvider(TimeControl.deltaProvider);
 
-        batch = new SortedSpriteBatch();
+        UI.loadColors();
+        batch = new SpriteBatch();
         assets = new AssetManager();
         assets.setLoader(Texture.class, "." + mapExtension, new MapPreviewLoader());
 
@@ -224,10 +231,15 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
 
     @Override
     public void update(){
+        PerfCounter.update.begin();
+
         int targetfps = Core.settings.getInt("fpscap", 120);
+        boolean changed = lastTargetFps != targetfps && lastTargetFps != -1;
         boolean limitFps = targetfps > 0 && targetfps <= 240;
 
-        if(limitFps){
+        lastTargetFps = targetfps;
+
+        if(limitFps && !changed){
             nextFrame += (1000 * 1000000) / targetfps;
         }else{
             nextFrame = Time.nanos();
@@ -277,6 +289,8 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
                 Threads.sleep(toSleep / 1000000, (int)(toSleep % 1000000));
             }
         }
+
+        PerfCounter.update.end();
     }
 
     private String getWindowTitle() throws NoSuchAlgorithmException {

@@ -1,6 +1,7 @@
 package mindustry.world.blocks.heat;
 
 import arc.math.*;
+import arc.struct.*;
 import arc.util.io.*;
 import mindustry.arcModule.NumberFormat;
 import mindustry.graphics.*;
@@ -21,6 +22,8 @@ public class HeatProducer extends GenericCrafter{
         rotate = true;
         canOverdrive = false;
         drawArrow = true;
+        //it doesn't count as a standard crafter
+        flags = EnumSet.of();
     }
 
     @Override

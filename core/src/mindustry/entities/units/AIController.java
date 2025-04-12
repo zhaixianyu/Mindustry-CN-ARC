@@ -4,7 +4,6 @@ import arc.math.*;
 import arc.math.geom.*;
 import arc.util.*;
 import mindustry.*;
-import mindustry.ai.*;
 import mindustry.entities.*;
 import mindustry.game.*;
 import mindustry.gen.*;
@@ -22,15 +21,20 @@ public class AIController implements UnitController{
 
     protected Unit unit;
     protected Interval timer = new Interval(4);
-    protected AIController fallback;
+    protected @Nullable AIController fallback;
     protected float noTargetTime;
 
     /** main target that is being faced */
-    protected Teamc target;
+    protected @Nullable Teamc target;
+    protected @Nullable Teamc bomberTarget;
 
     {
-        timer.reset(0, Mathf.random(40f));
-        timer.reset(1, Mathf.random(60f));
+        resetTimers();
+    }
+
+    protected void resetTimers(){
+        timer.reset(timerTarget, Mathf.random(40f));
+        timer.reset(timerTarget2, Mathf.random(60f));
     }
 
     @Override
@@ -56,6 +60,11 @@ public class AIController implements UnitController{
     }
 
     @Override
+    public void afterRead(Unit unit){
+
+    }
+
+    @Override
     public boolean isLogicControllable(){
         return true;
     }
@@ -78,7 +87,7 @@ public class AIController implements UnitController{
 
     public void updateVisuals(){
         if(unit.isFlying()){
-            unit.wobble();
+            if(unit.type.wobble) unit.wobble();
 
             unit.lookAt(unit.prefRotation());
         }
@@ -116,15 +125,29 @@ public class AIController implements UnitController{
     }
 
     public void pathfind(int pathTarget){
-        int costType = unit.pathType();
+        pathfind(pathTarget, true);
+    }
+
+    public void pathfind(int pathTarget, boolean stopAtTargetTile){
+        int costType = unit.type.flowfieldPathType;
 
         Tile tile = unit.tileOn();
         if(tile == null) return;
-        Tile targetTile = pathfinder.getTargetTile(tile, pathfinder.getField(unit.team, costType, pathTarget));
+        Tile targetTile = pathfinder.getField(unit.team, costType, pathTarget).getNextTile(tile);
 
-        if(tile == targetTile || (costType == Pathfinder.costNaval && !targetTile.floor().isLiquid)) return;
+        if((tile == targetTile && stopAtTargetTile) || !unit.canPass(targetTile.x, targetTile.y)) return;
 
-        unit.movePref(vec.trns(unit.angleTo(targetTile.worldx(), targetTile.worldy()), unit.speed()));
+        //TODO: this may be buggy, figure out if it's the cause of the issue
+        //unit.movePref(alterPathfind(vec.set(targetTile.worldx(), targetTile.worldy()).sub(tile.worldx(), tile.worldy()).setLength(prefSpeed())));
+        unit.movePref(vec.trns(unit.angleTo(targetTile.worldx(), targetTile.worldy()), prefSpeed()));
+    }
+
+    public Vec2 alterPathfind(Vec2 vec){
+        return vec;
+    }
+
+    public void targetInvalidated(){
+        //TODO: try this for normal units, reset the target timer
     }
 
     public void updateWeapons(){
@@ -138,6 +161,9 @@ public class AIController implements UnitController{
         noTargetTime += Time.delta;
 
         if(invalid(target)){
+            if(target != null && !target.isAdded()){
+                targetInvalidated();
+            }
             target = null;
         }else{
             noTargetTime = 0f;
@@ -177,12 +203,24 @@ public class AIController implements UnitController{
             if(mount.target != null){
                 shoot = mount.target.within(mountX, mountY, wrange + (mount.target instanceof Sized s ? s.hitSize()/2f : 0f)) && shouldShoot();
 
+                if(unit.type.autoDropBombs && !shoot){
+                    if(bomberTarget == null || !bomberTarget.isAdded() || !bomberTarget.within(unit, unit.hitSize/2f + ((Sized)bomberTarget).hitSize()/2f)){
+                        bomberTarget = Units.closestTarget(unit.team, unit.x, unit.y, unit.hitSize, u -> !u.isFlying(), t -> true);
+                    }
+                    shoot = bomberTarget != null;
+                }
+
                 Vec2 to = Predict.intercept(unit, mount.target, weapon.bullet.speed);
                 mount.aimX = to.x;
                 mount.aimY = to.y;
             }
 
-            unit.isShooting |= (mount.shoot = mount.rotate = shoot);
+            mount.shoot = mount.rotate = shoot;
+            if(!shouldFire()){
+                mount.shoot = false;
+            }
+
+            unit.isShooting |= mount.shoot;
 
             if(mount.target == null && !shoot && !Angles.within(mount.rotation, mount.weapon.baseRotation, 0.01f) && noTargetTime >= rotateBackTimer){
                 mount.rotate = true;
@@ -202,6 +240,11 @@ public class AIController implements UnitController{
         return Units.invalidateTarget(target, unit.team, x, y, range);
     }
 
+    /** @return whether the unit should actually fire bullets (as opposed to just targeting something) */
+    public boolean shouldFire(){
+        return true;
+    }
+
     public boolean shouldShoot(){
         return true;
     }
@@ -212,7 +255,7 @@ public class AIController implements UnitController{
     }
 
     public Teamc target(float x, float y, float range, boolean air, boolean ground){
-        return Units.closestTarget(unit.team, x, y, range, u -> u.checkTarget(air, ground), t -> ground);
+        return Units.closestTarget(unit.team, x, y, range, u -> u.checkTarget(air, ground), t -> ground && (unit.type.targetUnderBlocks || !t.block.underBullets));
     }
 
     public boolean retarget(){
@@ -260,13 +303,13 @@ public class AIController implements UnitController{
             vec.setAngle(Angles.moveToward(unit.vel().angle(), vec.angle(), 6f));
         }
 
-        vec.setLength(unit.speed());
+        vec.setLength(prefSpeed());
 
-        unit.moveAt(vec);
+        unit.movePref(vec);
     }
 
     public void circle(Position target, float circleLength){
-        circle(target, circleLength, unit.speed());
+        circle(target, circleLength, prefSpeed());
     }
 
     public void circle(Position target, float circleLength, float speed){
@@ -280,7 +323,7 @@ public class AIController implements UnitController{
 
         vec.setLength(speed);
 
-        unit.moveAt(vec);
+        unit.movePref(vec);
     }
 
     public void moveTo(Position target, float circleLength){
@@ -298,15 +341,17 @@ public class AIController implements UnitController{
     public void moveTo(Position target, float circleLength, float smooth, boolean keepDistance, @Nullable Vec2 offset, boolean arrive){
         if(target == null) return;
 
+        float speed = prefSpeed();
+
         vec.set(target).sub(unit);
 
         float length = circleLength <= 0.001f ? 1f : Mathf.clamp((unit.dst(target) - circleLength) / smooth, -1f, 1f);
 
-        vec.setLength(unit.speed() * length);
+        vec.setLength(speed * length);
 
         if(arrive){
             Tmp.v3.set(-unit.vel.x / unit.type.accel * 2f, -unit.vel.y / unit.type.accel * 2f).add((target.getX() - unit.x), (target.getY() - unit.y));
-            vec.add(Tmp.v3).limit(unit.speed() * length);
+            vec.add(Tmp.v3).limit(speed * length);
         }
 
         if(length < -0.5f){
@@ -321,10 +366,10 @@ public class AIController implements UnitController{
 
         if(offset != null){
             vec.add(offset);
-            vec.setLength(unit.speed() * length);
+            vec.setLength(speed * length);
         }
 
-        //do not move when infinite vectors are used or if its zero.
+        //ignore invalid movement values
         if(vec.isNaN() || vec.isInfinite() || vec.isZero()) return;
 
         if(!unit.type.omniMovement && unit.type.rotateMoveFirst){
@@ -336,6 +381,10 @@ public class AIController implements UnitController{
         }else{
             unit.movePref(vec);
         }
+    }
+
+    public float prefSpeed(){
+        return unit.speed();
     }
 
     @Override

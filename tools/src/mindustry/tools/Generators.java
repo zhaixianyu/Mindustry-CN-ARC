@@ -11,6 +11,7 @@ import arc.struct.*;
 import arc.util.*;
 import arc.util.noise.*;
 import mindustry.ctype.*;
+import mindustry.entities.part.*;
 import mindustry.game.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
@@ -19,7 +20,6 @@ import mindustry.world.*;
 import mindustry.world.blocks.*;
 import mindustry.world.blocks.environment.*;
 import mindustry.world.blocks.legacy.*;
-import mindustry.world.meta.*;
 
 import java.util.concurrent.*;
 
@@ -27,7 +27,7 @@ import static mindustry.Vars.*;
 import static mindustry.tools.ImagePacker.*;
 
 public class Generators{
-    static final int logicIconSize = 64, maxUiIcon = 128;
+    static final int maxUiIcon = 128;
 
     private static float fluid(boolean gas, double x, double y, float frame){
         int keyframes = gas ? 4 : 3;
@@ -384,10 +384,6 @@ public class Generators{
                     }
 
                     save(image, "../editor/" + block.name + "-icon-editor");
-
-                    if(block.buildVisibility != BuildVisibility.hidden){
-                        saveScaled(image, block.name + "-icon-logic", Math.min(32 * 3, image.width));
-                    }
                     saveScaled(image, "../ui/block-" + block.name + "-ui", Math.min(image.width, maxUiIcon));
 
                     boolean hasEmpty = false;
@@ -464,7 +460,6 @@ public class Generators{
                     base = container.outline(Pal.gray, 3);
                 }
 
-                saveScaled(base, item.name + "-icon-logic", Math.min(logicIconSize, Math.min(base.width, base.height)));
                 save(base, "../ui/" + item.getContentType().name() + "-" + item.name + "-ui");
             }
         });
@@ -514,7 +509,7 @@ public class Generators{
         });
 
         generate("unit-icons", () -> content.units().each(type -> {
-            if(type.internal) return; //internal hidden units don't generate
+            if(type.internal && !type.internalGenerateSprites) return; //internal hidden units don't generate
 
             ObjectSet<String> outlined = new ObjectSet<>();
 
@@ -534,6 +529,28 @@ public class Generators{
                 for(TextureRegion region : toOutline){
                     Pixmap pix = get(region).outline(type.outlineColor, type.outlineRadius);
                     save(pix, ((GenRegion)region).name + "-outline");
+                }
+
+                Seq<DrawPart> allParts = new Seq<>();
+
+                //this code is complete trash
+                Cons<Seq<DrawPart>>[] allDrawIter = new Cons[]{null};
+                allDrawIter[0] = seq -> {
+                    for(DrawPart part : seq){
+                        allParts.add(part);
+                        if(part instanceof RegionPart){
+                            allDrawIter[0].get(((RegionPart)part).children);
+                        }
+                    }
+                };
+                allDrawIter[0].get(type.parts);
+
+                for(DrawPart part : allParts){
+                    if(part instanceof RegionPart && ((RegionPart)part).replaceOutline){
+                        for(TextureRegion r : ((RegionPart)part).regions){
+                            outliner.get(r);
+                        }
+                    }
                 }
 
                 Seq<Weapon> weapons = type.weapons;
@@ -586,7 +603,8 @@ public class Generators{
                 if(sample instanceof Legsc) outliner.get(type.legRegion);
                 if(sample instanceof Tankc) outliner.get(type.treadRegion);
 
-                Pixmap image = type.segments > 0 ? get(type.segmentRegions[0]) : outline.get(get(type.previewRegion));
+                //TODO: for drawBody false, an empty pixmap is used; this is a hack
+                Pixmap image = type.segments > 0 ? get(type.segmentRegions[0]) : type.drawBody ? outline.get(get(type.previewRegion)) : new Pixmap(1, 1);
 
                 Func<Weapon, Pixmap> weaponRegion = weapon -> Core.atlas.has(weapon.name + "-preview") ? get(weapon.name + "-preview") : get(weapon.region);
                 Cons2<Weapon, Pixmap> drawWeapon = (weapon, pixmap) ->
@@ -614,7 +632,7 @@ public class Generators{
                 //outline is currently never needed, although it could theoretically be necessary
                 if(type.needsBodyOutline()){
                     save(image, type.name + "-outline");
-                }else if(type.segments == 0){
+                }else if(type.segments == 0 && type.drawBody){
                     replace(type.name, type.segments > 0 ? get(type.segmentRegions[0]) : outline.get(get(type.region)));
                 }
 
@@ -682,7 +700,9 @@ public class Generators{
                 }
 
                 //TODO I can save a LOT of space by not creating a full icon.
-                save(image, "unit-" + type.name + "-full");
+                if(type.generateFullIcon){
+                    save(image, "unit-" + type.name + "-full");
+                }
 
                 Rand rand = new Rand();
                 rand.setSeed(type.name.hashCode());
@@ -722,7 +742,6 @@ public class Generators{
                 Pixmap fit = new Pixmap(maxd, maxd);
                 drawScaledFit(fit, image);
 
-                saveScaled(fit, type.name + "-icon-logic", Math.min(logicIconSize, Math.min(fit.width, fit.height)));
                 save(fit, "../ui/unit-" + type.name + "-ui");
             }catch(IllegalArgumentException e){
                 Log.err("WARNING: Skipping unit @: @", type.name, e.getMessage());
