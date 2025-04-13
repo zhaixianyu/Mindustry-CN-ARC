@@ -388,12 +388,11 @@ public class Renderer implements ApplicationListener{
         Draw.reset();
 
         Draw.draw(Layer.overlayUI, overlays::drawTop);
-        if(state.rules.fog) Draw.draw(Layer.fogOfWar, fog::drawFog);
+        if(state.rules.fog && (fogEnabled || state.rules.pvp && player.team().id != 255)) Draw.draw(Layer.fogOfWar, fog::drawFog);
         Draw.draw(Layer.space, () -> {
             if(launchAnimator == null || landTime <= 0f) return;
             launchAnimator.drawLaunch();
         });
-        if(state.rules.fog && (fogEnabled || state.rules.pvp && player.team().id != 255)) Draw.draw(Layer.fogOfWar, fog::drawFog);
         if(launchAnimator != null){
             Draw.z(Layer.space);
             launchAnimator.drawLaunchGlobalZ();
