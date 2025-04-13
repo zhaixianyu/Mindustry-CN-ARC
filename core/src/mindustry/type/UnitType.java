@@ -619,7 +619,7 @@ public class UnitType extends UnlockableContent implements Senseable{
                 t.add(new Stack() {{
                     add(new Table(o -> {
                         o.left();
-                        o.add(new Image(region)).size(26f).scaling(Scaling.fit);
+                        o.add(new Image(entry.effect.uiIcon)).size(26f).scaling(Scaling.fit);
                     }));
 
                     add(new Table(t -> {

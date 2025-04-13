@@ -42,7 +42,7 @@ public class BeControl{
     private String steamUrl;
     private String mobileUrl;
     private int updateBuild;
-    public static String gitDownloadURL = "https://gh.tinylake.tech/";
+    public static String gitDownloadURL = "https://gh.tinylake.top/";
 
     private String patronURL = "https://afdian.net/a/Mindustry-CN-ARC";
     private String directDesktopURL,directMobileURL,directSteamURL;
@@ -168,7 +168,7 @@ public class BeControl{
             t.row();
             t.table(tt->{
                 tt.button("wz镜像",()->{
-                    gitDownloadURL = "https://gh.tinylake.tk//";
+                    gitDownloadURL = "https://gh.tinylake.top/";
                     updateUrl = gitDownloadURL + directDesktopURL;
                     steamUrl = gitDownloadURL + directSteamURL;
                     mobileUrl = gitDownloadURL + directMobileURL;
