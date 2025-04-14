@@ -165,7 +165,7 @@ public class ModsDialog extends BaseDialog{
 
     void setup(){
         float h = 110f;
-        float w = Math.min(Core.graphics.getWidth() / Scl.scl(1.05f), 520f);
+        float w = Math.min(Core.graphics.getWidth() / Scl.scl(1.05f) - Scl.scl(28f), 520f);
 
         if (!Core.settings.getBool("arcDisableModWarning")){
             ui.showInfo("@arcModLoad.warning");
