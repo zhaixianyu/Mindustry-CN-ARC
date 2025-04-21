@@ -409,12 +409,6 @@ public class MessageDialog extends BaseDialog {
         public advanceMsg(arcMsgType msgType, String message) {
             this(msgType, message, new Vec2(-1, -1));
         }
-
-
-        public advanceMsg sendMessage() {
-            ui.chatfrag.addMessage(msgType.arcMsgPreFix() + message, false);
-            return this;
-        }
     }
 
     public enum arcMsgType {

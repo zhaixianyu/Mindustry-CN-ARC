@@ -213,11 +213,7 @@ public class MinimapRenderer{
         if(net.active() && (fullView || forceShowPlayer)){
             for(Player player : Groups.player){
                 if(!player.dead()){
-                    drawLabel(player.x, player.y, player.name, player.color);
-                    float rx = !fullView ? (player.x - rect.x) / rect.width * w : player.x / (world.width() * tilesize) * w;
-                    float ry = !fullView ? (player.y - rect.y) / rect.width * h : player.y / (world.height() * tilesize) * h;
-
-                    drawLabel(x + rx, y + ry, player.name, player.color);
+                    drawLabel(player.x, player.y, player.name, player.color, scaleFactor);
                 }
             }
         }
@@ -434,22 +430,22 @@ public class MinimapRenderer{
         return color.rgba();
     }
 
-    public void drawLabel(float x, float y, String text, Color color){
+    public void drawLabel(float x, float y, String text, Color color, float scaleFactor){
         Font font = Fonts.outline;
         GlyphLayout l = Pools.obtain(GlyphLayout.class, GlyphLayout::new);
         boolean ints = font.usesIntegerPositions();
-        font.getData().setScale(1 / 1.5f * lastScl / Scl.scl(1f));
+        font.getData().setScale(1 / 1.25f / Scl.scl(1f) * scaleFactor * 1f);
         font.setUseIntegerPositions(false);
 
-        l.setText(font, text, color, 90f * lastScl, Align.left, true);
+        l.setText(font, text, color, 90f * scaleFactor, Align.left, false);
         float yOffset = 20f;
-        float margin = 3f;
+        float margin = 3f * scaleFactor;
 
         Draw.color(0f, 0f, 0f, 0.2f);
         Fill.rect(x, y + yOffset - l.height/2f, l.width + margin, l.height + margin);
         Draw.color();
         font.setColor(color);
-        font.draw(text, x - l.width/2f, y + yOffset, 90f * lastScl, Align.left, true);
+        font.draw(text, x - l.width/2f, y + yOffset, 90f * scaleFactor, Align.left, false);
         font.setUseIntegerPositions(ints);
 
         font.getData().setScale(1f);
