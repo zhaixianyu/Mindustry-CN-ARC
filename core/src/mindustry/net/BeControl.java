@@ -57,7 +57,7 @@ public class BeControl{
         return false;
     }
 
-    public BeControl(){/*
+    public BeControl(){
         if(Version.arcBuild != -1) checkUpdate(u -> {
             if(u && Core.settings.getBool("showUpdateDialog", true)) {
                 Events.on(EventType.ClientLoadEvent.class, e -> {
@@ -85,7 +85,7 @@ public class BeControl{
             }catch(Throwable e){
                 e.printStackTrace();
             }
-        }*/
+        }
     }
 
     public void BeControlTable(){
