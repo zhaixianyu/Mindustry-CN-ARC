@@ -33,7 +33,7 @@ public class ServerLauncher implements ApplicationListener{
                 System.out.println(result);
             };
             Log.err("学术服务器，怎么回事呢");
-            new HeadlessApplication(new ServerLauncher(), throwable -> CrashSender.send(throwable, f -> {}));
+            new HeadlessApplication(new ServerLauncher(), throwable -> CrashHandler.handle(throwable, f -> {}));
         }catch(Throwable t){
             CrashHandler.handle(t, f -> {});
         }

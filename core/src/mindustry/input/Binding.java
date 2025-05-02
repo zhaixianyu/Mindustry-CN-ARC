@@ -39,6 +39,7 @@ public class Binding{
     commandMode = KeyBind.add("command_mode", KeyCode.shiftLeft, "command"),
     commandQueue = KeyBind.add("command_queue", KeyCode.mouseMiddle),
     createControlGroup = KeyBind.add("create_control_group", KeyCode.controlLeft),
+    forceMove = KeyBind.add("force_move", KeyCode.altLeft),
 
     selectAllUnits = KeyBind.add("select_all_units", KeyCode.g),
     selectAllUnitFactories = KeyBind.add("select_all_unit_factories", KeyCode.h),
@@ -95,6 +96,9 @@ public class Binding{
     blockInfo = KeyBind.add("block_info", KeyCode.f1),
     toggleMenus = KeyBind.add("toggle_menus", KeyCode.c),
     screenshot = KeyBind.add("screenshot", KeyCode.p),
+    superUnitEffect = KeyBind.add("superUnitEffect", KeyCode.o),
+    toggle_block_render = KeyBind.add("toggle_block_render", KeyCode.f12),
+    toggle_unit = KeyBind.add("toggle_unit", KeyCode.f12),
     togglePowerLines = KeyBind.add("toggle_power_lines", KeyCode.f5),
     toggleBlockStatus = KeyBind.add("toggle_block_status", KeyCode.f6),
     playerList = KeyBind.add("player_list", KeyCode.tab, "multiplayer"),
@@ -103,7 +107,25 @@ public class Binding{
     chatHistoryNext = KeyBind.add("chat_history_next", KeyCode.down),
     chatScroll = KeyBind.add("chat_scroll", new Axis(KeyCode.scroll)),
     chatMode = KeyBind.add("chat_mode", KeyCode.tab),
-    console = KeyBind.add("console", KeyCode.f8)
+    console = KeyBind.add("console", KeyCode.f8),
+    point = KeyBind.add("point", KeyCode.j),
+    showRTSAi = KeyBind.add("showRTSAi", KeyCode.l),
+    lockonLastMark = KeyBind.add("lockonLastMark", KeyCode.unknown),
+    arcDetail = KeyBind.add("arcDetail", KeyCode.unknown),
+    arcScanMode = KeyBind.add("arcScanMode", KeyCode.unknown),
+    oreAdsorption = KeyBind.add("oreAdsorption", KeyCode.unknown),
+    bossKey = KeyBind.add("bossKey", KeyCode.unknown),
+
+    camera_select_01 = KeyBind.add("camera_select_01", KeyCode.unknown),
+    camera_select_02 = KeyBind.add("camera_select_02", KeyCode.unknown),
+    camera_select_03 = KeyBind.add("camera_select_03", KeyCode.unknown),
+    camera_select_04 = KeyBind.add("camera_select_04", KeyCode.unknown),
+    camera_select_05 = KeyBind.add("camera_select_05", KeyCode.unknown),
+    camera_select_06 = KeyBind.add("camera_select_06", KeyCode.unknown),
+    camera_select_07 = KeyBind.add("camera_select_07", KeyCode.unknown),
+    camera_select_08 = KeyBind.add("camera_select_08", KeyCode.unknown),
+    camera_select_09 = KeyBind.add("camera_select_09", KeyCode.unknown),
+    camera_select_10 = KeyBind.add("camera_select_10", KeyCode.unknown)
     ;
 
     //dummy static class initializer
