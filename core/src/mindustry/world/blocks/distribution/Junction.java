@@ -17,6 +17,7 @@ import static mindustry.Vars.*;
 public class Junction extends Block{
     public float speed = 26; //frames taken to go through this junction
     public int capacity = 6;
+    public float displayedSpeed = 13f;
 
     public Junction(String name){
         super(name);
@@ -33,11 +34,10 @@ public class Junction extends Block{
     public void setStats(){
         super.setStats();
 
-        //have to add a custom calculated speed, since the actual movement speed is apparently not linear
-        stats.add(Stat.itemCapacity, capacity);
-        stats.add(Stat.itemsMoved,Strings.autoFixed(60f / speed * capacity ,2) , StatUnit.itemsSecond);
+        //(60f / speed * capacity) returns 13.84 which is not the actual value (non linear, depends on fps)
+        stats.add(Stat.itemsMoved, displayedSpeed, StatUnit.itemsSecond);
+        stats.add(Stat.itemCapacity, capacity, StatUnit.items);
     }
-
 
     @Override
     public boolean outputsItems(){

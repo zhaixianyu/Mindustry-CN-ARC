@@ -348,6 +348,8 @@ public class BulletType extends Content implements Cloneable{
 
     /** Whether to display the ammo multiplayer for this bullet type in its stats. */
     public boolean displayAmmoMultiplier = true;
+    /** If >0, this is displayed divided by the ammo multiplier. */
+    public float statLiquidConsumed;
 
     /** Radius of light emitted by this bullet; <0 to use defaults. */
     public float lightRadius = -1f;
@@ -518,7 +520,7 @@ public class BulletType extends Content implements Cloneable{
 
         if(fragOnHit){
             if(delayFrags && fragBullet != null && fragBullet.delayFrags){
-                Core.app.post(() -> createFrags(b, x, y));
+                Time.run(0f, () -> createFrags(b, x, y));
             }else{
                 createFrags(b, x, y);
             }

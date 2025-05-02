@@ -10,8 +10,7 @@ import mindustry.gen.*;
 import mindustry.ui.*;
 import mindustry.type.*;
 import mindustry.world.*;
-import mindustry.world.meta.Stat;
-import mindustry.world.meta.StatUnit;
+import mindustry.world.meta.*;
 
 import static mindustry.Vars.*;
 
@@ -21,6 +20,7 @@ public class BufferedItemBridge extends ItemBridge{
 
     public float speed = 40f;
     public int bufferCapacity = 50;
+    public float displayedSpeed = 11f;
 
     public BufferedItemBridge(String name){
         super(name);
@@ -34,7 +34,9 @@ public class BufferedItemBridge extends ItemBridge{
         super.setStats();
 
         stats.add(Stat.bufferCapacity, bufferCapacity);
-        stats.add(Stat.itemsMoved,Strings.autoFixed(bufferCapacity * 60f / speed ,2) , StatUnit.itemsSecond);
+
+        //Hard to calculate, fps and overdive reliant. Movement speed taken from testing
+        stats.add(Stat.itemsMoved, displayedSpeed, StatUnit.itemsSecond);
     }
 
     public class BufferedItemBridgeBuild extends ItemBridgeBuild{
@@ -107,6 +109,7 @@ public class BufferedItemBridge extends ItemBridge{
             super.write(write);
             buffer.write(write);
         }
+
 
         @Override
         public void read(Reads read, byte revision){
