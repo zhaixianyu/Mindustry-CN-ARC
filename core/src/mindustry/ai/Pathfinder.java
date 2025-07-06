@@ -69,7 +69,7 @@ public class Pathfinder implements Runnable{
 
     //water
     (team, tile) ->
-    (!PathTile.liquid(tile) ? 6000 : 1) +
+    (!PathTile.liquid(tile) || PathTile.solid(tile) ? 6000 : 1) +
     PathTile.health(tile) * 5 +
     (PathTile.nearGround(tile) || PathTile.nearSolid(tile) ? 14 : 0) +
     (PathTile.deep(tile) ? 0 : 1) +
@@ -159,7 +159,7 @@ public class Pathfinder implements Runnable{
                         if(!other.solid()){
                             boolean otherNearSolid = false;
                             for(int j = 0; j < 4; j++){
-                                Tile othernear = other.nearby(i);
+                                Tile othernear = other.nearby(j);
                                 if(othernear != null && othernear.solid()){
                                     otherNearSolid = true;
                                     break;

@@ -2,6 +2,7 @@ package mindustry.arcModule.ui;
 
 import arc.Core;
 import arc.Events;
+import arc.input.KeyBind;
 import arc.input.KeyCode;
 import arc.scene.ui.Label;
 import arc.scene.ui.layout.Table;
@@ -24,7 +25,7 @@ public class QuickCameraTable extends Table {
     boolean hoverMode = Core.settings.getBool("arcCameraHoverMode", false);
     boolean saveScale = Core.settings.getBool("arcCameraSaveScale", true);
 
-    Binding[] cameraSelect = {
+    KeyBind[] cameraSelect = {
             Binding.camera_select_01,
             Binding.camera_select_02,
             Binding.camera_select_03,
@@ -97,7 +98,7 @@ public class QuickCameraTable extends Table {
 
     private void hudButton(Table table, int index) {
         table.table(t -> {
-            Label field = t.label(() -> (Core.keybinds.get(cameraSelect[index]).key == KeyCode.unknown ? "" : "[cyan]" + Core.keybinds.get(cameraSelect[index]).key.toString()) + hudList[index].getName()).get();
+            Label field = t.label(() -> (cameraSelect[index].value.key == KeyCode.unknown ? "" : "[cyan]" + cameraSelect[index].value.key.toString()) + hudList[index].getName()).get();
             if (hoverMode) field.hovered(() -> hudList[index].getHud());
             else field.clicked(() -> hudList[index].getHud());
             if (hudList[index].isValid()) {

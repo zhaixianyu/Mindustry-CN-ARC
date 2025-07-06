@@ -48,7 +48,7 @@ public class LogicDialog extends BaseDialog{
 
     @Nullable LExecutor executor;
     GlobalVarsDialog globalsDialog = new GlobalVarsDialog();
-    boolean wasRows, wasPortrait;
+    boolean wasRows, wasPortrait, forceRestart;
 
     public boolean dispose = false, editing = false;
 
@@ -308,7 +308,14 @@ public class LogicDialog extends BaseDialog{
                         }catch(Throwable e){
                             ui.showException(e);
                         }
-                    }).marginLeft(12f).disabled(b -> Core.app.getClipboardText() == null);
+                    }).marginLeft(12f).disabled(b -> Core.app.getClipboardText() == null).row();
+
+                    t.button("@logic.restart", Icon.refresh, style, () -> {
+                        forceRestart = true;
+                        dialog.hide();
+                        hide();
+                    }).marginLeft(12f);
+
                     t.row();
                     t.button("[orange]清空",Icon.trash,style,() -> canvas.clearAll()).marginLeft(12f);
                     t.row();
@@ -514,6 +521,7 @@ public class LogicDialog extends BaseDialog{
     public void show(String code, LExecutor executor, boolean privileged, Cons<String> modified){
         this.executor = executor;
         this.privileged = privileged;
+        this.forceRestart = false;
         canvas.statements.clearChildren();
         canvas.rebuild();
         canvas.privileged = privileged;
@@ -524,7 +532,7 @@ public class LogicDialog extends BaseDialog{
             canvas.load("");
         }
         this.consumer = result -> {
-            if(!result.equals(code)){
+            if(forceRestart || !result.equals(code)){
                 modified.get(result);
             }
         };

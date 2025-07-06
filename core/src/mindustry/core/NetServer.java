@@ -508,7 +508,7 @@ public class NetServer implements ApplicationListener{
         data.stream = new ByteArrayInputStream(stream.toByteArray());
         player.con.sendStream(data);
 
-        debug("Packed @ bytes of world data.", stream.size());
+        debug("Packed @ bytes of world data to @ (@ / @)", stream.size(), player.name, player.con.address, player.uuid());
     }
 
     public void addPacketHandler(String type, Cons2<Player, String> handler){
@@ -601,7 +601,7 @@ public class NetServer implements ApplicationListener{
 
     @Remote(targets = Loc.client)
     public static void serverBinaryPacketReliable(Player player, String type, byte[] contents){
-        if(netServer.customPacketHandlers.containsKey(type)){
+        if(netServer.customBinaryPacketHandlers.containsKey(type)){
             for(var c : netServer.customBinaryPacketHandlers.get(type)){
                 c.get(player, contents);
             }
